@@ -15,7 +15,9 @@
       "Bash(python3 --version)",
       "Bash(echo \"no python\")",
       "Bash(grep -c '<row r=' __TRACKED_VAR__/xl/worksheets/sheet1.xml)",
-      "Bash(grep -o '<row r=\"[0-9]*\"' 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_verify/xl/worksheets/sheet1.xml')"
+      "Bash(grep -o '<row r=\"[0-9]*\"' 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_verify/xl/worksheets/sheet1.xml')",
+      "Bash(npm install *)",
+      "Bash(git add *)"
     ]
   }
 }

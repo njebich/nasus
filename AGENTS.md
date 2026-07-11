@@ -1,0 +1,1 @@
+This is a single page application without any server component. All game rule data is stored as constants in the client source code. All runtime data is stored in client local storage. Hosted with GitHub Pages.

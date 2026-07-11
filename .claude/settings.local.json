@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Stop-Process -Id 13780 -Force)",
+      "PowerShell(Get-Process excel -ErrorAction SilentlyContinue)",
+      "Bash(TMP=\"C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_extract\" *)",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Bruder Grabag\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Das-Western-Rollenspiel-LLM\\\\269634e5-e98f-4f70-9157-533afec92b32\\\\scratchpad\\\\edit_werte.ps1\" 2>&1 | Select-Object -First 40)",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\Bruder Grabag\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Das-Western-Rollenspiel-LLM\\\\269634e5-e98f-4f70-9157-533afec92b32\\\\scratchpad\\\\edit_werte.ps1\")",
+      "Bash(cat /tmp/zip_log.txt 2>&1 | head -20 *)",
+      "Bash(unzip -t 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_0.5_new.xlsx')",
+      "Bash(unzip -l 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_0.5_new.xlsx')",
+      "Bash(rm -rf 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_verify/*')",
+      "Bash(unzip -o -q 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_0.5_new.xlsx' -d 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_verify')",
+      "Bash(ls 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_verify/xl')",
+      "Bash(python3 --version)",
+      "Bash(echo \"no python\")",
+      "Bash(grep -c '<row r=' __TRACKED_VAR__/xl/worksheets/sheet1.xml)",
+      "Bash(grep -o '<row r=\"[0-9]*\"' 'C:/Users/Bruder Grabag/AppData/Local/Temp/claude/E--Das-Western-Rollenspiel-LLM/269634e5-e98f-4f70-9157-533afec92b32/scratchpad/werte_verify/xl/worksheets/sheet1.xml')"
+    ]
+  }
+}

@@ -25,7 +25,7 @@ import openpyxl
 
 TOKEN_RE = re.compile(r"[A-Za-zÄÖÜäöüß_][A-Za-zÄÖÜäöüß0-9_]*")
 QUOTE_RE = re.compile(r"'[^']*'")
-KEYWORDS = {"MIN", "MAX", "WENN", "SVERWEIS"}
+KEYWORDS = {"MIN", "MAX", "WENN", "SVERWEIS", "AUFRUNDEN", "ABRUNDEN"}
 SELF_REF_TOKENS = {"wert", "grad"}
 UNIT_WORDS = {"m", "s", "je", "nach", "Pferd", "ca"}
 KNOWN_ART_VALUES = {"Wert", "Formel", "Pool", "Auswahl", "Fixwert", "Lookup"}
@@ -93,6 +93,10 @@ def check_formula_tokens(rows, valid_refs, colname):
         if not isinstance(val, str) or not val.strip():
             continue
         if val.strip().upper() == "FEHLT":
+            continue
+        if val.strip().upper().startswith("SUMME("):
+            # aggregierte Summe ueber den gesamten Charakterbogen (z.B. Verbrauchte EP) -
+            # das ist eine dokumentierte Sonderformel, keine Zeilen-Referenz, nicht pruefbar
             continue
         stripped = QUOTE_RE.sub("", val)
         tokens = TOKEN_RE.findall(stripped)

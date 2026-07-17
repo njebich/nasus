@@ -61,6 +61,12 @@ export interface ComputedSheet {
   dublonenTotal: number;
   dublonenSpent: number;
   dublonenRemaining: number;
+  /** Aufteilung von dublonenRemaining auf die beiden Wert-Felder (Regel Nutzer 2026-07-17:
+   *  Kaeufe ziehen erst vom Bargeld, danach vom Bankguthaben ab) - rein abgeleitete Anzeige,
+   *  dublonen_bar/dublonen_bank selbst bleiben unveraendert (Ausruestung bleibt einzige
+   *  Quelle der Wahrheit fuer "ausgegeben", siehe dublonenSpent oben). */
+  dublonenBarRemaining: number;
+  dublonenBankRemaining: number;
 }
 
 /** Kleinste "EP ab"-Schwelle oberhalb von epGesamt (naechste Stufe), oder undefined am Anschlag. */
@@ -199,6 +205,10 @@ export function computeSheet(character: CharacterState): ComputedSheet {
   const dublonenSpent = character.equipment.reduce(
     (sum, e) => sum + (e.computedPriceSnapshot ?? 0) * e.quantity, 0,
   );
+  const dublonenBar = character.values['dublonen_bar'] ?? 0;
+  const dublonenBank = character.values['dublonen_bank'] ?? 0;
+  const dublonenBarRemaining = Math.max(0, dublonenBar - dublonenSpent);
+  const dublonenBankRemaining = dublonenBank - Math.max(0, dublonenSpent - dublonenBar);
   const epGesamt = character.values['ep_gesamt'] ?? 0;
   // SP = 6490 + EP - ausgegebene SP. Die 6490 ist eine feste Konstante IN DER FORMEL SELBST
   // (jeder Charakter bekommt sie, unabhaengig vom Startbudget-Preset), NICHT nur ein
@@ -233,5 +243,7 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     dublonenTotal,
     dublonenSpent,
     dublonenRemaining: dublonenTotal - dublonenSpent,
+    dublonenBarRemaining,
+    dublonenBankRemaining,
   };
 }

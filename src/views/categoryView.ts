@@ -148,6 +148,13 @@ function renderPoolRow(r: ComputedRule): string {
     </div>`;
 }
 
+/** Referenzen, die aus ihrer Kategorie-Liste ausgeblendet werden (Regel Nutzer 2026-07-17):
+ *  ep_steigerungspunkte/ep_verbraucht sind in der xlsx als "SUMME(Kosten aller gewaehlten
+ *  Werte)"-Formeln modelliert, die die Engine nicht auswerten kann (das kennt nur die App via
+ *  spSpent/spRemaining) - die Kopfzeile zeigt den echten Wert bereits, die Zeilen hier waeren
+ *  nur ein redundanter Fehler-Eintrag. */
+const HIDDEN_REFERENZEN = new Set(['ep_steigerungspunkte', 'ep_verbraucht']);
+
 export function renderCategoryView(
   container: HTMLElement,
   sheet: ComputedSheet,
@@ -155,7 +162,7 @@ export function renderCategoryView(
   onChange: OnValueChange,
   onPoolChange: OnPoolChange,
 ): void {
-  const rows = sheet.byKategorie[kategorie] ?? [];
+  const rows = (sheet.byKategorie[kategorie] ?? []).filter((r) => !HIDDEN_REFERENZEN.has(r.rule.referenz));
   const editable = rows.filter((r) => r.rule.art === 'Wert');
   const readOnly = rows.filter((r) => r.rule.art === 'Fixwert' || r.rule.art === 'Formel' || r.rule.art === 'Lookup');
   const pools = rows.filter((r) => r.rule.art === 'Pool');

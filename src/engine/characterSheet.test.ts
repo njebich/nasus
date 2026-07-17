@@ -74,6 +74,37 @@ describe('computeSheet', () => {
     expect(sheet.dublonenTotal).toBe(3500);
   });
 
+  describe('dublonenBarRemaining/dublonenBankRemaining (Regel Nutzer 2026-07-17: Kaeufe ziehen erst vom Bargeld, dann von der Bank ab)', () => {
+    function withPurchase(bar: number, bank: number, preis: number) {
+      const character = createCharacter('Test');
+      character.values['dublonen_bar'] = bar;
+      character.values['dublonen_bank'] = bank;
+      character.equipment = [{
+        id: 'test-1', family: 'preisliste', baseTable: 'preisliste', baseId: '1',
+        selections: {}, quantity: 1, computedPriceSnapshot: preis,
+      }];
+      return character;
+    }
+
+    it('Kauf unter dem Bargeld-Betrag: nur bar sinkt, Bank bleibt unangetastet', () => {
+      const sheet = computeSheet(withPurchase(500, 3000, 200));
+      expect(sheet.dublonenBarRemaining).toBe(300);
+      expect(sheet.dublonenBankRemaining).toBe(3000);
+    });
+
+    it('Kauf ueberschreitet das Bargeld: bar auf 0, Ueberschuss geht von der Bank ab', () => {
+      const sheet = computeSheet(withPurchase(500, 3000, 800));
+      expect(sheet.dublonenBarRemaining).toBe(0);
+      expect(sheet.dublonenBankRemaining).toBe(2700); // 3000 - (800-500)
+    });
+
+    it('kein Bargeld vorhanden (Standardfall): Kauf geht komplett von der Bank ab', () => {
+      const sheet = computeSheet(withPurchase(0, 5000, 227));
+      expect(sheet.dublonenBarRemaining).toBe(0);
+      expect(sheet.dublonenBankRemaining).toBe(4773);
+    });
+  });
+
   it('berechnet Formel-Werte live aus den aktuellen character.values', () => {
     const character = createCharacter('Test');
     character.values['eig_g_mut'] = 10;

@@ -191,10 +191,10 @@ function render(): void {
       ${currentCharacter ? '<div id="charakterheader"></div>' : ''}
       ${sheet ? `
         <div class="budget-bar">
-          <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis">EP: ${sheet.epGesamt}${sheet.epNaechsteStufeAb !== undefined ? ` / ${sheet.epNaechsteStufeAb} (naechste Stufe)` : ' (hoechste Stufe erreicht)'}</span>
-          <span title="Steigerungspunkte: bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK">SP: ${sheet.spSpent} / ${sheet.spTotal} (übrig: ${sheet.spRemaining})</span>
-          <span title="Talentpunkte: bezahlt ausschliesslich Talente, eigener Pool = 20+Stufe×5">TaP: ${sheet.tapSpent} / ${sheet.tapTotal} (übrig: ${sheet.tapRemaining})</span>
-          <span>Dublonen: ${sheet.dublonenSpent} / ${sheet.dublonenTotal} (übrig: ${sheet.dublonenRemaining})</span>
+          <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis - ${sheet.epNaechsteStufeAb !== undefined ? `naechste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'hoechste Stufe erreicht'}">EP: ${sheet.epGesamt}</span>
+          <span title="Steigerungspunkte (übrig): bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK - verbraucht ${sheet.spSpent} von ${sheet.spTotal}">SP: ${sheet.spRemaining}</span>
+          <span title="Talentpunkte (übrig): bezahlt ausschliesslich Talente, eigener Pool = 20+Stufe×5 - verbraucht ${sheet.tapSpent} von ${sheet.tapTotal}">TaP: ${sheet.tapRemaining}</span>
+          <span title="Dublonen: Kaeufe ziehen erst vom Bargeld, danach vom Bankguthaben ab - insgesamt verbraucht ${sheet.dublonenSpent} von ${sheet.dublonenTotal}">Dublonen: ${sheet.dublonenBarRemaining} bar / ${sheet.dublonenBankRemaining} Bank</span>
         </div>` : ''}
       ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
       ${currentCharacter ? `

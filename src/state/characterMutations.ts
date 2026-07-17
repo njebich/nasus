@@ -12,7 +12,8 @@ import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
-import type { CharacterState, CharacterHeader, PoolAllocation, EquipmentEntry } from './characterStore';
+import type { RsGruppe } from '../data/trefferzonen';
+import { ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry } from './characterStore';
 
 export class BudgetError extends Error {}
 export class MutationError extends Error {}
@@ -30,6 +31,7 @@ function clone(character: CharacterState): CharacterState {
     selections: { ...character.selections },
     poolAllocations: { ...character.poolAllocations },
     equipment: character.equipment.map((e) => ({ ...e, selections: { ...e.selections } })),
+    ruestungSlots: { ...character.ruestungSlots },
   };
 }
 
@@ -186,30 +188,55 @@ export function buyArtefakt(
   return candidate;
 }
 
-export function buyArmor(
-  character: CharacterState, basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number,
+const RS_GRUPPEN: readonly RsGruppe[] = ['kopf', 'torso', 'arme', 'beine'];
+const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
+
+/**
+ * Ruestet ein Ruestungsteil in den festen Slot (TZ-Gruppe × Lage) aus - ueberschreibt einen
+ * bereits belegten Slot (Regel Nutzer 2026-07-17: "feste Slots: TZ-Gruppe x Lage", pro Slot
+ * immer nur EIN Teil). Lage 0 (Kleidung, immer RS/RH=0) hat bewusst keinen Slot - siehe
+ * characterStore.ts. Die Basis-Zeile muss selbst zur angeforderten Lage gehoeren (kein
+ * Lage-3-Ruestungsteil im Lage-5-Slot).
+ */
+export function equipRuestung(
+  character: CharacterState, gruppe: RsGruppe, lage: number,
+  basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number,
 ): CharacterState {
+  if (!RS_GRUPPEN.includes(gruppe)) throw new MutationError(`Unbekannte TZ-Gruppe '${gruppe}'`);
+  if (!RUESTUNG_LAGEN.includes(lage as (typeof RUESTUNG_LAGEN)[number])) {
+    throw new MutationError(`Lage '${lage}' ist ungueltig (erlaubt: 1-5)`);
+  }
+
   const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === basisSourceRow);
   const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === verarbeitungSourceRow);
   const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === anpassungSourceRow);
   if (!basis) throw new MutationError(`Ruestungsteil (Zeile ${basisSourceRow}) existiert nicht`);
   if (!verarbeitung) throw new MutationError(`Verarbeitung (Zeile ${verarbeitungSourceRow}) existiert nicht`);
   if (!anpassung) throw new MutationError(`Anpassung (Zeile ${anpassungSourceRow}) existiert nicht`);
+  if (Number(basis['Lage']) !== lage) {
+    throw new MutationError(`'${basis.name}' hat Lage ${basis['Lage']}, passt nicht in den Lage-${lage}-Slot`);
+  }
 
   const composed = composeArmor(basis, verarbeitung, anpassung);
 
   const candidate = clone(character);
-  const entry: EquipmentEntry = {
-    id: newEquipmentId(), family: 'armor', baseTable: 'ruestung_basis', baseId: String(basisSourceRow),
-    selections: { verarbeitung: String(verarbeitungSourceRow), anpassung: String(anpassungSourceRow) },
-    quantity: 1, computedPriceSnapshot: composed.preis,
+  candidate.ruestungSlots[ruestungSlotKey(gruppe, lage)] = {
+    basisSourceRow, verarbeitungSourceRow, anpassungSourceRow,
+    computedPriceSnapshot: composed.preis,
     computedStatsSnapshot: {
       rs: composed.rs, rh: composed.rh,
       verfuegbarkeitNw: composed.verfuegbarkeitNw, verfuegbarkeitAw: composed.verfuegbarkeitAw,
     },
   };
-  candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);
+  return candidate;
+}
+
+/** Entfernt ein ausgeruestetes Ruestungsteil aus seinem Slot - macht das Budget nie schlechter,
+ *  keine Pruefung noetig (analog removeEquipment/removeSelection). No-op, wenn der Slot leer ist. */
+export function unequipRuestung(character: CharacterState, gruppe: RsGruppe, lage: number): CharacterState {
+  const candidate = clone(character);
+  delete candidate.ruestungSlots[ruestungSlotKey(gruppe, lage)];
   return candidate;
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createCharacter, STARTBUDGET_PRESETS, getLastActiveCharacterId, setLastActiveCharacterId } from './characterStore';
+import { createCharacter, loadCharacter, STARTBUDGET_PRESETS, getLastActiveCharacterId, setLastActiveCharacterId } from './characterStore';
 import { updateHeader } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
 
@@ -69,6 +69,21 @@ describe('createCharacter mit Charakterheader + Startbudget', () => {
     // Dalkini: Willenskraft Erstellungs-Min=15, Staerke Erstellungs-Min=11 (beide != 10)
     expect(character.values['eig_g_willenskraft']).toBe(15);
     expect(character.values['eig_k_staerke']).toBe(11);
+  });
+});
+
+describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlots-Feld neu, alte localStorage-Charaktere hatten es nicht)', () => {
+  it('ergaenzt ein fehlendes ruestungSlots-Feld beim Laden statt beim naechsten computeSheet zu werfen', () => {
+    const id = 'alt-charakter-vor-ruestungslots';
+    const ohneRuestungSlots = {
+      id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {}, selections: {}, poolAllocations: {}, equipment: [],
+      // kein ruestungSlots-Feld - so sahen gespeicherte Charaktere vor diesem Feature aus.
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(ohneRuestungSlots));
+    const loaded = loadCharacter(id);
+    expect(loaded?.ruestungSlots).toEqual({});
+    expect(() => computeSheet(loaded!)).not.toThrow();
   });
 });
 

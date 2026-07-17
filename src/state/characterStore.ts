@@ -2,6 +2,7 @@
 // siehe AGENTS.md). Mehrere Charaktere = mehrere Keys + eine Index-Liste.
 
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
+import type { RsGruppe } from '../data/trefferzonen';
 
 export interface PoolAllocation {
   gat: number;
@@ -12,13 +13,33 @@ export interface PoolAllocation {
 
 export interface EquipmentEntry {
   id: string;
-  family: 'weapon' | 'armor' | 'shield' | 'preisliste' | 'artefakt' | 'ammo';
+  family: 'weapon' | 'shield' | 'preisliste' | 'artefakt' | 'ammo';
   baseTable: string;
   baseId: string;
   selections: Record<string, string>;
   quantity: number;
   computedPriceSnapshot?: number;
   computedStatsSnapshot?: Record<string, number>;
+}
+
+/**
+ * Ein ausgeruestetes Ruestungsteil in genau einem festen Slot (Regel Nutzer 2026-07-17:
+ * "im character state muss die ruestung erfasst werden" + "feste Slots: TZ-Gruppe x Lage").
+ * Slot-Key = `${gruppe}:${lage}` (siehe ruestungSlotKey) - jede der 4 TZ-Gruppen (Kopf/Torso/
+ * Arme/Beine) hat 5 Lage-Slots (1-5, Lage 0 "Kleidung" bewusst NICHT modelliert, da RS/RH dort
+ * immer 0 sind und daher keine Kaufoption braucht). Ausruesten ueberschreibt einen belegten
+ * Slot, nie zwei Teile gleichzeitig in derselben Lage+Zone.
+ */
+export interface RuestungSlotEntry {
+  basisSourceRow: number;
+  verarbeitungSourceRow: number;
+  anpassungSourceRow: number;
+  computedPriceSnapshot: number;
+  computedStatsSnapshot: { rs: number; rh: number; verfuegbarkeitNw: number; verfuegbarkeitAw: number };
+}
+
+export function ruestungSlotKey(gruppe: RsGruppe, lage: number): string {
+  return `${gruppe}:${lage}`;
 }
 
 /** Werte, die den Charakter AUSMACHEN (reine Identitaet/Flavor, kein Punktekauf-Bezug) -
@@ -53,6 +74,10 @@ export interface CharacterState extends CharacterHeader {
   selections: Record<string, number>;
   poolAllocations: Record<string, PoolAllocation>;
   equipment: EquipmentEntry[];
+  /** Ausgeruestete Ruestung, ein Eintrag je belegtem Slot (`${gruppe}:${lage}` - siehe
+   *  ruestungSlotKey). Getrennt von `equipment`, da Ruestung an feste Slots gebunden ist,
+   *  waehrend `equipment` eine freie Liste ohne Zonen-/Lagen-Beschraenkung bleibt. */
+  ruestungSlots: Record<string, RuestungSlotEntry>;
 }
 
 /**
@@ -129,7 +154,11 @@ export function listCharacters(): Array<{ id: string; name: string }> {
 export function loadCharacter(id: string): CharacterState | null {
   const raw = localStorage.getItem(characterKey(id));
   if (!raw) return null;
-  return JSON.parse(raw) as CharacterState;
+  const parsed = JSON.parse(raw) as CharacterState;
+  // Migrations-Fallback fuer bereits in localStorage gespeicherte Charaktere von vor dem
+  // ruestungSlots-Feld (2026-07-17) - ohne das wirft computeSheet beim Laden alter Charaktere.
+  if (!parsed.ruestungSlots) parsed.ruestungSlots = {};
+  return parsed;
 }
 
 export function saveCharacter(state: CharacterState): void {
@@ -170,6 +199,7 @@ export function createCharacter(
     selections: {},
     poolAllocations: {},
     equipment: [],
+    ruestungSlots: {},
   };
   if (startbudget) {
     const preset = STARTBUDGET_PRESETS[startbudget];

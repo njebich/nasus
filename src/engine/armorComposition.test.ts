@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { composeArmor, computeRbe } from './armorComposition';
-import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
+import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG, type GenericRow } from '../data/equipment/armor';
 
 describe('composeArmor', () => {
   it('reproduziert das im Entwickeln-Sheet dokumentierte Beispiel exakt (alle 5 Werte)', () => {
@@ -20,6 +20,20 @@ describe('composeArmor', () => {
     const result = composeArmor(basis, gesellenarbeit, perfekt);
     // BE-Basis+Mods = 1+0-2 = -1, aber Lage=1 ist die Untergrenze -> MAX(1;-1) = 1
     expect(result.rh).toBe(1);
+  });
+
+  it('Lage 5 (Umhaenge/Aufpanzerungen) ist von der Lage-Mindest-RH-Regel ausgenommen (Nutzer 2026-07-17)', () => {
+    // Noch keine echten Lage-5-Zeilen in Ruestung-Basis (Drachenschuppen/Spinnweben stehen noch
+    // aus) - synthetische Zeile, um die Ausnahme unabhaengig von den Echtdaten zu testen.
+    const lage5Basis = (
+      { sourceRow: -1, name: 'Test-Umhang', Lage: '5', 'RS-Basis': '2', 'BE-Basis': '1' } as unknown
+    ) as GenericRow;
+    const gesellenarbeit = RUESTUNG_VERARBEITUNG.find((r) => r.name === 'Gesellenarbeit')!; // kein BE-Mod
+    const perfekt = RUESTUNG_ANPASSUNG.find((r) => r.name === 'perfekt angepasst')!; // BE-Mod=-2
+    const result = composeArmor(lage5Basis, gesellenarbeit, perfekt);
+    // BE-Basis+Mods = 1+0-2 = -1 - bei Lage<5 waere das auf 5 (Lage-Untergrenze) angehoben,
+    // aber Lage 5 ist ausgenommen, also gilt der reine Tabellenwert -1 unveraendert.
+    expect(result.rh).toBe(-1);
   });
 });
 

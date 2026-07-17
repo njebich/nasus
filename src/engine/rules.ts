@@ -9,6 +9,7 @@ import { evalAst, type Value, type EvalContext, EvalError } from './evaluator';
 import { aufrunden } from './functions';
 import { normalizeForMatch } from './normalize';
 import { computeRbe } from './armorComposition';
+import type { RsGruppe } from '../data/trefferzonen';
 
 const byReferenz = new Map<string, RuleEntry>();
 for (const rule of RULES) {
@@ -70,6 +71,13 @@ function parseCached(key: string, source: string): AstNode | null {
 /** Gibt den Wert einer Art='Wert'-Regel fuer den aktuellen Charakter (Default 0). */
 export interface CharacterValueSource {
   getWert(referenz: string): number;
+  /** Summe der RS ueber die 5 Lage-Slots einer TZ-Gruppe (rs_kopf/rs_torso/rs_arme/rs_beine
+   *  unten) - optional, da nur `characterSheet.ts`'s makeValueSource sie implementiert
+   *  (Formel-Engine-Tests mit einer minimalen values()-Stub-Source brauchen sie nicht). */
+  getRsGruppe?(gruppe: RsGruppe): number;
+  /** RHg: Summe der RH ueber ALLE Ruestungs-Slots (alle TZ-Gruppen x Lagen) - siehe
+   *  computeGewichtsbelastungRbe unten. Optional aus demselben Grund wie getRsGruppe. */
+  getRhGesamt?(): number;
 }
 
 export class CycleError extends EvalError {
@@ -111,21 +119,28 @@ function applyZeroFloor(referenz: string, value: Value): Value {
 
 /**
  * Gewichtsbelastung (GBE, Formel "MAX(0;RBE)") referenziert RBE (Ruestungsbehinderung), die
- * selbst von RHg abhaengt (Summe der Ruestungshinderlichkeit ueber alle getragenen Lagen und
- * Trefferzonen - siehe engine/armorComposition.ts). RHg braucht Ausruestung-pro-Trefferzone-
- * Tracking, das ist Kampfmodul-Scope (Tool 2), noch nicht Teil der Charaktererstellung. Bis
- * dahin wird RHg als Platzhalter fest mit 0 angenommen ("unbelastet"/keine Ruestung erfasst) und
- * RBE ueber die echte Formel computeRbe(RHg=0; Kon; Staerke; sf_ruestungsmanoever) berechnet
- * (siehe extraVars-Fall 'Formel' unten) - damit bleibt GBE zwar praktisch weiterhin 0 (RBE wird
- * bei RHg=0 nie positiv), aber ueber die reale Formel statt eines pauschalen Overrides.
+ * selbst von RHg abhaengt (Summe der Ruestungshinderlichkeit ueber ALLE getragenen Lagen und
+ * Trefferzonen - siehe engine/armorComposition.ts). Seit Nutzer 2026-07-17 ("im character state
+ * muss die ruestung erfasst werden") wird RHg live aus den echten Ruestungs-Slots berechnet
+ * (characterSheet.ts's makeValueSource().getRhGesamt()) statt eines Platzhalters.
  */
 function computeGewichtsbelastungRbe(state: EvalRunState): number {
-  const rhg = 0;
+  const rhg = state.values.getRhGesamt?.() ?? 0;
   const kon = Number(evalReferenzInternal('eig_k_konstitution', state));
   const staerke = Number(evalReferenzInternal('eig_k_staerke', state));
   const sfRuestungsmanoever = Number(evalReferenzInternal('sf_ruestungsmanoever', state));
   return computeRbe(rhg, kon, staerke, sfRuestungsmanoever);
 }
+
+/**
+ * rs_kopf/rs_torso/rs_arme/rs_beine (Nutzer 2026-07-17): deren xlsx-Formel ist reine Prosa
+ * ("SUMME(RS der 5 Ruestungslagen in Zone kopf)", siehe rules.parseAll.test.ts
+ * KNOWN_UNPARSEABLE) - die Engine parst sie nie, sondern liest hier direkt die echte Summe aus
+ * den Ruestungs-Slots (characterSheet.ts's makeValueSource().getRsGruppe()).
+ */
+const RS_GRUPPEN_REFERENZEN: Record<string, RsGruppe> = {
+  rs_kopf: 'kopf', rs_torso: 'torso', rs_arme: 'arme', rs_beine: 'beine',
+};
 
 interface EvalRunState {
   memo: Map<string, Value>;
@@ -165,6 +180,10 @@ function evalReferenzInternal(referenz: string, state: EvalRunState): Value {
           + 'nicht als Formel-Variable auswertbar',
         );
       case 'Formel': {
+        if (key in RS_GRUPPEN_REFERENZEN) {
+          result = state.values.getRsGruppe?.(RS_GRUPPEN_REFERENZEN[key]) ?? 0;
+          break;
+        }
         if (!rule.formelRaw) throw new EvalError(`Regel '${referenz}' ist Art=Formel, hat aber keine Formel`);
         const extraVars = key === 'gewichtsbelastung' ? { rbe: computeGewichtsbelastungRbe(state) } : undefined;
         result = evalFormulaWith(rule.formelRaw, `formel::${key}`, state, extraVars);

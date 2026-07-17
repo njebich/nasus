@@ -4,7 +4,8 @@
 // plus "Mein Inventar". Keine Markt-Kontext-Faktoren angewendet (siehe equipmentPricing.ts).
 
 import type { ComputedSheet } from '../engine/characterSheet';
-import type { CharacterState } from '../state/characterStore';
+import { ruestungSlotKey, type CharacterState } from '../state/characterStore';
+import type { RsGruppe } from '../data/trefferzonen';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
@@ -15,7 +16,10 @@ import { composeArmor } from '../engine/armorComposition';
 export interface AusruestungCallbacks {
   onBuyPreisliste: (sourceRow: number, quantity: number) => void;
   onBuyArtefakt: (referenz: string, grad: string, variant: ArtefaktVariant) => void;
-  onBuyArmor: (basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number) => void;
+  onEquipRuestung: (
+    gruppe: RsGruppe, lage: number, basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number,
+  ) => void;
+  onUnequipRuestung: (gruppe: RsGruppe, lage: number) => void;
   onBuyShield: (sourceRow: number) => void;
   onRemoveEquipment: (equipmentId: string) => void;
 }
@@ -32,9 +36,28 @@ const WEAPON_HAUPTFERTIGKEITEN = [...new Set(WEAPONS.map((r) => r['Hauptfertigke
 let selectedArt = PREISLISTE_ARTEN[0] ?? '';
 let searchText = '';
 let selectedHauptfertigkeit = WEAPON_HAUPTFERTIGKEITEN[0] ?? '';
-let armorBasisRow = RUESTUNG_BASIS[0]?.sourceRow ?? 0;
-let armorVerarbeitungRow = RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0;
-let armorAnpassungRow = RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0;
+
+// TZ-Gruppen x Lagen (Regel Nutzer 2026-07-17: "im character state muss die ruestung erfasst
+// werden" + "feste Slots: TZ-Gruppe x Lage"). Lage 0 (Kleidung) bewusst kein Slot, siehe
+// characterStore.ts. Beschriftung wie auf dem Charakterblatt ("nur Kopf/Torso/Arme/Beine
+// genannt, Zuordnung ist den Spielern bekannt").
+const RS_GRUPPEN: ReadonlyArray<{ gruppe: RsGruppe; label: string }> = [
+  { gruppe: 'kopf', label: 'Kopf' },
+  { gruppe: 'torso', label: 'Torso' },
+  { gruppe: 'arme', label: 'Arme' },
+  { gruppe: 'beine', label: 'Beine' },
+];
+const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
+
+/** Transiente Picker-Auswahl je unbelegtem Slot (ueberlebt Re-Renders, bis "Ausruesten" geklickt
+ *  wird) - analog zum frueheren globalen armorBasisRow/.../-Muster, jetzt aber pro Slot. */
+const slotPicker = new Map<string, { basisSourceRow: number; verarbeitungSourceRow: number; anpassungSourceRow: number }>();
+
+/** Welche Ruestungs-Gruppen (Kopf/Torso/Arme/Beine) der Spieler aufgeklappt hat - wie
+ *  categoryView.ts's openGroupReferenzen: <details> hat keinen persistenten Zustand ueber ein
+ *  komplettes Neu-Rendern hinweg, ohne das klappt die Gruppe bei jeder Aenderung (Dropdown-
+ *  Wechsel, Ausruesten, ...) faelschlich wieder zu. */
+const openGruppen = new Set<RsGruppe>();
 
 function renderPreislisteRow(row: (typeof PREISLISTE)[number]): string {
   const price = previewPreislistePrice(row, 1);
@@ -74,28 +97,75 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number]): string {
     </div>`;
 }
 
-function renderArmorPicker(): string {
-  const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === armorBasisRow) ?? RUESTUNG_BASIS[0];
-  const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === armorVerarbeitungRow) ?? RUESTUNG_VERARBEITUNG[0];
-  const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === armorAnpassungRow) ?? RUESTUNG_ANPASSUNG[0];
+function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: CharacterState): string {
+  const key = ruestungSlotKey(gruppe, lage);
+  const equipped = character.ruestungSlots[key];
+
+  if (equipped) {
+    const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === equipped.basisSourceRow);
+    const stats = equipped.computedStatsSnapshot;
+    return `
+      <div class="ruestung-slot-row" data-slot="${key}">
+        <span class="stat-label">Lage ${lage}: ${escapeHtml(basis?.name ?? '?')}</span>
+        <span class="stat-cost">RS ${stats.rs} | RH ${stats.rh} | ${equipped.computedPriceSnapshot} D</span>
+        <button type="button" class="ruestung-unequip" data-gruppe="${gruppe}" data-lage="${lage}">Ausziehen</button>
+      </div>`;
+  }
+
+  const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
+  if (optionen.length === 0) {
+    // Lage 5 (Drachenschuppen/Spinnweben) hat noch keine Daten in Ruestung-Basis - Slot ist
+    // strukturell vorbereitet, aber ohne Kaufoption bis die Daten+Sonderregeln stehen.
+    return `
+      <div class="ruestung-slot-row">
+        <span class="stat-label">Lage ${lage}: (noch keine Optionen hinterlegt)</span>
+      </div>`;
+  }
+
+  const sel = slotPicker.get(key) ?? {
+    basisSourceRow: optionen[0].sourceRow,
+    verarbeitungSourceRow: RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0,
+    anpassungSourceRow: RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0,
+  };
+  const basis = optionen.find((r) => r.sourceRow === sel.basisSourceRow) ?? optionen[0];
+  const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === sel.verarbeitungSourceRow) ?? RUESTUNG_VERARBEITUNG[0];
+  const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === sel.anpassungSourceRow) ?? RUESTUNG_ANPASSUNG[0];
   const composed = composeArmor(basis, verarbeitung, anpassung);
 
   return `
-    <div class="ausruestung-filters">
-      <select id="armor-basis-select">
-        ${RUESTUNG_BASIS.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === basis.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
+    <div class="ruestung-slot-row" data-slot="${key}" data-gruppe="${gruppe}" data-lage="${lage}">
+      <span class="stat-label">Lage ${lage}</span>
+      <select class="ruestung-basis-select" data-slot="${key}">
+        ${optionen.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === basis.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
       </select>
-      <select id="armor-verarbeitung-select">
+      <select class="ruestung-verarbeitung-select" data-slot="${key}">
         ${RUESTUNG_VERARBEITUNG.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === verarbeitung.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
       </select>
-      <select id="armor-anpassung-select">
+      <select class="ruestung-anpassung-select" data-slot="${key}">
         ${RUESTUNG_ANPASSUNG.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === anpassung.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
       </select>
-    </div>
-    <div class="pool-budget">
-      RS ${composed.rs} | RH ${composed.rh} | Preis ${composed.preis} D | Verfügbarkeit NW ${composed.verfuegbarkeitNw} / AW ${composed.verfuegbarkeitAw}
-    </div>
-    <button type="button" id="armor-buy">Kaufen</button>`;
+      <span class="stat-cost">RS ${composed.rs} | RH ${composed.rh} | ${composed.preis} D</span>
+      <button type="button" class="ruestung-equip" data-gruppe="${gruppe}" data-lage="${lage}">Ausrüsten</button>
+    </div>`;
+}
+
+function renderRuestungGruppe(gruppe: RsGruppe, label: string, character: CharacterState): string {
+  const gesamtRs = RUESTUNG_LAGEN.reduce(
+    (sum, lage) => sum + (character.ruestungSlots[ruestungSlotKey(gruppe, lage)]?.computedStatsSnapshot.rs ?? 0), 0,
+  );
+  const gesamtRh = RUESTUNG_LAGEN.reduce(
+    (sum, lage) => sum + (character.ruestungSlots[ruestungSlotKey(gruppe, lage)]?.computedStatsSnapshot.rh ?? 0), 0,
+  );
+  const openAttr = openGruppen.has(gruppe) ? ' open' : '';
+  return `
+    <div class="stat-card">
+      <details class="stat-group" data-gruppe="${gruppe}"${openAttr}>
+        <summary>${label} <span class="stat-group-count">(RS ${gesamtRs} | RH ${gesamtRh})</span></summary>
+        <div class="stat-subgroup">
+          ${RUESTUNG_LAGEN.map((lage) => renderRuestungSlotRow(gruppe, lage, character)).join('')}
+        </div>
+      </details>
+    </div>`;
 }
 
 function renderShieldRow(row: (typeof SHIELDS)[number]): string {
@@ -130,10 +200,6 @@ function renderInventar(character: CharacterState): string {
     } else if (e.family === 'artefakt') {
       const kostenRow = ARTEFAKT_KOSTEN.find((r) => String(r.sourceRow) === e.baseId);
       label = kostenRow ? `${kostenRow.name} Grad ${kostenRow.grad} (${e.selections.variant})` : label;
-    } else if (e.family === 'armor') {
-      const row = RUESTUNG_BASIS.find((r) => String(r.sourceRow) === e.baseId);
-      const stats = e.computedStatsSnapshot;
-      label = row ? `${row.name} (RS ${stats?.rs}, RH ${stats?.rh})` : label;
     } else if (e.family === 'shield') {
       const row = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;
@@ -158,12 +224,22 @@ export function renderAusruestungView(
     .filter((r) => !searchText || (r.name ?? '').toLowerCase().includes(searchText.toLowerCase()));
   const filteredWeapons = WEAPONS.filter((r) => r['Hauptfertigkeit'] === selectedHauptfertigkeit);
 
+  // Aufklapp-Zustand der Ruestungs-Gruppen aus dem NOCH ALTEN DOM sichern, bevor er gleich durch
+  // innerHTML ueberschrieben wird - sonst klappt jede Aenderung (Dropdown, Ausruesten, Kaufen,
+  // ...) die gerade geoeffnete Gruppe faelschlich wieder zu (gleicher Bug wie zuvor in
+  // categoryView.ts, hier aber am Renderer-Einstieg statt vor jedem einzelnen Handler behoben).
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-gruppe]').forEach((details) => {
+    const gruppe = details.dataset.gruppe as RsGruppe;
+    if (details.open) openGruppen.add(gruppe);
+    else openGruppen.delete(gruppe);
+  });
+
   container.innerHTML = `
     <h3 class="stat-section-heading">Mein Inventar</h3>
     <div class="inventar-category">${renderInventar(character)}</div>
 
     <h3 class="stat-section-heading">Rüstung</h3>
-    ${renderArmorPicker()}
+    <div class="stat-category">${RS_GRUPPEN.map(({ gruppe, label }) => renderRuestungGruppe(gruppe, label, character)).join('')}</div>
 
     <h3 class="stat-section-heading">Schilde</h3>
     <div class="ausruestung-category">${SHIELDS.map(renderShieldRow).join('')}</div>
@@ -203,20 +279,45 @@ export function renderAusruestungView(
     selectedHauptfertigkeit = (e.target as HTMLSelectElement).value;
     renderAusruestungView(container, sheet, character, callbacks);
   });
-  document.getElementById('armor-basis-select')?.addEventListener('change', (e) => {
-    armorBasisRow = Number((e.target as HTMLSelectElement).value);
+  // Liest die aktuell angezeigten Werte aller 3 Dropdowns einer Slot-Zeile aus dem DOM, damit
+  // ein einzelnes "change" (z.B. nur Verarbeitung) die anderen beiden nicht auf Zeile-0 zuruecksetzt.
+  function updateSlotPicker(slotKey: string, patch: Partial<{ basisSourceRow: number; verarbeitungSourceRow: number; anpassungSourceRow: number }>): void {
+    const row = container.querySelector<HTMLElement>(`.ruestung-slot-row[data-slot="${slotKey}"]`);
+    const readSelect = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
+    slotPicker.set(slotKey, {
+      basisSourceRow: readSelect('ruestung-basis-select'),
+      verarbeitungSourceRow: readSelect('ruestung-verarbeitung-select'),
+      anpassungSourceRow: readSelect('ruestung-anpassung-select'),
+      ...patch,
+    });
     renderAusruestungView(container, sheet, character, callbacks);
+  }
+  container.querySelectorAll<HTMLSelectElement>('.ruestung-basis-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateSlotPicker(sel.dataset.slot!, { basisSourceRow: Number(sel.value) }));
   });
-  document.getElementById('armor-verarbeitung-select')?.addEventListener('change', (e) => {
-    armorVerarbeitungRow = Number((e.target as HTMLSelectElement).value);
-    renderAusruestungView(container, sheet, character, callbacks);
+  container.querySelectorAll<HTMLSelectElement>('.ruestung-verarbeitung-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateSlotPicker(sel.dataset.slot!, { verarbeitungSourceRow: Number(sel.value) }));
   });
-  document.getElementById('armor-anpassung-select')?.addEventListener('change', (e) => {
-    armorAnpassungRow = Number((e.target as HTMLSelectElement).value);
-    renderAusruestungView(container, sheet, character, callbacks);
+  container.querySelectorAll<HTMLSelectElement>('.ruestung-anpassung-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateSlotPicker(sel.dataset.slot!, { anpassungSourceRow: Number(sel.value) }));
   });
-  document.getElementById('armor-buy')?.addEventListener('click', () => {
-    callbacks.onBuyArmor(armorBasisRow, armorVerarbeitungRow, armorAnpassungRow);
+  container.querySelectorAll<HTMLButtonElement>('.ruestung-equip').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const gruppe = btn.dataset.gruppe as RsGruppe;
+      const lage = Number(btn.dataset.lage);
+      const sel = slotPicker.get(ruestungSlotKey(gruppe, lage));
+      const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
+      const basisSourceRow = sel?.basisSourceRow ?? optionen[0]?.sourceRow;
+      const verarbeitungSourceRow = sel?.verarbeitungSourceRow ?? RUESTUNG_VERARBEITUNG[0]?.sourceRow;
+      const anpassungSourceRow = sel?.anpassungSourceRow ?? RUESTUNG_ANPASSUNG[0]?.sourceRow;
+      if (basisSourceRow === undefined || verarbeitungSourceRow === undefined || anpassungSourceRow === undefined) return;
+      callbacks.onEquipRuestung(gruppe, lage, basisSourceRow, verarbeitungSourceRow, anpassungSourceRow);
+    });
+  });
+  container.querySelectorAll<HTMLButtonElement>('.ruestung-unequip').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      callbacks.onUnequipRuestung(btn.dataset.gruppe as RsGruppe, Number(btn.dataset.lage));
+    });
   });
 
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy').forEach((btn) => {

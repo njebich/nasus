@@ -44,7 +44,11 @@ export function composeArmor(basis: GenericRow, verarbeitung: GenericRow, anpass
   const zusaetzlicheTage = num(anpassung, 'Zusaetzliche-Tage');
 
   const rs = rsBasis + rsModVerarbeitung;
-  const rh = Math.max(lage, rhBasis + rhModVerarbeitung + rhModAnpassung);
+  // Regel Nutzer 2026-07-17: "Jedes Ruestungsteil hat seine Lage als Mindest-RH. Lage 5
+  // (Umhaenge, Aufpanzerungen) sind hiervon ausgenommen, hier gilt der in der Tabelle
+  // angegebene Wert." - der Lage-Mindestwert (Math.max) gilt also NUR fuer Lage 0-4.
+  const rhOhneFloor = rhBasis + rhModVerarbeitung + rhModAnpassung;
+  const rh = lage === 5 ? rhOhneFloor : Math.max(lage, rhOhneFloor);
   const preis = materialkosten + lohnProTag * (arbeitszeitBasis + zusaetzlicheTage);
   const verfuegbarkeitNw = Math.max(
     num(basis, 'Verfuegbarkeit-NW'), num(verarbeitung, 'Verfuegbarkeit-NW'), num(anpassung, 'Verfuegbarkeit-NW'),

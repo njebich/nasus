@@ -12,8 +12,11 @@ import { RULES, type RuleEntry } from '../data/rules';
 import { LOOKUP_TABLES } from '../data/lookups';
 import { evalReferenz, evalKostenFor, type CharacterValueSource } from './rules';
 import { getPoolCapBasis, computeGutMax, computeMeisterlichMax } from './poolCaps';
-import type { CharacterState, PoolAllocation } from '../state/characterStore';
+import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry } from '../state/characterStore';
+import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
+
+const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
 
 const TAP_KATEGORIE = 'Talente';
 
@@ -80,6 +83,10 @@ function computeNextStufeThreshold(epGesamt: number): number | undefined {
   return next;
 }
 
+function ruestungSlotEntries(character: CharacterState): RuestungSlotEntry[] {
+  return Object.values(character.ruestungSlots);
+}
+
 export function makeValueSource(character: CharacterState): CharacterValueSource {
   return {
     getWert(referenz: string): number {
@@ -87,6 +94,19 @@ export function makeValueSource(character: CharacterState): CharacterValueSource
       if (key in character.values) return character.values[key];
       if (key in character.selections) return character.selections[key];
       return 0;
+    },
+    // rs_kopf/rs_torso/rs_arme/rs_beine (Regel Nutzer 2026-07-17): "SUMME(RS der 5
+    // Ruestungslagen in Zone X)" - Summe der RS ueber alle 5 Lage-Slots dieser TZ-Gruppe.
+    getRsGruppe(gruppe: RsGruppe): number {
+      return RUESTUNG_LAGEN.reduce(
+        (sum, lage) => sum + (character.ruestungSlots[ruestungSlotKey(gruppe, lage)]?.computedStatsSnapshot.rs ?? 0),
+        0,
+      );
+    },
+    // RHg (Regel Nutzer 2026-07-17): "Die RH aller Lagen und aller TZ wird addiert zur RH
+    // gesamt RHg" - Summe der RH ueber ALLE Slots (alle 4 TZ-Gruppen x 5 Lagen zusammen).
+    getRhGesamt(): number {
+      return ruestungSlotEntries(character).reduce((sum, e) => sum + e.computedStatsSnapshot.rh, 0);
     },
   };
 }
@@ -204,7 +224,7 @@ export function computeSheet(character: CharacterState): ComputedSheet {
 
   const dublonenSpent = character.equipment.reduce(
     (sum, e) => sum + (e.computedPriceSnapshot ?? 0) * e.quantity, 0,
-  );
+  ) + ruestungSlotEntries(character).reduce((sum, e) => sum + e.computedPriceSnapshot, 0);
   const dublonenBar = character.values['dublonen_bar'] ?? 0;
   const dublonenBank = character.values['dublonen_bank'] ?? 0;
   const dublonenBarRemaining = Math.max(0, dublonenBar - dublonenSpent);

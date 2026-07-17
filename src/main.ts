@@ -6,7 +6,7 @@ import {
 } from './state/characterStore';
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
-  buyPreislisteItem, buyArtefakt, buyArmor, buyShield, removeEquipment, BudgetError, MutationError,
+  buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, removeEquipment, BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
@@ -17,6 +17,7 @@ import { renderCharakterbogen } from './views/charakterbogen';
 import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
+import type { RsGruppe } from './data/trefferzonen';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -106,15 +107,25 @@ function handleBuyArtefakt(referenz: string, grad: string, variant: ArtefaktVari
   render();
 }
 
-function handleBuyArmor(basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number): void {
+function handleEquipRuestung(
+  gruppe: RsGruppe, lage: number, basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number,
+): void {
   if (!currentCharacter) return;
   try {
-    currentCharacter = buyArmor(currentCharacter, basisSourceRow, verarbeitungSourceRow, anpassungSourceRow);
+    currentCharacter = equipRuestung(currentCharacter, gruppe, lage, basisSourceRow, verarbeitungSourceRow, anpassungSourceRow);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
     errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
   }
+  render();
+}
+
+function handleUnequipRuestung(gruppe: RsGruppe, lage: number): void {
+  if (!currentCharacter) return;
+  currentCharacter = unequipRuestung(currentCharacter, gruppe, lage);
+  saveCharacter(currentCharacter);
+  errorMessage = '';
   render();
 }
 
@@ -284,7 +295,8 @@ function render(): void {
       renderAusruestungView(viewContainer, sheet, currentCharacter, {
         onBuyPreisliste: handleBuyPreisliste,
         onBuyArtefakt: handleBuyArtefakt,
-        onBuyArmor: handleBuyArmor,
+        onEquipRuestung: handleEquipRuestung,
+        onUnequipRuestung: handleUnequipRuestung,
         onBuyShield: handleBuyShield,
         onRemoveEquipment: handleRemoveEquipment,
       });

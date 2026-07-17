@@ -8,9 +8,11 @@ import { computeSheet, makeValueSource } from '../engine/characterSheet';
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
+import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
+import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 import type { RsGruppe } from '../data/trefferzonen';
 import { ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry } from './characterStore';
@@ -240,19 +242,50 @@ export function unequipRuestung(character: CharacterState, gruppe: RsGruppe, lag
   return candidate;
 }
 
-export function buyShield(character: CharacterState, sourceRow: number): CharacterState {
+/**
+ * Kauft ein Schild, komponiert aus Basis x Material x Fertigung x Bespannung (Regel Nutzer
+ * 2026-07-17: "die haben auch Anpassung"). Schild-RS wird bewusst NICHT in rs_arme eingerechnet
+ * (Regel Nutzer 2026-07-17: "Rüstung wird immer für beide Arme gekauft ... lassen wir den
+ * Schild also aus der Basis-RS-Berechnung raus" - die Anrechnung auf den linken Arm bei
+ * misslungener Parade ist Kampfmodul-Scope), bleibt aber im computedStatsSnapshot sichtbar.
+ */
+export function buyShield(
+  character: CharacterState, sourceRow: number,
+  materialSourceRow: number, fertigungSourceRow: number, bespannungSourceRow: number,
+): CharacterState {
   const row = NK_WAFFEN_BASIS.find((r) => r.sourceRow === sourceRow);
   if (!row) throw new MutationError(`Schild (Zeile ${sourceRow}) existiert nicht`);
   if (row['Spezialisierung'] !== 'Schild') throw new MutationError(`'${row.name}' ist kein Schild`);
 
-  const raw = row['Preis-Basis'];
-  const price = raw !== undefined ? Number(raw.replace(',', '.')) : NaN;
-  if (!Number.isFinite(price)) throw new MutationError(`Kein Preis-Basis fuer '${row.name}' hinterlegt`);
+  const material = SCHILD_MATERIAL.find((r) => r.sourceRow === materialSourceRow);
+  const fertigung = SCHILD_FERTIGUNG.find((r) => r.sourceRow === fertigungSourceRow);
+  const bespannung = SCHILD_BESPANNUNG.find((r) => r.sourceRow === bespannungSourceRow);
+  if (!material) throw new MutationError(`Schild-Material (Zeile ${materialSourceRow}) existiert nicht`);
+  if (!fertigung) throw new MutationError(`Schild-Fertigung (Zeile ${fertigungSourceRow}) existiert nicht`);
+  if (!bespannung) throw new MutationError(`Schild-Bespannung (Zeile ${bespannungSourceRow}) existiert nicht`);
+  if (!istSchildKomponenteVerfuegbar(material.name, character.spezies)) {
+    throw new MutationError(`Material '${material.name}' ist nur fuer Zentauren verfuegbar`);
+  }
+  if (!istSchildKomponenteVerfuegbar(bespannung.name, character.spezies)) {
+    throw new MutationError(`Bespannung '${bespannung.name}' ist nur fuer Zentauren verfuegbar`);
+  }
+
+  const composed = composeShield(row, material, fertigung, bespannung);
+  if (composed.preis === null) {
+    throw new MutationError(`Kein automatischer Preis fuer diese Kombination (Materialpreis liegt im Ermessen der Spielleitung)`);
+  }
 
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'shield', baseTable: 'nk_waffen_basis', baseId: String(sourceRow),
-    selections: {}, quantity: 1, computedPriceSnapshot: price,
+    selections: {
+      material: String(materialSourceRow), fertigung: String(fertigungSourceRow), bespannung: String(bespannungSourceRow),
+    },
+    quantity: 1, computedPriceSnapshot: composed.preis,
+    computedStatsSnapshot: {
+      rs: composed.rs, klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz,
+      at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus, minStaerke: composed.minStaerke,
+    },
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);

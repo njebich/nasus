@@ -519,6 +519,29 @@ def write_armor_ts(wb):
     )
 
 
+def write_shields_ts(wb):
+    # Schild-Komposition (Nutzer 2026-07-17): "die haben auch Anpassung" - Material x Fertigung
+    # x Bespannung, analog zu Ruestung-Basis x -Verarbeitung x -Anpassung. Schild-Verplatung
+    # (nur Holzschilde) bewusst NICHT gelesen - Stub-Sheet ohne Werte (siehe Entwickeln-Sheet),
+    # auf Nutzerwunsch vorerst weggelassen.
+    material = read_generic_rows(wb, "Schild-Material", "Material")
+    fertigung = read_generic_rows(wb, "Schild-Fertigung", "Fertigung")
+    bespannung = read_generic_rows(wb, "Schild-Bespannung", "Bespannung")
+    data = {"material": material, "fertigung": fertigung, "bespannung": bespannung}
+    path = write_json_backed_module(
+        OUT_EQUIPMENT_DIR, "shields", "SHIELDS_RAW", GENERIC_ROW_TYPE_LINES,
+        "{ material: GenericRow[]; fertigung: GenericRow[]; bespannung: GenericRow[] }", data,
+    )
+    with open(OUT_EQUIPMENT_DIR / "shields.ts", "a", encoding="utf-8") as f:
+        f.write("export const SCHILD_MATERIAL = SHIELDS_RAW.material;\n")
+        f.write("export const SCHILD_FERTIGUNG = SHIELDS_RAW.fertigung;\n")
+        f.write("export const SCHILD_BESPANNUNG = SHIELDS_RAW.bespannung;\n")
+    print(
+        f"{path}: {len(material)} Schild-Material, {len(fertigung)} Schild-Fertigung, "
+        f"{len(bespannung)} Schild-Bespannung geschrieben."
+    )
+
+
 def write_voelker_maxima_ts(wb):
     # Eigenschaften-Min/Max je Volk (Nutzer 2026-07-17, werte 0.8): Erstellungs-Min/-Max gelten
     # waehrend der Charaktererstellung, "Max (ab Kreis 3)" (einheitlich 31) danach - siehe
@@ -580,6 +603,7 @@ def main(xlsx_path):
     write_verfuegbarkeit_ts(wb)
     write_weapons_ts(wb)
     write_armor_ts(wb)
+    write_shields_ts(wb)
     write_voelker_maxima_ts(wb)
 
 

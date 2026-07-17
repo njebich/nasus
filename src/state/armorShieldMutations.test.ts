@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { createCharacter } from './characterStore';
 import { equipRuestung, unequipRuestung, buyShield, removeEquipment, BudgetError, MutationError } from './characterMutations';
 import { computeSheet, makeValueSource } from '../engine/characterSheet';
+import { composeShield } from '../engine/shieldComposition';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
+import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 
 function withDublonen(bank: number) {
@@ -100,26 +102,50 @@ describe('rs_kopf/rs_torso/rs_arme/rs_beine + gewichtsbelastung ueber die echten
   });
 });
 
-describe('buyShield', () => {
+describe('buyShield (Regel Nutzer 2026-07-17: Schilde komponiert aus Basis x Material x Fertigung x Bespannung)', () => {
   const shieldRow = NK_WAFFEN_BASIS.find((r) => r['Spezialisierung'] === 'Schild')!;
+  const feineisen = SCHILD_MATERIAL.find((r) => r.name === 'Feineisen')!;
+  const gesellenarbeit = SCHILD_FERTIGUNG.find((r) => r.name === 'Gesellenarbeit')!;
+  const stoff = SCHILD_BESPANNUNG.find((r) => r.name === 'Stoff')!;
+  const komponiertesPreis = composeShield(shieldRow, feineisen, gesellenarbeit, stoff).preis!;
 
-  it('kauft ein Schild zum Preis-Basis', () => {
-    const price = Number(shieldRow['Preis-Basis']);
-    const character = withDublonen(price);
-    const updated = buyShield(character, shieldRow.sourceRow);
-    expect(computeSheet(updated).dublonenSpent).toBe(price);
+  it('kauft ein Schild zum komponierten Preis (Basis x Material x Fertigung + Bespannung)', () => {
+    const character = withDublonen(komponiertesPreis);
+    const updated = buyShield(character, shieldRow.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow);
+    expect(computeSheet(updated).dublonenSpent).toBe(komponiertesPreis);
+    expect(updated.equipment[0].computedStatsSnapshot?.rs).toBe(Number(shieldRow['RS-Basis']));
   });
 
   it('lehnt eine Nicht-Schild-Zeile ab', () => {
     const nonShield = NK_WAFFEN_BASIS.find((r) => r['Spezialisierung'] !== 'Schild')!;
     const character = withDublonen(100000);
-    expect(() => buyShield(character, nonShield.sourceRow)).toThrow(MutationError);
+    expect(() => buyShield(character, nonShield.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
+  });
+
+  it('lehnt Kolhartz-Material ab, wenn der Charakter kein Zentaure ist (Nutzer 2026-07-17)', () => {
+    const kolhartz = SCHILD_MATERIAL.find((r) => r.name === 'Kolhartz')!;
+    const character = createCharacter('Test', { spezies: 'Mensch' });
+    character.values['dublonen_bank'] = 100000;
+    expect(() => buyShield(character, shieldRow.sourceRow, kolhartz.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
+  });
+
+  it('erlaubt Kolhartz-Material fuer Zentauren-Charaktere', () => {
+    const kolhartz = SCHILD_MATERIAL.find((r) => r.name === 'Kolhartz')!;
+    const character = createCharacter('Test', { spezies: 'Zentauren' });
+    character.values['dublonen_bank'] = 100000;
+    const updated = buyShield(character, shieldRow.sourceRow, kolhartz.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow);
+    expect(updated.equipment).toHaveLength(1);
+  });
+
+  it('lehnt eine Material/Fertigung/Bespannung-Kombination ohne automatischen Preis ab (Drachensch. = Meister-Ermessen)', () => {
+    const drachensch = SCHILD_MATERIAL.find((r) => r.name === 'Drachensch.')!;
+    const character = withDublonen(1000000);
+    expect(() => buyShield(character, shieldRow.sourceRow, drachensch.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
   });
 
   it('removeEquipment entfernt den Schild-Kauf wieder', () => {
-    const price = Number(shieldRow['Preis-Basis']);
-    const character = withDublonen(price);
-    const updated = buyShield(character, shieldRow.sourceRow);
+    const character = withDublonen(komponiertesPreis);
+    const updated = buyShield(character, shieldRow.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow);
     const removed = removeEquipment(updated, updated.equipment[0].id);
     expect(computeSheet(removed).dublonenSpent).toBe(0);
   });

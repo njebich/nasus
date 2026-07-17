@@ -129,10 +129,10 @@ function handleUnequipRuestung(gruppe: RsGruppe, lage: number): void {
   render();
 }
 
-function handleBuyShield(sourceRow: number): void {
+function handleBuyShield(sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, bespannungSourceRow: number): void {
   if (!currentCharacter) return;
   try {
-    currentCharacter = buyShield(currentCharacter, sourceRow);
+    currentCharacter = buyShield(currentCharacter, sourceRow, materialSourceRow, fertigungSourceRow, bespannungSourceRow);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {

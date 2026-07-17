@@ -9,9 +9,11 @@ import type { RsGruppe } from '../data/trefferzonen';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
+import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
+import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
 
 export interface AusruestungCallbacks {
   onBuyPreisliste: (sourceRow: number, quantity: number) => void;
@@ -20,7 +22,7 @@ export interface AusruestungCallbacks {
     gruppe: RsGruppe, lage: number, basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number,
   ) => void;
   onUnequipRuestung: (gruppe: RsGruppe, lage: number) => void;
-  onBuyShield: (sourceRow: number) => void;
+  onBuyShield: (sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, bespannungSourceRow: number) => void;
   onRemoveEquipment: (equipmentId: string) => void;
 }
 
@@ -168,14 +170,40 @@ function renderRuestungGruppe(gruppe: RsGruppe, label: string, character: Charac
     </div>`;
 }
 
-function renderShieldRow(row: (typeof SHIELDS)[number]): string {
-  const price = row['Preis-Basis'];
+/** Transiente Picker-Auswahl je Schild (Regel Nutzer 2026-07-17: "die haben auch Anpassung" -
+ *  Material/Fertigung/Bespannung, analog zum Ruestungs-Slot-Picker). Kolhartz(Material)/
+ *  Kohlharz(Bespannung) sind nur fuer Zentauren waehlbar, siehe istSchildKomponenteVerfuegbar. */
+const shieldPicker = new Map<number, { materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>();
+
+function renderShieldRow(row: (typeof SHIELDS)[number], character: CharacterState): string {
+  const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m.name, character.spezies));
+  const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b.name, character.spezies));
+  const sel = shieldPicker.get(row.sourceRow) ?? {
+    materialSourceRow: materialOptionen[0]?.sourceRow ?? 0,
+    fertigungSourceRow: SCHILD_FERTIGUNG[0]?.sourceRow ?? 0,
+    bespannungSourceRow: bespannungOptionen[0]?.sourceRow ?? 0,
+  };
+  const material = materialOptionen.find((m) => m.sourceRow === sel.materialSourceRow) ?? materialOptionen[0];
+  const fertigung = SCHILD_FERTIGUNG.find((f) => f.sourceRow === sel.fertigungSourceRow) ?? SCHILD_FERTIGUNG[0];
+  const bespannung = bespannungOptionen.find((b) => b.sourceRow === sel.bespannungSourceRow) ?? bespannungOptionen[0];
+  const composed = composeShield(row, material, fertigung, bespannung);
+
   return `
-    <div class="ausruestung-row">
+    <div class="ausruestung-row" data-shield="${row.sourceRow}">
       <span class="stat-label">${escapeHtml(row.name)}</span>
-      <span class="stat-cost">${price ?? '?'} D</span>
-      <span></span>
-      <button type="button" class="ausruestung-buy-shield" data-source-row="${row.sourceRow}">Kaufen</button>
+      <select class="schild-material-select" data-shield="${row.sourceRow}">
+        ${materialOptionen.map((m) => `<option value="${m.sourceRow}" ${m.sourceRow === material.sourceRow ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
+      </select>
+      <select class="schild-fertigung-select" data-shield="${row.sourceRow}">
+        ${SCHILD_FERTIGUNG.map((f) => `<option value="${f.sourceRow}" ${f.sourceRow === fertigung.sourceRow ? 'selected' : ''}>${escapeHtml(f.name)}</option>`).join('')}
+      </select>
+      <select class="schild-bespannung-select" data-shield="${row.sourceRow}">
+        ${bespannungOptionen.map((b) => `<option value="${b.sourceRow}" ${b.sourceRow === bespannung.sourceRow ? 'selected' : ''}>${escapeHtml(b.name)}</option>`).join('')}
+      </select>
+      <span class="stat-cost">RS ${composed.rs} | ${composed.preis !== null ? `${composed.preis} D` : 'kein Preis (Meister-Ermessen)'}</span>
+      ${composed.preis !== null
+    ? `<button type="button" class="ausruestung-buy-shield" data-shield="${row.sourceRow}">Kaufen</button>`
+    : '<span></span>'}
     </div>`;
 }
 
@@ -202,7 +230,10 @@ function renderInventar(character: CharacterState): string {
       label = kostenRow ? `${kostenRow.name} Grad ${kostenRow.grad} (${e.selections.variant})` : label;
     } else if (e.family === 'shield') {
       const row = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
-      label = row?.name ?? label;
+      const rs = e.computedStatsSnapshot?.rs;
+      // RS des Schilds wird angezeigt, aber bewusst NICHT in rs_arme eingerechnet (Regel Nutzer
+      // 2026-07-17: Anrechnung auf den linken Arm ist Kampfmodul-Scope, siehe characterMutations.ts).
+      label = row ? `${row.name} (RS ${rs})` : label;
     }
     const total = (e.computedPriceSnapshot ?? 0) * e.quantity;
     return `
@@ -242,7 +273,7 @@ export function renderAusruestungView(
     <div class="stat-category">${RS_GRUPPEN.map(({ gruppe, label }) => renderRuestungGruppe(gruppe, label, character)).join('')}</div>
 
     <h3 class="stat-section-heading">Schilde</h3>
-    <div class="ausruestung-category">${SHIELDS.map(renderShieldRow).join('')}</div>
+    <div class="ausruestung-category">${SHIELDS.map((row) => renderShieldRow(row, character)).join('')}</div>
 
     <h3 class="stat-section-heading">Waffen (nur Übersicht - Kauf folgt in Phase 9, Preisformel noch offen)</h3>
     <div class="ausruestung-filters">
@@ -333,9 +364,37 @@ export function renderAusruestungView(
       callbacks.onBuyArtefakt(btn.dataset.referenz!, btn.dataset.grad!, btn.dataset.variant as ArtefaktVariant);
     });
   });
+  function updateShieldPicker(shieldSourceRow: number, patch: Partial<{ materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>): void {
+    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-shield="${shieldSourceRow}"]`);
+    const readSelect = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
+    shieldPicker.set(shieldSourceRow, {
+      materialSourceRow: readSelect('schild-material-select'),
+      fertigungSourceRow: readSelect('schild-fertigung-select'),
+      bespannungSourceRow: readSelect('schild-bespannung-select'),
+      ...patch,
+    });
+    renderAusruestungView(container, sheet, character, callbacks);
+  }
+  container.querySelectorAll<HTMLSelectElement>('.schild-material-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateShieldPicker(Number(sel.dataset.shield), { materialSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.schild-fertigung-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateShieldPicker(Number(sel.dataset.shield), { fertigungSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.schild-bespannung-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateShieldPicker(Number(sel.dataset.shield), { bespannungSourceRow: Number(sel.value) }));
+  });
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-shield').forEach((btn) => {
     btn.addEventListener('click', () => {
-      callbacks.onBuyShield(Number(btn.dataset.sourceRow));
+      const shieldSourceRow = Number(btn.dataset.shield);
+      const sel = shieldPicker.get(shieldSourceRow);
+      const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m.name, character.spezies));
+      const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b.name, character.spezies));
+      const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;
+      const fertigungSourceRow = sel?.fertigungSourceRow ?? SCHILD_FERTIGUNG[0]?.sourceRow;
+      const bespannungSourceRow = sel?.bespannungSourceRow ?? bespannungOptionen[0]?.sourceRow;
+      if (materialSourceRow === undefined || fertigungSourceRow === undefined || bespannungSourceRow === undefined) return;
+      callbacks.onBuyShield(shieldSourceRow, materialSourceRow, fertigungSourceRow, bespannungSourceRow);
     });
   });
   container.querySelectorAll<HTMLButtonElement>('.inventar-remove').forEach((btn) => {

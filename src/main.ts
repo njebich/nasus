@@ -1,7 +1,304 @@
-import './style.css'
+import './style.css';
+import {
+  listCharacters, loadCharacter, createCharacter, saveCharacter, deleteCharacter,
+  getLastActiveCharacterId, setLastActiveCharacterId,
+  type CharacterState, type CharacterHeader, type StartbudgetPreset,
+} from './state/characterStore';
+import {
+  setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
+  setFreieSpracheUndKultur,
+  buyPreislisteItem, buyArtefakt, buyArmor, buyShield, removeEquipment, BudgetError, MutationError,
+} from './state/characterMutations';
+import { computeSheet } from './engine/characterSheet';
+import { renderCategoryView } from './views/categoryView';
+import { renderAuswahlView } from './views/talenteVornachteile';
+import { renderAusruestungView } from './views/ausruestung';
+import { renderCharakterheader } from './views/charakterheader';
+import { renderMutterspracheKultur } from './views/mutterspracheKultur';
+import { renderCharakterbogen } from './views/charakterbogen';
+import type { PoolAllocation } from './state/characterStore';
+import type { ArtefaktVariant } from './engine/equipmentPricing';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <h1>Vite + TypeScript</h1>
-  </div>
-`
+const app = document.querySelector<HTMLDivElement>('#app')!;
+
+const TABS = [
+  'Charakterbogen',
+  'Eigenschaft', 'Attribute', 'Charakterwerte', 'Grundfertigkeit', 'Sonderfertigkeit',
+  'Nahkampf', 'Fernkampf', 'Kampf', 'Bewegung', 'Gewichtsbelastung', 'WHK',
+  'Talente', 'Vor- und Nachteile', 'Ausrüstung',
+] as const;
+type Tab = (typeof TABS)[number];
+const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und Nachteile': false };
+
+// Beim Start den zuletzt aktiven Charakter wiederherstellen (siehe characterStore.ts) - sonst
+// faellt jeder Seiten-Reload auf die leere Auswahl zurueck, obwohl der Charakter noch da ist.
+const lastActiveId = getLastActiveCharacterId();
+let currentCharacter: CharacterState | null = lastActiveId ? loadCharacter(lastActiveId) : null;
+if (lastActiveId && !currentCharacter) setLastActiveCharacterId(null); // Charakter wurde geloescht
+let errorMessage = '';
+let activeTab: Tab = 'Eigenschaft';
+let showNewCharacterForm = false;
+let confirmingDelete = false;
+
+function handleValueChange(referenz: string, newValue: number): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = setValue(currentCharacter, referenz, newValue);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleHeaderChange(updates: Partial<CharacterHeader>): void {
+  if (!currentCharacter) return;
+  currentCharacter = updateHeader(currentCharacter, updates);
+  saveCharacter(currentCharacter);
+  render();
+}
+
+function handleMutterspracheKulturChange(spracheReferenz: string | null, kulturReferenz: string | null): void {
+  if (!currentCharacter) return;
+  currentCharacter = setFreieSpracheUndKultur(currentCharacter, spracheReferenz, kulturReferenz);
+  saveCharacter(currentCharacter);
+  render();
+}
+
+function handlePoolChange(referenz: string, allocation: PoolAllocation): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = setPoolAllocation(currentCharacter, referenz, allocation);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleToggle(referenz: string, selected: boolean): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = selected ? addSelection(currentCharacter, referenz) : removeSelection(currentCharacter, referenz);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyPreisliste(sourceRow: number, quantity: number): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyPreislisteItem(currentCharacter, sourceRow, quantity);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyArtefakt(referenz: string, grad: string, variant: ArtefaktVariant): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyArtefakt(currentCharacter, referenz, grad, variant);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyArmor(basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyArmor(currentCharacter, basisSourceRow, verarbeitungSourceRow, anpassungSourceRow);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyShield(sourceRow: number): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyShield(currentCharacter, sourceRow);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleRemoveEquipment(equipmentId: string): void {
+  if (!currentCharacter) return;
+  currentCharacter = removeEquipment(currentCharacter, equipmentId);
+  saveCharacter(currentCharacter);
+  errorMessage = '';
+  render();
+}
+
+function renderNewCharacterForm(): string {
+  return `
+    <form id="new-character-form" class="new-character-form">
+      <label>Name * <input type="text" id="nc-name" required autofocus /></label>
+      <label>Spezies * <input type="text" id="nc-spezies" required /></label>
+      <label>Beruf <input type="text" id="nc-beruf" /></label>
+      <label>Alter <input type="text" id="nc-alter" /></label>
+      <label>Geburtstag <input type="text" id="nc-geburtstag" /></label>
+      <label>Heimat <input type="text" id="nc-heimat" /></label>
+      <label>Familie <input type="text" id="nc-familie" /></label>
+      <label>Religion <input type="text" id="nc-religion" /></label>
+      <fieldset>
+        <legend>Startbudget</legend>
+        <label><input type="radio" name="nc-startbudget" value="normal" checked /> Normal (Stufe 0, 6400 SP, 5000D)</label>
+        <label><input type="radio" name="nc-startbudget" value="gehoben" /> Gehoben (Stufe 15, 8000 SP, 6000D)</label>
+      </fieldset>
+      <div class="new-character-form-actions">
+        <button type="submit">Anlegen</button>
+        <button type="button" id="new-character-cancel">Abbrechen</button>
+      </div>
+    </form>`;
+}
+
+function render(): void {
+  const characters = listCharacters();
+  const sheet = currentCharacter ? computeSheet(currentCharacter) : null;
+
+  app.innerHTML = `
+    <header class="app-header">
+      <h1>Nasus – Charaktererstellung</h1>
+      <div class="character-bar">
+        <select id="character-select">
+          <option value="">-- Charakter wählen --</option>
+          ${characters.map((c) => `<option value="${c.id}" ${c.id === currentCharacter?.id ? 'selected' : ''}>${c.name}</option>`).join('')}
+        </select>
+        <button type="button" id="new-character">Neuer Charakter</button>
+        ${currentCharacter ? '<button type="button" id="delete-character">Löschen</button>' : ''}
+      </div>
+      ${showNewCharacterForm ? renderNewCharacterForm() : ''}
+      ${confirmingDelete && currentCharacter ? `
+        <div class="inline-form">
+          <span>Charakter "${currentCharacter.name}" wirklich löschen?</span>
+          <button type="button" id="delete-confirm">Ja, löschen</button>
+          <button type="button" id="delete-cancel">Abbrechen</button>
+        </div>` : ''}
+      ${currentCharacter ? '<div id="charakterheader"></div><div id="mutterspracheKultur"></div>' : ''}
+      ${sheet ? `
+        <div class="budget-bar">
+          <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis">EP: ${sheet.epGesamt}${sheet.epNaechsteStufeAb !== undefined ? ` / ${sheet.epNaechsteStufeAb} (naechste Stufe)` : ' (hoechste Stufe erreicht)'}</span>
+          <span title="Steigerungspunkte: bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK">SP: ${sheet.spSpent} / ${sheet.spTotal} (übrig: ${sheet.spRemaining})</span>
+          <span title="Talentpunkte: bezahlt ausschliesslich Talente, eigener Pool = 20+Stufe×5">TaP: ${sheet.tapSpent} / ${sheet.tapTotal} (übrig: ${sheet.tapRemaining})</span>
+          <span>Dublonen: ${sheet.dublonenSpent} / ${sheet.dublonenTotal} (übrig: ${sheet.dublonenRemaining})</span>
+        </div>` : ''}
+      ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
+      ${currentCharacter ? `
+        <nav class="tab-nav">
+          ${TABS.map((tab) => `<button type="button" class="tab-btn" data-tab="${tab}" ${activeTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
+        </nav>` : ''}
+    </header>
+    <main id="view-container"></main>
+  `;
+
+  document.querySelector<HTMLSelectElement>('#character-select')?.addEventListener('change', (e) => {
+    const id = (e.target as HTMLSelectElement).value;
+    currentCharacter = id ? loadCharacter(id) : null;
+    setLastActiveCharacterId(id || null);
+    errorMessage = '';
+    confirmingDelete = false;
+    render();
+  });
+
+  document.querySelector('#new-character')?.addEventListener('click', () => {
+    showNewCharacterForm = true;
+    render();
+  });
+
+  document.querySelector('#new-character-cancel')?.addEventListener('click', () => {
+    showNewCharacterForm = false;
+    render();
+  });
+
+  document.querySelector<HTMLFormElement>('#new-character-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.querySelector<HTMLInputElement>('#nc-name')!.value.trim();
+    const spezies = document.querySelector<HTMLInputElement>('#nc-spezies')!.value.trim();
+    if (!name || !spezies) return;
+    const header: Partial<Omit<CharacterHeader, 'name'>> = {
+      spezies,
+      beruf: document.querySelector<HTMLInputElement>('#nc-beruf')!.value.trim() || undefined,
+      alter: document.querySelector<HTMLInputElement>('#nc-alter')!.value.trim() || undefined,
+      geburtstag: document.querySelector<HTMLInputElement>('#nc-geburtstag')!.value.trim() || undefined,
+      heimat: document.querySelector<HTMLInputElement>('#nc-heimat')!.value.trim() || undefined,
+      familie: document.querySelector<HTMLInputElement>('#nc-familie')!.value.trim() || undefined,
+      religion: document.querySelector<HTMLInputElement>('#nc-religion')!.value.trim() || undefined,
+    };
+    const startbudget = (document.querySelector<HTMLInputElement>('input[name="nc-startbudget"]:checked')!.value) as StartbudgetPreset;
+    currentCharacter = createCharacter(name, header, startbudget);
+    setLastActiveCharacterId(currentCharacter.id);
+    showNewCharacterForm = false;
+    render();
+  });
+
+  document.querySelector('#delete-character')?.addEventListener('click', () => {
+    confirmingDelete = true;
+    render();
+  });
+
+  document.querySelector('#delete-cancel')?.addEventListener('click', () => {
+    confirmingDelete = false;
+    render();
+  });
+
+  document.querySelector('#delete-confirm')?.addEventListener('click', () => {
+    if (!currentCharacter) return;
+    deleteCharacter(currentCharacter.id);
+    currentCharacter = null;
+    setLastActiveCharacterId(null);
+    confirmingDelete = false;
+    render();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.dataset.tab as Tab;
+      render();
+    });
+  });
+
+  if (currentCharacter) {
+    const headerContainer = document.querySelector<HTMLDivElement>('#charakterheader')!;
+    renderCharakterheader(headerContainer, currentCharacter, handleHeaderChange);
+    const mutterspracheKulturContainer = document.querySelector<HTMLDivElement>('#mutterspracheKultur')!;
+    renderMutterspracheKultur(mutterspracheKulturContainer, currentCharacter, handleMutterspracheKulturChange);
+  }
+
+  if (sheet && currentCharacter) {
+    const viewContainer = document.querySelector<HTMLDivElement>('#view-container')!;
+    if (activeTab === 'Charakterbogen') {
+      renderCharakterbogen(viewContainer, sheet, currentCharacter);
+    } else if (activeTab === 'Ausrüstung') {
+      renderAusruestungView(viewContainer, sheet, currentCharacter, {
+        onBuyPreisliste: handleBuyPreisliste,
+        onBuyArtefakt: handleBuyArtefakt,
+        onBuyArmor: handleBuyArmor,
+        onBuyShield: handleBuyShield,
+        onRemoveEquipment: handleRemoveEquipment,
+      });
+    } else if (activeTab in AUSWAHL_TABS) {
+      renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle);
+    } else {
+      renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange);
+    }
+  }
+}
+
+render();

@@ -7,6 +7,8 @@ import { parseFormula, ParseError } from './parser';
 import type { AstNode } from './ast';
 import { evalAst, type Value, type EvalContext, EvalError } from './evaluator';
 import { aufrunden } from './functions';
+import { normalizeForMatch } from './normalize';
+import { computeRbe } from './armorComposition';
 
 const byReferenz = new Map<string, RuleEntry>();
 for (const rule of RULES) {
@@ -23,6 +25,18 @@ export function getRulesByKategorie(kategorie: string): RuleEntry[] {
 
 export function getRulesByArt(art: RuleEntry['art']): RuleEntry[] {
   return RULES.filter((r) => r.art === art);
+}
+
+/** Loest die Hauptfertigkeit einer Spezialisierung auf (gleiche fuzzy Parent-Aufloesung wie
+ *  engine/hierarchy.ts's buildHierarchy, hier aber auf RuleEntry statt ComputedRule, damit
+ *  characterMutations.ts den TaW-Deckel pruefen kann ohne ein komplettes ComputedSheet zu bauchen). */
+export function findParentRule(rule: RuleEntry): RuleEntry | undefined {
+  if (!rule.parent) return undefined;
+  const key = normalizeForMatch(rule.parent);
+  return RULES.find((r) => (
+    r !== rule && r.kategorie === rule.kategorie
+    && (normalizeForMatch(r.referenz) === key || (!!r.beschreibung && normalizeForMatch(r.beschreibung) === key))
+  ));
 }
 
 const astCache = new Map<string, AstNode | null>();
@@ -96,15 +110,22 @@ function applyZeroFloor(referenz: string, value: Value): Value {
 }
 
 /**
- * Gewichtsbelastung (GBE) braucht laut Formel Ruestungs-/Inventar-Laufzeitdaten (welche
- * Ruestungsteile sind an welcher Koerperzone ausgeruestet, welche Gegenstaende werden
- * getragen) - das ist Kampfmodul-Scope (Tool 2), nicht Teil der Charaktererstellung, daher
- * ist formelRaw hier bewusst nur ein Prosa-Platzhalter (nicht parsebar). Nutzer-Entscheidung
- * 2026-07-17: waehrend der Charaktererstellung wertet GBE fest zu 0 aus (unbelastet/kein
- * Ruestung ausgeruestet), damit davon abhaengige Formeln (aw_def_normal/aw_off_normal)
- * nutzbare Werte zeigen. Die eigentliche GBE-Berechnung bleibt offener Punkt fuers Kampfmodul.
+ * Gewichtsbelastung (GBE, Formel "MAX(0;RBE)") referenziert RBE (Ruestungsbehinderung), die
+ * selbst von RHg abhaengt (Summe der Ruestungshinderlichkeit ueber alle getragenen Lagen und
+ * Trefferzonen - siehe engine/armorComposition.ts). RHg braucht Ausruestung-pro-Trefferzone-
+ * Tracking, das ist Kampfmodul-Scope (Tool 2), noch nicht Teil der Charaktererstellung. Bis
+ * dahin wird RHg als Platzhalter fest mit 0 angenommen ("unbelastet"/keine Ruestung erfasst) und
+ * RBE ueber die echte Formel computeRbe(RHg=0; Kon; Staerke; sf_ruestungsmanoever) berechnet
+ * (siehe extraVars-Fall 'Formel' unten) - damit bleibt GBE zwar praktisch weiterhin 0 (RBE wird
+ * bei RHg=0 nie positiv), aber ueber die reale Formel statt eines pauschalen Overrides.
  */
-const CHARGEN_ZERO_OVERRIDES = new Set(['gewichtsbelastung']);
+function computeGewichtsbelastungRbe(state: EvalRunState): number {
+  const rhg = 0;
+  const kon = Number(evalReferenzInternal('eig_k_konstitution', state));
+  const staerke = Number(evalReferenzInternal('eig_k_staerke', state));
+  const sfRuestungsmanoever = Number(evalReferenzInternal('sf_ruestungsmanoever', state));
+  return computeRbe(rhg, kon, staerke, sfRuestungsmanoever);
+}
 
 interface EvalRunState {
   memo: Map<string, Value>;
@@ -144,9 +165,9 @@ function evalReferenzInternal(referenz: string, state: EvalRunState): Value {
           + 'nicht als Formel-Variable auswertbar',
         );
       case 'Formel': {
-        if (CHARGEN_ZERO_OVERRIDES.has(key)) { result = 0; break; }
         if (!rule.formelRaw) throw new EvalError(`Regel '${referenz}' ist Art=Formel, hat aber keine Formel`);
-        result = evalFormulaWith(rule.formelRaw, `formel::${key}`, state);
+        const extraVars = key === 'gewichtsbelastung' ? { rbe: computeGewichtsbelastungRbe(state) } : undefined;
+        result = evalFormulaWith(rule.formelRaw, `formel::${key}`, state, extraVars);
         break;
       }
       case 'Pool': {

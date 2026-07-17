@@ -1,6 +1,8 @@
 // Charakter-Persistenz: ein JSON-Objekt pro Charakter in localStorage (kein Server, keine DB -
 // siehe AGENTS.md). Mehrere Charaktere = mehrere Keys + eine Index-Liste.
 
+import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
+
 export interface PoolAllocation {
   gat: number;
   gpa: number;
@@ -51,20 +53,16 @@ export interface CharacterState extends CharacterHeader {
   selections: Record<string, number>;
   poolAllocations: Record<string, PoolAllocation>;
   equipment: EquipmentEntry[];
-  /** Kostenlose Muttersprache/Kultur bei Erschaffung (Nutzer 2026-07-17, nach "NN Sprachen
-   *  0.11.docx"): freie Wahl, nicht an Spezies gekoppelt - siehe characterMutations.ts
-   *  setFreieSpracheUndKultur() und voelker.ts. */
-  freieSpracheReferenz?: string;
-  freieKulturReferenz?: string;
 }
 
 /**
  * Start-Budget-Pakete bei Charaktererstellung (mit Nutzer 2026-07-17 geklaert, nach
  * anfaenglicher Verwechslung von EP und SP korrigiert):
- * SP wird IMMER als 6400+EP-ausgegebeneSP berechnet (siehe characterSheet.ts) - die 6400
- * sind KEIN separater Startwert hier, sondern stecken schon in der SP-Formel selbst.
- * - normal: EP=0 (Stufe 0, SP daher automatisch 6400), 5000 Dublonen.
- * - gehoben: EP=1600 (Stufe 15, SP daher automatisch 8000), 6000 Dublonen.
+ * SP wird IMMER als 6490+EP-ausgegebeneSP berechnet (siehe characterSheet.ts) - die 6490
+ * sind KEIN separater Startwert hier, sondern stecken schon in der SP-Formel selbst (davon
+ * 90 SP fuer Muttersprache+Kultur, die nicht mehr als Sonderfall kostenlos sind, siehe dort).
+ * - normal: EP=0 (Stufe 0, SP daher automatisch 6490), 5000 Dublonen.
+ * - gehoben: EP=1600 (Stufe 15, SP daher automatisch 8090), 6000 Dublonen.
  */
 export const STARTBUDGET_PRESETS = {
   normal: { epGesamt: 0, dublonen: 5000 },
@@ -74,9 +72,11 @@ export type StartbudgetPreset = keyof typeof STARTBUDGET_PRESETS;
 
 /**
  * "Durchschnittscharakter" (Nutzer 2026-07-17): jeder neue Charakter startet mit allen
- * Eigenschaften=10 und Glueck=1 vorausgefuellt - das kostet ganz normal SP nach der
- * bestehenden Kosten-Tabelle (300 SP/Eigenschaft, 80 SP fuer Glueck=1 -> 3080 SP der
- * 6400/8000 SP-Basis sind damit von vornherein "verplant").
+ * Eigenschaften vorausgefuellt und Glueck=1 - das kostet ganz normal SP nach der bestehenden
+ * Kosten-Tabelle. Seit werte 0.8 (Nutzer 2026-07-17, "Voelker-Maxima korrigiert, Minima und
+ * Maxima anwenden"): der Fuellwert je Eigenschaft ist NICHT mehr pauschal 10, sondern das
+ * Erstellungs-Min der gewaehlten Spezies (Sheet "Voelker-Maxima") - Fallback 10, falls die
+ * Spezies dort nicht bekannt ist (z.B. reine Test-Fixtures).
  */
 const DURCHSCHNITT_EIGENSCHAFTEN: readonly string[] = [
   'eig_g_intelligenz', 'eig_g_mut', 'eig_g_sinneschaerfe', 'eig_g_willenskraft',
@@ -176,7 +176,8 @@ export function createCharacter(
     state.values['ep_gesamt'] = preset.epGesamt;
     state.values['dublonen_bank'] = preset.dublonen;
     for (const referenz of DURCHSCHNITT_EIGENSCHAFTEN) {
-      state.values[referenz] = 10;
+      const grenzen = getEigenschaftGrenzen(state.spezies, referenz, 0);
+      state.values[referenz] = grenzen?.min ?? 10;
     }
     state.values['att_glueck'] = DURCHSCHNITT_GLUECK;
   }

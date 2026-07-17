@@ -25,6 +25,16 @@ const KNOWN_UNPARSEABLE = new Set<string>([
   'bewegung_fix_schnell_gehen', 'bewegung_fix_ueber_wasser_bleiben',
 ]);
 
+// Parst erfolgreich, referenziert aber eine Variable, die (noch) nicht im Regelwerk existiert -
+// anders als KNOWN_UNPARSEABLE (kompletter Parse-Fehler), hier nur eine gezielte Variable.
+const KNOWN_UNKNOWN_VARS = new Set<string>([
+  // gewichtsbelastung.formelRaw = 'MAX(0;RBE)' (werte 0.8): RBE ist wie wert/grad eine
+  // Pseudo-Variable, aber nur fuer diese eine Referenz gueltig - rules.ts bindet sie zur
+  // Laufzeit ueber evalFormulaWith(..., extraVars) an computeRbe(RHg=0; Kon; Staerke;
+  // sf_ruestungsmanoever) (RHg selbst ist Kampfmodul-Scope, siehe armorComposition.ts).
+  'gewichtsbelastung.rbe',
+]);
+
 /** "FEHLT" ist ein bewusster Platzhalter fuer "Formel noch nicht definiert", keine Formel. */
 function isFehltPlaceholder(source: string): boolean {
   return source.trim().toUpperCase() === 'FEHLT';
@@ -75,6 +85,7 @@ describe('gesamtes Regelwerk: Formel/Pool/Kosten parsen', () => {
 
       for (const v of vars) {
         if (v === 'wert' || v === 'grad') continue; // Pseudo-Variablen, nur in Kosten-Kontext gueltig
+        if (KNOWN_UNKNOWN_VARS.has(`${rule.referenz}.${v}`)) continue;
         if (!referenzSet.has(v)) {
           unknownVarRefs.push(`${rule.referenz}.${col}: unbekannte Variable '${v}' in "${source}"`);
         } else if (artByReferenz.get(v) === 'Fixwert') {

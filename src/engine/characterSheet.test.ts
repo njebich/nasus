@@ -6,22 +6,22 @@ import { createCharacter } from '../state/characterStore';
 // vitest.config.ts) ist das verfuegbar; wir nutzen nur die zurueckgegebene In-Memory-Instanz.
 
 describe('computeSheet', () => {
-  it('SP = 6400 + EP fuer einen frischen Charakter (ep_gesamt=0 -> SP=6400, feste Konstante in der Formel)', () => {
+  it('SP = 6490 + EP fuer einen frischen Charakter (ep_gesamt=0 -> SP=6490, feste Konstante in der Formel)', () => {
     const character = createCharacter('Test');
     const sheet = computeSheet(character);
     expect(sheet.epGesamt).toBe(0);
-    expect(sheet.spTotal).toBe(6400);
+    expect(sheet.spTotal).toBe(6490);
     expect(sheet.spSpent).toBe(0);
-    expect(sheet.spRemaining).toBe(6400);
+    expect(sheet.spRemaining).toBe(6490);
   });
 
-  it('spTotal = 6400 + ep_gesamt, NICHT spTotal = ep_gesamt (mit Nutzer 2026-07-17 korrigiert)', () => {
+  it('spTotal = 6490 + ep_gesamt, NICHT spTotal = ep_gesamt (mit Nutzer 2026-07-17 korrigiert)', () => {
     const character = createCharacter('Test');
     character.values['ep_gesamt'] = 1000;
     const sheet = computeSheet(character);
     expect(sheet.epGesamt).toBe(1000);
-    expect(sheet.spTotal).toBe(7400);
-    expect(sheet.spRemaining).toBe(7400);
+    expect(sheet.spTotal).toBe(7490);
+    expect(sheet.spRemaining).toBe(7490);
   });
 
   it('berechnet SP-Kosten fuer eine gesetzte Eigenschaft ueber SVERWEIS', () => {
@@ -33,7 +33,7 @@ describe('computeSheet', () => {
     expect(mutRule?.currentValue).toBe(5);
     expect(mutRule?.kostenCurrent).toBe(150);
     expect(sheet.spSpent).toBe(150);
-    expect(sheet.spRemaining).toBe(7250); // spTotal(6400+1000=7400) - 150
+    expect(sheet.spRemaining).toBe(7340); // spTotal(6490+1000=7490) - 150
   });
 
   it('Talente kosten TaP, NICHT SP - komplett getrennter Pool (mit Nutzer 2026-07-17 geklaert)', () => {

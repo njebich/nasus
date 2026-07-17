@@ -519,6 +519,41 @@ def write_armor_ts(wb):
     )
 
 
+def write_voelker_maxima_ts(wb):
+    # Eigenschaften-Min/Max je Volk (Nutzer 2026-07-17, werte 0.8): Erstellungs-Min/-Max gelten
+    # waehrend der Charaktererstellung, "Max (ab Kreis 3)" (einheitlich 31) danach - siehe
+    # state/characterMutations.ts setValue().
+    ws = wb["Voelker-Maxima"]
+    rows = []
+    for r in range(2, ws.max_row + 1):
+        volk = ws.cell(row=r, column=1).value
+        eigenschaft = ws.cell(row=r, column=2).value
+        if not volk or not eigenschaft:
+            continue
+        rows.append({
+            "volk": str(volk).strip(),
+            "eigenschaft": str(eigenschaft).strip(),
+            "erstellungsMin": ws.cell(row=r, column=3).value,
+            "erstellungsMax": ws.cell(row=r, column=4).value,
+            "maxAbKreis3": ws.cell(row=r, column=5).value,
+            "sourceRow": r,
+        })
+    type_lines = [
+        "export interface VoelkerMaximaRow {",
+        "  volk: string;",
+        "  eigenschaft: string;",
+        "  erstellungsMin: number;",
+        "  erstellungsMax: number;",
+        "  maxAbKreis3: number;",
+        "  sourceRow: number;",
+        "}",
+    ]
+    path = write_json_backed_module(
+        OUT_DATA_DIR, "voelkerMaxima", "VOELKER_MAXIMA", type_lines, "VoelkerMaximaRow[]", rows,
+    )
+    print(f"{path}: {len(rows)} Voelker-Maxima-Eintraege geschrieben.")
+
+
 def main(xlsx_path):
     path = Path(xlsx_path)
     if not path.exists():
@@ -545,6 +580,7 @@ def main(xlsx_path):
     write_verfuegbarkeit_ts(wb)
     write_weapons_ts(wb)
     write_armor_ts(wb)
+    write_voelker_maxima_ts(wb)
 
 
 if __name__ == "__main__":

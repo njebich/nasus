@@ -6,7 +6,6 @@ import {
 } from './state/characterStore';
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
-  setFreieSpracheUndKultur,
   buyPreislisteItem, buyArtefakt, buyArmor, buyShield, removeEquipment, BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet } from './engine/characterSheet';
@@ -14,9 +13,8 @@ import { renderCategoryView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView } from './views/ausruestung';
 import { renderCharakterheader } from './views/charakterheader';
-import { renderMutterspracheKultur } from './views/mutterspracheKultur';
 import { renderCharakterbogen } from './views/charakterbogen';
-import { VOELKER } from './engine/voelker';
+import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
 
@@ -26,7 +24,7 @@ const TABS = [
   'Charakterbogen',
   'Eigenschaft', 'Attribute', 'Charakterwerte', 'Grundfertigkeit', 'Sonderfertigkeit',
   'Nahkampf', 'Fernkampf', 'Kampf', 'Bewegung', 'Gewichtsbelastung', 'WHK',
-  'Talente', 'Vor- und Nachteile', 'Ausrüstung',
+  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung',
 ] as const;
 type Tab = (typeof TABS)[number];
 const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und Nachteile': false };
@@ -56,13 +54,6 @@ function handleValueChange(referenz: string, newValue: number): void {
 function handleHeaderChange(updates: Partial<CharacterHeader>): void {
   if (!currentCharacter) return;
   currentCharacter = updateHeader(currentCharacter, updates);
-  saveCharacter(currentCharacter);
-  render();
-}
-
-function handleMutterspracheKulturChange(spracheReferenz: string | null, kulturReferenz: string | null): void {
-  if (!currentCharacter) return;
-  currentCharacter = setFreieSpracheUndKultur(currentCharacter, spracheReferenz, kulturReferenz);
   saveCharacter(currentCharacter);
   render();
 }
@@ -154,7 +145,7 @@ function renderNewCharacterForm(): string {
       <label>Spezies *
         <select id="nc-spezies" required>
           <option value="">-- wählen --</option>
-          ${VOELKER.map((v) => `<option value="${v.label}">${v.label}</option>`).join('')}
+          ${VOELKER_NAMEN.map((name) => `<option value="${name}">${name}</option>`).join('')}
         </select>
       </label>
       <label>Beruf <input type="text" id="nc-beruf" /></label>
@@ -165,8 +156,8 @@ function renderNewCharacterForm(): string {
       <label>Religion <input type="text" id="nc-religion" /></label>
       <fieldset>
         <legend>Startbudget</legend>
-        <label><input type="radio" name="nc-startbudget" value="normal" checked /> Normal (Stufe 0, 6400 SP, 5000D)</label>
-        <label><input type="radio" name="nc-startbudget" value="gehoben" /> Gehoben (Stufe 15, 8000 SP, 6000D)</label>
+        <label><input type="radio" name="nc-startbudget" value="normal" checked /> Normal (Stufe 0, 6490 SP, 5000D)</label>
+        <label><input type="radio" name="nc-startbudget" value="gehoben" /> Gehoben (Stufe 15, 8090 SP, 6000D)</label>
       </fieldset>
       <div class="new-character-form-actions">
         <button type="submit">Anlegen</button>
@@ -197,7 +188,7 @@ function render(): void {
           <button type="button" id="delete-confirm">Ja, löschen</button>
           <button type="button" id="delete-cancel">Abbrechen</button>
         </div>` : ''}
-      ${currentCharacter ? '<div id="charakterheader"></div><div id="mutterspracheKultur"></div>' : ''}
+      ${currentCharacter ? '<div id="charakterheader"></div>' : ''}
       ${sheet ? `
         <div class="budget-bar">
           <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis">EP: ${sheet.epGesamt}${sheet.epNaechsteStufeAb !== undefined ? ` / ${sheet.epNaechsteStufeAb} (naechste Stufe)` : ' (hoechste Stufe erreicht)'}</span>
@@ -283,8 +274,6 @@ function render(): void {
   if (currentCharacter) {
     const headerContainer = document.querySelector<HTMLDivElement>('#charakterheader')!;
     renderCharakterheader(headerContainer, currentCharacter, handleHeaderChange);
-    const mutterspracheKulturContainer = document.querySelector<HTMLDivElement>('#mutterspracheKultur')!;
-    renderMutterspracheKultur(mutterspracheKulturContainer, currentCharacter, handleMutterspracheKulturChange);
   }
 
   if (sheet && currentCharacter) {

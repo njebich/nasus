@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getRule, evalReferenz, evalKostenFor, type CharacterValueSource } from './rules';
+import { getRule, evalReferenz, evalKostenFor, findParentRule, type CharacterValueSource } from './rules';
 
 function values(vals: Record<string, number>): CharacterValueSource {
   return {
@@ -79,15 +79,60 @@ describe('rules.ts gegen echte Werte-Daten (werte 0.7-claude.xlsx)', () => {
     expect(evalReferenz('mana', values({}))).toBe(0);
   });
 
-  it('gewichtsbelastung wertet waehrend der Charaktererstellung fest zu 0 aus (Kampfmodul-Scope, Nutzer 2026-07-17)', () => {
-    // Die echte Formel ist ein Prosa-Platzhalter (braucht Ruestungs-/Inventar-Laufzeitdaten aus
-    // dem Kampfmodul) - waere ohne den Override ein Parse-Fehler statt eines nutzbaren Werts.
+  it('gewichtsbelastung (MAX(0;RBE)) wertet bei RHg=0 (kein Ruestungs-Tracking, Kampfmodul-Scope) zu 0 aus', () => {
+    // RBE = (RHg-((Kon/5+Staerke)/2+sf_ruestungsmanoever))/6, RHg fest 0 -> RBE<=0 -> MAX(0;RBE)=0.
     expect(evalReferenz('gewichtsbelastung', values({}))).toBe(0);
   });
 
-  it('aw_def_normal/aw_off_normal sind dank GBE=0-Override berechenbar (Regression: waren zuvor immer "nicht definiert")', () => {
+  it('gewichtsbelastung wertet die echte Formel aus (nicht mehr pauschal 0-Override) - bleibt bei RHg=0 fuer jeden Kon/Staerke/sf trotzdem 0', () => {
+    expect(evalReferenz('gewichtsbelastung', values({
+      eig_k_konstitution: 20, eig_k_staerke: 25, sf_ruestungsmanoever: 3,
+    }))).toBe(0);
+  });
+
+  it('aw_def_normal/aw_off_normal sind dank GBE=0 (bei RHg=0) berechenbar (Regression: waren zuvor immer "nicht definiert")', () => {
     const chara = values({ eig_k_athletik: 10, eig_k_schnelligkeit: 10, att_glueck: 5, sf_ausweichen: 0 });
     expect(evalReferenz('aw_def_normal', chara)).toBe(11); // (10+10+5+0)/5+6-0 = 11
     expect(evalReferenz('aw_off_normal', chara)).toBe(7); // (10+10+5+0)/5+2-0 = 7
+  });
+});
+
+describe('findParentRule (Regel Nutzer 2026-07-17: Spezialisierung <= TaW der Hauptfertigkeit)', () => {
+  it('loest die Hauptfertigkeit einer Spezialisierung auf', () => {
+    const spez = getRule('nk_spez_hiebwaffen_aexte')!;
+    expect(findParentRule(spez)?.referenz).toBe('nk_hiebwaffen');
+  });
+
+  it('gibt undefined fuer eine Hauptfertigkeit selbst (kein Parent-Feld)', () => {
+    const haupt = getRule('nk_hiebwaffen')!;
+    expect(findParentRule(haupt)).toBeUndefined();
+  });
+
+  it('gibt undefined fuer eine Regel ohne Parent-Feld', () => {
+    const eig = getRule('eig_g_mut')!;
+    expect(findParentRule(eig)).toBeUndefined();
+  });
+});
+
+describe('ssk_-Praefix-Familie (Regel Nutzer 2026-07-17: Sprache/Schrift/Kultur aus WHK ausgegliedert)', () => {
+  it('ssk_sprache_zwergisch/ssk_kultur_zwerge/ssk_schrift_zwerge existieren in Kategorie "Sprache & Kultur"', () => {
+    for (const ref of ['ssk_sprache_zwergisch', 'ssk_kultur_zwerge', 'ssk_schrift_zwerge']) {
+      const rule = getRule(ref);
+      expect(rule, `Referenz '${ref}' sollte existieren`).toBeDefined();
+      expect(rule?.kategorie).toBe('Sprache & Kultur');
+    }
+  });
+
+  it('die alten whk_sprache_*/whk_kultur_*-Referenzen existieren nicht mehr', () => {
+    expect(getRule('whk_sprache_zwergisch')).toBeUndefined();
+    expect(getRule('whk_kultur_zwerge')).toBeUndefined();
+  });
+
+  it('ssk_sprache_zwergisch kostet weiterhin ueber die Sprachstufe-Kosten-Tabelle (Muttersprache=Stufe3=50 EP)', () => {
+    expect(evalKostenFor('ssk_sprache_zwergisch', 3, values({}))).toBe(50);
+  });
+
+  it('ssk_kultur_zwerge kostet weiterhin ueber die Kulturstufe-Kosten-Tabelle (Vaterland=Stufe3=40 EP)', () => {
+    expect(evalKostenFor('ssk_kultur_zwerge', 3, values({}))).toBe(40);
   });
 });

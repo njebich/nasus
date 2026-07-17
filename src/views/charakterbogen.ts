@@ -5,7 +5,7 @@
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import type { CharacterState, CharacterHeader } from '../state/characterStore';
 import { buildHierarchy, sortHierarchyByValue, type HierarchyNode } from '../engine/hierarchy';
-import { VOELKER } from '../engine/voelker';
+import { describeSkillStufe } from '../engine/skillStufen';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -146,17 +146,22 @@ function renderKampffertigkeiten(sheet: ComputedSheet): string {
     </div>`;
 }
 
-function renderVolkSpracheKultur(character: CharacterState): string {
-  const volk = VOELKER.find((v) => v.kulturReferenz === character.freieKulturReferenz);
-  const sprache = volk?.spracheOptionen.find((s) => s.referenz === character.freieSpracheReferenz);
+/** Alle besessenen ssk_sprache_.../ssk_kultur_.../ssk_schrift_...-Faehigkeiten (Wert>0) mit
+ *  benannter Stufe, wo vorhanden - ersetzt die frueher feste Volk/Sprache/Kultur-Zeile,
+ *  seit es keinen kostenlosen Einzel-Grant mehr gibt (Nutzer 2026-07-17). */
+function renderSpracheUndKultur(sheet: ComputedSheet): string {
+  const alle = (sheet.byKategorie['Sprache & Kultur'] ?? []).filter((r) => (r.currentValue ?? 0) > 0);
+  const rows = alle.length > 0
+    ? alle.map((r) => {
+        const wert = r.currentValue ?? 0;
+        const stufe = describeSkillStufe(r.rule.referenz, wert);
+        return `<tr><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${wert}${stufe ? ` (${escapeHtml(stufe)})` : ''}</td></tr>`;
+      }).join('')
+    : '<tr><td colspan="2">– keine –</td></tr>';
   return `
     <div class="bogen-fertigkeit-spalte">
-      <h4>Volk &amp; Sprache</h4>
-      <table class="bogen-table">
-        <tr><th>Volk</th><td>${escapeHtml(volk?.label ?? '–')}</td></tr>
-        <tr><th>Sprache</th><td>${escapeHtml(sprache?.label ?? '–')}</td></tr>
-        <tr><th>Kultur</th><td>${escapeHtml(volk?.label ?? '–')}</td></tr>
-      </table>
+      <h4>Sprache &amp; Kultur</h4>
+      <table class="bogen-table">${rows}</table>
     </div>`;
 }
 
@@ -180,7 +185,7 @@ export function renderCharakterbogen(container: HTMLElement, sheet: ComputedShee
       <div class="bogen-fertigkeiten-reihe">
         ${renderGrundfertigkeiten(sheet)}
         ${renderKampffertigkeiten(sheet)}
-        ${renderVolkSpracheKultur(character)}
+        ${renderSpracheUndKultur(sheet)}
       </div>
       ${renderWhkNurGewaehlt(sheet)}
     </div>`;

@@ -93,7 +93,7 @@ function renderArmorPicker(): string {
       </select>
     </div>
     <div class="pool-budget">
-      RS ${composed.rs} | BE ${composed.be} | Preis ${composed.preis} D | Verfügbarkeit NW ${composed.verfuegbarkeitNw} / AW ${composed.verfuegbarkeitAw}
+      RS ${composed.rs} | RH ${composed.rh} | Preis ${composed.preis} D | Verfügbarkeit NW ${composed.verfuegbarkeitNw} / AW ${composed.verfuegbarkeitAw}
     </div>
     <button type="button" id="armor-buy">Kaufen</button>`;
 }
@@ -133,7 +133,7 @@ function renderInventar(character: CharacterState): string {
     } else if (e.family === 'armor') {
       const row = RUESTUNG_BASIS.find((r) => String(r.sourceRow) === e.baseId);
       const stats = e.computedStatsSnapshot;
-      label = row ? `${row.name} (RS ${stats?.rs}, BE ${stats?.be})` : label;
+      label = row ? `${row.name} (RS ${stats?.rs}, RH ${stats?.rh})` : label;
     } else if (e.family === 'shield') {
       const row = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;

@@ -12,7 +12,6 @@ import { RULES, type RuleEntry } from '../data/rules';
 import { LOOKUP_TABLES } from '../data/lookups';
 import { evalReferenz, evalKostenFor, type CharacterValueSource } from './rules';
 import { getPoolCapBasis, computeGutMax, computeMeisterlichMax } from './poolCaps';
-import { MUTTERSPRACHE_STUFE, VATERLAND_STUFE } from './voelker';
 import type { CharacterState, PoolAllocation } from '../state/characterStore';
 import type { Value } from './evaluator';
 
@@ -75,7 +74,7 @@ function computeNextStufeThreshold(epGesamt: number): number | undefined {
   return next;
 }
 
-function makeValueSource(character: CharacterState): CharacterValueSource {
+export function makeValueSource(character: CharacterState): CharacterValueSource {
   return {
     getWert(referenz: string): number {
       const key = referenz.toLowerCase();
@@ -84,25 +83,6 @@ function makeValueSource(character: CharacterState): CharacterValueSource {
       return 0;
     },
   };
-}
-
-/**
- * Kostenlose Muttersprache/Kultur (siehe voelker.ts): Kosten der GRANT-Stufe selbst, die von
- * kostenCurrent/kostenNext abgezogen wird - 0 wenn diese Regel kein Grant ist (oder der
- * Freibetrag selbst nicht berechenbar ist, konservativ statt zu crashen).
- */
-function computeFreibetrag(rule: RuleEntry, character: CharacterState, values: CharacterValueSource): number {
-  try {
-    if (rule.referenz === character.freieSpracheReferenz) {
-      return Number(evalKostenFor(rule.referenz, MUTTERSPRACHE_STUFE, values));
-    }
-    if (rule.referenz === character.freieKulturReferenz) {
-      return Number(evalKostenFor(rule.referenz, VATERLAND_STUFE, values));
-    }
-  } catch {
-    // Freibetrag nicht berechenbar - konservativ 0 (keine Befreiung) statt zu crashen.
-  }
-  return 0;
 }
 
 function computeRule(rule: RuleEntry, character: CharacterState, values: CharacterValueSource): ComputedRule {
@@ -118,16 +98,12 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
     const currentValue = character.values[key] ?? 0;
     const result: ComputedRule = { rule, currentValue };
     if (rule.kostenRaw) {
-      // freibetrag > 0 nur wenn diese Regel der Sprache/Kultur-Grant des Charakters ist -
-      // zieht dessen Kosten ab, statt komplett auf 0 zu setzen, damit ein spaeteres Steigern
-      // ueber die Grant-Stufe hinaus weiterhin die echte Differenz kostet.
-      const freibetrag = computeFreibetrag(rule, character, values);
       try {
         // WICHTIG: kostenCurrent als eigene Anweisung VOR kostenNext zuweisen - kostenNext kann
         // am oberen Ende einer Kosten-Tabelle werfen (z.B. Wert 64->65 existiert nicht), und ein
         // Wurf darf das bereits erfolgreich berechnete kostenCurrent nicht verwerfen.
-        result.kostenCurrent = Math.max(0, Number(evalKostenFor(rule.referenz, currentValue, values)) - freibetrag);
-        result.kostenNext = Math.max(0, Number(evalKostenFor(rule.referenz, currentValue + 1, values)) - freibetrag);
+        result.kostenCurrent = Number(evalKostenFor(rule.referenz, currentValue, values));
+        result.kostenNext = Number(evalKostenFor(rule.referenz, currentValue + 1, values));
       } catch (err) {
         result.error = err instanceof Error ? err.message : String(err);
       }
@@ -224,11 +200,15 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     (sum, e) => sum + (e.computedPriceSnapshot ?? 0) * e.quantity, 0,
   );
   const epGesamt = character.values['ep_gesamt'] ?? 0;
-  // SP = 6400 + EP - ausgegebene SP. Die 6400 ist eine feste Konstante IN DER FORMEL SELBST
+  // SP = 6490 + EP - ausgegebene SP. Die 6490 ist eine feste Konstante IN DER FORMEL SELBST
   // (jeder Charakter bekommt sie, unabhaengig vom Startbudget-Preset), NICHT nur ein
   // Startwert - bestaetigt mit Nutzer 2026-07-17 nach anfaenglich falscher Gleichsetzung
-  // SP=EP. Bei "gehoben" (EP=1600, korrekt Stufe 15) ergibt das SP=6400+1600=8000.
-  const spTotal = 6400 + epGesamt;
+  // SP=EP. War urspruenglich 6400; per Nutzer-Entscheidung 2026-07-17 um 90 SP erhoeht
+  // (Kosten fuer Muttersprache=Stufe3/50 SP + Kultur=Stufe3/40 SP), im Gegenzug wurde der
+  // vorherige Sonderfall "erste Sprache/Kultur kostenlos" (freieSpracheReferenz/
+  // freieKulturReferenz) komplett entfernt - jede Sprache/Kultur wird jetzt normal bezahlt,
+  // die erste ist implizit ueber die hoehere SP-Basis abgedeckt statt per Ausnahme.
+  const spTotal = 6490 + epGesamt;
   const dublonenTotal = (character.values['dublonen_bank'] ?? 0) + (character.values['dublonen_bar'] ?? 0);
 
   let tapTotal = 0;

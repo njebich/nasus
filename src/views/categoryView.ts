@@ -7,6 +7,7 @@ import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import type { PoolAllocation } from '../state/characterStore';
 import { prettyFormula } from '../engine/formulaDisplay';
 import { buildHierarchy, type HierarchyNode } from '../engine/hierarchy';
+import { describeSkillStufe } from '../engine/skillStufen';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
@@ -25,10 +26,15 @@ function formulaTitle(raw: string | undefined): string {
   return ` title="${escapeHtml(prettyFormula(raw))}"`;
 }
 
-function renderEditableRow(r: ComputedRule): string {
+/** maxValue: nur bei Spezialisierungen gesetzt (Regel Nutzer 2026-07-17: Spezialisierung
+ *  darf nie hoeher als der TaW der Hauptfertigkeit sein) - deckelt Input und "+"-Button. */
+function renderEditableRow(r: ComputedRule, maxValue?: number): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   const value = r.currentValue ?? 0;
   const costNext = r.kostenNext !== undefined ? `${r.kostenNext} SP` : '';
+  const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
+  const atMax = maxValue !== undefined && value >= maxValue;
+  const stufe = describeSkillStufe(r.rule.referenz, value);
   // Formel-Tooltip auf der ganzen Zeile (nicht nur dem Label), damit er auch beim Hover ueber
   // den Wert/die Buttons erscheint - Elemente ohne eigenes title-Attribut fallen auf das des
   // naechsten Vorfahren zurueck.
@@ -36,9 +42,9 @@ function renderEditableRow(r: ComputedRule): string {
     <div class="stat-row" data-referenz="${r.rule.referenz}"${formulaTitle(r.rule.kostenRaw)}>
       <span class="stat-label">${label}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern">-</button>
-      <input type="number" class="stat-value" min="0" value="${value}" aria-label="${label}" />
-      <button type="button" class="stat-inc" aria-label="erhoehen">+</button>
-      <span class="stat-cost">${costNext ? `naechster Punkt: ${costNext}` : ''}</span>
+      <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+      <button type="button" class="stat-inc" aria-label="erhoehen" ${atMax ? 'disabled' : ''}>+</button>
+      <span class="stat-cost">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext ? `naechster Punkt: ${costNext}` : ''}</span>
     </div>`;
 }
 
@@ -62,19 +68,48 @@ function renderReadOnlyRow(r: ComputedRule): string {
     </div>`;
 }
 
+// Merkt sich, welche Gruppen der Spieler aufgeklappt hat - ueberlebt bewusst modul-weit ueber
+// einzelne renderCategoryView()-Aufrufe hinweg (Fix Nutzer 2026-07-17: jede Werteingabe loeste
+// vorher ein komplettes Neu-Rendern aus, wodurch <details> ohne persistenten Zustand wieder
+// zuklappte - frustrierend beim Verteilen mehrerer Spezialisierungspunkte in Folge).
+const openGroupReferenzen = new Set<string>();
+
 /** Rendert eine Hauptfertigkeit + ihre Spezialisierungen als aufklappbare Gruppe (0 Kinder = flach).
  *  Das <details> steckt in einer nicht-grid/flex "stat-card"-Huelle: <details> als DIREKTES
  *  Grid-Item hat einen bekannten Chromium-Renderbug, bei dem der geschlossene Zustand (open=false)
  *  korrekt im DOM steht, der Inhalt aber trotzdem sichtbar aus dem Layout "ausbricht". */
-function renderEditableGroup(node: HierarchyNode, renderRow: (r: ComputedRule) => string): string {
+function renderGroup(node: HierarchyNode, renderRow: (r: ComputedRule) => string): string {
   if (node.children.length === 0) return renderRow(node.row);
   const label = escapeHtml(node.row.rule.beschreibung ?? node.row.rule.referenz);
+  const openAttr = openGroupReferenzen.has(node.row.rule.referenz) ? ' open' : '';
   return `
     <div class="stat-card">
-      <details class="stat-group">
+      <details class="stat-group" data-referenz="${node.row.rule.referenz}"${openAttr}>
         <summary>${label} <span class="stat-group-count">(${node.children.length} Spezialisierungen)</span></summary>
         ${renderRow(node.row)}
         <div class="stat-subgroup">${node.children.map(renderRow).join('')}</div>
+      </details>
+    </div>`;
+}
+
+/** Editierbare Gruppe: Spezialisierungen sind erst ab TaW>0 der Hauptfertigkeit "angeboten"
+ *  (Regel Nutzer 2026-07-17) - solange die Hauptfertigkeit 0 ist, zeigt die Gruppe nur einen
+ *  Hinweis statt der Steuerelemente. Danach ist jede Spezialisierung durch den TaW gedeckelt
+ *  (siehe renderEditableRow maxValue + characterMutations.ts setValue). */
+function renderEditableGroup(node: HierarchyNode): string {
+  if (node.children.length === 0) return renderEditableRow(node.row);
+  const label = escapeHtml(node.row.rule.beschreibung ?? node.row.rule.referenz);
+  const openAttr = openGroupReferenzen.has(node.row.rule.referenz) ? ' open' : '';
+  const hauptwert = node.row.currentValue ?? 0;
+  const kinder = hauptwert > 0
+    ? node.children.map((r) => renderEditableRow(r, hauptwert)).join('')
+    : '<p class="stat-subgroup-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</p>';
+  return `
+    <div class="stat-card">
+      <details class="stat-group" data-referenz="${node.row.rule.referenz}"${openAttr}>
+        <summary>${label} <span class="stat-group-count">(${node.children.length} Spezialisierungen)</span></summary>
+        ${renderEditableRow(node.row)}
+        <div class="stat-subgroup">${kinder}</div>
       </details>
     </div>`;
 }
@@ -129,10 +164,10 @@ export function renderCategoryView(
   const readOnlyHierarchy = buildHierarchy(readOnly);
 
   container.innerHTML = `
-    <div class="stat-category">${editableHierarchy.map((n) => renderEditableGroup(n, renderEditableRow)).join('')}</div>
+    <div class="stat-category">${editableHierarchy.map(renderEditableGroup).join('')}</div>
     ${readOnly.length > 0 ? `
       <h3 class="stat-section-heading">Berechnete Werte</h3>
-      <div class="stat-category">${readOnlyHierarchy.map((n) => renderEditableGroup(n, renderReadOnlyRow)).join('')}</div>
+      <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>
     ` : ''}
     ${pools.length > 0 ? `
       <h3 class="stat-section-heading">Kampf-Pools</h3>
@@ -142,10 +177,23 @@ export function renderCategoryView(
 
   const findCurrent = (referenz: string) => editable.find((r) => r.rule.referenz === referenz)?.currentValue ?? 0;
 
+  // Aufklapp-Zustand SYNCHRON kurz vor jeder Aenderung sichern (nicht ueber das native
+  // 'toggle'-Event, das laut HTML-Spec asynchron/queued feuert - bei "aufklappen und sofort
+  // im selben Tick einen Wert aendern" war der Event-Handler sonst noch nicht gelaufen, wenn
+  // render() das <details> schon neu aufgebaut hat, und die Gruppe klappte faelschlich zu).
+  function syncOpenGroups(): void {
+    container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-referenz]').forEach((details) => {
+      const referenz = details.dataset.referenz!;
+      if (details.open) openGroupReferenzen.add(referenz);
+      else openGroupReferenzen.delete(referenz);
+    });
+  }
+
   container.querySelectorAll<HTMLButtonElement>('.stat-inc').forEach((btn) => {
     btn.addEventListener('click', () => {
       const row = btn.closest<HTMLElement>('.stat-row')!;
       const referenz = row.dataset.referenz!;
+      syncOpenGroups();
       onChange(referenz, findCurrent(referenz) + 1);
     });
   });
@@ -153,6 +201,7 @@ export function renderCategoryView(
     btn.addEventListener('click', () => {
       const row = btn.closest<HTMLElement>('.stat-row')!;
       const referenz = row.dataset.referenz!;
+      syncOpenGroups();
       onChange(referenz, Math.max(0, findCurrent(referenz) - 1));
     });
   });
@@ -160,7 +209,9 @@ export function renderCategoryView(
     input.addEventListener('change', () => {
       const row = input.closest<HTMLElement>('.stat-row')!;
       const referenz = row.dataset.referenz!;
-      const parsed = Math.max(0, Math.floor(Number(input.value)));
+      let parsed = Math.max(0, Math.floor(Number(input.value)));
+      if (input.max) parsed = Math.min(parsed, Number(input.max));
+      syncOpenGroups();
       onChange(referenz, Number.isFinite(parsed) ? parsed : findCurrent(referenz));
     });
   });

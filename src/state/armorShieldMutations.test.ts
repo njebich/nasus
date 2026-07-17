@@ -20,7 +20,7 @@ describe('buyArmor', () => {
     const character = withDublonen(227);
     const updated = buyArmor(character, basis.sourceRow, verarbeitung.sourceRow, anpassung.sourceRow);
     expect(updated.equipment).toHaveLength(1);
-    expect(updated.equipment[0].computedStatsSnapshot).toEqual({ rs: 3, be: 1, verfuegbarkeitNw: 3, verfuegbarkeitAw: 2 });
+    expect(updated.equipment[0].computedStatsSnapshot).toEqual({ rs: 3, rh: 1, verfuegbarkeitNw: 3, verfuegbarkeitAw: 2 });
     expect(computeSheet(updated).dublonenSpent).toBe(227);
   });
 

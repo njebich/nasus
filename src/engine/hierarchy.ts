@@ -2,16 +2,9 @@
 // von views/categoryView.ts (Editier-Tabs) und views/charakterbogen.ts (End-Ansicht).
 
 import type { ComputedRule } from './characterSheet';
+import { normalizeForMatch } from './normalize';
 
-/** Normalisiert Referenz/Beschreibung/Parent zum Abgleich - faltet Umlaute, ignoriert
- *  Gross-/Kleinschreibung- und Trennzeichen-Unterschiede (die Parent-Spalte ist je Kategorie
- *  uneinheitlich befuellt: mal Referenz, mal Beschreibung, mal beides mit Tippfehlern -
- *  siehe Fernkampf "fk_Blasrohre"). */
-export function normalizeForMatch(s: string): string {
-  return s.toLowerCase()
-    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
-    .replace(/[^a-z0-9]/g, '');
-}
+export { normalizeForMatch };
 
 export interface HierarchyNode {
   row: ComputedRule;

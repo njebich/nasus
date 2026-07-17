@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createCharacter } from './characterStore';
-import {
-  setValue, addSelection, removeSelection, setFreieSpracheUndKultur, BudgetError, MutationError,
-} from './characterMutations';
+import { setValue, addSelection, removeSelection, BudgetError, MutationError } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
 
 function withEpGesamt(epGesamt: number) {
@@ -19,11 +17,11 @@ describe('characterMutations', () => {
   });
 
   it('setValue lehnt ab, wenn nicht genug SP vorhanden sind', () => {
-    // SP = 6400 + ep_gesamt (feste Konstante in der Formel) - selbst bei ep_gesamt=0 hat man
-    // also 6400 SP, und eine einzelne Eigenschaft kostet maximal 6213 (Wert 64, Tabellenende) -
+    // SP = 6490 + ep_gesamt (feste Konstante in der Formel) - selbst bei ep_gesamt=0 hat man
+    // also 6490 SP, und eine einzelne Eigenschaft kostet maximal 6213 (Wert 64, Tabellenende) -
     // daher zwei Eigenschaften kombinieren, um das Budget sicher zu ueberschreiten.
     const character = withEpGesamt(0);
-    const afterFirst = setValue(character, 'eig_g_mut', 64); // kostet 6213 von 6400 SP
+    const afterFirst = setValue(character, 'eig_g_mut', 64); // kostet 6213 von 6490 SP
     expect(() => setValue(afterFirst, 'eig_k_athletik', 10)).toThrow(BudgetError); // weitere 300 SP -> ueber Budget
   });
 
@@ -62,34 +60,92 @@ describe('characterMutations', () => {
     expect(withSkill.values['gr_klettern']).toBe(2);
   });
 
-  it('setFreieSpracheUndKultur setzt Sprache=Muttersprache(3)/Kultur=Vaterland(3) kostenlos (Nutzer 2026-07-17)', () => {
-    const character = withEpGesamt(0);
-    const updated = setFreieSpracheUndKultur(character, 'whk_sprache_zwergisch', 'whk_kultur_zwerge');
-    expect(updated.values['whk_sprache_zwergisch']).toBe(3);
-    expect(updated.values['whk_kultur_zwerge']).toBe(3);
-    expect(updated.freieSpracheReferenz).toBe('whk_sprache_zwergisch');
-    expect(updated.freieKulturReferenz).toBe('whk_kultur_zwerge');
-    const sheet = computeSheet(updated);
-    expect(sheet.spSpent).toBe(0); // beide sind laut Grant kostenlos
+  describe('ssk_sprache_*/ssk_kultur_* (Regel Nutzer 2026-07-17: keine Freibetrag-Ausnahme mehr, SP-Basis stattdessen erhoeht)', () => {
+    it('Muttersprache (Stufe 3) kostet ganz normal 50 SP, keine Ausnahme', () => {
+      const character = withEpGesamt(0);
+      const updated = setValue(character, 'ssk_sprache_zwergisch', 3);
+      expect(updated.values['ssk_sprache_zwergisch']).toBe(3);
+      const sheet = computeSheet(updated);
+      expect(sheet.spSpent).toBe(50);
+    });
+
+    it('Kultur (Stufe 3, "Vaterland") kostet ganz normal 40 SP', () => {
+      const character = withEpGesamt(0);
+      const updated = setValue(character, 'ssk_kultur_zwerge', 3);
+      const sheet = computeSheet(updated);
+      expect(sheet.spSpent).toBe(40);
+    });
+
+    it('Muttersprache + Kultur zusammen kosten 90 SP - genau der Betrag, um den die SP-Basis erhoeht wurde', () => {
+      const character = withEpGesamt(0);
+      const mitSprache = setValue(character, 'ssk_sprache_zwergisch', 3);
+      const mitBeidem = setValue(mitSprache, 'ssk_kultur_zwerge', 3);
+      const sheet = computeSheet(mitBeidem);
+      expect(sheet.spSpent).toBe(90);
+      expect(sheet.spRemaining).toBe(6490 - 90);
+    });
   });
 
-  it('setFreieSpracheUndKultur setzt den vorherigen Grant beim Wechsel zurueck', () => {
-    const character = withEpGesamt(0);
-    const first = setFreieSpracheUndKultur(character, 'whk_sprache_zwergisch', 'whk_kultur_zwerge');
-    const second = setFreieSpracheUndKultur(first, 'whk_sprache_orkisch', 'whk_kultur_orks');
-    expect(second.values['whk_sprache_zwergisch']).toBeUndefined();
-    expect(second.values['whk_kultur_zwerge']).toBeUndefined();
-    expect(second.values['whk_sprache_orkisch']).toBe(3);
-    expect(second.values['whk_kultur_orks']).toBe(3);
+  describe('Spezialisierung <= TaW der Hauptfertigkeit (Regel Nutzer 2026-07-17)', () => {
+    it('lehnt eine Spezialisierung ab, solange die Hauptfertigkeit 0 ist', () => {
+      const character = withEpGesamt(1000);
+      expect(() => setValue(character, 'nk_spez_hiebwaffen_aexte', 1)).toThrow(MutationError);
+    });
+
+    it('erlaubt die Spezialisierung bis maximal zum TaW der Hauptfertigkeit', () => {
+      const character = withEpGesamt(1000);
+      const withHaupt = setValue(character, 'nk_hiebwaffen', 5);
+      const withSpez = setValue(withHaupt, 'nk_spez_hiebwaffen_aexte', 5);
+      expect(withSpez.values['nk_spez_hiebwaffen_aexte']).toBe(5);
+    });
+
+    it('lehnt eine Spezialisierung ueber dem TaW der Hauptfertigkeit ab', () => {
+      const character = withEpGesamt(1000);
+      const withHaupt = setValue(character, 'nk_hiebwaffen', 5);
+      expect(() => setValue(withHaupt, 'nk_spez_hiebwaffen_aexte', 6)).toThrow(MutationError);
+    });
+
+    it('Hauptfertigkeiten selbst sind vom Deckel unberuehrt (haben kein Parent-Feld)', () => {
+      const character = withEpGesamt(1000);
+      const updated = setValue(character, 'nk_hiebwaffen', 20);
+      expect(updated.values['nk_hiebwaffen']).toBe(20);
+    });
   });
 
-  it('Steigern ueber die Grant-Stufe hinaus kostet nur die echte Differenz, nicht den vollen Betrag', () => {
-    const character = withEpGesamt(0);
-    const granted = setFreieSpracheUndKultur(character, 'whk_sprache_zwergisch', 'whk_kultur_zwerge');
-    // Akademisches Niveau (Stufe 4) kostet insgesamt 75 SP, Muttersprache (Stufe 3, der Grant) 50 SP
-    // -> die tatsaechliche Zusatzkosten fuers Steigern auf Stufe 4 sollten 25 SP sein, nicht 75.
-    const raised = setValue(granted, 'whk_sprache_zwergisch', 4);
-    const sheet = computeSheet(raised);
-    expect(sheet.spSpent).toBe(25);
+  describe('Eigenschaften-Min/Max je Spezies (Regel Nutzer 2026-07-17, werte 0.8 / "Voelker-Maxima")', () => {
+    function withSpezies(spezies: string, epGesamt: number) {
+      const character = createCharacter('Test', { spezies });
+      character.values['ep_gesamt'] = epGesamt;
+      return character;
+    }
+
+    it('erlaubt einen Wert innerhalb von Erstellungs-Min/-Max (Dalkini/Staerke: 11-23)', () => {
+      const character = withSpezies('Dalkini', 500); // ep_gesamt=500 -> Kreis 2
+      const updated = setValue(character, 'eig_k_staerke', 15);
+      expect(updated.values['eig_k_staerke']).toBe(15);
+    });
+
+    it('lehnt einen Wert unterhalb des Erstellungs-Min ab', () => {
+      const character = withSpezies('Dalkini', 500);
+      expect(() => setValue(character, 'eig_k_staerke', 10)).toThrow(MutationError);
+    });
+
+    it('lehnt einen Wert oberhalb des Erstellungs-Max ab, solange Kreis < 3', () => {
+      const character = withSpezies('Dalkini', 500); // ep_gesamt=500 -> Kreis 2 (< 3)
+      expect(() => setValue(character, 'eig_k_staerke', 24)).toThrow(MutationError);
+    });
+
+    it('erlaubt bis zu 31 ("Max ab Kreis 3"), sobald der Charakter Kreis 3 erreicht hat', () => {
+      const character = withSpezies('Dalkini', 1600); // ep_gesamt=1600 -> Stufe 15 -> Kreis 3
+      const updated = setValue(character, 'eig_k_staerke', 31);
+      expect(updated.values['eig_k_staerke']).toBe(31);
+      expect(() => setValue(character, 'eig_k_staerke', 32)).toThrow(MutationError);
+    });
+
+    it('unbekannte Spezies bleibt uneingeschraenkt (z.B. leere Test-Fixtures)', () => {
+      const character = withEpGesamt(1000); // spezies='' (kein Header angegeben)
+      const updated = setValue(character, 'eig_k_staerke', 60);
+      expect(updated.values['eig_k_staerke']).toBe(60);
+    });
   });
 });

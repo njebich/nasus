@@ -2,7 +2,7 @@
 // Werten, die der Charakter HAT (Punktekauf-Stats in den Tabs). Immer sichtbar, editierbar.
 
 import type { CharacterState, CharacterHeader } from '../state/characterStore';
-import { VOELKER } from '../engine/voelker';
+import { VOELKER_NAMEN } from '../engine/voelker';
 
 export type OnHeaderChange = (updates: Partial<CharacterHeader>) => void;
 
@@ -32,7 +32,7 @@ function renderSpeziesFeld(character: CharacterState): string {
       <span>Spezies *</span>
       <select data-field="spezies">
         <option value="">-- wählen --</option>
-        ${VOELKER.map((v) => `<option value="${escapeHtml(v.label)}" ${v.label === character.spezies ? 'selected' : ''}>${escapeHtml(v.label)}</option>`).join('')}
+        ${VOELKER_NAMEN.map((name) => `<option value="${escapeHtml(name)}" ${name === character.spezies ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
       </select>
     </label>`;
 }

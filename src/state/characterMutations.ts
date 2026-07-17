@@ -3,11 +3,11 @@
 // CharacterState zurueck (der Aufrufer speichert ihn danach via characterStore.saveCharacter) -
 // bei Ablehnung wird geworfen und der ursprüngliche State bleibt unangetastet.
 
-import { getRule } from '../engine/rules';
-import { computeSheet } from '../engine/characterSheet';
+import { getRule, findParentRule, evalReferenz } from '../engine/rules';
+import { computeSheet, makeValueSource } from '../engine/characterSheet';
+import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
-import { MUTTERSPRACHE_STUFE, VATERLAND_STUFE } from '../engine/voelker';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
@@ -21,30 +21,6 @@ export class MutationError extends Error {}
  *  kein Budget-Bezug, daher keine assertBudgetOk-Pruefung noetig. */
 export function updateHeader(character: CharacterState, updates: Partial<CharacterHeader>): CharacterState {
   return { ...clone(character), ...updates };
-}
-
-/**
- * Kostenlose Muttersprache (Stufe "Muttersprache") + zugehoerige Kultur (Stufe "Vaterland") bei
- * Erschaffung - freie Wahl, nicht an die Spezies gekoppelt (Nutzer 2026-07-17, nach
- * "NN Sprachen 0.11.docx"). Kein Budget-Check: das ist explizit die kostenlose Ausnahme -
- * siehe characterSheet.ts, wo die Kosten dieser beiden Referenzen um den Freibetrag reduziert
- * werden. Ein vorheriger Grant wird beim Wechsel zurueckgesetzt (Wert entfernt).
- */
-export function setFreieSpracheUndKultur(
-  character: CharacterState, spracheReferenz: string | null, kulturReferenz: string | null,
-): CharacterState {
-  const candidate = clone(character);
-  if (candidate.freieSpracheReferenz && candidate.freieSpracheReferenz !== spracheReferenz) {
-    delete candidate.values[candidate.freieSpracheReferenz];
-  }
-  if (candidate.freieKulturReferenz && candidate.freieKulturReferenz !== kulturReferenz) {
-    delete candidate.values[candidate.freieKulturReferenz];
-  }
-  if (spracheReferenz) candidate.values[spracheReferenz] = MUTTERSPRACHE_STUFE;
-  if (kulturReferenz) candidate.values[kulturReferenz] = VATERLAND_STUFE;
-  candidate.freieSpracheReferenz = spracheReferenz ?? undefined;
-  candidate.freieKulturReferenz = kulturReferenz ?? undefined;
-  return candidate;
 }
 
 function clone(character: CharacterState): CharacterState {
@@ -77,6 +53,37 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
     throw new MutationError(`'${referenz}' ist Art='${rule.art}', kein direkt setzbarer Wert`);
   }
   if (wert < 0) throw new MutationError('Wert darf nicht negativ sein');
+
+  // Regel (Nutzer 2026-07-17): eine Spezialisierung darf hoechstens so hoch sein wie der TaW
+  // ihrer Hauptfertigkeit - deckt implizit auch "Spezialisierung erst ab TaW>0 verfuegbar" ab,
+  // da bei Hauptfertigkeit=0 bereits jeder Wert>0 den Deckel 0 ueberschreitet.
+  const parentRule = findParentRule(rule);
+  if (parentRule) {
+    const parentWert = character.values[parentRule.referenz.toLowerCase()] ?? 0;
+    if (wert > parentWert) {
+      throw new MutationError(
+        `'${rule.referenz}' darf nicht hoeher sein als die Hauptfertigkeit '${parentRule.referenz}' (TaW ${parentWert})`,
+      );
+    }
+  }
+
+  // Regel (Nutzer 2026-07-17, werte 0.8 / Sheet "Voelker-Maxima"): Eigenschaften sind je nach
+  // Spezies auf ein Min/Max begrenzt - Max ist Erstellungs-Max bis Kreis 3, danach einheitlich
+  // 31 ("Max ab Kreis 3"). Unbekannte Spezies (z.B. Test-Fixtures) -> keine Einschraenkung.
+  if (rule.kategorie === 'Eigenschaft') {
+    let kreis = 0;
+    try {
+      kreis = Number(evalReferenz('kreis', makeValueSource(character)));
+    } catch {
+      // ep_gesamt noch nicht auswertbar (z.B. ganz frischer Charakter) -> Kreis 0 annehmen.
+    }
+    const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
+    if (grenzen && (wert < grenzen.min || wert > grenzen.max)) {
+      throw new MutationError(
+        `'${rule.referenz}' muss fuer ${character.spezies} zwischen ${grenzen.min} und ${grenzen.max} liegen`,
+      );
+    }
+  }
 
   const candidate = clone(character);
   if (wert === 0) {
@@ -197,7 +204,7 @@ export function buyArmor(
     selections: { verarbeitung: String(verarbeitungSourceRow), anpassung: String(anpassungSourceRow) },
     quantity: 1, computedPriceSnapshot: composed.preis,
     computedStatsSnapshot: {
-      rs: composed.rs, be: composed.be,
+      rs: composed.rs, rh: composed.rh,
       verfuegbarkeitNw: composed.verfuegbarkeitNw, verfuegbarkeitAw: composed.verfuegbarkeitAw,
     },
   };

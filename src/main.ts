@@ -16,6 +16,7 @@ import { renderAusruestungView } from './views/ausruestung';
 import { renderCharakterheader } from './views/charakterheader';
 import { renderMutterspracheKultur } from './views/mutterspracheKultur';
 import { renderCharakterbogen } from './views/charakterbogen';
+import { VOELKER } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
 
@@ -150,7 +151,12 @@ function renderNewCharacterForm(): string {
   return `
     <form id="new-character-form" class="new-character-form">
       <label>Name * <input type="text" id="nc-name" required autofocus /></label>
-      <label>Spezies * <input type="text" id="nc-spezies" required /></label>
+      <label>Spezies *
+        <select id="nc-spezies" required>
+          <option value="">-- wählen --</option>
+          ${VOELKER.map((v) => `<option value="${v.label}">${v.label}</option>`).join('')}
+        </select>
+      </label>
       <label>Beruf <input type="text" id="nc-beruf" /></label>
       <label>Alter <input type="text" id="nc-alter" /></label>
       <label>Geburtstag <input type="text" id="nc-geburtstag" /></label>
@@ -230,7 +236,7 @@ function render(): void {
   document.querySelector<HTMLFormElement>('#new-character-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.querySelector<HTMLInputElement>('#nc-name')!.value.trim();
-    const spezies = document.querySelector<HTMLInputElement>('#nc-spezies')!.value.trim();
+    const spezies = document.querySelector<HTMLSelectElement>('#nc-spezies')!.value.trim();
     if (!name || !spezies) return;
     const header: Partial<Omit<CharacterHeader, 'name'>> = {
       spezies,

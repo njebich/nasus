@@ -62,12 +62,16 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number]): string {
         ${permanent !== null ? `<button type="button" class="ausruestung-buy-artefakt" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="permanent">Permanent kaufen (${permanent} D)</button>` : ''}
       </div>`;
   }).join('');
+  // <details> als direktes Flex-Item hat einen Chromium-Renderbug (open=false im DOM, Inhalt
+  // trotzdem sichtbar ausserhalb des Layouts) - Huelle als nicht-flex Block-Element dazwischen.
   return `
-    <details class="artefakt-details">
-      <summary>${escapeHtml(basis.name ?? basis.referenz)}</summary>
-      <p class="artefakt-beschreibung">${escapeHtml(basis.beschreibung ?? '')}</p>
-      ${options}
-    </details>`;
+    <div class="artefakt-card">
+      <details class="artefakt-details">
+        <summary>${escapeHtml(basis.name ?? basis.referenz)}</summary>
+        <p class="artefakt-beschreibung">${escapeHtml(basis.beschreibung ?? '')}</p>
+        ${options}
+      </details>
+    </div>`;
 }
 
 function renderArmorPicker(): string {

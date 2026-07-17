@@ -7,6 +7,8 @@
 body {
   margin: 0;
   min-height: 100vh;
+  /* Nutzer 2026-07-17: kein Sidescrolling, vertikales Scrollen ist ok. */
+  overflow-x: hidden;
 }
 
 #app {
@@ -53,6 +55,7 @@ body {
 
 .tab-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.25rem;
   border-bottom: 1px solid #8884;
   margin-bottom: 0.75rem;
@@ -72,10 +75,12 @@ body {
   font-weight: 600;
 }
 
+/* Karteikarten-Optik, aber Listenanordnung (Nutzer 2026-07-17: "innerhalb der Karten, zurueck
+   zur List View") - eine Spalte statt mehrspaltigem Reflow, jede Zeile bleibt aber eine Karte. */
 .stat-category {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
 }
 
 .stat-row {
@@ -83,8 +88,10 @@ body {
   grid-template-columns: 1fr auto auto auto auto;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.25rem 0;
-  border-bottom: 1px solid #8882;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #8884;
+  border-radius: 8px;
+  background: #8881;
 }
 
 .stat-label {
@@ -130,9 +137,9 @@ body {
 }
 
 .auswahl-category {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.4rem;
   margin-bottom: 0.5rem;
 }
 
@@ -141,15 +148,16 @@ body {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.2rem 0;
-  border-bottom: 1px solid #8882;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #8884;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .pool-category {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
 }
 
 .pool-row {
@@ -268,7 +276,7 @@ body {
   font-size: 0.9em;
 }
 
-.new-character-form input[type='text'] {
+.new-character-form input[type='text'], .new-character-form select {
   font: inherit;
   border: 1px solid #8888;
   border-radius: 4px;
@@ -310,7 +318,7 @@ body {
   font-size: 0.85em;
 }
 
-.charakterheader-field input {
+.charakterheader-field input, .charakterheader-field select {
   font: inherit;
   border: 1px solid #8888;
   border-radius: 4px;
@@ -341,13 +349,19 @@ body {
   padding: 0.2rem 0.3rem;
 }
 
+/* Die Gruppe selbst ist jetzt die Karte (ein Gitterplatz in .stat-category) - die
+   Hauptzeile/Spezialisierungen darin verlieren ihre eigene Karten-Umrandung, sonst
+   Karte-in-der-Karte. */
 .stat-group {
-  border-bottom: 1px solid #8882;
+  border: 1px solid #8884;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  background: #8881;
 }
 
 .stat-group summary {
   cursor: pointer;
-  padding: 0.25rem 0;
+  padding: 0.1rem 0;
   font-weight: 600;
   list-style-position: outside;
 }
@@ -359,15 +373,24 @@ body {
 }
 
 .stat-group > .stat-row {
-  border-bottom: none;
+  border: none;
+  padding: 0.3rem 0 0;
+  background: none;
 }
 
 .stat-subgroup {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-left: 1.25rem;
-  padding-bottom: 0.25rem;
+  gap: 0.3rem;
+  margin-left: 0.9rem;
+  padding: 0.3rem 0 0.1rem;
+  border-top: 1px solid #8882;
+}
+
+.stat-subgroup .stat-row {
+  border: none;
+  padding: 0.15rem 0;
+  background: none;
 }
 
 .bogen {

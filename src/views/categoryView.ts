@@ -62,16 +62,21 @@ function renderReadOnlyRow(r: ComputedRule): string {
     </div>`;
 }
 
-/** Rendert eine Hauptfertigkeit + ihre Spezialisierungen als aufklappbare Gruppe (0 Kinder = flach). */
+/** Rendert eine Hauptfertigkeit + ihre Spezialisierungen als aufklappbare Gruppe (0 Kinder = flach).
+ *  Das <details> steckt in einer nicht-grid/flex "stat-card"-Huelle: <details> als DIREKTES
+ *  Grid-Item hat einen bekannten Chromium-Renderbug, bei dem der geschlossene Zustand (open=false)
+ *  korrekt im DOM steht, der Inhalt aber trotzdem sichtbar aus dem Layout "ausbricht". */
 function renderEditableGroup(node: HierarchyNode, renderRow: (r: ComputedRule) => string): string {
   if (node.children.length === 0) return renderRow(node.row);
   const label = escapeHtml(node.row.rule.beschreibung ?? node.row.rule.referenz);
   return `
-    <details class="stat-group">
-      <summary>${label} <span class="stat-group-count">(${node.children.length} Spezialisierungen)</span></summary>
-      ${renderRow(node.row)}
-      <div class="stat-subgroup">${node.children.map(renderRow).join('')}</div>
-    </details>`;
+    <div class="stat-card">
+      <details class="stat-group">
+        <summary>${label} <span class="stat-group-count">(${node.children.length} Spezialisierungen)</span></summary>
+        ${renderRow(node.row)}
+        <div class="stat-subgroup">${node.children.map(renderRow).join('')}</div>
+      </details>
+    </div>`;
 }
 
 function poolField(label: string, value: number, max: number | undefined): string {

@@ -85,6 +85,27 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     expect(loaded?.ruestungSlots).toEqual({});
     expect(() => computeSheet(loaded!)).not.toThrow();
   });
+
+  it('migriert alte Angst-Referenzen und behaelt pro Thema nur die hoechste Stufe', () => {
+    const id = 'alt-charakter-vor-angstnummern';
+    const alterCharakter = {
+      id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {},
+      selections: {
+        vn_unbehagen_magie: 1,
+        vn_phobie_magie: 1,
+        vn_furcht_wasser: 1,
+      },
+      poolAllocations: {}, equipment: [], ruestungSlots: {},
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
+
+    const loaded = loadCharacter(id);
+    expect(loaded?.selections).toEqual({
+      vn_angst_magie_30: 1,
+      vn_angst_wasser_15: 1,
+    });
+  });
 });
 
 describe('zuletzt aktiver Charakter (Regression: Seiten-Reload faellt sonst auf leere Auswahl zurueck)', () => {

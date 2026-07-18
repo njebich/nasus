@@ -3,6 +3,7 @@
 
 import type { CharacterState, CharacterHeader } from '../state/characterStore';
 import { VOELKER_NAMEN } from '../engine/voelker';
+import { REGIONEN_NAMEN } from '../engine/regionen';
 
 export type OnHeaderChange = (updates: Partial<CharacterHeader>) => void;
 
@@ -37,10 +38,25 @@ function renderSpeziesFeld(character: CharacterState): string {
     </label>`;
 }
 
+/** Region (Nutzer 2026-07-18): bestimmt, welche der beiden Verfuegbarkeit-NW/-AW-Spalten fuer
+ *  Ruestungskaeufe gilt (siehe characterMutations.ts's equipRuestung). Optional, keine Region
+ *  gewaehlt = keine Verfuegbarkeits-Sperre. */
+function renderRegionFeld(character: CharacterState): string {
+  return `
+    <label class="charakterheader-field">
+      <span>Region</span>
+      <select data-field="region">
+        <option value="">-- wählen --</option>
+        ${REGIONEN_NAMEN.map((name) => `<option value="${escapeHtml(name)}" ${name === character.region ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
+      </select>
+    </label>`;
+}
+
 export function renderCharakterheader(container: HTMLElement, character: CharacterState, onChange: OnHeaderChange): void {
   container.innerHTML = `
     <div class="charakterheader">
       ${renderSpeziesFeld(character)}
+      ${renderRegionFeld(character)}
       ${FIELDS.map((f) => `
         <label class="charakterheader-field">
           <span>${f.label}${f.required ? ' *' : ''}</span>

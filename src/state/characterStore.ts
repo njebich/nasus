@@ -47,6 +47,10 @@ export function ruestungSlotKey(gruppe: RsGruppe, lage: number): string {
 export interface CharacterHeader {
   name: string;
   spezies: string;
+  /** Neue Welt/Alte Welt (Nutzer 2026-07-18) - bestimmt, welche Verfuegbarkeit-NW/-AW-Spalte fuer
+   *  Ruestungskaeufe gilt (siehe characterMutations.ts's equipRuestung). Leer = keine Region
+   *  gewaehlt, Verfuegbarkeits-Sperre greift dann nicht (wie unbekannte Spezies bei Eigenschaften). */
+  region?: string;
   beruf?: string;
   alter?: string;
   geburtstag?: string;
@@ -158,6 +162,38 @@ export function loadCharacter(id: string): CharacterState | null {
   // Migrations-Fallback fuer bereits in localStorage gespeicherte Charaktere von vor dem
   // ruestungSlots-Feld (2026-07-17) - ohne das wirft computeSheet beim Laden alter Charaktere.
   if (!parsed.ruestungSlots) parsed.ruestungSlots = {};
+  // Angst-Referenzen wurden von vn_<stufenname>_<thema> auf das numerische, exklusiv
+  // auswertbare Schema vn_angst_<thema>_<5|10|15|20|25|30> umgestellt. Bei alten, zuvor noch
+  // gleichzeitig moeglichen Mehrfachauswahlen bleibt pro Thema deterministisch die hoechste
+  // gewaehlte Stufe erhalten.
+  const fearLevels: Record<string, number> = {
+    unbehagen: 5,
+    nervositaet: 10,
+    furcht: 15,
+    angst: 20,
+    panik: 25,
+    phobie: 30,
+  };
+  const migratedSelections: Record<string, number> = {};
+  const fearSelections = new Map<string, { reference: string; value: number }>();
+  for (const [reference, selected] of Object.entries(parsed.selections ?? {})) {
+    const normalized = reference.toLowerCase();
+    const currentMatch = /^vn_angst_(.+)_(5|10|15|20|25|30)$/.exec(normalized);
+    const oldMatch = /^vn_(unbehagen|nervositaet|furcht|angst|panik|phobie)_(.+)$/.exec(normalized);
+    if (!currentMatch && !oldMatch) {
+      migratedSelections[normalized] = selected;
+      continue;
+    }
+    const theme = currentMatch?.[1] ?? oldMatch![2];
+    const value = currentMatch ? Number(currentMatch[2]) : fearLevels[oldMatch![1]];
+    const migratedReference = `vn_angst_${theme}_${value}`;
+    const existing = fearSelections.get(theme);
+    if (!existing || value > existing.value) {
+      fearSelections.set(theme, { reference: migratedReference, value });
+    }
+  }
+  for (const { reference } of fearSelections.values()) migratedSelections[reference] = 1;
+  parsed.selections = migratedSelections;
   return parsed;
 }
 
@@ -180,6 +216,7 @@ export function createCharacter(
     id: newId(),
     name,
     spezies: header?.spezies ?? '',
+    region: header?.region,
     beruf: header?.beruf,
     alter: header?.alter,
     geburtstag: header?.geburtstag,

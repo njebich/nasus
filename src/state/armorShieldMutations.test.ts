@@ -71,6 +71,45 @@ describe('equipRuestung (Regel Nutzer 2026-07-17: feste Slots TZ-Gruppe x Lage)'
   });
 });
 
+describe('Verfuegbarkeit-NW/-AW Kaufsperre (Nutzer 2026-07-18: ab Stufe 5 "Fast nie" gesperrt, je nach Region)', () => {
+  // Faltstahlpanzer (Lage 4): Verfuegbarkeit-NW=5 (gesperrt), -AW=3 (frei), mit neutraler
+  // Verarbeitung/Anpassung (Gesellenarbeit/von der Stange, beide NW=1/AW=1 - komponierte
+  // Verfuegbarkeit bleibt dadurch bei 5/3, da composeArmor das Maximum ueber alle 3 Ebenen nimmt).
+  const faltstahlpanzer = RUESTUNG_BASIS.find((r) => r.name === 'Faltstahlpanzer')!;
+  const gesellenarbeit = RUESTUNG_VERARBEITUNG.find((r) => r.name === 'Gesellenarbeit')!;
+  const vonDerStange = RUESTUNG_ANPASSUNG.find((r) => r.name === 'von der Stange')!;
+
+  function withRegion(region: string, bank: number) {
+    const character = createCharacter('Test', { region });
+    character.values['dublonen_bank'] = bank;
+    return character;
+  }
+
+  it('Neue Welt: Faltstahlpanzer (NW=5) ist gesperrt', () => {
+    const character = withRegion('Neue Welt', 100000);
+    expect(() => equipRuestung(
+      character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
+    )).toThrow(MutationError);
+  });
+
+  it('Alte Welt: derselbe Faltstahlpanzer (AW=3) ist frei kaeuflich', () => {
+    const character = withRegion('Alte Welt', 100000);
+    const updated = equipRuestung(
+      character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
+    );
+    expect(updated.ruestungSlots['torso:4'].computedStatsSnapshot.verfuegbarkeitAw).toBe(3);
+  });
+
+  it('keine Region gewaehlt: keine Sperre (analog zu unbekannter Spezies bei Eigenschaften)', () => {
+    const character = createCharacter('Test'); // region bleibt leer
+    character.values['dublonen_bank'] = 100000;
+    const updated = equipRuestung(
+      character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
+    );
+    expect(updated.ruestungSlots['torso:4']).toBeDefined();
+  });
+});
+
 describe('rs_kopf/rs_torso/rs_arme/rs_beine + gewichtsbelastung ueber die echten Ruestungs-Slots (Nutzer 2026-07-17: "im character state muss die ruestung erfasst werden")', () => {
   it('rs_torso liefert im vollen computeSheet-Durchlauf die echte RS-Summe, andere Gruppen bleiben 0', () => {
     const basis = RUESTUNG_BASIS.find((r) => r.name === 'Stoffrüstung')!;

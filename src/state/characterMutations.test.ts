@@ -60,6 +60,24 @@ describe('characterMutations', () => {
     expect(withSkill.values['gr_klettern']).toBe(2);
   });
 
+  it('Angststufen desselben Themas sind exklusiv und eine neue Stufe ersetzt die alte', () => {
+    const character = withEpGesamt(0);
+    const withUnbehagen = addSelection(character, 'vn_angst_magie_5');
+    expect(withUnbehagen.selections['vn_angst_magie_5']).toBe(1);
+
+    const withPhobie = addSelection(withUnbehagen, 'vn_angst_magie_30');
+    expect(withPhobie.selections['vn_angst_magie_5']).toBeUndefined();
+    expect(withPhobie.selections['vn_angst_magie_30']).toBe(1);
+  });
+
+  it('Angststufen unterschiedlicher Themen koennen gleichzeitig gewaehlt werden', () => {
+    const character = withEpGesamt(0);
+    const withMagicFear = addSelection(character, 'vn_angst_magie_10');
+    const withTwoFears = addSelection(withMagicFear, 'vn_angst_wasser_15');
+    expect(withTwoFears.selections['vn_angst_magie_10']).toBe(1);
+    expect(withTwoFears.selections['vn_angst_wasser_15']).toBe(1);
+  });
+
   describe('ssk_sprache_*/ssk_kultur_* (Regel Nutzer 2026-07-17: keine Freibetrag-Ausnahme mehr, SP-Basis stattdessen erhoeht)', () => {
     it('Muttersprache (Stufe 3) kostet ganz normal 50 SP, keine Ausnahme', () => {
       const character = withEpGesamt(0);

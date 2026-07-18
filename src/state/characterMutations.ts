@@ -124,6 +124,16 @@ export function addSelection(character: CharacterState, referenz: string): Chara
   if (rule.art !== 'Auswahl') throw new MutationError(`'${referenz}' ist Art='${rule.art}', keine Auswahl`);
 
   const candidate = clone(character);
+  // Angststufen verwenden das Schema vn_angst_<thema>_<5|10|15|20|25|30>. Innerhalb eines
+  // Angstthemas ist genau eine Stufe erlaubt; eine neue Auswahl ersetzt die bisherige.
+  const fearMatch = /^vn_angst_(.+)_(5|10|15|20|25|30)$/i.exec(rule.referenz);
+  if (fearMatch) {
+    const fearGroup = fearMatch[1].toLowerCase();
+    const sameFearGroup = new RegExp(`^vn_angst_${fearGroup}_(5|10|15|20|25|30)$`, 'i');
+    for (const selectedReference of Object.keys(candidate.selections)) {
+      if (sameFearGroup.test(selectedReference)) delete candidate.selections[selectedReference];
+    }
+  }
   candidate.selections[rule.referenz.toLowerCase()] = 1;
   assertBudgetOk(candidate);
   return candidate;
@@ -212,6 +222,11 @@ export function buyArtefakt(
 const RS_GRUPPEN: readonly RsGruppe[] = ['kopf', 'torso', 'arme', 'beine'];
 const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
 
+/** Verfuegbarkeit-Legende: 1=Immer ... 5=Fast nie ... 7=Einzigartig (Wuerfelwurf-basiert im
+ *  Original, siehe Verfuegbarkeit-Legende-Sheet). Nutzer 2026-07-18: ab hier (inkl.) fuers
+ *  Chargen-Tool als hart gesperrt behandeln, statt den Wuerfelwurf zu simulieren. */
+const VERFUEGBARKEIT_SPERRE_AB = 5;
+
 /**
  * Ruestet ein Ruestungsteil in den festen Slot (TZ-Gruppe × Lage) aus - ueberschreibt einen
  * bereits belegten Slot (Regel Nutzer 2026-07-17: "feste Slots: TZ-Gruppe x Lage", pro Slot
@@ -239,6 +254,16 @@ export function equipRuestung(
   }
 
   const composed = composeArmor(basis, verarbeitung, anpassung);
+
+  // Verfuegbarkeit-NW/-AW (Nutzer 2026-07-18): ab Stufe 5 ("Fast nie") gesperrt, je nachdem
+  // welche Region der Charakter gewaehlt hat. Keine Region gewaehlt = keine Sperre (analog zu
+  // unbekannter Spezies bei Eigenschaften, siehe eigenschaftenGrenzen.ts).
+  const verfuegbarkeit = character.region === 'Neue Welt' ? composed.verfuegbarkeitNw
+    : character.region === 'Alte Welt' ? composed.verfuegbarkeitAw
+    : undefined;
+  if (verfuegbarkeit !== undefined && verfuegbarkeit >= VERFUEGBARKEIT_SPERRE_AB) {
+    throw new MutationError(`'${basis.name}' ist in ${character.region} nicht verfuegbar (Verfuegbarkeit ${verfuegbarkeit})`);
+  }
 
   const candidate = clone(character);
   candidate.ruestungSlots[ruestungSlotKey(gruppe, lage)] = {

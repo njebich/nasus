@@ -107,6 +107,13 @@ def read_rules(wb):
             warnings.append(f"Zeile {r}: fehlende Pflichtfelder {missing_required} - uebersprungen")
             continue
 
+        # Konvention (Nutzer 2026-07-18): eine mit "#" praefigierte Referenz markiert eine
+        # bewusst deaktivierte Zeile (z.B. Duplikat einer bereits vorhandenen Talent-Wirkung) -
+        # Zeile bleibt in der xlsx fuer Audit-Zwecke sichtbar, wird aber nicht importiert.
+        if entry["referenz"].startswith("#"):
+            warnings.append(f"Zeile {r}: Referenz '{entry['referenz']}' mit '#' auskommentiert - uebersprungen")
+            continue
+
         ref_lower = entry["referenz"].lower()
         if ref_lower in seen_referenz:
             warnings.append(

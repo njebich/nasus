@@ -198,6 +198,19 @@ body {
   font-size: 0.85em;
 }
 
+.ausruestung-section {
+  margin: 0.75rem 0;
+}
+
+.ausruestung-section > summary {
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.8;
+  padding: 0.2rem 0;
+  list-style-position: outside;
+}
+
 .ausruestung-filters {
   display: flex;
   gap: 0.5rem;
@@ -212,6 +225,20 @@ body {
   margin-bottom: 0.5rem;
   max-height: 400px;
   overflow-y: auto;
+}
+
+/* Waffenzeile hat eine zweite Detailzeile darunter (Schaden/Stä-Mod/RB/Extras) - der Trenner
+   zwischen zwei Waffen soll nach der Detailzeile kommen, nicht schon zwischen Picker- und
+   Detailzeile. */
+.ausruestung-row:has(+ .waffe-details) {
+  border-bottom: none;
+}
+
+.waffe-details {
+  font-size: 0.8em;
+  opacity: 0.65;
+  padding: 0 0 0.3rem;
+  border-bottom: 1px solid #8882;
 }
 
 .ausruestung-row, .inventar-row {

@@ -45,6 +45,9 @@ export interface ComposedWeapon {
   minStaerke2H: number;
   klingenbrecher: number;
   klingenschutz: number;
+  /** Ruestungsbrechend-Mod: ignoriert RS in dieser Hoehe (Nutzer 2026-07-18). Nur auf der Basis-
+   *  Zeile vorhanden, keine der 4 Modifikator-Tabellen hat eine RB-Spalte. */
+  rb: number;
   /** Reine Anzeige, keine Spielmechanik (siehe Datei-Kommentar). */
   rezeptMod: number;
   /** null = nicht automatisch bepreisbar (unbewaffnete Kampfstile / Ruestungsmodifikatoren ohne
@@ -68,6 +71,7 @@ export function composeWeapon(
   const klingenschutz = num(basis, 'Klingenschutz-Basis') + num(material, 'Klingen-Schutz')
     + num(fertigung, 'Klingen Schutz') + num(schaftmaterial, 'Klingen Schutz');
 
+  const rb = num(basis, 'RB');
   const rezeptMod = num(basis, 'Rezept-Mod-Basis') + num(material, 'Rezept-Mod');
 
   const materialpreisFaktor = numOrNull(basis, 'Materialpreis-Faktor');
@@ -76,7 +80,7 @@ export function composeWeapon(
     : materialpreisFaktor * num(material, 'Preis') + num(fertigung, 'Preis') + num(anpassung, 'Preis')
       + num(schaftmaterial, 'Preis/m') * num(basis, 'Laenge-m');
 
-  return { at, pa, wk, staerkeMalus, minStaerke1H, minStaerke2H, klingenbrecher, klingenschutz, rezeptMod, preis };
+  return { at, pa, wk, staerkeMalus, minStaerke1H, minStaerke2H, klingenbrecher, klingenschutz, rb, rezeptMod, preis };
 }
 
 const VOLK_ALIASE: Record<string, string> = { Drow: 'Draw', Goblin: 'Goblins' };

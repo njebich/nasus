@@ -25,8 +25,18 @@ describe('composeWeapon (Nutzer 2026-07-18: NK-Waffen inkl. Herstellungs-Modifik
     expect(composed.minStaerke2H).toBe(10);
     expect(composed.klingenbrecher).toBe(17);
     expect(composed.klingenschutz).toBe(7);
+    expect(composed.rb).toBe(0);
     expect(composed.rezeptMod).toBe(18); // 8 (Basis) + 10 (Eisen)
     expect(composed.preis).toBe(97); // 1.8*50 + 6 + 1 + 0*0.72
+  });
+
+  it('rb (Ruestungsbrechend-Mod) kommt unveraendert von der Basis, keine Modifikator-Tabelle hat eine RB-Spalte', () => {
+    const kriegshammer = find(NK_WAFFEN_BASIS, 'Kriegshammer (Schnabel)');
+    const composed = composeWeapon(
+      kriegshammer, find(NK_MATERIAL, 'Eisen'), find(NK_FERTIGUNG, 'Gesellenarbeit'),
+      find(NK_ANPASSUNG, 'Von der Stange'), find(NK_SCHAFTMATERIAL, 'Standard'),
+    );
+    expect(composed.rb).toBe(4);
   });
 
   it('volle Kombination (Stahl/Meisterarbeit/angepasst/Eisen Verstaerkt) summiert alle 4 Modifikator-Ebenen', () => {

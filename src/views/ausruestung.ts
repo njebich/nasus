@@ -8,7 +8,7 @@ import { ruestungSlotKey, type CharacterState } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
-import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
+import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG, type GenericRow } from '../data/equipment/armor';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
@@ -64,6 +64,13 @@ const slotPicker = new Map<string, { basisSourceRow: number; verarbeitungSourceR
  *  komplettes Neu-Rendern hinweg, ohne das klappt die Gruppe bei jeder Aenderung (Dropdown-
  *  Wechsel, Ausruesten, ...) faelschlich wieder zu. */
 const openGruppen = new Set<RsGruppe>();
+
+/** Welche Oberpunkte (Mein Inventar/Ruestung/Schilde/Waffen/Preisliste/Artefakte) aufgeklappt
+ *  sind (Nutzer 2026-07-18: "jeden oberpunkt ... collapsible haben, damit die tabelle nicht so
+ *  lang ist") - alle standardmaessig zu, gleiches Persistenz-Muster wie openGruppen oben. */
+const TOP_SECTIONS = ['inventar', 'ruestung', 'schilde', 'waffen', 'preisliste', 'artefakte'] as const;
+type TopSection = (typeof TOP_SECTIONS)[number];
+const openTopSections = new Set<TopSection>();
 
 function renderPreislisteRow(row: (typeof PREISLISTE)[number]): string {
   const price = previewPreislistePrice(row, 1);
@@ -218,11 +225,36 @@ const weaponPicker = new Map<number, {
   materialSourceRow: number; fertigungSourceRow: number; anpassungSourceRow: number; schaftmaterialSourceRow: number;
 }>();
 
+/** "Standard" hat ausser Name/sourceRow keine Spalten - traegt 0 zu jeder Kompositionsgroesse
+ *  bei, daher als impliziter Schaftmaterial-Wert fuer Waffen ohne eigene Auswahl (siehe
+ *  waffeBrauchtSchaftmaterial) sicher verwendbar. */
+const SCHAFTMATERIAL_STANDARD = NK_SCHAFTMATERIAL.find((s) => s.name === 'Standard')!;
+
+/** Regel Nutzer 2026-07-18: "Bei allen waffen, die einen holzschaft haben, muss die schaft-mod
+ *  auswahl bestehen. bei allen anderen keine auswahl." - je Hauptfertigkeit uniform (nicht aus
+ *  der uneinheitlichen Art-Specials-Freitextspalte abgeleitet): Stangenwaffen=alle,
+ *  Hiebwaffen/Klingenwaffen/Stichwaffen/Unbewaffnet=keine. */
+function waffeBrauchtSchaftmaterial(row: GenericRow): boolean {
+  return row['Hauptfertigkeit'] === 'Stangenwaffen';
+}
+
+/** Schadenswuerfel-1/-2 kommen unveraendert von der Basis-Zeile (keine der 4 Modifikator-Tabellen
+ *  hat eine Schadenswuerfel-Spalte) - "W10+W6" bei zwei Wuerfeln, sonst nur der eine. */
+function formatSchadenswuerfel(row: GenericRow): string {
+  const sw1 = row['Schadenswuerfel-1']?.trim();
+  const sw2 = row['Schadenswuerfel-2']?.trim();
+  if (sw1 && sw2) return `${sw1}+${sw2}`;
+  return sw1 || sw2 || '–';
+}
+
 function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterState): string {
+  const brauchtSchaft = waffeBrauchtSchaftmaterial(row);
   const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
   const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
   const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
-  const schaftmaterialOptionen = NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies));
+  const schaftmaterialOptionen = brauchtSchaft
+    ? NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies))
+    : [SCHAFTMATERIAL_STANDARD];
   const sel = weaponPicker.get(row.sourceRow) ?? {
     materialSourceRow: materialOptionen[0]?.sourceRow ?? 0,
     fertigungSourceRow: fertigungOptionen[0]?.sourceRow ?? 0,
@@ -232,7 +264,9 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
   const material = materialOptionen.find((m) => m.sourceRow === sel.materialSourceRow) ?? materialOptionen[0];
   const fertigung = fertigungOptionen.find((f) => f.sourceRow === sel.fertigungSourceRow) ?? fertigungOptionen[0];
   const anpassung = anpassungOptionen.find((a) => a.sourceRow === sel.anpassungSourceRow) ?? anpassungOptionen[0];
-  const schaftmaterial = schaftmaterialOptionen.find((s) => s.sourceRow === sel.schaftmaterialSourceRow) ?? schaftmaterialOptionen[0];
+  const schaftmaterial = brauchtSchaft
+    ? (schaftmaterialOptionen.find((s) => s.sourceRow === sel.schaftmaterialSourceRow) ?? schaftmaterialOptionen[0])
+    : SCHAFTMATERIAL_STANDARD;
   const composed = composeWeapon(row, material, fertigung, anpassung, schaftmaterial);
 
   return `
@@ -247,13 +281,17 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
       <select class="waffe-anpassung-select" data-weapon="${row.sourceRow}">
         ${anpassungOptionen.map((a) => `<option value="${a.sourceRow}" ${a.sourceRow === anpassung.sourceRow ? 'selected' : ''}>${escapeHtml(a.name)}</option>`).join('')}
       </select>
+      ${brauchtSchaft ? `
       <select class="waffe-schaftmaterial-select" data-weapon="${row.sourceRow}">
         ${schaftmaterialOptionen.map((s) => `<option value="${s.sourceRow}" ${s.sourceRow === schaftmaterial.sourceRow ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('')}
-      </select>
+      </select>` : ''}
       <span class="stat-cost">AT ${composed.at} | PA ${composed.pa} | ${composed.preis !== null ? `${composed.preis} D` : 'kein Preis (kein Materialpreis-Faktor)'}</span>
       ${composed.preis !== null
     ? `<button type="button" class="ausruestung-buy-weapon" data-weapon="${row.sourceRow}">Kaufen</button>`
     : '<span></span>'}
+    </div>
+    <div class="waffe-details">
+      Schaden ${formatSchadenswuerfel(row)} | Stä-Mod ${composed.staerkeMalus} | RB ${composed.rb}${row['Art-Specials'] ? ` | ${escapeHtml(row['Art-Specials'])}` : ''}
     </div>`;
 }
 
@@ -291,6 +329,19 @@ function renderInventar(character: CharacterState): string {
   }).join('');
 }
 
+/** Wrappt einen Oberpunkt in ein eigenes <details>, damit die insgesamt sehr lange Tabelle nur
+ *  die gerade gewuenschten Abschnitte zeigt (Nutzer 2026-07-18). Kein Grid/Flex-Elternelement
+ *  hier (view-container ist ein einfaches <main>), daher ist der sonstige Chromium-<details>-
+ *  in-Grid-Fix (siehe artefakt-card) nicht noetig. */
+function renderTopSection(section: TopSection, heading: string, countLabel: string | undefined, bodyHtml: string): string {
+  const openAttr = openTopSections.has(section) ? ' open' : '';
+  return `
+    <details class="ausruestung-section" data-section="${section}"${openAttr}>
+      <summary>${heading}${countLabel ? ` <span class="stat-group-count">(${countLabel})</span>` : ''}</summary>
+      ${bodyHtml}
+    </details>`;
+}
+
 export function renderAusruestungView(
   container: HTMLElement,
   sheet: ComputedSheet,
@@ -310,38 +361,47 @@ export function renderAusruestungView(
     if (details.open) openGruppen.add(gruppe);
     else openGruppen.delete(gruppe);
   });
+  container.querySelectorAll<HTMLDetailsElement>('.ausruestung-section[data-section]').forEach((details) => {
+    const section = details.dataset.section as TopSection;
+    if (details.open) openTopSections.add(section);
+    else openTopSections.delete(section);
+  });
 
   container.innerHTML = `
-    <h3 class="stat-section-heading">Mein Inventar</h3>
-    <div class="inventar-category">${renderInventar(character)}</div>
+    ${renderTopSection('inventar', 'Mein Inventar', undefined, `
+      <div class="inventar-category">${renderInventar(character)}</div>
+    `)}
 
-    <h3 class="stat-section-heading">Rüstung</h3>
-    <div class="stat-category">${RS_GRUPPEN.map(({ gruppe, label }) => renderRuestungGruppe(gruppe, label, character)).join('')}</div>
+    ${renderTopSection('ruestung', 'Rüstung', undefined, `
+      <div class="stat-category">${RS_GRUPPEN.map(({ gruppe, label }) => renderRuestungGruppe(gruppe, label, character)).join('')}</div>
+    `)}
 
-    <h3 class="stat-section-heading">Schilde</h3>
-    <div class="ausruestung-category">${SHIELDS.map((row) => renderShieldRow(row, character)).join('')}</div>
+    ${renderTopSection('schilde', 'Schilde', `${SHIELDS.length} Einträge`, `
+      <div class="ausruestung-category">${SHIELDS.map((row) => renderShieldRow(row, character)).join('')}</div>
+    `)}
 
-    <h3 class="stat-section-heading">Waffen</h3>
-    <div class="ausruestung-filters">
-      <select id="weapon-hauptfertigkeit-select">
-        ${WEAPON_HAUPTFERTIGKEITEN.map((h) => `<option value="${escapeHtml(h)}" ${h === selectedHauptfertigkeit ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}
-      </select>
-      <span class="stat-cost">${filteredWeapons.length} Einträge</span>
-    </div>
-    <div class="ausruestung-category">${filteredWeapons.map((row) => renderWeaponRow(row, character)).join('')}</div>
+    ${renderTopSection('waffen', 'Waffen', `${filteredWeapons.length} Einträge`, `
+      <div class="ausruestung-filters">
+        <select id="weapon-hauptfertigkeit-select">
+          ${WEAPON_HAUPTFERTIGKEITEN.map((h) => `<option value="${escapeHtml(h)}" ${h === selectedHauptfertigkeit ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="ausruestung-category">${filteredWeapons.map((row) => renderWeaponRow(row, character)).join('')}</div>
+    `)}
 
-    <h3 class="stat-section-heading">Preisliste</h3>
-    <div class="ausruestung-filters">
-      <select id="ausruestung-art-select">
-        ${PREISLISTE_ARTEN.map((a) => `<option value="${escapeHtml(a)}" ${a === selectedArt ? 'selected' : ''}>${escapeHtml(a)}</option>`).join('')}
-      </select>
-      <input type="text" id="ausruestung-search" placeholder="Suche..." value="${escapeHtml(searchText)}" />
-      <span class="stat-cost">${filteredPreisliste.length} Einträge</span>
-    </div>
-    <div class="ausruestung-category">${filteredPreisliste.map(renderPreislisteRow).join('')}</div>
+    ${renderTopSection('preisliste', 'Preisliste', `${filteredPreisliste.length} Einträge`, `
+      <div class="ausruestung-filters">
+        <select id="ausruestung-art-select">
+          ${PREISLISTE_ARTEN.map((a) => `<option value="${escapeHtml(a)}" ${a === selectedArt ? 'selected' : ''}>${escapeHtml(a)}</option>`).join('')}
+        </select>
+        <input type="text" id="ausruestung-search" placeholder="Suche..." value="${escapeHtml(searchText)}" />
+      </div>
+      <div class="ausruestung-category">${filteredPreisliste.map(renderPreislisteRow).join('')}</div>
+    `)}
 
-    <h3 class="stat-section-heading">Artefakte</h3>
-    <div class="artefakt-category">${ARTEFAKT_BASIS.map(renderArtefaktRow).join('')}</div>
+    ${renderTopSection('artefakte', 'Artefakte', `${ARTEFAKT_BASIS.length} Einträge`, `
+      <div class="artefakt-category">${ARTEFAKT_BASIS.map(renderArtefaktRow).join('')}</div>
+    `)}
   `;
 
   document.getElementById('ausruestung-art-select')?.addEventListener('change', (e) => {
@@ -472,15 +532,21 @@ export function renderAusruestungView(
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-weapon').forEach((btn) => {
     btn.addEventListener('click', () => {
       const weaponSourceRow = Number(btn.dataset.weapon);
+      const weaponRow = WEAPONS.find((w) => w.sourceRow === weaponSourceRow);
+      const brauchtSchaft = !!weaponRow && waffeBrauchtSchaftmaterial(weaponRow);
       const sel = weaponPicker.get(weaponSourceRow);
       const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
       const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
       const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
-      const schaftmaterialOptionen = NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies));
+      const schaftmaterialOptionen = brauchtSchaft
+        ? NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies))
+        : [SCHAFTMATERIAL_STANDARD];
       const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;
       const fertigungSourceRow = sel?.fertigungSourceRow ?? fertigungOptionen[0]?.sourceRow;
       const anpassungSourceRow = sel?.anpassungSourceRow ?? anpassungOptionen[0]?.sourceRow;
-      const schaftmaterialSourceRow = sel?.schaftmaterialSourceRow ?? schaftmaterialOptionen[0]?.sourceRow;
+      const schaftmaterialSourceRow = brauchtSchaft
+        ? (sel?.schaftmaterialSourceRow ?? schaftmaterialOptionen[0]?.sourceRow)
+        : SCHAFTMATERIAL_STANDARD.sourceRow;
       if (materialSourceRow === undefined || fertigungSourceRow === undefined
         || anpassungSourceRow === undefined || schaftmaterialSourceRow === undefined) return;
       callbacks.onBuyWeapon(weaponSourceRow, materialSourceRow, fertigungSourceRow, anpassungSourceRow, schaftmaterialSourceRow);

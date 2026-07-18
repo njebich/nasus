@@ -28,6 +28,17 @@ KATEGORIE_GRUPPEN = {
     "Wissens,- Handwerks,- Kulturfertigkeiten": "WHK",
 }
 
+# Talente, deren Wirkung strukturell ein Fertigkeitsmaximum-Bonus ist, aber in der Quelle unter
+# einer anderen Wirkungsklasse liefen (daher vom Hauptfilter unten nicht erfasst) und/oder deren
+# Zielreferenz dort nicht aufgeloest wurde. Nutzer 2026-07-18 (Re-Pruefung der Analysedatei):
+# "Charismatischer Fuehrer" steht als "Modifikator - komplex" ("Erhoeht die Maxima Grundfertigkeiten
+# Ueberreden & Ueberzeugen zusaetzlich um +6 Punkte"), obwohl es strukturell identisch zu den
+# regulaer erfassten Fertigkeitsmaximum-Talenten ist. "Ueberreden" existiert nicht als eigene
+# Referenz in rules.json (nur gr_ueberzeugen) - Nutzer entschied explizit: nur auf Ueberzeugen anwenden.
+MANUAL_MAXIMUM_OVERRIDES = [
+    {"talentReferenz": "talente_charismatischer_fuehrer", "zielReferenz": "gr_ueberzeugen", "bonus": 6},
+]
+
 
 def read_rows(xlsx_path):
     wb = openpyxl.load_workbook(xlsx_path, data_only=True)
@@ -99,6 +110,7 @@ def extract(rows):
         for ref in refs:
             out.append({"talentReferenz": ref, "zielReferenz": zielref, "bonus": wert})
 
+    out.extend(MANUAL_MAXIMUM_OVERRIDES)
     return out, skipped
 
 
@@ -127,6 +139,9 @@ def write_ts(entries, out_path):
         '// ALLER Referenzen mit gemeinsamem Praefix (zielPraefix, z.B. "spruchmagie_feuerbeschwoerung_"',
         '// fuer eine Zauberschule) um den angegebenen Betrag erhoeht. KI-Faehigkeitsmaximum',
         '// ("KI-Meister") bewusst NICHT aufgenommen - keine Basis-Maximum-Regel fuer KI definiert.',
+        '// "Charismatischer Fuehrer" ist ein manueller Override (siehe MANUAL_MAXIMUM_OVERRIDES im',
+        '// Skript) - lief in der Quelle unter einer anderen Wirkungsklasse, wirkt aber strukturell',
+        '// identisch; wirkt nur auf gr_ueberzeugen, da "Ueberreden" keine eigene Referenz ist.',
         "",
         "export interface TalentMaximumBonus {",
         "  talentReferenz: string;",

@@ -49,4 +49,9 @@ describe('getTalentMaximumBonus (Nutzer 2026-07-18: Talente-Wirkung-Analyse, "Ma
     const character = withSelection('talente_kampffertigkeit_erhoehen_boegen');
     expect(getTalentMaximumBonus(character, 'fk_boegen', 'Fernkampf')).toBe(6);
   });
+
+  it('manueller Override: Charismatischer Fuehrer erhoeht nur gr_ueberzeugen (kein eigenes "Ueberreden" in rules.json, Nutzer-Entscheidung 2026-07-18)', () => {
+    const character = withSelection('talente_charismatischer_fuehrer');
+    expect(getTalentMaximumBonus(character, 'gr_ueberzeugen', 'Grundfertigkeit')).toBe(6);
+  });
 });

@@ -8,6 +8,9 @@
 // ALLER Referenzen mit gemeinsamem Praefix (zielPraefix, z.B. "spruchmagie_feuerbeschwoerung_"
 // fuer eine Zauberschule) um den angegebenen Betrag erhoeht. KI-Faehigkeitsmaximum
 // ("KI-Meister") bewusst NICHT aufgenommen - keine Basis-Maximum-Regel fuer KI definiert.
+// "Charismatischer Fuehrer" ist ein manueller Override (siehe MANUAL_MAXIMUM_OVERRIDES im
+// Skript) - lief in der Quelle unter einer anderen Wirkungsklasse, wirkt aber strukturell
+// identisch; wirkt nur auf gr_ueberzeugen, da "Ueberreden" keine eigene Referenz ist.
 
 export interface TalentMaximumBonus {
   talentReferenz: string;
@@ -77,6 +80,11 @@ export const TALENT_MAXIMUM_BONUSES: TalentMaximumBonus[] = [
     "talentReferenz": "talente_ausweichen_stufe_2",
     "zielReferenz": "sf_ausweichen",
     "bonus": 12
+  },
+  {
+    "talentReferenz": "talente_charismatischer_fuehrer",
+    "zielReferenz": "gr_ueberzeugen",
+    "bonus": 6
   },
   {
     "talentReferenz": "talente_eigenschaften_erhoehen_athletik",

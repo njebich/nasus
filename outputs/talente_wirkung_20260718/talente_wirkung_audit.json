@@ -1,0 +1,5007 @@
+[
+  {
+    "sourceRow": 2,
+    "name": "Alchemieresistenz Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1078,
+        "reference": "talente_alchemieresistenz_stufe_1",
+        "name": "Alchemieresistenz Stufe 1",
+        "parent": "Abenteurer",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Alchemiresistenz",
+          "targetReference": "sf_alchemieresistenz",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 3,
+    "name": "Alchemieresistenz Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1082,
+        "reference": "talente_alchemieresistenz_stufe_2",
+        "name": "Alchemieresistenz Stufe 2",
+        "parent": "Abenteurer",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Alchemiresistenz",
+          "targetReference": "sf_alchemieresistenz",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 4,
+    "name": "Attributs-Maximum erhöhen +1 AURA",
+    "matches": [
+      {
+        "excelRow": 498,
+        "reference": "talente_attributs_maximum_erhoehen__aura",
+        "name": "Attributs-Maximum erhöhen +1 AURA",
+        "parent": "Abenteurer",
+        "cost": 18,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Attributsmaximum",
+      "effects": [
+        {
+          "targetType": "Attribut",
+          "target": "AURA",
+          "targetReference": "att_aura",
+          "operation": "Erhöhe Maximum",
+          "value": 1,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Attributsmaximum AURA um 1 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 5,
+    "name": "Attributs-Maximum erhöhen +1 GLÜCK",
+    "matches": [
+      {
+        "excelRow": 499,
+        "reference": "talente_attributs_maximum_erhoehen__glueck",
+        "name": "Attributs-Maximum erhöhen +1 GLÜCK",
+        "parent": "Abenteurer",
+        "cost": 18,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Attributsmaximum",
+      "effects": [
+        {
+          "targetType": "Attribut",
+          "target": "GLÜCK",
+          "targetReference": "att_glueck",
+          "operation": "Erhöhe Maximum",
+          "value": 1,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Attributsmaximum GLÜCK um 1 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 6,
+    "name": "Attributs-Maximum erhöhen +1 KARMA",
+    "matches": [
+      {
+        "excelRow": 500,
+        "reference": "talente_attributs_maximum_erhoehen__karma",
+        "name": "Attributs-Maximum erhöhen +1 KARMA",
+        "parent": "Abenteurer",
+        "cost": 18,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Attributsmaximum",
+      "effects": [
+        {
+          "targetType": "Attribut",
+          "target": "KARMA",
+          "targetReference": "att_karma",
+          "operation": "Erhöhe Maximum",
+          "value": 1,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Attributsmaximum KARMA um 1 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 7,
+    "name": "Attributs-Maximum erhöhen +1 MAGIE",
+    "matches": [
+      {
+        "excelRow": 501,
+        "reference": "talente_attributs_maximum_erhoehen__magie",
+        "name": "Attributs-Maximum erhöhen +1 MAGIE",
+        "parent": "Abenteurer",
+        "cost": 18,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Attributsmaximum",
+      "effects": [
+        {
+          "targetType": "Attribut",
+          "target": "MAGIE",
+          "targetReference": "att_magie",
+          "operation": "Erhöhe Maximum",
+          "value": 1,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Attributsmaximum MAGIE um 1 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 8,
+    "name": "Attributs-Maximum erhöhen +1 VITALITÄT",
+    "matches": [
+      {
+        "excelRow": 502,
+        "reference": "talente_attributs_maximum_erhoehen__vitalitaet",
+        "name": "Attributs-Maximum erhöhen +1 VITALITÄT",
+        "parent": "Abenteurer",
+        "cost": 18,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Attributsmaximum",
+      "effects": [
+        {
+          "targetType": "Attribut",
+          "target": "VITALITÄT",
+          "targetReference": "att_vitalitaet",
+          "operation": "Erhöhe Maximum",
+          "value": 1,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Attributsmaximum VITALITÄT um 1 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 9,
+    "name": "Ausdauer Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1083,
+        "reference": "talente_ausdauer_stufe_1",
+        "name": "Ausdauer Stufe 1",
+        "parent": "Abenteurer",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ausdauer",
+          "targetReference": "sf_ausdauer",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 10,
+    "name": "Ausdauer Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1084,
+        "reference": "talente_ausdauer_stufe_2",
+        "name": "Ausdauer Stufe 2",
+        "parent": "Abenteurer",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ausdauer",
+          "targetReference": "sf_ausdauer",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 11,
+    "name": "Ausdauer Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1085,
+        "reference": "talente_ausdauer_stufe_3",
+        "name": "Ausdauer Stufe 3",
+        "parent": "Abenteurer",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ausdauer",
+          "targetReference": "sf_ausdauer",
+          "operation": "Erhöhe Maximum",
+          "value": 18,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 18 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 12,
+    "name": "Ausweichen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1086,
+        "reference": "talente_ausweichen_stufe_1",
+        "name": "Ausweichen Stufe 1",
+        "parent": "Abenteurer",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ausweichen",
+          "targetReference": "sf_ausweichen",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 13,
+    "name": "Ausweichen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1087,
+        "reference": "talente_ausweichen_stufe_2",
+        "name": "Ausweichen Stufe 2",
+        "parent": "Abenteurer",
+        "cost": 10,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ausweichen",
+          "targetReference": "sf_ausweichen",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 14,
+    "name": "Charismatischer Führer",
+    "matches": [
+      {
+        "excelRow": 1101,
+        "reference": "talente_charismatischer_fuehrer",
+        "name": "Charismatischer Führer",
+        "parent": "Abenteurer",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Modifikator – komplex",
+      "effects": [
+        {
+          "targetType": "Regelwert",
+          "target": "aus Beschreibung abzuleiten",
+          "targetReference": null,
+          "operation": "Modifiziere",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Modifikatorregel um: Erhöht die Maxima Grundfertigkeiten Überreden & Überzeugen zusätzlich um +6 Punkte.",
+      "portStatus": "teilstrukturiert",
+      "note": "Richtung ist erkennbar, Ziel/Formel muss manuell präzisiert werden."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 15,
+    "name": "Eigenschaften erhöhen: Athletik",
+    "matches": [
+      {
+        "excelRow": 1102,
+        "reference": "talente_eigenschaften_erhoehen_athletik",
+        "name": "Eigenschaften erhöhen: Athletik",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Athletik",
+          "targetReference": "eig_k_athletik",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Athletik um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 16,
+    "name": "Eigenschaften erhöhen: Ausstrahlung",
+    "matches": [
+      {
+        "excelRow": 1103,
+        "reference": "talente_eigenschaften_erhoehen_ausstrahlung",
+        "name": "Eigenschaften erhöhen: Ausstrahlung",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Ausstrahlung",
+          "targetReference": "eig_k_ausstrahlung",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Ausstrahlung um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 17,
+    "name": "Eigenschaften erhöhen: Geschicklichkeit",
+    "matches": [
+      {
+        "excelRow": 1104,
+        "reference": "talente_eigenschaften_erhoehen_geschicklichkeit",
+        "name": "Eigenschaften erhöhen: Geschicklichkeit",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Geschicklichkeit",
+          "targetReference": "eig_k_geschicklichkeit",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Geschicklichkeit um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 18,
+    "name": "Eigenschaften erhöhen: Intelligenz",
+    "matches": [
+      {
+        "excelRow": 1105,
+        "reference": "talente_eigenschaften_erhoehen_intelligenz",
+        "name": "Eigenschaften erhöhen: Intelligenz",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Intelligenz",
+          "targetReference": "eig_g_intelligenz",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Intelligenz um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 19,
+    "name": "Eigenschaften erhöhen: Konstitution",
+    "matches": [
+      {
+        "excelRow": 1106,
+        "reference": "talente_eigenschaften_erhoehen_konstitution",
+        "name": "Eigenschaften erhöhen: Konstitution",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Konstitution",
+          "targetReference": "eig_k_konstitution",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Konstitution um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 20,
+    "name": "Eigenschaften erhöhen: Mut",
+    "matches": [
+      {
+        "excelRow": 1107,
+        "reference": "talente_eigenschaften_erhoehen_mut",
+        "name": "Eigenschaften erhöhen: Mut",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Mut",
+          "targetReference": "eig_g_mut",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Mut um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 21,
+    "name": "Eigenschaften erhöhen: Schnelligkeit",
+    "matches": [
+      {
+        "excelRow": 1108,
+        "reference": "talente_eigenschaften_erhoehen_schnelligkeit",
+        "name": "Eigenschaften erhöhen: Schnelligkeit",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Schnelligkeit",
+          "targetReference": "eig_k_schnelligkeit",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Schnelligkeit um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 22,
+    "name": "Eigenschaften erhöhen: Sinnesschärfe",
+    "matches": [
+      {
+        "excelRow": 1109,
+        "reference": "talente_eigenschaften_erhoehen_sinnesschaerfe",
+        "name": "Eigenschaften erhöhen: Sinnesschärfe",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Sinnesschärfe",
+          "targetReference": "eig_g_sinneschaerfe",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Sinnesschärfe um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 23,
+    "name": "Eigenschaften erhöhen: Stärke",
+    "matches": [
+      {
+        "excelRow": 1110,
+        "reference": "talente_eigenschaften_erhoehen_staerke",
+        "name": "Eigenschaften erhöhen: Stärke",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Stärke",
+          "targetReference": "eig_k_staerke",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Stärke um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 24,
+    "name": "Eigenschaften erhöhen: Willenskraft",
+    "matches": [
+      {
+        "excelRow": 1111,
+        "reference": "talente_eigenschaften_erhoehen_willenskraft",
+        "name": "Eigenschaften erhöhen: Willenskraft",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Eigenschaftsmaximum",
+      "effects": [
+        {
+          "targetType": "Eigenschaft",
+          "target": "Willenskraft",
+          "targetReference": "eig_g_willenskraft",
+          "operation": "Erhöhe Maximum",
+          "value": 5,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Eigenschaftsmaximum Willenskraft um 5 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 25,
+    "name": "Fliehen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1118,
+        "reference": "talente_fliehen_stufe_1",
+        "name": "Fliehen Stufe 1",
+        "parent": "Abenteurer",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Fliehen",
+          "targetReference": "sf_fliehen",
+          "operation": "Erhöhe Maximum",
+          "value": 4,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 4 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 26,
+    "name": "Fliehen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1119,
+        "reference": "talente_fliehen_stufe_2",
+        "name": "Fliehen Stufe 2",
+        "parent": "Abenteurer",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Fliehen",
+          "targetReference": "sf_fliehen",
+          "operation": "Erhöhe Maximum",
+          "value": 8,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 8 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 27,
+    "name": "Fliehen Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1120,
+        "reference": "talente_fliehen_stufe_3",
+        "name": "Fliehen Stufe 3",
+        "parent": "Abenteurer",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Fliehen",
+          "targetReference": "sf_fliehen",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 28,
+    "name": "Gefahreninstinkt",
+    "matches": [
+      {
+        "excelRow": 139,
+        "reference": "talente_gefahrensinn",
+        "name": "Gefahrensinn",
+        "parent": "Abenteurer",
+        "cost": 2,
+        "flag": "Kein exakter Namenstreffer in NN NPC-Rechner 0.75/Talente - dort heißt das Talent 'Gefahreninstinkt' (Kategorie=Abenteurer). Vermutlich dasselbe Talent unter leicht anderem Namen, Parent trotzdem gesetzt."
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Gefahreninstinkt",
+          "targetReference": "sf_gefahreninstinkt",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 29,
+    "name": "Grundfertigkeiten Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1122,
+        "reference": "talente_grundfertigkeiten_stufe_1",
+        "name": "Grundfertigkeiten Stufe 1",
+        "parent": "Abenteurer",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeitsgruppe",
+          "target": "Grundfertigkeiten",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 2,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Grundfertigkeiten um 2 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 30,
+    "name": "Grundfertigkeiten Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1123,
+        "reference": "talente_grundfertigkeiten_stufe_2",
+        "name": "Grundfertigkeiten Stufe 2",
+        "parent": "Abenteurer",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeitsgruppe",
+          "target": "Grundfertigkeiten",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 4,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Grundfertigkeiten um 4 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 31,
+    "name": "Grundfertigkeiten Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1124,
+        "reference": "talente_grundfertigkeiten_stufe_3",
+        "name": "Grundfertigkeiten Stufe 3",
+        "parent": "Abenteurer",
+        "cost": 8,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeitsgruppe",
+          "target": "Grundfertigkeiten",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Grundfertigkeiten um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 32,
+    "name": "Grundfertigkeiten Stufe 4",
+    "matches": [
+      {
+        "excelRow": 1125,
+        "reference": "talente_grundfertigkeiten_stufe_4",
+        "name": "Grundfertigkeiten Stufe 4",
+        "parent": "Abenteurer",
+        "cost": 10,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeitsgruppe",
+          "target": "Grundfertigkeiten",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 8,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Grundfertigkeiten um 8 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 33,
+    "name": "Meuchler",
+    "matches": [
+      {
+        "excelRow": 1167,
+        "reference": "talente_meuchler",
+        "name": "Meuchler",
+        "parent": "Abenteurer",
+        "cost": 36,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Meuchler",
+          "targetReference": "talente_meuchler",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Ermöglicht es dem Charakter, bei einer unbemerkten AT (Gefahrensinn-Probe nicht geschafft) doppelten Schaden zu verursachen und bei guter oder meisterlicher AT die Rüstung zu ignorieren. \n In einem normalen Nahkampf ermöglicht dieses Talent dem Anwender, bei einer guten oder besseren AT für einen Bonuspunkt Rüstungsignorierend für seine AT zu wählen, dies schließt dann allerdings bei meisterlichen oder besseren AT aus, dass der Anwender schadenserhöhende Boni (höchster W, doppelte TP, etc.) wählt. Wird die Auswahl \"2 normale Attacken\" gewählt, so gilt \"Rüstungsignorierend\" nur für eine dieser zwei Attacken. \nDas Talent Meuchler kann nur mit den Kampffertigkeits-Spezialisierungen Messer, Dolche und Fechtwaffen angewendet werden.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 34,
+    "name": "Wissens,- Handwerks,- Kulturfähigkeiten Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1208,
+        "reference": "talente_whk_stufe_1",
+        "name": "Wissens,- Handwerks,- Kulturfähigkeiten Stufe 1",
+        "parent": "Abenteurer",
+        "cost": 5,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeitsgruppe",
+          "target": "Wissens,- Handwerks,- Kulturfertigkeiten",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 3,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Wissens,- Handwerks,- Kulturfertigkeiten um 3 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 35,
+    "name": "Wissens,- Handwerks,- Kulturfähigkeiten Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1209,
+        "reference": "talente_whk_stufe_2",
+        "name": "Wissens,- Handwerks,- Kulturfähigkeiten Stufe 2",
+        "parent": "Abenteurer",
+        "cost": 5,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeitsgruppe",
+          "target": "Wissens,- Handwerks,- Kulturfertigkeiten",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Wissens,- Handwerks,- Kulturfertigkeiten um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 36,
+    "name": "KI gute Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1137,
+        "reference": "talente_ki_gute_stufe_1",
+        "name": "KI gute Stufe 1",
+        "parent": "KI-Adept",
+        "cost": 30,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "KI gute",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Gute KI-Probe = Magie. Die höchstmögliche Gute ist Normale :2.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 37,
+    "name": "KI gute Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1138,
+        "reference": "talente_ki_gute_stufe_2",
+        "name": "KI gute Stufe 2",
+        "parent": "KI-Adept",
+        "cost": 40,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "KI gute",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Gute KI-Probe = Magie + Aura. Die höchstmögliche Gute ist Normale :2.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 38,
+    "name": "KI Mentale Kapazität Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1139,
+        "reference": "talente_ki_mentale_kapazitaet_stufe_1",
+        "name": "KI Mentale Kapazität Stufe 1",
+        "parent": "KI-Adept",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mentale Kapazität",
+          "targetReference": "sf_mentale_kapazitaet",
+          "operation": "Erhöhe Maximum",
+          "value": 4,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mentale Kapazität um 4 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 39,
+    "name": "KI Mentale Kapazität Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1140,
+        "reference": "talente_ki_mentale_kapazitaet_stufe_2",
+        "name": "KI Mentale Kapazität Stufe 2",
+        "parent": "KI-Adept",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mentale Kapazität",
+          "targetReference": "sf_mentale_kapazitaet",
+          "operation": "Erhöhe Maximum",
+          "value": 8,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mentale Kapazität um 8 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 40,
+    "name": "KI Mentale Kapazität Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1141,
+        "reference": "talente_ki_mentale_kapazitaet_stufe_3",
+        "name": "KI Mentale Kapazität Stufe 3",
+        "parent": "KI-Adept",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mentale Kapazität",
+          "targetReference": "sf_mentale_kapazitaet",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mentale Kapazität um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 41,
+    "name": "KI-Meister",
+    "matches": [
+      {
+        "excelRow": 503,
+        "reference": "talente_ki_meister",
+        "name": "KI-Meister",
+        "parent": "KI-Adept",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "KI-Fähigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeitsgruppe",
+          "target": "alle KI-Fähigkeiten",
+          "targetReference": "ki_ki_faehigkeiten",
+          "operation": "Erhöhe Maximum",
+          "value": 18,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum aller KI-Fähigkeiten um 18 Punkte.",
+      "portStatus": "strukturiert",
+      "note": "Gruppenwirkung muss auf alle KI-Fähigkeitsreferenzen angewandt werden."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 42,
+    "name": "ME sparen",
+    "matches": [
+      {
+        "excelRow": 1164,
+        "reference": "talente_me_sparen",
+        "name": "ME sparen",
+        "parent": "KI-Adept",
+        "cost": 20,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Immer halbe ME.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 43,
+    "name": "Entwaffnen",
+    "matches": [
+      {
+        "excelRow": 1112,
+        "reference": "talente_entwaffnen",
+        "name": "Entwaffnen",
+        "parent": "Krieger",
+        "cost": 40,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Entwaffnen",
+          "targetReference": "talente_entwaffnen",
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Wird im Nahkampf erst angesagt, nach dem der Verteidiger seine Aktion gewählt hat. Ermöglicht es, dem Gegner die Waffe aus der Hand zu schlagen, durch um X erschwerte AT. Die Erschwerung muss mindestens 6 betragen, der Gegner muss bei einer PA der gleichen oder einer schlechter PA-Kl. als die AT-Kl. (und nur bei einer solchen PA) eine um X erschwerte Geschicklichtkeits-Probe ablegen, um seine Waffe nicht fallenzulassen. Gute oder meisterliche AT hat keine weitere Auswirkung auf die Ges-Probe. Die Waffe fällt immer so, dass sie innerhalb von W4 KR wieder aufgehoben werden kann ährend des Aufhebens AT/PA/AW-Klasse -1)",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 44,
+    "name": "Finte",
+    "matches": [
+      {
+        "excelRow": 1116,
+        "reference": "talente_finte",
+        "name": "Finte",
+        "parent": "Krieger",
+        "cost": 30,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Der Angreifer erschwert sich seine AT-Probe um X Punkte. Man kann nicht mehrere Finten hintereinander schlagen. Gelingt die Finte, verursacht der Angriff keinen Schaden und der Fintierte hat in der nächsten Sekunde seine nPA und nAW erschwert um 2*X bei einer normalen AT, bei einer guten um 3*X, bei einer meisterlichen um 4*X, bei einer fröhlichen Finte um 6*X. Egal wie die Ini. in der nächsten Sekunde ausfällt, und egal ob pariert oder def./off. ausgewichen wurde, der Fintierte hat diese Erschwerung auf seine nPA und nAW, aber nur gegen den Angreifer der die Finte geschlagen hat. (Wenn der Angreifer laut n/g/mAT/PA-Tab an der Ini. bleibt, so bleibt er an der Ini. und eventuelle zusätzliche Wirkungen zugunsten des Angreifers treten nicht in Kraft. Wenn er die Ini. verlieren sollte, so verliert er die Ini. und eventuelle zusätzliche Wirkungen zugunsten des Fintierten treten in Kraft. (Eine Stä-Vgl.Probe tritt immer in Kraft.) Wenn die Ini. neu bestimmt wird ist es egal ob der Angreifer sie gewinnt oder verliert, der Fintierte hat den Finten-Malus von letzter Sekunde noch.)",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 45,
+    "name": "Kampf mit zwei Waffen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1126,
+        "reference": "talente_kampf_mit_zwei_waffen_stufe_1",
+        "name": "Kampf mit zwei Waffen Stufe 1",
+        "parent": "Krieger",
+        "cost": 28,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Kampf mit zwei Waffen Stufe 1",
+          "targetReference": "talente_kampf_mit_zwei_waffen_stufe_1",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Erlaubt dem Charakter, zwei Waffen mit max. WK 3,5 (unmodifizierter Listenwert) im Kampf zu führen und unbewaffnete Extra-Aktionen mit der Nebenhand auszuführen.  Dieses Talent kann nicht auf Stangenwaffen angewendet werden. \nDie n-Mods und Mindeststärken beider Waffen werden addiert.\nBei Attacken gilt die 1,5-fache WK der Waffe mit der höheren WK, bei Paraden werden beide WK addiert.\nDer Charakter attackiert mit den Werten der Waffe, die jeweils zum Angriff genutzt wird, und pariert immer mit dem besseren Paradewert beider Waffen.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 46,
+    "name": "Kampf mit zwei Waffen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1127,
+        "reference": "talente_kampf_mit_zwei_waffen_stufe_2",
+        "name": "Kampf mit zwei Waffen Stufe 2",
+        "parent": "Krieger",
+        "cost": 8,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Kampf mit zwei Waffen Stufe 2",
+          "targetReference": "talente_kampf_mit_zwei_waffen_stufe_2",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Erlaubt dem Charakter, zwei Waffen mit max. WK 4,5 (unmodifizierter Listenwert) im Kampf zu führen.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 47,
+    "name": "Kampf mit zwei Waffen Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1128,
+        "reference": "talente_kampf_mit_zwei_waffen_stufe_3",
+        "name": "Kampf mit zwei Waffen Stufe 3",
+        "parent": "Krieger",
+        "cost": 12,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Kampf mit zwei Waffen Stufe 3",
+          "targetReference": "talente_kampf_mit_zwei_waffen_stufe_3",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Erlaubt dem Charakter, zwei Waffen mit max. WK 5,5 (unmodifizierter Listenwert) im Kampf zu führen.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 48,
+    "name": "Kampf mit zwei Waffen Stufe 4",
+    "matches": [
+      {
+        "excelRow": 1129,
+        "reference": "talente_kampf_mit_zwei_waffen_stufe_4",
+        "name": "Kampf mit zwei Waffen Stufe 4",
+        "parent": "Krieger",
+        "cost": 16,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Kampf mit zwei Waffen Stufe 4",
+          "targetReference": "talente_kampf_mit_zwei_waffen_stufe_4",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Erlaubt dem Charakter, zwei Waffen mit max. WK 6,5 (unmodifizierter Listenwert) im Kampf zu führen.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 49,
+    "name": "Kampffertigkeit erhöhen: Bögen",
+    "matches": [
+      {
+        "excelRow": 1130,
+        "reference": "talente_kampffertigkeit_erhoehen_boegen",
+        "name": "Kampffertigkeit erhöhen: Bögen",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampffertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Kampffertigkeit",
+          "target": "Bögen",
+          "targetReference": "fk_boegen",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Kampffertigkeitsmaximum Bögen um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 50,
+    "name": "Kampffertigkeit erhöhen: Hiebwaffen",
+    "matches": [
+      {
+        "excelRow": 1131,
+        "reference": "talente_kampffertigkeit_erhoehen_hiebwaffen",
+        "name": "Kampffertigkeit erhöhen: Hiebwaffen",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampffertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Kampffertigkeit",
+          "target": "Hiebwaffen",
+          "targetReference": "nk_hiebwaffen",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Kampffertigkeitsmaximum Hiebwaffen um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 51,
+    "name": "Kampffertigkeit erhöhen: Klingenwaffen",
+    "matches": [
+      {
+        "excelRow": 1132,
+        "reference": "talente_kampffertigkeit_erhoehen_klingenwaffen",
+        "name": "Kampffertigkeit erhöhen: Klingenwaffen",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampffertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Kampffertigkeit",
+          "target": "Klingenwaffen",
+          "targetReference": "nk_klingenwaffen",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Kampffertigkeitsmaximum Klingenwaffen um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 52,
+    "name": "Kampffertigkeit erhöhen: Schusswaffen",
+    "matches": [
+      {
+        "excelRow": 1133,
+        "reference": "talente_kampffertigkeit_erhoehen_schusswaffen",
+        "name": "Kampffertigkeit erhöhen: Schusswaffen",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampffertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Kampffertigkeit",
+          "target": "Schusswaffen",
+          "targetReference": "fk_schusswaffen",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Kampffertigkeitsmaximum Schusswaffen um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 53,
+    "name": "Kampffertigkeit erhöhen: Stangenwaffen",
+    "matches": [
+      {
+        "excelRow": 1134,
+        "reference": "talente_kampffertigkeit_erhoehen_stangenwaffen",
+        "name": "Kampffertigkeit erhöhen: Stangenwaffen",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampffertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Kampffertigkeit",
+          "target": "Stangenwaffen",
+          "targetReference": "nk_stangenwaffen",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Kampffertigkeitsmaximum Stangenwaffen um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 54,
+    "name": "Kampffertigkeit erhöhen: Stichwaffen",
+    "matches": [
+      {
+        "excelRow": 1135,
+        "reference": "talente_kampffertigkeit_erhoehen_stichwaffen",
+        "name": "Kampffertigkeit erhöhen: Stichwaffen",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampffertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Kampffertigkeit",
+          "target": "Stichwaffen",
+          "targetReference": "nk_stichwaffen",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Kampffertigkeitsmaximum Stichwaffen um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 55,
+    "name": "Kampffertigkeit erhöhen: Unbewaffnet",
+    "matches": [
+      {
+        "excelRow": 1136,
+        "reference": "talente_kampffertigkeit_erhoehen_unbewaffnet",
+        "name": "Kampffertigkeit erhöhen: Unbewaffnet",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampffertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Kampffertigkeit",
+          "target": "Unbewaffnet",
+          "targetReference": "nk_unbewaffnet",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Kampffertigkeitsmaximum Unbewaffnet um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 56,
+    "name": "Konter",
+    "matches": [
+      {
+        "excelRow": 1142,
+        "reference": "talente_konter",
+        "name": "Konter",
+        "parent": "Krieger",
+        "cost": 60,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Konter",
+          "targetReference": "talente_konter",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Ermöglicht dem Krieger nach einer um 15 erschwerten Parade, die um eine Klasse höher war als die Attacke, eine Konterattacke mit AT-Klasse -1.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 57,
+    "name": "Mit Schild umwerfen",
+    "matches": [
+      {
+        "excelRow": 1168,
+        "reference": "talente_mit_schild_umwerfen",
+        "name": "Mit Schild umwerfen",
+        "parent": "Krieger",
+        "cost": 34,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Mit Schild umwerfen",
+          "targetReference": "talente_mit_schild_umwerfen",
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Vorraussetzung Schild: Wird im Nahkampf erst angesagt, nach dem der Verteidiger seine Aktion gewählt hat. Ermöglicht es, den Gegner mit einer um X erschwerten AT umzuwerfen. Die Erschwerung muss mindestens 6 betragen. Wenn der Gegner mit gleicher oder schlechterer PA-Kl. pariert als die AT-Kl. des Angreifers (was keinen Schaden verursacht) oder getroffen wird (was dann halben Schaden des Schilds verursacht), muss er eine um X erschwerte Athletik-Probe ablegen, um nicht zu fallen. Gute oder meisterliche AT haben keine weitere Auswirkung. Wenn er fällt so hat er eine Sekunde lang NK-Kl.-2 und jede Sekunde eine Ath-Probe um die NK-Kl. wieder um 1 zu erhöhen. Wenn der Verteider erfolgreich ausweicht oder mit besserer PA-Kl. pariert, so wird die ngmATPA-Tabelle konsultiert und das Umwerfen schlägt fehl.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 58,
+    "name": "Offensiver Kampfstil Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1170,
+        "reference": "talente_offensiver_kampfstil_stufe_1",
+        "name": "Offensiver Kampfstil Stufe 1",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampfstilmodifikator",
+      "effects": [
+        {
+          "targetType": "Kampfwert",
+          "target": "nAT",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": 1,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Kampfwert",
+          "target": "nPA",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": -1,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Gilt für alle nAT/nPA im betreffenden Kampfstil.",
+      "stacking": "",
+      "implementation": "Addiere +1 auf nAT und -1 auf nPA.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 59,
+    "name": "Offensiver Kampfstil Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1171,
+        "reference": "talente_offensiver_kampfstil_stufe_2",
+        "name": "Offensiver Kampfstil Stufe 2",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampfstilmodifikator",
+      "effects": [
+        {
+          "targetType": "Kampfwert",
+          "target": "nAT",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": 2,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Kampfwert",
+          "target": "nPA",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": -2,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Gilt für alle nAT/nPA im betreffenden Kampfstil.",
+      "stacking": "",
+      "implementation": "Addiere +2 auf nAT und -2 auf nPA.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 60,
+    "name": "Offensiver Kampfstil Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1172,
+        "reference": "talente_offensiver_kampfstil_stufe_3",
+        "name": "Offensiver Kampfstil Stufe 3",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampfstilmodifikator",
+      "effects": [
+        {
+          "targetType": "Kampfwert",
+          "target": "nAT",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": 3,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Kampfwert",
+          "target": "nPA",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": -3,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Gilt für alle nAT/nPA im betreffenden Kampfstil.",
+      "stacking": "",
+      "implementation": "Addiere +3 auf nAT und -3 auf nPA.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 61,
+    "name": "Rüstungsmanöver Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1178,
+        "reference": "talente_ruestungsmanoever_stufe_1",
+        "name": "Rüstungsmanöver Stufe 1",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Rüstungsmanöver",
+          "targetReference": "sf_ruestungsmanoever",
+          "operation": "Erhöhe Maximum",
+          "value": 4,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Rüstungsmanöver um 4 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 62,
+    "name": "Rüstungsmanöver Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1179,
+        "reference": "talente_ruestungsmanoever_stufe_2",
+        "name": "Rüstungsmanöver Stufe 2",
+        "parent": "Krieger",
+        "cost": 14,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Rüstungsmanöver",
+          "targetReference": "sf_ruestungsmanoever",
+          "operation": "Erhöhe Maximum",
+          "value": 8,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Rüstungsmanöver um 8 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 63,
+    "name": "Rüstungsmanöver Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1180,
+        "reference": "talente_ruestungsmanoever_stufe_3",
+        "name": "Rüstungsmanöver Stufe 3",
+        "parent": "Krieger",
+        "cost": 16,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Rüstungsmanöver",
+          "targetReference": "sf_ruestungsmanoever",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Rüstungsmanöver um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 64,
+    "name": "Schnellziehen Hiebwaffen",
+    "matches": [
+      {
+        "excelRow": 1190,
+        "reference": "talente_schnellziehen_hiebwaffen",
+        "name": "Schnellziehen Hiebwaffen",
+        "parent": "Krieger",
+        "cost": 12,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit ohne jegliche Erschwerung agiert werden. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 65,
+    "name": "Schnellziehen Klingenwaffen",
+    "matches": [
+      {
+        "excelRow": 1191,
+        "reference": "talente_schnellziehen_klingenwaffen",
+        "name": "Schnellziehen Klingenwaffen",
+        "parent": "Krieger",
+        "cost": 12,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit ohne jegliche Erschwerung agiert werden. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 66,
+    "name": "Schnellziehen Stangenwaffen",
+    "matches": [
+      {
+        "excelRow": 1192,
+        "reference": "talente_schnellziehen_stangenwaffen",
+        "name": "Schnellziehen Stangenwaffen",
+        "parent": "Krieger",
+        "cost": 12,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit ohne jegliche Erschwerung agiert werden. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 67,
+    "name": "Schnellziehen Stichwaffen",
+    "matches": [
+      {
+        "excelRow": 1193,
+        "reference": "talente_schnellziehen_stichwaffen",
+        "name": "Schnellziehen Stichwaffen",
+        "parent": "Krieger",
+        "cost": 12,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit ohne jegliche Erschwerung agiert werden. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 68,
+    "name": "Selbsbeherrschung Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1194,
+        "reference": "talente_selbstbeherrschung_stufe_1",
+        "name": "Selbstbeherrschung Stufe 1",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Selbstbeherrschung",
+          "targetReference": "sf_selbstbeherrschung",
+          "operation": "Erhöhe Maximum",
+          "value": 7,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Selbstbeherrschung um 7 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 69,
+    "name": "Selbsbeherrschung Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1195,
+        "reference": "talente_selbstbeherrschung_stufe_2",
+        "name": "Selbstbeherrschung Stufe 2",
+        "parent": "Krieger",
+        "cost": 3,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Selbstbeherrschung",
+          "targetReference": "sf_selbstbeherrschung",
+          "operation": "Erhöhe Maximum",
+          "value": 14,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Selbstbeherrschung um 14 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 70,
+    "name": "Selbsbeherrschung Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1196,
+        "reference": "talente_selbstbeherrschung_stufe_3",
+        "name": "Selbstbeherrschung Stufe 3",
+        "parent": "Krieger",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Selbstbeherrschung",
+          "targetReference": "sf_selbstbeherrschung",
+          "operation": "Erhöhe Maximum",
+          "value": 20,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Selbstbeherrschung um 20 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 71,
+    "name": "Verteidiger Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1203,
+        "reference": "talente_verteidiger_stufe_1",
+        "name": "Verteidiger Stufe 1",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampfstilmodifikator",
+      "effects": [
+        {
+          "targetType": "Kampfwert",
+          "target": "nAT",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": -1,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Kampfwert",
+          "target": "nPA",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": 1,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Gilt für alle nAT/nPA im betreffenden Kampfstil.",
+      "stacking": "",
+      "implementation": "Addiere -1 auf nAT und +1 auf nPA.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 72,
+    "name": "Verteidiger Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1204,
+        "reference": "talente_verteidiger_stufe_2",
+        "name": "Verteidiger Stufe 2",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampfstilmodifikator",
+      "effects": [
+        {
+          "targetType": "Kampfwert",
+          "target": "nAT",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": -2,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Kampfwert",
+          "target": "nPA",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": 2,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Gilt für alle nAT/nPA im betreffenden Kampfstil.",
+      "stacking": "",
+      "implementation": "Addiere -2 auf nAT und +2 auf nPA.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 73,
+    "name": "Verteidiger Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1205,
+        "reference": "talente_verteidiger_stufe_3",
+        "name": "Verteidiger Stufe 3",
+        "parent": "Krieger",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Kampfstilmodifikator",
+      "effects": [
+        {
+          "targetType": "Kampfwert",
+          "target": "nAT",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": -3,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Kampfwert",
+          "target": "nPA",
+          "targetReference": null,
+          "operation": "Addiere",
+          "value": 3,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Gilt für alle nAT/nPA im betreffenden Kampfstil.",
+      "stacking": "",
+      "implementation": "Addiere -3 auf nAT und +3 auf nPA.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 74,
+    "name": "Wuchtschlag",
+    "matches": [
+      {
+        "excelRow": 1210,
+        "reference": "talente_wuchtschlag",
+        "name": "Wuchtschlag",
+        "parent": "Krieger",
+        "cost": 20,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Wuchtschlag",
+          "targetReference": null,
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Nur bestimmte Charakterklassen: ermöglicht eine AT mit dreifachem Schaden wenn man vorher ein Sekunde steht (keine andere Aktion möglich), oder eine AT mit halbiertem nAT-Wert mit dreifachem Schaden aus dem Laufen (nur gerader Ansturm). Schließt sich mit AT-Kl.+1 in jedem Fall aus. Man muss wählen ob man die AT-Kl.+1 oder den Schadensmultiplikator des Wuchtschlags nimmt.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 75,
+    "name": "Zäher Bursche Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1079,
+        "reference": "talente_zaeher_bursche_stufe_1",
+        "name": "Zäher Bursche Stufe 1",
+        "parent": "Krieger",
+        "cost": 16,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Charakterwertmodifikator",
+      "effects": [
+        {
+          "targetType": "Charakterwert",
+          "target": "Selbstbeherrschung",
+          "targetReference": "selbstbeherrschung",
+          "operation": "Addiere",
+          "value": 1,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Charakterwert",
+          "target": "Gesundheit",
+          "targetReference": "gesundheit",
+          "operation": "Addiere",
+          "value": 2,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe Selbstbeherrschung und Gesundheit um die angegebenen Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 76,
+    "name": "Zäher Bursche Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1080,
+        "reference": "talente_zaeher_bursche_stufe_2",
+        "name": "Zäher Bursche Stufe 2",
+        "parent": "Krieger",
+        "cost": 32,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Charakterwertmodifikator",
+      "effects": [
+        {
+          "targetType": "Charakterwert",
+          "target": "Trefferschwelle",
+          "targetReference": "trefferschwelle",
+          "operation": "Addiere",
+          "value": 1,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Charakterwert",
+          "target": "Selbstbeherrschung",
+          "targetReference": "selbstbeherrschung",
+          "operation": "Addiere",
+          "value": 3,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Charakterwert",
+          "target": "Gesundheit",
+          "targetReference": "gesundheit",
+          "operation": "Addiere",
+          "value": 4,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe Trefferschwelle, Selbstbeherrschung und Gesundheit um die angegebenen Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 77,
+    "name": "Zäher Bursche Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1081,
+        "reference": "talente_zaeher_bursche_stufe_3",
+        "name": "Zäher Bursche Stufe 3",
+        "parent": "Krieger",
+        "cost": 48,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Charakterwertmodifikator",
+      "effects": [
+        {
+          "targetType": "Charakterwert",
+          "target": "Trefferschwelle",
+          "targetReference": "trefferschwelle",
+          "operation": "Addiere",
+          "value": 2,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Charakterwert",
+          "target": "Selbstbeherrschung",
+          "targetReference": "selbstbeherrschung",
+          "operation": "Addiere",
+          "value": 6,
+          "unit": "Punkte"
+        },
+        {
+          "targetType": "Charakterwert",
+          "target": "Gesundheit",
+          "targetReference": "gesundheit",
+          "operation": "Addiere",
+          "value": 7,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe Trefferschwelle, Selbstbeherrschung und Gesundheit um die angegebenen Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 78,
+    "name": "Blutmagie Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1098,
+        "reference": "talente_blutmagie_stufe_1",
+        "name": "Blutmagie Stufe 1",
+        "parent": "Magier",
+        "cost": 26,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Blutmagie",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Der Einsatz der Blutmagie-Fähigkeit erfordert eine blutende Wunde mit einem Punkt Blutung, und in jedem Fall eine Mut-Probe. Die Mut-Probe kann jede Sekunde wiederholt werden. Der Magier kann, wenn er sich eine blutende Wunde zufügt (ein Punkt Blutung), oder eine solche bereits hat, seine gute Spruchzauberprobe ohne weitere zeitliche Verzögerung um 1 Punkt pro Gesundheitspunkt, den er freiwillig opfert, erhöhen. Dabei kann seine gute Probe bis zur normalen Probe steigen. Er kann bis zu seiner gesamten momentanen Gesundheit + Vitalität opfern. Die Punkte werden erst nach Ende der Effektdauer bzw. Scheitern der Spruchprobe von der Gesundheit abgezogen. Wenn er dabei mehr als TS an Gesundheit verliert, muss er eine SB-Probe und ggf. eine Konzentrationsprobe würfeln.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 79,
+    "name": "Blutmagie Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1099,
+        "reference": "talente_blutmagie_stufe_2",
+        "name": "Blutmagie Stufe 2",
+        "parent": "Magier",
+        "cost": 26,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Blutmagie",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Der Einsatz der Blutmagie-Fähigkeit erfordert eine blutende Wunde mit einem Punkt Blutung, und in jedem Fall eine Mut-Probe. Die Mut-Probe kann jede Sekunde wiederholt werden. Der Magier kann, wenn er sich eine blutende Wunde zufügt (ein Punkt Blutung), oder eine solche bereits hat, seine gute Spruchzauberprobe ohne weitere zeitliche Verzögerung um 2 Punkte pro Gesundheitspunkt, den er freiwillig opfert, erhöhen. Dabei kann seine gute Probe bis zur normalen Probe steigen. Er kann bis zu seiner gesamten momentanen Gesundheit + Vitalität opfern. Die Punkte werden erst nach Ende der Effektdauer bzw. Scheitern der Spruchprobe von der Gesundheit abgezogen. Wenn er dabei mehr als TS an Gesundheit verliert, muss er eine SB-Probe und ggf. eine Konzentrationsprobe würfeln.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 80,
+    "name": "Blutmagie Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1100,
+        "reference": "talente_blutmagie_stufe_3",
+        "name": "Blutmagie Stufe 3",
+        "parent": "Magier",
+        "cost": 26,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Blutmagie",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Der Einsatz der Blutmagie-Fähigkeit erfordert eine blutende Wunde mit einem Punkt Blutung, und in jedem Fall eine Mut-Probe. Die Mut-Probe kann jede Sekunde wiederholt werden. Der Magier kann, wenn er sich eine blutende Wunde zufügt (ein Punkt Blutung), oder eine solche bereits hat, seine gute Spruchzauberprobe ohne weitere zeitliche Verzögerung um 3 Punkte pro Gesundheitspunkt, den er freiwillig opfert, erhöhen. Dabei kann seine gute Probe bis zur normalen Probe steigen. Er kann bis zu seiner gesamten momentanen Gesundheit + Vitalität opfern. Die Punkte werden erst nach Ende der Effektdauer bzw. Scheitern der Spruchprobe von der Gesundheit abgezogen. Wenn er dabei mehr als TS an Gesundheit verliert, muss er eine SB-Probe und ggf. eine Konzentrationsprobe würfeln.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 81,
+    "name": "Erzmagus [Schule] Stufe 3",
+    "matches": [
+      {
+        "excelRow": 528,
+        "reference": "talente_magus_stufe_3_antimagies_erzmagus",
+        "name": "Magus Stufe 3: Antimagies-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 529,
+        "reference": "talente_magus_stufe_3_beherrschungs_erzmagus",
+        "name": "Magus Stufe 3: Beherrschungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 530,
+        "reference": "talente_magus_stufe_3_erdbeschwoerungs_erzmagus",
+        "name": "Magus Stufe 3: Erdbeschwörungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 531,
+        "reference": "talente_magus_stufe_3_feuerbeschwoerungs_erzmagus",
+        "name": "Magus Stufe 3: Feuerbeschwörungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 532,
+        "reference": "talente_magus_stufe_3_heilungs_erzmagus",
+        "name": "Magus Stufe 3: Heilungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 533,
+        "reference": "talente_magus_stufe_3_hellsicht_erzmagus",
+        "name": "Magus Stufe 3: Hellsicht-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 534,
+        "reference": "talente_magus_stufe_3_illusions_erzmagus",
+        "name": "Magus Stufe 3: Illusions-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 535,
+        "reference": "talente_magus_stufe_3_luftbeschwoerungs_erzmagus",
+        "name": "Magus Stufe 3: Luftbeschwörungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 536,
+        "reference": "talente_magus_stufe_3_magiebeschwoerungs_erzmagus",
+        "name": "Magus Stufe 3: Magiebeschwörungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 537,
+        "reference": "talente_magus_stufe_3_veraenderungs_erzmagus",
+        "name": "Magus Stufe 3: Veränderungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 538,
+        "reference": "talente_magus_stufe_3_verzauberungs_erzmagus",
+        "name": "Magus Stufe 3: Verzauberungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      },
+      {
+        "excelRow": 539,
+        "reference": "talente_magus_stufe_3_wasserbeschwoerungs_erzmagus",
+        "name": "Magus Stufe 3: Wasserbeschwörungs-Erzmagus",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Zauberschulmaximum",
+      "effects": [
+        {
+          "targetType": "Zauberschule",
+          "target": "[Schule]",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 18,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Einmal je Zauberschule kaufbar; konkrete Schule folgt aus der Werte-Referenz.",
+      "stacking": "Stufen 1–3 bauen fachlich aufeinander auf; kumulative Auslegung prüfen.",
+      "implementation": "Erhöhe das Zaubermaximum der in der Talent-Referenz codierten Schule um 18 Punkte.",
+      "portStatus": "strukturiert – 1:n",
+      "note": "Eine Quellzeile repräsentiert zwölf schulkonkrete Werte-Referenzen."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 82,
+    "name": "Großmagus [Schule] Stufe 2",
+    "matches": [
+      {
+        "excelRow": 516,
+        "reference": "talente_magus_stufe_2_antimagies_grossmagus",
+        "name": "Magus Stufe 2: Antimagies-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 517,
+        "reference": "talente_magus_stufe_2_beherrschungs_grossmagus",
+        "name": "Magus Stufe 2: Beherrschungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 518,
+        "reference": "talente_magus_stufe_2_erdbeschwoerungs_grossmagus",
+        "name": "Magus Stufe 2: Erdbeschwörungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 519,
+        "reference": "talente_magus_stufe_2_feuerbeschwoerungs_grossmagus",
+        "name": "Magus Stufe 2: Feuerbeschwörungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 520,
+        "reference": "talente_magus_stufe_2_heilungs_grossmagus",
+        "name": "Magus Stufe 2: Heilungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 521,
+        "reference": "talente_magus_stufe_2_hellsicht_grossmagus",
+        "name": "Magus Stufe 2: Hellsicht-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 522,
+        "reference": "talente_magus_stufe_2_illusions_grossmagus",
+        "name": "Magus Stufe 2: Illusions-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 523,
+        "reference": "talente_magus_stufe_2_luftbeschwoerungs_grossmagus",
+        "name": "Magus Stufe 2: Luftbeschwörungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 524,
+        "reference": "talente_magus_stufe_2_magiebeschwoerungs_grossmagus",
+        "name": "Magus Stufe 2: Magiebeschwörungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 525,
+        "reference": "talente_magus_stufe_2_veraenderungs_grossmagus",
+        "name": "Magus Stufe 2: Veränderungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 526,
+        "reference": "talente_magus_stufe_2_verzauberungs_grossmagus",
+        "name": "Magus Stufe 2: Verzauberungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      },
+      {
+        "excelRow": 527,
+        "reference": "talente_magus_stufe_2_wasserbeschwoerungs_grossmagus",
+        "name": "Magus Stufe 2: Wasserbeschwörungs-Großmagus",
+        "parent": "Magier",
+        "cost": 12,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Zauberschulmaximum",
+      "effects": [
+        {
+          "targetType": "Zauberschule",
+          "target": "[Schule]",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Einmal je Zauberschule kaufbar; konkrete Schule folgt aus der Werte-Referenz.",
+      "stacking": "Stufen 1–3 bauen fachlich aufeinander auf; kumulative Auslegung prüfen.",
+      "implementation": "Erhöhe das Zaubermaximum der in der Talent-Referenz codierten Schule um 12 Punkte.",
+      "portStatus": "strukturiert – 1:n",
+      "note": "Eine Quellzeile repräsentiert zwölf schulkonkrete Werte-Referenzen."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 83,
+    "name": "Konzentration Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1143,
+        "reference": "talente_konzentration_stufe_1",
+        "name": "Konzentration Stufe 1",
+        "parent": "Magier",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Konzentration",
+          "targetReference": "ki_konzentration",
+          "operation": "Erhöhe Maximum",
+          "value": 4,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Konzentration um 4 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 84,
+    "name": "Konzentration Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1144,
+        "reference": "talente_konzentration_stufe_2",
+        "name": "Konzentration Stufe 2",
+        "parent": "Magier",
+        "cost": 3,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Konzentration",
+          "targetReference": "ki_konzentration",
+          "operation": "Erhöhe Maximum",
+          "value": 8,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Konzentration um 8 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 85,
+    "name": "Konzentration Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1145,
+        "reference": "talente_konzentration_stufe_3",
+        "name": "Konzentration Stufe 3",
+        "parent": "Magier",
+        "cost": 5,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Konzentration",
+          "targetReference": "ki_konzentration",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Konzentration um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 86,
+    "name": "Magus [Schule] Stufe 1",
+    "matches": [
+      {
+        "excelRow": 504,
+        "reference": "talente_magus_stufe_1_antimagie_magus",
+        "name": "Magus Stufe 1: Antimagie-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 505,
+        "reference": "talente_magus_stufe_1_beherrschungs_magus",
+        "name": "Magus Stufe 1: Beherrschungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 506,
+        "reference": "talente_magus_stufe_1_erdbeschwoerungs_magus",
+        "name": "Magus Stufe 1: Erdbeschwörungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 507,
+        "reference": "talente_magus_stufe_1_feuerbeschwoerungs_magus",
+        "name": "Magus Stufe 1: Feuerbeschwörungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 508,
+        "reference": "talente_magus_stufe_1_heilungs_magus",
+        "name": "Magus Stufe 1: Heilungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 509,
+        "reference": "talente_magus_stufe_1_hellsicht_magus",
+        "name": "Magus Stufe 1: Hellsicht-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 510,
+        "reference": "talente_magus_stufe_1_illusions_magus",
+        "name": "Magus Stufe 1: Illusions-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 511,
+        "reference": "talente_magus_stufe_1_luftbeschwoerungs_magus",
+        "name": "Magus Stufe 1: Luftbeschwörungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 512,
+        "reference": "talente_magus_stufe_1_magiebeschwoerungs_magus",
+        "name": "Magus Stufe 1: Magiebeschwörungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 513,
+        "reference": "talente_magus_stufe_1_veraenderungs_magus",
+        "name": "Magus Stufe 1: Veränderungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 514,
+        "reference": "talente_magus_stufe_1_verzauberungs_magus",
+        "name": "Magus Stufe 1: Verzauberungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      },
+      {
+        "excelRow": 515,
+        "reference": "talente_magus_stufe_1_wasserbeschwoerungs_magus",
+        "name": "Magus Stufe 1: Wasserbeschwörungs-Magus",
+        "parent": "Magier",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Zauberschulmaximum",
+      "effects": [
+        {
+          "targetType": "Zauberschule",
+          "target": "[Schule]",
+          "targetReference": null,
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "Einmal je Zauberschule kaufbar; konkrete Schule folgt aus der Werte-Referenz.",
+      "stacking": "Stufen 1–3 bauen fachlich aufeinander auf; kumulative Auslegung prüfen.",
+      "implementation": "Erhöhe das Zaubermaximum der in der Talent-Referenz codierten Schule um 6 Punkte.",
+      "portStatus": "strukturiert – 1:n",
+      "note": "Eine Quellzeile repräsentiert zwölf schulkonkrete Werte-Referenzen."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 87,
+    "name": "Mana Meditation Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1155,
+        "reference": "talente_mana_meditation_stufe_1",
+        "name": "Mana Meditation Stufe 1",
+        "parent": "Magier",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mana Meditation",
+          "targetReference": "sf_meditation",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mana Meditation um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 88,
+    "name": "Mana Meditation Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1156,
+        "reference": "talente_mana_meditation_stufe_2",
+        "name": "Mana Meditation Stufe 2",
+        "parent": "Magier",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mana Meditation",
+          "targetReference": "sf_meditation",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mana Meditation um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 89,
+    "name": "Mana Meditation Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1157,
+        "reference": "talente_mana_meditation_stufe_3",
+        "name": "Mana Meditation Stufe 3",
+        "parent": "Magier",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mana Meditation",
+          "targetReference": "sf_meditation",
+          "operation": "Erhöhe Maximum",
+          "value": 18,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mana Meditation um 18 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 90,
+    "name": "Mana Regeneration Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1158,
+        "reference": "talente_mana_regeneration_stufe_1",
+        "name": "Mana Regeneration Stufe 1",
+        "parent": "Magier",
+        "cost": 10,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Regeneration",
+      "effects": [
+        {
+          "targetType": "Charakterwert",
+          "target": "Mana-Regeneration",
+          "targetReference": null,
+          "operation": "Multipliziere",
+          "value": 1.5,
+          "unit": "Faktor"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Multipliziere die natürliche Mana-Regeneration mit Faktor 1,5.",
+      "portStatus": "strukturiert",
+      "note": "50 % laut Beschreibung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": [
+      {
+        "targetType": "Charakterwert",
+        "target": "Mana-Regeneration",
+        "targetReference": null,
+        "operation": "Multipliziere",
+        "value": 1.5,
+        "unit": "Faktor"
+      }
+    ]
+  },
+  {
+    "sourceRow": 91,
+    "name": "Mana Regeneration Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1159,
+        "reference": "talente_mana_regeneration_stufe_2",
+        "name": "Mana Regeneration Stufe 2",
+        "parent": "Magier",
+        "cost": 13,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Regeneration",
+      "effects": [
+        {
+          "targetType": "Charakterwert",
+          "target": "Mana-Regeneration",
+          "targetReference": null,
+          "operation": "Multipliziere",
+          "value": 2,
+          "unit": "Faktor"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Multipliziere die natürliche Mana-Regeneration mit Faktor 2,0.",
+      "portStatus": "strukturiert",
+      "note": "100 % laut Beschreibung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": [
+      {
+        "targetType": "Charakterwert",
+        "target": "Mana-Regeneration",
+        "targetReference": null,
+        "operation": "Multipliziere",
+        "value": 2,
+        "unit": "Faktor"
+      }
+    ]
+  },
+  {
+    "sourceRow": 92,
+    "name": "Mana Talent Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1160,
+        "reference": "talente_mana_talent_stufe_1",
+        "name": "Mana Talent Stufe 1",
+        "parent": "Magier",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mana Talentwert",
+          "targetReference": "sf_mana_talent",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mana Talentwert um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 93,
+    "name": "Mana Talent Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1161,
+        "reference": "talente_mana_talent_stufe_2",
+        "name": "Mana Talent Stufe 2",
+        "parent": "Magier",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mana Talentwert",
+          "targetReference": "sf_mana_talent",
+          "operation": "Erhöhe Maximum",
+          "value": 12,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mana Talentwert um 12 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 94,
+    "name": "Mana Talent Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1162,
+        "reference": "talente_mana_talent_stufe_3",
+        "name": "Mana Talent Stufe 3",
+        "parent": "Magier",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mana Talentwert",
+          "targetReference": "sf_mana_talent",
+          "operation": "Erhöhe Maximum",
+          "value": 18,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mana Talentwert um 18 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 95,
+    "name": "Mana Talent Stufe 4",
+    "matches": [
+      {
+        "excelRow": 1163,
+        "reference": "talente_mana_talent_stufe_4",
+        "name": "Mana Talent Stufe 4",
+        "parent": "Magier",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Fertigkeit",
+          "target": "Mana Talentwert",
+          "targetReference": "sf_mana_talent",
+          "operation": "Erhöhe Maximum",
+          "value": 24,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Fertigkeitsmaximum Mana Talentwert um 24 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 96,
+    "name": "Schnell Zaubern Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1182,
+        "reference": "talente_schnell_zaubern_stufe_1",
+        "name": "Schnell Zaubern Stufe 1",
+        "parent": "Magier",
+        "cost": 85,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :2/:3/:4.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 97,
+    "name": "Schnell Zaubern Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1183,
+        "reference": "talente_schnell_zaubern_stufe_2",
+        "name": "Schnell Zaubern Stufe 2",
+        "parent": "Magier",
+        "cost": 43,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :3/:4/:5. Nicht kumulativ mit anderen Stufen dieses Vorteils.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 98,
+    "name": "Schnell Zaubern Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1184,
+        "reference": "talente_schnell_zaubern_stufe_3",
+        "name": "Schnell Zaubern Stufe 3",
+        "parent": "Magier",
+        "cost": 21,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :4/:5/:6. Nicht kumulativ mit anderen Stufen dieses Vorteils.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 99,
+    "name": "Spruchgute Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1199,
+        "reference": "talente_spruchgute_stufe_1",
+        "name": "Spruchgute Stufe 1",
+        "parent": "Magier",
+        "cost": 16,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Spruchgute",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: In allen Zauberschulen Gute Spruchzauberprobe = Weisheit. Die höchstmögliche Gute ist Normale:2.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 100,
+    "name": "Spruchgute Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1200,
+        "reference": "talente_spruchgute_stufe_2",
+        "name": "Spruchgute Stufe 2",
+        "parent": "Magier",
+        "cost": 24,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Spruchgute",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: In allen Zauberschulen Gute Spruchzauberprobe = Weisheit + Eigenschaftsbonus. Die höchstmögliche Gute ist Normale:2.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 101,
+    "name": "Spruchmagie Stufe 2 zaubern",
+    "matches": [
+      {
+        "excelRow": 1201,
+        "reference": "talente_spruchmagie_stufe_2_zaubern",
+        "name": "Spruchmagie Stufe 2 zaubern",
+        "parent": "Magier",
+        "cost": 7,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In allen Zauberschulen ist es möglich, Sprüche auf Stufe 2 zu sprechen.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 102,
+    "name": "Spruchmagie Stufe 3 zaubern",
+    "matches": [
+      {
+        "excelRow": 1202,
+        "reference": "talente_spruchmagie_stufe_3_zaubern",
+        "name": "Spruchmagie Stufe 3 zaubern",
+        "parent": "Magier",
+        "cost": 7,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In allen Zauberschulen ist es möglich, Sprüche auf Stufe 3 zu sprechen.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 103,
+    "name": "PSI gute Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1173,
+        "reference": "talente_psi_gute_stufe_1",
+        "name": "PSI gute Stufe 1",
+        "parent": "PSI-Magier",
+        "cost": 14,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "PSI gute",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Gute PSI-Probe = Magie. Die höchstmögliche Gute ist Normale:2.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 104,
+    "name": "PSI gute Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1174,
+        "reference": "talente_psi_gute_stufe_2",
+        "name": "PSI gute Stufe 2",
+        "parent": "PSI-Magier",
+        "cost": 22,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "PSI gute",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: Gute PSI-Probe = Magie + Eigenschaftsbonus. Die höchstmögliche Gute ist Normale:2.",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 105,
+    "name": "PSI Psinetik Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1175,
+        "reference": "talente_psi_psinetik_stufe_1",
+        "name": "PSI Psinetik Stufe 1",
+        "parent": "PSI-Magier",
+        "cost": 1,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: PSI Fertigkeitsmaximmum +6",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 106,
+    "name": "PSI Psinetik Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1176,
+        "reference": "talente_psi_psinetik_stufe_2",
+        "name": "PSI Psinetik Stufe 2",
+        "parent": "PSI-Magier",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: PSI Fertigkeitsmaximmum +12",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 107,
+    "name": "PSI Psinetik Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1177,
+        "reference": "talente_psi_psinetik_stufe_3",
+        "name": "PSI Psinetik Stufe 3",
+        "parent": "PSI-Magier",
+        "cost": 12,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: PSI Fertigkeitsmaximmum +18",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 108,
+    "name": "Berittenes Armbrustschießen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1088,
+        "reference": "talente_berittenes_armbrustschiessen_stufe_1",
+        "name": "Berittenes Armbrustschießen Stufe 1",
+        "parent": "Schütze",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Veringert den FK-Modifikator für \"vom laufenden Pferd\" beim Armbrustschießen um 3.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 109,
+    "name": "Berittenes Armbrustschießen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1089,
+        "reference": "talente_berittenes_armbrustschiessen_stufe_2",
+        "name": "Berittenes Armbrustschießen Stufe 2",
+        "parent": "Schütze",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Veringert den FK-Modifikator für \"vom laufenden Pferd\" beim Armbrustschießen um 7.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 110,
+    "name": "Berittenes Bogenschießen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1090,
+        "reference": "talente_berittenes_bogenschiessen_stufe_1",
+        "name": "Berittenes Bogenschießen Stufe 1",
+        "parent": "Schütze",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Veringert den FK-Modifikator für \"vom laufenden Pferd\" beim Bogenschießen um 3.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 111,
+    "name": "Berittenes Bogenschießen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1091,
+        "reference": "talente_berittenes_bogenschiessen_stufe_2",
+        "name": "Berittenes Bogenschießen Stufe 2",
+        "parent": "Schütze",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Veringert den FK-Modifikator für \"vom laufenden Pferd\" beim Bogenschießen um 7.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 112,
+    "name": "Berittenes Musketenschießen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1092,
+        "reference": "talente_berittenes_musketenschiessen_stufe_1",
+        "name": "Berittenes Musketenschießen Stufe 1",
+        "parent": "Schütze",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Veringert den FK-Modifikator für \"vom laufenden Pferd\" beim Musketenschießen um 3.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 113,
+    "name": "Berittenes Musketenschießen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1093,
+        "reference": "talente_berittenes_musketenschiessen_stufe_2",
+        "name": "Berittenes Musketenschießen Stufe 2",
+        "parent": "Schütze",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Veringert den FK-Modifikator für \"vom laufenden Pferd\" beim Musketenschießen um 7.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 114,
+    "name": "Berittenes Pistolenschießen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1094,
+        "reference": "talente_berittenes_pistolenschiessen_stufe_1",
+        "name": "Berittenes Pistolenschießen Stufe 1",
+        "parent": "Schütze",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Modifikator – komplex",
+      "effects": [
+        {
+          "targetType": "Regelwert",
+          "target": "aus Beschreibung abzuleiten",
+          "targetReference": null,
+          "operation": "Modifiziere",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Modifikatorregel um: Verringert den FK-Modifikator für \"vom laufenden Pferd\" beim Pistolenschießen auf 3.",
+      "portStatus": "teilstrukturiert",
+      "note": "Richtung ist erkennbar, Ziel/Formel muss manuell präzisiert werden."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 115,
+    "name": "Berittenes Pistolenschießen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1095,
+        "reference": "talente_berittenes_pistolenschiessen_stufe_2",
+        "name": "Berittenes Pistolenschießen Stufe 2",
+        "parent": "Schütze",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Modifikator – komplex",
+      "effects": [
+        {
+          "targetType": "Regelwert",
+          "target": "aus Beschreibung abzuleiten",
+          "targetReference": null,
+          "operation": "Modifiziere",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Modifikatorregel um: Verringert den FK-Modifikator für \"vom laufenden Pferd\" beim Pistolenschießen auf 7.",
+      "portStatus": "teilstrukturiert",
+      "note": "Richtung ist erkennbar, Ziel/Formel muss manuell präzisiert werden."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 116,
+    "name": "Berittenes Werfen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1096,
+        "reference": "talente_berittenes_werfen_stufe_1",
+        "name": "Berittenes Werfen Stufe 1",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fernkampfmodifikator",
+      "effects": [
+        {
+          "targetType": "Modifikator",
+          "target": "FK-Modifikator laut Beschreibung",
+          "targetReference": null,
+          "operation": "Verringere Malus",
+          "value": 3,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "vom laufenden Pferd",
+      "stacking": "",
+      "implementation": "Verringere den betroffenen FK-Malus um 3 Punkte.",
+      "portStatus": "teilstrukturiert",
+      "note": "Konkrete Modifikator-ID muss beim Port festgelegt werden."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 117,
+    "name": "Berittenes Werfen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1097,
+        "reference": "talente_berittenes_werfen_stufe_2",
+        "name": "Berittenes Werfen Stufe 2",
+        "parent": "Schütze",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fernkampfmodifikator",
+      "effects": [
+        {
+          "targetType": "Modifikator",
+          "target": "FK-Modifikator laut Beschreibung",
+          "targetReference": null,
+          "operation": "Verringere Malus",
+          "value": 7,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "vom laufenden Pferd",
+      "stacking": "",
+      "implementation": "Verringere den betroffenen FK-Malus um 7 Punkte.",
+      "portStatus": "teilstrukturiert",
+      "note": "Konkrete Modifikator-ID muss beim Port festgelegt werden."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 118,
+    "name": "Fernkampfgeschick Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1113,
+        "reference": "talente_fernkampfgeschick_stufe_1",
+        "name": "Fernkampfgeschick Stufe 1",
+        "parent": "Schütze",
+        "cost": 8,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Fernkampfgeschick",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: FK-Gute= Probe :4, automatisch geschenkte Punkte",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 119,
+    "name": "Fernkampfgeschick Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1114,
+        "reference": "talente_fernkampfgeschick_stufe_2",
+        "name": "Fernkampfgeschick Stufe 2",
+        "parent": "Schütze",
+        "cost": 12,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Probenregel",
+      "effects": [
+        {
+          "targetType": "Probe",
+          "target": "Fernkampfgeschick",
+          "targetReference": null,
+          "operation": "Ändere Gute-/Geschenkt-Regel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Probenregel um: FK-Gute= Probe :3, automatisch geschenkte Punkte",
+      "portStatus": "teilstrukturiert",
+      "note": "Probenformel aus dem Regeltext ableiten; keine einfache additive Wirkung."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 120,
+    "name": "Fernkampfgeschick Stufe 3",
+    "matches": [
+      {
+        "excelRow": 1115,
+        "reference": "talente_fernkampfgeschick_stufe_3",
+        "name": "Fernkampfgeschick Stufe 3",
+        "parent": "Schütze",
+        "cost": 10,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Die FK-Meisterliche beträgt automatisch (geschenkt) Probe:20. Bei einem Punkt Meisterliche hat man 21, bei 2 Punkten 22 usw.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 121,
+    "name": "Fliegend Schießen",
+    "matches": [
+      {
+        "excelRow": 1117,
+        "reference": "talente_fliegend_schiessen",
+        "name": "Fliegend Schießen",
+        "parent": "Schütze",
+        "cost": 20,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fernkampfmodifikator",
+      "effects": [
+        {
+          "targetType": "Modifikator",
+          "target": "FK-/Zielen-Modifikator laut Beschreibung",
+          "targetReference": null,
+          "operation": "Setze/ändere Staffel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Setze folgende Modifikatorregel um: Verändert den FK-Modifikator für \"Schütze fliegend\" mit allen Waffen auf 0/+1.",
+      "portStatus": "teilstrukturiert",
+      "note": "Staffelwerte und konkrete Modifikator-ID manuell modellieren."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 122,
+    "name": "Gezielter Schuss",
+    "matches": [
+      {
+        "excelRow": 1121,
+        "reference": "talente_gezielter_schuss",
+        "name": "Gezielter Schuss",
+        "parent": "Schütze",
+        "cost": 50,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Gezielter Schuss",
+          "targetReference": "talente_gezielter_schuss",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Ermöglicht es dem Schützen, sich die FK-Probe um 3 zu erschweren, und dafür 2 TZ-Rerolls auf kritische TZ zu erhalten.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 123,
+    "name": "Ladeschütze Armbrust",
+    "matches": [
+      {
+        "excelRow": 1146,
+        "reference": "talente_ladeschuetze_armbrust",
+        "name": "Ladeschütze Armbrust",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ladeschütze Armbrust",
+          "targetReference": "sf_ladeschuetze_armbrust",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 124,
+    "name": "Ladeschütze Blasrohr",
+    "matches": [
+      {
+        "excelRow": 1147,
+        "reference": "talente_ladeschuetze_blasrohr",
+        "name": "Ladeschütze Blasrohr",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ladeschütze Blasrohr",
+          "targetReference": "sf_ladeschuetze_blasrohr",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 125,
+    "name": "Ladeschütze Bogen",
+    "matches": [
+      {
+        "excelRow": 1148,
+        "reference": "talente_ladeschuetze_bogen",
+        "name": "Ladeschütze Bogen",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ladeschütze Bogen",
+          "targetReference": "sf_ladeschuetze_bogen",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 126,
+    "name": "Ladeschütze Kanone",
+    "matches": [
+      {
+        "excelRow": 1149,
+        "reference": "talente_ladeschuetze_kanone",
+        "name": "Ladeschütze Kanone",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ladeschütze Kanone",
+          "targetReference": "sf_ladeschuetze_kanone",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 127,
+    "name": "Ladeschütze Patrone",
+    "matches": [
+      {
+        "excelRow": 1150,
+        "reference": "talente_ladeschuetze_patrone",
+        "name": "Ladeschütze Patrone",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ladeschütze Patrone",
+          "targetReference": "sf_ladeschuetze_patrone",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 128,
+    "name": "Ladeschütze Rune",
+    "matches": [
+      {
+        "excelRow": 1151,
+        "reference": "talente_ladeschuetze_rune",
+        "name": "Ladeschütze Rune",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ladeschütze Rune",
+          "targetReference": "sf_ladeschuetze_rune",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 129,
+    "name": "Ladeschütze Schleuder",
+    "matches": [
+      {
+        "excelRow": 1152,
+        "reference": "talente_ladeschuetze_schleuder",
+        "name": "Ladeschütze Schleuder",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ladeschütze Schleuder",
+          "targetReference": "sf_ladeschuetze_schleuder",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 130,
+    "name": "Ladeschütze Wurfmesser",
+    "matches": [
+      {
+        "excelRow": 1153,
+        "reference": "talente_ladeschuetze_wurfmesser",
+        "name": "Ladeschütze Wurfmesser",
+        "parent": "Schütze",
+        "cost": 2,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fertigkeitsmaximum",
+      "effects": [
+        {
+          "targetType": "Sonderfertigkeit",
+          "target": "Ladeschütze Wurfmesser",
+          "targetReference": "sf_ladeschuetze_wurfmesser",
+          "operation": "Erhöhe Maximum",
+          "value": 6,
+          "unit": "Punkte"
+        }
+      ],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Erhöhe das Maximum der Ziel-Sonderfertigkeit um 6 Punkte.",
+      "portStatus": "strukturiert",
+      "note": ""
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 131,
+    "name": "Linkshändig Pistolenschießen",
+    "matches": [
+      {
+        "excelRow": 1154,
+        "reference": "talente_linkshaendig_pistolenschiessen",
+        "name": "Linkshändig Pistolenschießen",
+        "parent": "Schütze",
+        "cost": 20,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Linkshändig Pistolenschießen",
+          "targetReference": "talente_linkshaendig_pistolenschiessen",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Ermöglicht es dem Schützen wenn er nur mit der linken Hand mit einer Pistole schießt, statt auf seinen halben auf seinen vollen Probenwert zu würfeln.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 132,
+    "name": "Mehrfachschuss Stufe 1 \"Doppelschuss\"",
+    "matches": [
+      {
+        "excelRow": 1165,
+        "reference": "talente_mehrfachschuss_stufe_1_doppelschuss",
+        "name": "Mehrfachschuss Stufe 1 \"Doppelschuss\"",
+        "parent": "Schütze",
+        "cost": 40,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Mehrfachschuss Stufe 1 \"Doppelschuss\"",
+          "targetReference": "talente_mehrfachschuss_stufe_1_doppelschuss",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Ermöglicht nicht-spezialisierbare FK-Fertigkeiten [Bogenart]-Doppelschuss (18 St.p. pro Punkt)  –  FK-Formel für Doppelschuss wird zu (Ges+Sin+Fert+Spez+Doppelschuss):4. Bei Anwendung eines Doppelschusses wird der Probenwert halbiert.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 133,
+    "name": "Mehrfachschuss Stufe 2 \"Tripelschuss\"",
+    "matches": [
+      {
+        "excelRow": 1166,
+        "reference": "talente_mehrfachschuss_stufe_2_tripelschuss",
+        "name": "Mehrfachschuss Stufe 2 \"Tripelschuss\"",
+        "parent": "Schütze",
+        "cost": 20,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Mehrfachschuss Stufe 2 \"Tripelschuss\"",
+          "targetReference": "talente_mehrfachschuss_stufe_2_tripelschuss",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Tripelschuss ermöglicht nicht-spezialisierbare FK-Fertigkeiten [Bogenart]-Tripelschuss (18 St.p. pro Punkt)  –  FK-Formel für Tripelschuss wird zu (Ges+Sin+Fert+Spez+Doppelschuss+Tripelschuss):4. Bei Anwendung eines Tripelschusses wird der Probenwert gedrittelt.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 134,
+    "name": "Mit Zwei Pistolen schießen",
+    "matches": [
+      {
+        "excelRow": 1169,
+        "reference": "talente_mit_zwei_pistolen_schiessen",
+        "name": "Mit Zwei Pistolen schießen",
+        "parent": "Schütze",
+        "cost": 40,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Freischaltung/Manöver",
+      "effects": [
+        {
+          "targetType": "Regeloption",
+          "target": "Mit Zwei Pistolen schießen",
+          "targetReference": "talente_mit_zwei_pistolen_schiessen",
+          "operation": "Schalte frei",
+          "value": true,
+          "unit": "Boolesch"
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Schalte die Regeloption gemäß folgender Regel frei: Ermöglicht es dem Schützen wenn er mit zwei Pistolen schießt, mit beiden Pistolen statt auf seinen halben auf seinen vollen Probenwert zu würfeln.",
+      "portStatus": "teilstrukturiert",
+      "note": "Regeloption benötigt eine eigene Implementierungslogik."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 135,
+    "name": "Point-Blank Shot",
+    "matches": [
+      {
+        "excelRow": 540,
+        "reference": "talente_point_blank_shot",
+        "name": "Point-Blank Shot",
+        "parent": "Schütze",
+        "cost": 10,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Wenn der Schütze im Nahkampf schießt, tut er dies mit einem Sofortschuss statt einem Hüftschuss, das Ziel ist hakenschlagend (insgesamt erschwert um 16).",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 136,
+    "name": "Schnell Schießen",
+    "matches": [
+      {
+        "excelRow": 1181,
+        "reference": "talente_schnell_schiessen",
+        "name": "Schnell Schießen",
+        "parent": "Schütze",
+        "cost": 20,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fernkampfmodifikator",
+      "effects": [
+        {
+          "targetType": "Modifikator",
+          "target": "FK-/Zielen-Modifikator laut Beschreibung",
+          "targetReference": null,
+          "operation": "Setze/ändere Staffel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Setze folgende Modifikatorregel um: Verändert die Zielen-Modifikatoren für \"Hüftschuss\" auf -8 und für \"Sofortschuss\" auf -4.",
+      "portStatus": "teilstrukturiert",
+      "note": "Staffelwerte und konkrete Modifikator-ID manuell modellieren."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 137,
+    "name": "Schnell Ziehen Armbrust",
+    "matches": [
+      {
+        "excelRow": 1185,
+        "reference": "talente_schnell_ziehen_armbrust",
+        "name": "Schnell Ziehen Armbrust",
+        "parent": "Schütze",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Hüftschuss oder dem Laden. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 138,
+    "name": "Schnell Ziehen Bogen",
+    "matches": [
+      {
+        "excelRow": 1186,
+        "reference": "talente_schnell_ziehen_bogen",
+        "name": "Schnell Ziehen Bogen",
+        "parent": "Schütze",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Laden des Bogens. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 139,
+    "name": "Schnell Ziehen Muskete",
+    "matches": [
+      {
+        "excelRow": 1187,
+        "reference": "talente_schnell_ziehen_muskete",
+        "name": "Schnell Ziehen Muskete",
+        "parent": "Schütze",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Hüftschuss oder dem Laden. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 140,
+    "name": "Schnell Ziehen Pistole",
+    "matches": [
+      {
+        "excelRow": 1188,
+        "reference": "talente_schnell_ziehen_pistole",
+        "name": "Schnell Ziehen Pistole",
+        "parent": "Schütze",
+        "cost": 10,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Hüftschuss oder dem Laden. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 141,
+    "name": "Schnell Ziehen Wurfwaffe",
+    "matches": [
+      {
+        "excelRow": 1189,
+        "reference": "talente_schnell_ziehen_wurfwaffe",
+        "name": "Schnell Ziehen Wurfwaffe",
+        "parent": "Schütze",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Hüftschuss. Dies setzt eine geeignete Halterung voraus.",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 142,
+    "name": "Sorgfältiges Zielen Stufe 1",
+    "matches": [
+      {
+        "excelRow": 1197,
+        "reference": "talente_sorgfaeltiges_zielen_stufe_1",
+        "name": "Sorgfältiges Zielen Stufe 1",
+        "parent": "Schütze",
+        "cost": 20,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fernkampfmodifikator",
+      "effects": [
+        {
+          "targetType": "Modifikator",
+          "target": "FK-/Zielen-Modifikator laut Beschreibung",
+          "targetReference": null,
+          "operation": "Setze/ändere Staffel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Setze folgende Modifikatorregel um: Verändert die Zielen-Modifikatoren für \"1sec lang gezielt\"  auf 0, für jede weitere Sekunde +1 (bis +7 für 8 Sekunden).",
+      "portStatus": "teilstrukturiert",
+      "note": "Staffelwerte und konkrete Modifikator-ID manuell modellieren."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 143,
+    "name": "Sorgfältiges Zielen Stufe 2",
+    "matches": [
+      {
+        "excelRow": 1198,
+        "reference": "talente_sorgfaeltiges_zielen_stufe_2",
+        "name": "Sorgfältiges Zielen Stufe 2",
+        "parent": "Schütze",
+        "cost": 10,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Fernkampfmodifikator",
+      "effects": [
+        {
+          "targetType": "Modifikator",
+          "target": "FK-/Zielen-Modifikator laut Beschreibung",
+          "targetReference": null,
+          "operation": "Setze/ändere Staffel",
+          "value": null,
+          "unit": null
+        }
+      ],
+      "condition": "Siehe Originalbeschreibung",
+      "stacking": "",
+      "implementation": "Setze folgende Modifikatorregel um: Verändert die Zielen-Modifikatoren für \"1sec lang gezielt\"  auf +1, für jede weitere Sekunde +1 (bis +8 für 8 Sekunden).",
+      "portStatus": "teilstrukturiert",
+      "note": "Staffelwerte und konkrete Modifikator-ID manuell modellieren."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 144,
+    "name": "Vorderlader Ladeschütze Stufe1",
+    "matches": [
+      {
+        "excelRow": 1206,
+        "reference": "talente_vorderlader_ladeschuetze_stufe1",
+        "name": "Vorderlader Ladeschütze Stufe 1",
+        "parent": "Schütze",
+        "cost": 4,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Fertigkeitsmaximum der Sonderfertigkeit \"Ladeschütze Vorderlader\" +7",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  },
+  {
+    "sourceRow": 145,
+    "name": "Vorderlader Ladeschütze Stufe2",
+    "matches": [
+      {
+        "excelRow": 1207,
+        "reference": "talente_vorderlader_ladeschuetze_stufe2",
+        "name": "Vorderlader Ladeschütze Stufe 2",
+        "parent": "Schütze",
+        "cost": 6,
+        "flag": null
+      }
+    ],
+    "derived": {
+      "effectClass": "Komplexer Regeltext",
+      "effects": [],
+      "condition": "",
+      "stacking": "",
+      "implementation": "Setze folgende Regel um: Fertigkeitsmaximum der Sonderfertigkeit \"Ladeschütze Vorderlader\" +15",
+      "portStatus": "manuell modellieren",
+      "note": "Wirkung ist nicht verlustfrei als einfacher Zahlenmodifikator darstellbar."
+    },
+    "costCheck": "OK",
+    "unresolvedTargets": []
+  }
+]

@@ -1,0 +1,261 @@
+[
+  {
+    "row": 73,
+    "ref": "le_leberschutz",
+    "originalFlag": "",
+    "added": "chatgpt: Art=Pool, aber die Spalte Pool ist leer; der Eintrag kann keinen Pool bilden.",
+    "updatedFlag": "chatgpt: Art=Pool, aber die Spalte Pool ist leer; der Eintrag kann keinen Pool bilden."
+  },
+  {
+    "row": 247,
+    "ref": "ki_meister_der_grundfertigkeiten",
+    "originalFlag": "",
+    "added": "chatgpt: Art=Wert trotz befüllter Formel; alle übrigen Wert-Zeilen führen keine Formel. Prüfen, ob Art=Formel gemeint ist oder die Formel entfallen soll.",
+    "updatedFlag": "chatgpt: Art=Wert trotz befüllter Formel; alle übrigen Wert-Zeilen führen keine Formel. Prüfen, ob Art=Formel gemeint ist oder die Formel entfallen soll."
+  },
+  {
+    "row": 467,
+    "ref": "spruchmagie_verzauberung_3_blitz_klinge_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 468,
+    "ref": "spruchmagie_verzauberung_3_erd_klinge_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 469,
+    "ref": "spruchmagie_verzauberung_3_feuer_klinge_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 470,
+    "ref": "spruchmagie_verzauberung_3_flammen_pfeil_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 471,
+    "ref": "spruchmagie_verzauberung_3_frost_klinge_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 472,
+    "ref": "spruchmagie_verzauberung_3_frost_pfeil_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 473,
+    "ref": "spruchmagie_verzauberung_3_luft_klinge_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 474,
+    "ref": "spruchmagie_verzauberung_3_schock_pfeil_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 475,
+    "ref": "spruchmagie_verzauberung_3_splitter_pfeil_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 476,
+    "ref": "spruchmagie_verzauberung_3_sturm_pfeil_(v)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 498,
+    "ref": "talente_attributs_maximum_erhoehen_+1_aura",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 499,
+    "ref": "talente_attributs_maximum_erhoehen_+1_glueck",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 500,
+    "ref": "talente_attributs_maximum_erhoehen_+1_karma",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 501,
+    "ref": "talente_attributs_maximum_erhoehen_+1_magie",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 502,
+    "ref": "talente_attributs_maximum_erhoehen_+1_vitalitaet",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 695,
+    "ref": "fk_spez_blasrohre_blasrohre",
+    "originalFlag": "",
+    "added": "chatgpt: Parent fk_Blasrohre stimmt nicht exakt mit der vorhandenen Referenz fk_blasrohre überein.",
+    "updatedFlag": "chatgpt: Parent fk_Blasrohre stimmt nicht exakt mit der vorhandenen Referenz fk_blasrohre überein."
+  },
+  {
+    "row": 696,
+    "ref": "fk_spez_boegen_boegen",
+    "originalFlag": "",
+    "added": "chatgpt: Parent fk_bögen stimmt nicht exakt mit der vorhandenen Referenz fk_boegen überein.",
+    "updatedFlag": "chatgpt: Parent fk_bögen stimmt nicht exakt mit der vorhandenen Referenz fk_boegen überein."
+  },
+  {
+    "row": 974,
+    "ref": "spruchmagie_veraenderung_4_verwandlung_in_[element]",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 1005,
+    "ref": "spruchmagie_verzauberung_4_in_[tier]_verwandeln",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 1021,
+    "ref": "spruchmagie_verzauberung_7_leib_aus_[element]",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 1022,
+    "ref": "spruchmagie_verzauberung_7_tod_(nn)",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 1035,
+    "ref": "spruchmagie_z_beherrschung_entwicklung_1_aufmerksamkeit2",
+    "originalFlag": "",
+    "added": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist.",
+    "updatedFlag": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist."
+  },
+  {
+    "row": 1039,
+    "ref": "spruchmagie_z_beherrschung_entwicklung_1_verwirrung2",
+    "originalFlag": "",
+    "added": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist.",
+    "updatedFlag": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist."
+  },
+  {
+    "row": 1043,
+    "ref": "spruchmagie_z_beherrschung_entwicklung_2_konfus2",
+    "originalFlag": "",
+    "added": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist.",
+    "updatedFlag": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist."
+  },
+  {
+    "row": 1054,
+    "ref": "spruchmagie_z_beherrschung_entwicklung_4_freundschaft2",
+    "originalFlag": "",
+    "added": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist.",
+    "updatedFlag": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist."
+  },
+  {
+    "row": 1060,
+    "ref": "spruchmagie_z_beherrschung_entwicklung_4_stumm2",
+    "originalFlag": "",
+    "added": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist.",
+    "updatedFlag": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist."
+  },
+  {
+    "row": 1072,
+    "ref": "spruchmagie_z_beherrschung_entwicklung_6_paralyse2",
+    "originalFlag": "",
+    "added": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist.",
+    "updatedFlag": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist."
+  },
+  {
+    "row": 1077,
+    "ref": "spruchmagie_z_beherrschung_entwicklung_7_totale_kontrolle2",
+    "originalFlag": "",
+    "added": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist.",
+    "updatedFlag": "chatgpt: Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; prüfen, ob dies ein unbeabsichtigter Import-/Dublettenmarker ist."
+  },
+  {
+    "row": 1194,
+    "ref": "talente_selbsbeherrschung_stufe_1",
+    "originalFlag": "",
+    "added": "chatgpt: „Selbsbeherrschung“ widerspricht der sonst verwendeten Schreibweise „Selbstbeherrschung“.",
+    "updatedFlag": "chatgpt: „Selbsbeherrschung“ widerspricht der sonst verwendeten Schreibweise „Selbstbeherrschung“."
+  },
+  {
+    "row": 1195,
+    "ref": "talente_selbsbeherrschung_stufe_2",
+    "originalFlag": "",
+    "added": "chatgpt: „Selbsbeherrschung“ widerspricht der sonst verwendeten Schreibweise „Selbstbeherrschung“.",
+    "updatedFlag": "chatgpt: „Selbsbeherrschung“ widerspricht der sonst verwendeten Schreibweise „Selbstbeherrschung“."
+  },
+  {
+    "row": 1196,
+    "ref": "talente_selbsbeherrschung_stufe_3",
+    "originalFlag": "",
+    "added": "chatgpt: „Selbsbeherrschung“ widerspricht der sonst verwendeten Schreibweise „Selbstbeherrschung“.",
+    "updatedFlag": "chatgpt: „Selbsbeherrschung“ widerspricht der sonst verwendeten Schreibweise „Selbstbeherrschung“."
+  },
+  {
+    "row": 1206,
+    "ref": "talente_vorderlader_ladeschuetze_stufe1",
+    "originalFlag": "",
+    "added": "chatgpt: Vor der Stufenzahl fehlt in Bezeichnung bzw. Referenz der sonst durchgängig verwendete Trenner.",
+    "updatedFlag": "chatgpt: Vor der Stufenzahl fehlt in Bezeichnung bzw. Referenz der sonst durchgängig verwendete Trenner."
+  },
+  {
+    "row": 1207,
+    "ref": "talente_vorderlader_ladeschuetze_stufe2",
+    "originalFlag": "",
+    "added": "chatgpt: Vor der Stufenzahl fehlt in Bezeichnung bzw. Referenz der sonst durchgängig verwendete Trenner.",
+    "updatedFlag": "chatgpt: Vor der Stufenzahl fehlt in Bezeichnung bzw. Referenz der sonst durchgängig verwendete Trenner."
+  },
+  {
+    "row": 1325,
+    "ref": "vn_faehigkeit_meisterliche_[grundfertigkeit]",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  },
+  {
+    "row": 1326,
+    "ref": "vn_faehigkeit_meisterliche_[optionale_fertigkeit]",
+    "originalFlag": "",
+    "added": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen.",
+    "updatedFlag": "chatgpt: Referenz enthält Sonderzeichen außerhalb des sonst verwendeten technischen ID-Schemas; auf eine stabile ID aus Kleinbuchstaben, Ziffern und Trennzeichen prüfen."
+  }
+]

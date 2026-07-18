@@ -1,0 +1,1706 @@
+{
+  "headers": [
+    "Referenz",
+    "Kategorie",
+    "Beschreibung",
+    "Abkürzung",
+    "Info",
+    "Parent",
+    "Art",
+    "Formel",
+    "Pool",
+    "Flag",
+    "Grad",
+    "Kosten",
+    "Verfuegbarkeit",
+    "",
+    "Mindest-TaW",
+    "Eig-Bonus",
+    "Wirkung",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "populatedRows": 1373,
+  "existingFlags": [
+    {
+      "row": 2,
+      "ref": "spruchmagie_erdbeschwoerung_1_splitterwand",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 3,
+      "ref": "spruchmagie_erdbeschwoerung_2_splitterstrahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 4,
+      "ref": "spruchmagie_erdbeschwoerung_3_steinschlag",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 5,
+      "ref": "spruchmagie_erdbeschwoerung_4_grosse_splitterwand",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 6,
+      "ref": "spruchmagie_erdbeschwoerung_5_grosse_splitteraura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 7,
+      "ref": "spruchmagie_erdbeschwoerung_5_grosser_steinschuss",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 8,
+      "ref": "spruchmagie_erdbeschwoerung_5_splittersturm",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 9,
+      "ref": "spruchmagie_erdbeschwoerung_6_grosser_splitterstrahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 10,
+      "ref": "spruchmagie_erdbeschwoerung_6_grosser_steinschlag",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 11,
+      "ref": "spruchmagie_erdbeschwoerung_7_grosser_splittersturm",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 12,
+      "ref": "spruchmagie_feuerbeschwoerung_1_flammenwand",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 13,
+      "ref": "spruchmagie_feuerbeschwoerung_2_flammenaura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 14,
+      "ref": "spruchmagie_feuerbeschwoerung_2_flammenstrahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 15,
+      "ref": "spruchmagie_feuerbeschwoerung_3_feuerblitz",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 16,
+      "ref": "spruchmagie_feuerbeschwoerung_4_grosse_flammenwand",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 17,
+      "ref": "spruchmagie_feuerbeschwoerung_5_flammenmeer",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 18,
+      "ref": "spruchmagie_feuerbeschwoerung_5_grosse_flammenaura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 19,
+      "ref": "spruchmagie_feuerbeschwoerung_5_grosser_feuerpfeil",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 20,
+      "ref": "spruchmagie_feuerbeschwoerung_6_grosser_feuerblitz",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 21,
+      "ref": "spruchmagie_feuerbeschwoerung_6_grosser_flammenstrahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 22,
+      "ref": "spruchmagie_feuerbeschwoerung_7_inferno",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 23,
+      "ref": "spruchmagie_luftbeschwoerung_1_sturmwand",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 24,
+      "ref": "spruchmagie_luftbeschwoerung_2_sturmaura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 25,
+      "ref": "spruchmagie_luftbeschwoerung_2_sturmstrahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 26,
+      "ref": "spruchmagie_luftbeschwoerung_3_sturmblitz",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 27,
+      "ref": "spruchmagie_luftbeschwoerung_4_grosse_sturmwand",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 28,
+      "ref": "spruchmagie_luftbeschwoerung_5_grosse_sturmaura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 29,
+      "ref": "spruchmagie_luftbeschwoerung_5_grosser_sturmpfeil",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 30,
+      "ref": "spruchmagie_luftbeschwoerung_5_tornado",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 31,
+      "ref": "spruchmagie_luftbeschwoerung_6_grosser_sturmblitz",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 32,
+      "ref": "spruchmagie_luftbeschwoerung_6_grosser_sturmstrahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 33,
+      "ref": "spruchmagie_luftbeschwoerung_7_grosser_tornado",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 34,
+      "ref": "spruchmagie_magiebeschwoerung_1_wand_aus_magie",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 35,
+      "ref": "spruchmagie_magiebeschwoerung_2_magische_aura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 36,
+      "ref": "spruchmagie_magiebeschwoerung_2_magischer_strahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 37,
+      "ref": "spruchmagie_magiebeschwoerung_3_magische_entladung",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 38,
+      "ref": "spruchmagie_magiebeschwoerung_4_grosse_wand_aus_magie",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 39,
+      "ref": "spruchmagie_magiebeschwoerung_5_grosse_magische_aura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 40,
+      "ref": "spruchmagie_magiebeschwoerung_5_grosses_magisches_geschoss",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 41,
+      "ref": "spruchmagie_magiebeschwoerung_5_statisches_feld",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 42,
+      "ref": "spruchmagie_magiebeschwoerung_6_grosse_magische_entladung",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 43,
+      "ref": "spruchmagie_magiebeschwoerung_6_grosser_magischer_strahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 44,
+      "ref": "spruchmagie_magiebeschwoerung_7_grosses_statisches_feld",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 45,
+      "ref": "spruchmagie_wasserbeschwoerung_1_frostwand",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 46,
+      "ref": "spruchmagie_wasserbeschwoerung_2_eisstrahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 47,
+      "ref": "spruchmagie_wasserbeschwoerung_3_eisblitz",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 48,
+      "ref": "spruchmagie_wasserbeschwoerung_4_grosse_frostwand",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 49,
+      "ref": "spruchmagie_wasserbeschwoerung_5_blizzard",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 50,
+      "ref": "spruchmagie_wasserbeschwoerung_5_grosse_eisaura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 51,
+      "ref": "spruchmagie_wasserbeschwoerung_5_grosser_frostbolzen",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 52,
+      "ref": "spruchmagie_wasserbeschwoerung_6_grosser_eisblitz",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 53,
+      "ref": "spruchmagie_wasserbeschwoerung_6_grosser_eisstrahl",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 54,
+      "ref": "spruchmagie_wasserbeschwoerung_7_grosser_blizzard",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen."
+    },
+    {
+      "row": 55,
+      "ref": "spruchmagie_erdbeschwoerung_2_splitter_aura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 56,
+      "ref": "spruchmagie_erdbeschwoerung_3_erd_klinge",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 57,
+      "ref": "spruchmagie_erdbeschwoerung_3_splitter_pfeil",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 58,
+      "ref": "spruchmagie_erdbeschwoerung_7_grosse_steinschuss_salve",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 59,
+      "ref": "spruchmagie_feuerbeschwoerung_3_feuer_klinge",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 60,
+      "ref": "spruchmagie_feuerbeschwoerung_3_flammen_pfeil",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 61,
+      "ref": "spruchmagie_feuerbeschwoerung_7_grosse_feuerpfeil_salve",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 62,
+      "ref": "spruchmagie_luftbeschwoerung_3_luft_klinge",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 63,
+      "ref": "spruchmagie_luftbeschwoerung_3_sturm_pfeil",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 64,
+      "ref": "spruchmagie_luftbeschwoerung_7_grosse_sturmpfeil_salve",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 65,
+      "ref": "spruchmagie_magiebeschwoerung_3_blitz_klinge",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 66,
+      "ref": "spruchmagie_magiebeschwoerung_3_schock_pfeil",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 67,
+      "ref": "spruchmagie_magiebeschwoerung_7_grosse_magische_geschoss_salve",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 68,
+      "ref": "spruchmagie_wasserbeschwoerung_2_eis_aura",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 69,
+      "ref": "spruchmagie_wasserbeschwoerung_3_frost_klinge",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 70,
+      "ref": "spruchmagie_wasserbeschwoerung_3_frost_pfeil",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 71,
+      "ref": "spruchmagie_wasserbeschwoerung_7_grosse_frostbolzen_salve",
+      "flag": "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen. | Referenz enthielt Bindestrich (mehrdeutig mit Subtraktion) - zu Unterstrich normalisiert."
+    },
+    {
+      "row": 92,
+      "ref": "vn_nervositaet_magie",
+      "flag": "EP-Rate für 'magie' aus NN NPC-Rechner 0.75, Sheet 'NPC-Rechner' Formel '=AOxx*-10' (Zeile 52ff). Kosten = Stufenwert(10) * Rate(-10)."
+    },
+    {
+      "row": 93,
+      "ref": "vn_furcht_magie",
+      "flag": "EP-Rate für 'magie' aus NN NPC-Rechner 0.75, Sheet 'NPC-Rechner' Formel '=AOxx*-10' (Zeile 52ff). Kosten = Stufenwert(15) * Rate(-10)."
+    },
+    {
+      "row": 94,
+      "ref": "vn_angst_magie",
+      "flag": "EP-Rate für 'magie' aus NN NPC-Rechner 0.75, Sheet 'NPC-Rechner' Formel '=AOxx*-10' (Zeile 52ff). Kosten = Stufenwert(20) * Rate(-10)."
+    },
+    {
+      "row": 95,
+      "ref": "vn_phobie_magie",
+      "flag": "EP-Rate für 'magie' aus NN NPC-Rechner 0.75, Sheet 'NPC-Rechner' Formel '=AOxx*-10' (Zeile 52ff). Kosten = Stufenwert(30) * Rate(-10)."
+    },
+    {
+      "row": 96,
+      "ref": "vn_unbehagen_magie",
+      "flag": "EP-Rate für 'magie' aus NN NPC-Rechner 0.75, Sheet 'NPC-Rechner' Formel '=AOxx*-10' (Zeile 52ff). Kosten = Stufenwert(5) * Rate(-10)."
+    },
+    {
+      "row": 97,
+      "ref": "vn_schlechte_eigenschaft_ausstrahlung",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 98,
+      "ref": "vn_schlechte_eigenschaft_intelligenz",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 99,
+      "ref": "vn_schlechte_eigenschaft_mut",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 100,
+      "ref": "vn_schlechte_eigenschaft_sinnesschaerfe",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 101,
+      "ref": "vn_schlechte_eigenschaft_willenskraft",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 102,
+      "ref": "vn_schlechte_eigenschaft_athletik",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 103,
+      "ref": "vn_schlechte_eigenschaft_geschicklichkeit",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 104,
+      "ref": "vn_schlechte_eigenschaft_konstitution",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 105,
+      "ref": "vn_schlechte_eigenschaft_schnelligkeit",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 106,
+      "ref": "vn_schlechte_eigenschaft_staerke",
+      "flag": "Ersetzt die normale Voelker-Maxima-Tabelle fuer diese Eigenschaft komplett (nicht MIN() mit dem Volkswert - die Regel ignoriert explizit die Erstellungs-/Kreis-3-Minima/Maxima und setzt eigene feste Werte)."
+    },
+    {
+      "row": 107,
+      "ref": "nk_pool_unbewaffnet",
+      "flag": "Formel hatte nur den Attacke-seitigen MAX-Term. Alle anderen 'Pool <Gruppe>'-Zeilen (198,203,207,212) kombinieren Attacke- und Parade-seitigen Überschuss - fehlenden Parade-Term ergänzt."
+    },
+    {
+      "row": 108,
+      "ref": "f_ausdauer",
+      "flag": "Formel referenzierte 'att_vitalität' (alte Umlautschreibweise) statt der aktuellen Referenz 'att_vitalitaet' - korrigiert."
+    },
+    {
+      "row": 109,
+      "ref": "f_alchemieresistenz",
+      "flag": "Formel referenzierte 'att_vitalität' (alte Umlautschreibweise) statt der aktuellen Referenz 'att_vitalitaet' - korrigiert. | Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Alchemieresistenz) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 110,
+      "ref": "selbstbeherrschung",
+      "flag": "Formel referenzierte 'att_vitalität' (alte Umlautschreibweise) statt der aktuellen Referenz 'att_vitalitaet' - korrigiert. | Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Selbstbeherrschung) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 111,
+      "ref": "fk_basis_blasrohre",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (fk_Blasrohre) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 112,
+      "ref": "fk_basis_spez_blasrohre_blasrohre",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (fk_spez_Blasrohre_blasrohre, fk_Blasrohre) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 113,
+      "ref": "aw_def_normal",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (Gewichtsbelastung, sf_Ausweichen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 114,
+      "ref": "aw_off_normal",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (Gewichtsbelastung, sf_Ausweichen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 115,
+      "ref": "aw_gut",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Gutes_AW) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 116,
+      "ref": "mana",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Mana_Talent) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 117,
+      "ref": "aw_meisterlich",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Meisterliches_ausweichen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 118,
+      "ref": "gbe_ausgeruestet",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Tragen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 119,
+      "ref": "gbe_leichtes_marschgepaeck",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Tragen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 120,
+      "ref": "gbe_max_hebelast",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Tragen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 121,
+      "ref": "gbe_mittel_ueberladen",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Tragen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 122,
+      "ref": "gbe_schwer_schleppend",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Tragen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 123,
+      "ref": "gbe_schweres_marschgepaeck",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Tragen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 124,
+      "ref": "gbe_unbelastet",
+      "flag": "Formel referenzierte veraltete Gro�-/Kleinschreibung (sf_Tragen) - an aktuelle (kleingeschriebene) Referenz angepasst."
+    },
+    {
+      "row": 125,
+      "ref": "fk_gute_spez_schusswaffen_armbrust",
+      "flag": "Gleiches Muster wie fk_gute_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt - Nutzerbestaetigung: 'Spezialisierungen sollten als simples +Spez in der /4 Formel gefuehrt sein'."
+    },
+    {
+      "row": 126,
+      "ref": "fk_gute_spez_blasrohre_blasrohre",
+      "flag": "Gleiches Muster wie fk_gute_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt - Nutzerbestaetigung: 'Spezialisierungen sollten als simples +Spez in der /4 Formel gefuehrt sein'."
+    },
+    {
+      "row": 127,
+      "ref": "fk_gute_spez_schusswaffen_musketen",
+      "flag": "Gleiches Muster wie fk_gute_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt - Nutzerbestaetigung: 'Spezialisierungen sollten als simples +Spez in der /4 Formel gefuehrt sein'."
+    },
+    {
+      "row": 128,
+      "ref": "fk_gute_spez_schusswaffen_pistolen",
+      "flag": "Gleiches Muster wie fk_gute_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt - Nutzerbestaetigung: 'Spezialisierungen sollten als simples +Spez in der /4 Formel gefuehrt sein'."
+    },
+    {
+      "row": 129,
+      "ref": "fk_gute_spez_boegen_boegen",
+      "flag": "Gleiches Muster wie fk_gute_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt - Nutzerbestaetigung: 'Spezialisierungen sollten als simples +Spez in der /4 Formel gefuehrt sein'."
+    },
+    {
+      "row": 130,
+      "ref": "fk_meisterlich_spez_schusswaffen_armbrust",
+      "flag": "Gleiches Muster wie fk_meisterlich_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt."
+    },
+    {
+      "row": 131,
+      "ref": "fk_meisterlich_spez_blasrohre_blasrohre",
+      "flag": "Gleiches Muster wie fk_meisterlich_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt."
+    },
+    {
+      "row": 132,
+      "ref": "fk_meisterlich_spez_schusswaffen_musketen",
+      "flag": "Gleiches Muster wie fk_meisterlich_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt."
+    },
+    {
+      "row": 133,
+      "ref": "fk_meisterlich_spez_schusswaffen_pistolen",
+      "flag": "Gleiches Muster wie fk_meisterlich_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt."
+    },
+    {
+      "row": 134,
+      "ref": "fk_meisterlich_spez_boegen_boegen",
+      "flag": "Gleiches Muster wie fk_meisterlich_* (Basiswaffe), nur auf den Spezialisierungs-Basiswert angewandt."
+    },
+    {
+      "row": 135,
+      "ref": "rs_arme",
+      "flag": "Jede Koerperzone hat 5 Lagen (Stoff/Leder/Kette/Platte/Addon, siehe Sheets Ruestung-Basis/-Verarbeitung/-Anpassung/-Addons), deren RS sich aufaddieren (Nutzerangabe 2026-07-16, bestaetigt durch das Beispiel-Set in Sheet Ruestungstabelle: Kopf RS = 3+4+6+6+0 = 19). Einzel-Lagen-RS = RS-Basis(Ruestungsteil) + RS-Mod(Verarbeitung) [Anpassung wirkt nie auf RS, siehe Ruestung-Basis-Formel]. Welche Ruestung pro Lage/Zone gewaehlt ist, ist noch keine Referenz in diesem Sheet (keine Auswahl-Mechanik vorhanden) - Aufloesung der SUMME(...) obliegt der App/Charakterbogen-Logik, siehe Entwickeln."
+    },
+    {
+      "row": 136,
+      "ref": "rs_beine",
+      "flag": "Jede Koerperzone hat 5 Lagen (Stoff/Leder/Kette/Platte/Addon, siehe Sheets Ruestung-Basis/-Verarbeitung/-Anpassung/-Addons), deren RS sich aufaddieren (Nutzerangabe 2026-07-16, bestaetigt durch das Beispiel-Set in Sheet Ruestungstabelle: Kopf RS = 3+4+6+6+0 = 19). Einzel-Lagen-RS = RS-Basis(Ruestungsteil) + RS-Mod(Verarbeitung) [Anpassung wirkt nie auf RS, siehe Ruestung-Basis-Formel]. Welche Ruestung pro Lage/Zone gewaehlt ist, ist noch keine Referenz in diesem Sheet (keine Auswahl-Mechanik vorhanden) - Aufloesung der SUMME(...) obliegt der App/Charakterbogen-Logik, siehe Entwickeln."
+    },
+    {
+      "row": 137,
+      "ref": "rs_kopf",
+      "flag": "Jede Koerperzone hat 5 Lagen (Stoff/Leder/Kette/Platte/Addon, siehe Sheets Ruestung-Basis/-Verarbeitung/-Anpassung/-Addons), deren RS sich aufaddieren (Nutzerangabe 2026-07-16, bestaetigt durch das Beispiel-Set in Sheet Ruestungstabelle: Kopf RS = 3+4+6+6+0 = 19). Einzel-Lagen-RS = RS-Basis(Ruestungsteil) + RS-Mod(Verarbeitung) [Anpassung wirkt nie auf RS, siehe Ruestung-Basis-Formel]. Welche Ruestung pro Lage/Zone gewaehlt ist, ist noch keine Referenz in diesem Sheet (keine Auswahl-Mechanik vorhanden) - Aufloesung der SUMME(...) obliegt der App/Charakterbogen-Logik, siehe Entwickeln."
+    },
+    {
+      "row": 138,
+      "ref": "rs_torso",
+      "flag": "Jede Koerperzone hat 5 Lagen (Stoff/Leder/Kette/Platte/Addon, siehe Sheets Ruestung-Basis/-Verarbeitung/-Anpassung/-Addons), deren RS sich aufaddieren (Nutzerangabe 2026-07-16, bestaetigt durch das Beispiel-Set in Sheet Ruestungstabelle: Kopf RS = 3+4+6+6+0 = 19). Einzel-Lagen-RS = RS-Basis(Ruestungsteil) + RS-Mod(Verarbeitung) [Anpassung wirkt nie auf RS, siehe Ruestung-Basis-Formel]. Welche Ruestung pro Lage/Zone gewaehlt ist, ist noch keine Referenz in diesem Sheet (keine Auswahl-Mechanik vorhanden) - Aufloesung der SUMME(...) obliegt der App/Charakterbogen-Logik, siehe Entwickeln."
+    },
+    {
+      "row": 139,
+      "ref": "talente_gefahrensinn",
+      "flag": "Kein exakter Namenstreffer in NN NPC-Rechner 0.75/Talente - dort heißt das Talent 'Gefahreninstinkt' (Kategorie=Abenteurer). Vermutlich dasselbe Talent unter leicht anderem Namen, Parent trotzdem gesetzt."
+    },
+    {
+      "row": 140,
+      "ref": "bewegung_f_leiter_steigen_schnell",
+      "flag": "kein Formeltext vorhanden"
+    },
+    {
+      "row": 141,
+      "ref": "bewegung_f_seil_hochklettern",
+      "flag": "kein Formeltext vorhanden"
+    },
+    {
+      "row": 142,
+      "ref": "f_gefahreninstinkt",
+      "flag": "kein Formeltext vorhanden | Formel = Sinnesschaerfe + SF Gefahreninstinkt (Nutzerangabe 2026-07-16). Einfache Probe, Probenwert = diese Formel, kann vom Meister situativ erschwert werden. Standard-Offsets fuer evtl. spaetere Gute/Meisterliche-Varianten waeren 1 bzw. 21 (Systemstandard, siehe aw_gut/aw_meisterlich), hier aber keine Sonderwerte noetig."
+    },
+    {
+      "row": 143,
+      "ref": "bewegung_f_lesegeschwindigkeit",
+      "flag": "kein Formeltext vorhanden | Referenz (Spalte G) enthält Klammern und Schrägstrich '(.../...)' unverändert aus der Beschreibung übernommen."
+    },
+    {
+      "row": 144,
+      "ref": "ep_verbraucht",
+      "flag": "Kein normaler Zeilen-Verweis wie sonst ueblich, sondern eine Summe UEBER DEN GESAMTEN Charakterbogen: alle Kosten-Werte jeder Zeile, die der Spieler tatsaechlich gewaehlt/erhoeht hat (Eigenschaften, Attribute, Grundfertigkeiten, Talente, Vor-/Nachteile, Spruchmagie, ...). Muss von der App als aggregierte Summe berechnet werden, nicht als einzelne Referenz aufloesbar."
+    },
+    {
+      "row": 145,
+      "ref": "startbudget_ausruestung",
+      "flag": "KORRIGIERT 2026-07-16 (Nutzerangabe): 5000 Dublonen Startbudget fuer Ausruestung bei Erschaffung (vorher faelschlich 4000 eingetragen)."
+    },
+    {
+      "row": 146,
+      "ref": "gr_betoeren",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 147,
+      "ref": "gr_dauerlauf",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 148,
+      "ref": "gr_einschuechtern",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 149,
+      "ref": "gr_faehrtensuche",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 150,
+      "ref": "gr_fliegen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 151,
+      "ref": "gr_klettern",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 152,
+      "ref": "gr_koerperbeherrschung",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 153,
+      "ref": "gr_laufen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 154,
+      "ref": "gr_luft_anhalten",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 155,
+      "ref": "gr_luegen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 156,
+      "ref": "gr_menschenkenntnis",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 157,
+      "ref": "gr_orientierung",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 158,
+      "ref": "gr_reiten",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 159,
+      "ref": "gr_rudern",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 160,
+      "ref": "gr_schaetzen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 161,
+      "ref": "gr_schleichen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 162,
+      "ref": "gr_schwimmen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 163,
+      "ref": "gr_sprinten",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 164,
+      "ref": "gr_springen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 165,
+      "ref": "gr_ueberzeugen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 166,
+      "ref": "gr_verstecken",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 167,
+      "ref": "gr_werfen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 168,
+      "ref": "psi_deformation",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 169,
+      "ref": "psi_destruktion",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 170,
+      "ref": "psi_geschosse_ablenken",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 171,
+      "ref": "psi_hoehere_telekinese",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 172,
+      "ref": "psi_im_schatten_verstecken",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 173,
+      "ref": "psi_im_wald_verstecken",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 174,
+      "ref": "psi_in_der_ferne_verstecken",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 175,
+      "ref": "psi_in_der_menge_verstecken",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 176,
+      "ref": "psi_kryokinese",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 177,
+      "ref": "psi_pyrokinese",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 178,
+      "ref": "psi_telekinese_griff",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 179,
+      "ref": "psi_telekinetisches_geschoss",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 180,
+      "ref": "sf_alchemieresistenz",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 181,
+      "ref": "sf_ausdauer",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 182,
+      "ref": "sf_ausweichen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 183,
+      "ref": "sf_fliehen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 184,
+      "ref": "sf_gefahreninstinkt",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 185,
+      "ref": "sf_gutes_aw",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 186,
+      "ref": "sf_ladeschuetze_armbrust",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 187,
+      "ref": "sf_ladeschuetze_blasrohr",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 188,
+      "ref": "sf_ladeschuetze_bogen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 189,
+      "ref": "sf_ladeschuetze_kanone",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 190,
+      "ref": "sf_ladeschuetze_patrone",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 191,
+      "ref": "sf_ladeschuetze_rune",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 192,
+      "ref": "sf_ladeschuetze_schleuder",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 193,
+      "ref": "sf_ladeschuetze_vorderlader",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 194,
+      "ref": "sf_ladeschuetze_wurfmesser",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 195,
+      "ref": "sf_mana_talent",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 196,
+      "ref": "sf_meditation",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 197,
+      "ref": "sf_meisterliches_ausweichen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 198,
+      "ref": "sf_mentale_kapazitaet",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 199,
+      "ref": "sf_mentaler_fokus",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 200,
+      "ref": "sf_ruestungsmanoever",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 201,
+      "ref": "sf_selbstbeherrschung",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 202,
+      "ref": "sf_tragen",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe)."
+    },
+    {
+      "row": 203,
+      "ref": "psi_suggestion",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe). | Beschreibung hatte Leerzeichen am Rand ('Suggestion ') - getrimmt."
+    },
+    {
+      "row": 204,
+      "ref": "psi_empathie",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe). | Startpunkt des PSI-Zauberbaums (Telekinese/Empathie) - keine Vorbedingung."
+    },
+    {
+      "row": 205,
+      "ref": "psi_telekinese",
+      "flag": "Kosten = statisch 9 EP/Punkt (Nutzerangabe). | Startpunkt des PSI-Zauberbaums (Telekinese/Empathie) - keine Vorbedingung."
+    },
+    {
+      "row": 430,
+      "ref": "fk_gute_blasrohre",
+      "flag": "Nur mit Talent 'Fernkampfgeschick Stufe 1/2' ueber die Basis 1 steigerbar. Quelle: NN NPC-Rechner 0.76 Talente + Nutzerbestaetigung. Kein MIN()-Deckel."
+    },
+    {
+      "row": 431,
+      "ref": "fk_gute_boegen",
+      "flag": "Nur mit Talent 'Fernkampfgeschick Stufe 1/2' ueber die Basis 1 steigerbar. Quelle: NN NPC-Rechner 0.76 Talente + Nutzerbestaetigung. Kein MIN()-Deckel."
+    },
+    {
+      "row": 432,
+      "ref": "fk_gute_schusswaffen",
+      "flag": "Nur mit Talent 'Fernkampfgeschick Stufe 1/2' ueber die Basis 1 steigerbar. Quelle: NN NPC-Rechner 0.76 Talente + Nutzerbestaetigung. Kein MIN()-Deckel."
+    },
+    {
+      "row": 433,
+      "ref": "fk_gute_wurfwaffen",
+      "flag": "Nur mit Talent 'Fernkampfgeschick Stufe 1/2' ueber die Basis 1 steigerbar. Quelle: NN NPC-Rechner 0.76 Talente + Nutzerbestaetigung. Kein MIN()-Deckel."
+    },
+    {
+      "row": 434,
+      "ref": "fk_meisterlich_blasrohre",
+      "flag": "Nur mit Talent 'Fernkampfgeschick Stufe 3' ueber die Basis 21 steigerbar. Quelle: NN NPC-Rechner 0.76 Talente + Nutzerbestaetigung. Kein MIN()-Deckel."
+    },
+    {
+      "row": 435,
+      "ref": "fk_meisterlich_boegen",
+      "flag": "Nur mit Talent 'Fernkampfgeschick Stufe 3' ueber die Basis 21 steigerbar. Quelle: NN NPC-Rechner 0.76 Talente + Nutzerbestaetigung. Kein MIN()-Deckel."
+    },
+    {
+      "row": 436,
+      "ref": "fk_meisterlich_schusswaffen",
+      "flag": "Nur mit Talent 'Fernkampfgeschick Stufe 3' ueber die Basis 21 steigerbar. Quelle: NN NPC-Rechner 0.76 Talente + Nutzerbestaetigung. Kein MIN()-Deckel."
+    },
+    {
+      "row": 437,
+      "ref": "fk_meisterlich_wurfwaffen",
+      "flag": "Nur mit Talent 'Fernkampfgeschick Stufe 3' ueber die Basis 21 steigerbar. Quelle: NN NPC-Rechner 0.76 Talente + Nutzerbestaetigung. Kein MIN()-Deckel."
+    },
+    {
+      "row": 438,
+      "ref": "gewichtsbelastung",
+      "flag": "Nutzerangabe 2026-07-16, per Regelkorrektur 2026-07-17 aktualisiert: GBE (Gewichtsbelastung) ist die Summe aus ZWEI Quellen. Ausruestungs-Gewichts-Komponente fehlt komplett. (1) Ruestungs-Komponente: eine Ruestungslage verursacht keine direkte Behinderung, sondern RH (Ruestungshinderlichkeit) - Einzel-Lagen-RH = RH-Basis(Ruestungsteil) + RH-Mod(Verarbeitung) + RH-Mod(Anpassung), je MAX(Lage; ...) - siehe Ruestung-Basis-Formel. RHg = Summe aller RH-Werte ueber alle 4 Koerperzonen. Daraus: RBE = (RHg - ((Kon/5 + Staerke)/2 + sf_ruestungsmanoever)) / 6 = die tatsaechliche Ruestungsbehinderung. (2) Ausruestungs-Komponente: Gewicht der getragenen/mitgefuehrten Gegenstaende (Preisliste-Gewichte), Schwellenwerte siehe gbe_unbelastet...gbe_ausgeruestet. BEIDE Komponenten sowie ihre Summe sind laut Nutzer Kampfmodul-Scope (setzt Laufzeit-Inventar/-Ruestungswahl voraus), nicht Teil der Charaktererstellung."
+    },
+    {
+      "row": 636,
+      "ref": "vn_krankheit_i",
+      "flag": "Wird vom Meister vergeben, kein EP-Gewinn für den Spieler. Platzhalter - konkrete Krankheit muss noch inhaltlich entwickelt werden."
+    },
+    {
+      "row": 637,
+      "ref": "vn_krankheit_ii",
+      "flag": "Wird vom Meister vergeben, kein EP-Gewinn für den Spieler. Platzhalter - konkrete Krankheit muss noch inhaltlich entwickelt werden."
+    },
+    {
+      "row": 638,
+      "ref": "vn_krankheit_iii",
+      "flag": "Wird vom Meister vergeben, kein EP-Gewinn für den Spieler. Platzhalter - konkrete Krankheit muss noch inhaltlich entwickelt werden."
+    },
+    {
+      "row": 639,
+      "ref": "vn_krankheit_iv",
+      "flag": "Wird vom Meister vergeben, kein EP-Gewinn für den Spieler. Platzhalter - konkrete Krankheit muss noch inhaltlich entwickelt werden."
+    },
+    {
+      "row": 640,
+      "ref": "vn_krankheit_v",
+      "flag": "Wird vom Meister vergeben, kein EP-Gewinn für den Spieler. Platzhalter - konkrete Krankheit muss noch inhaltlich entwickelt werden."
+    },
+    {
+      "row": 641,
+      "ref": "vn_krankheit_vi",
+      "flag": "Wird vom Meister vergeben, kein EP-Gewinn für den Spieler. Platzhalter - konkrete Krankheit muss noch inhaltlich entwickelt werden."
+    },
+    {
+      "row": 642,
+      "ref": "vn_krankheit_vii",
+      "flag": "Wird vom Meister vergeben, kein EP-Gewinn für den Spieler. Platzhalter - konkrete Krankheit muss noch inhaltlich entwickelt werden."
+    },
+    {
+      "row": 643,
+      "ref": "vn_krankheit_asthma",
+      "flag": "Wird vom Meister vergeben, kein EP-Gewinn für den Spieler. Platzhalter - konkrete Krankheit muss noch inhaltlich entwickelt werden."
+    }
+  ],
+  "categories": {
+    "Spruchmagie": 439,
+    "Charakterwerte": 35,
+    "Kampf": 10,
+    "WHK": 238,
+    "Bewegung": 18,
+    "Vor- und Nachteile": 187,
+    "Nahkampf": 70,
+    "Fernkampf": 36,
+    "Gewichtsbelastung": 7,
+    "Talente": 177,
+    "Grundfertigkeit": 22,
+    "PSI": 15,
+    "Sonderfertigkeit": 23,
+    "Attribute": 7,
+    "Eigenschaft": 10,
+    "KI": 31,
+    "Sprache & Kultur": 38,
+    "Eigenschaftsbonus": 10
+  },
+  "arts": {
+    "Wert": 864,
+    "Formel": 104,
+    "Pool": 31,
+    "Auswahl": 364,
+    "Fixwert": 8,
+    "Lookup": 2
+  },
+  "findings": [
+    {
+      "kind": "pool_art_without_pool",
+      "row": 73,
+      "ref": "le_leberschutz",
+      "message": "Art ist Pool, aber die Spalte Pool ist leer."
+    },
+    {
+      "kind": "value_art_with_formula",
+      "row": 247,
+      "ref": "ki_meister_der_grundfertigkeiten",
+      "message": "Art ist Wert, zugleich ist eine Formel eingetragen; alle anderen Wert-Zeilen im Blatt haben keine Formel."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 467,
+      "ref": "spruchmagie_verzauberung_3_blitz_klinge_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 468,
+      "ref": "spruchmagie_verzauberung_3_erd_klinge_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 469,
+      "ref": "spruchmagie_verzauberung_3_feuer_klinge_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 470,
+      "ref": "spruchmagie_verzauberung_3_flammen_pfeil_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 471,
+      "ref": "spruchmagie_verzauberung_3_frost_klinge_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 472,
+      "ref": "spruchmagie_verzauberung_3_frost_pfeil_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 473,
+      "ref": "spruchmagie_verzauberung_3_luft_klinge_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 474,
+      "ref": "spruchmagie_verzauberung_3_schock_pfeil_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 475,
+      "ref": "spruchmagie_verzauberung_3_splitter_pfeil_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 476,
+      "ref": "spruchmagie_verzauberung_3_sturm_pfeil_(v)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 498,
+      "ref": "talente_attributs_maximum_erhoehen_+1_aura",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 499,
+      "ref": "talente_attributs_maximum_erhoehen_+1_glueck",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 500,
+      "ref": "talente_attributs_maximum_erhoehen_+1_karma",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 501,
+      "ref": "talente_attributs_maximum_erhoehen_+1_magie",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 502,
+      "ref": "talente_attributs_maximum_erhoehen_+1_vitalitaet",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "parent_reference_spelling",
+      "row": 695,
+      "ref": "fk_spez_blasrohre_blasrohre",
+      "parent": "fk_Blasrohre",
+      "expected": "fk_blasrohre",
+      "message": "Parent fk_Blasrohre stimmt nur nach Normalisierung mit Referenz fk_blasrohre überein."
+    },
+    {
+      "kind": "parent_reference_spelling",
+      "row": 696,
+      "ref": "fk_spez_boegen_boegen",
+      "parent": "fk_bögen",
+      "expected": "fk_boegen",
+      "message": "Parent fk_bögen stimmt nur nach Normalisierung mit Referenz fk_boegen überein."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 974,
+      "ref": "spruchmagie_veraenderung_4_verwandlung_in_[element]",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 1005,
+      "ref": "spruchmagie_verzauberung_4_in_[tier]_verwandeln",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 1021,
+      "ref": "spruchmagie_verzauberung_7_leib_aus_[element]",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 1022,
+      "ref": "spruchmagie_verzauberung_7_tod_(nn)",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "bare_version_suffix",
+      "row": 1035,
+      "ref": "spruchmagie_z_beherrschung_entwicklung_1_aufmerksamkeit2",
+      "message": "Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; dies wirkt wie ein Import-/Dublettenmarker statt einer fachlichen Bezeichnung."
+    },
+    {
+      "kind": "bare_version_suffix",
+      "row": 1039,
+      "ref": "spruchmagie_z_beherrschung_entwicklung_1_verwirrung2",
+      "message": "Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; dies wirkt wie ein Import-/Dublettenmarker statt einer fachlichen Bezeichnung."
+    },
+    {
+      "kind": "bare_version_suffix",
+      "row": 1043,
+      "ref": "spruchmagie_z_beherrschung_entwicklung_2_konfus2",
+      "message": "Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; dies wirkt wie ein Import-/Dublettenmarker statt einer fachlichen Bezeichnung."
+    },
+    {
+      "kind": "bare_version_suffix",
+      "row": 1054,
+      "ref": "spruchmagie_z_beherrschung_entwicklung_4_freundschaft2",
+      "message": "Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; dies wirkt wie ein Import-/Dublettenmarker statt einer fachlichen Bezeichnung."
+    },
+    {
+      "kind": "bare_version_suffix",
+      "row": 1060,
+      "ref": "spruchmagie_z_beherrschung_entwicklung_4_stumm2",
+      "message": "Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; dies wirkt wie ein Import-/Dublettenmarker statt einer fachlichen Bezeichnung."
+    },
+    {
+      "kind": "bare_version_suffix",
+      "row": 1072,
+      "ref": "spruchmagie_z_beherrschung_entwicklung_6_paralyse2",
+      "message": "Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; dies wirkt wie ein Import-/Dublettenmarker statt einer fachlichen Bezeichnung."
+    },
+    {
+      "kind": "bare_version_suffix",
+      "row": 1077,
+      "ref": "spruchmagie_z_beherrschung_entwicklung_7_totale_kontrolle2",
+      "message": "Beschreibung und Referenz tragen eine ungetrennte Endziffer 2; dies wirkt wie ein Import-/Dublettenmarker statt einer fachlichen Bezeichnung."
+    },
+    {
+      "kind": "spelling_selbstbeherrschung",
+      "row": 1194,
+      "ref": "talente_selbsbeherrschung_stufe_1",
+      "message": "Selbsbeherrschung widerspricht der sonst im Blatt verwendeten Schreibweise Selbstbeherrschung."
+    },
+    {
+      "kind": "spelling_selbstbeherrschung",
+      "row": 1195,
+      "ref": "talente_selbsbeherrschung_stufe_2",
+      "message": "Selbsbeherrschung widerspricht der sonst im Blatt verwendeten Schreibweise Selbstbeherrschung."
+    },
+    {
+      "kind": "spelling_selbstbeherrschung",
+      "row": 1196,
+      "ref": "talente_selbsbeherrschung_stufe_3",
+      "message": "Selbsbeherrschung widerspricht der sonst im Blatt verwendeten Schreibweise Selbstbeherrschung."
+    },
+    {
+      "kind": "stufe_separator",
+      "row": 1206,
+      "ref": "talente_vorderlader_ladeschuetze_stufe1",
+      "message": "Stufenbezeichnung bzw. Referenz fehlt der sonst durchgängig verwendete Trenner vor der Stufenzahl."
+    },
+    {
+      "kind": "stufe_separator",
+      "row": 1207,
+      "ref": "talente_vorderlader_ladeschuetze_stufe2",
+      "message": "Stufenbezeichnung bzw. Referenz fehlt der sonst durchgängig verwendete Trenner vor der Stufenzahl."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 1325,
+      "ref": "vn_faehigkeit_meisterliche_[grundfertigkeit]",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "invalid_reference_format",
+      "row": 1326,
+      "ref": "vn_faehigkeit_meisterliche_[optionale_fertigkeit]",
+      "message": "Referenz enthält Zeichen außerhalb des im Blatt verwendeten ID-Schemas."
+    },
+    {
+      "kind": "dependency_cycle",
+      "row": 254,
+      "ref": "stufe",
+      "cycle": [
+        "stufe",
+        "stufe"
+      ],
+      "message": "Zirkuläre Abhängigkeit: stufe -> stufe."
+    },
+    {
+      "kind": "dependency_cycle",
+      "row": 254,
+      "ref": "stufe",
+      "cycle": [
+        "stufe",
+        "kreis",
+        "stufe"
+      ],
+      "message": "Zirkuläre Abhängigkeit: stufe -> kreis -> stufe."
+    },
+    {
+      "kind": "dependency_cycle",
+      "row": 255,
+      "ref": "kreis",
+      "cycle": [
+        "stufe",
+        "kreis",
+        "stufe"
+      ],
+      "message": "Zirkuläre Abhängigkeit: stufe -> kreis -> stufe."
+    },
+    {
+      "kind": "dependency_cycle",
+      "row": 255,
+      "ref": "kreis",
+      "cycle": [
+        "kreis",
+        "kreis"
+      ],
+      "message": "Zirkuläre Abhängigkeit: kreis -> kreis."
+    }
+  ],
+  "unresolvedParents": {
+    "Erdbeschwörung": 30,
+    "Feuerbeschwörung": 30,
+    "Luftbeschwörung": 30,
+    "Magiebeschwörung": 30,
+    "Wasserbeschwörung": 30,
+    "Beherrschung": 34,
+    "Abenteurer": 34,
+    "Verzauberung": 52,
+    "z_beherrschung_entwicklung": 58,
+    "KI-Adept": 7,
+    "Magier": 58,
+    "Schütze": 38,
+    "fk_Blasrohre": 1,
+    "fk_bögen": 1,
+    "Antimagie": 53,
+    "Heilung": 32,
+    "Hellsicht": 11,
+    "Illusion": 23,
+    "Veränderung": 26,
+    "Krieger": 35,
+    "PSI-Magier": 5
+  },
+  "formulaIdentifierFrequencies": {},
+  "groupStats": {
+    "Spruchmagie | Wert": {
+      "rows": 439,
+      "fields": {
+        "Referenz": 439,
+        "Kategorie": 439,
+        "Beschreibung": 439,
+        "Parent": 439,
+        "Art": 439,
+        "Flag": 70,
+        "Grad": 439,
+        "Kosten": 439,
+        "Eig-Bonus": 439,
+        "Wirkung": 439
+      }
+    },
+    "Charakterwerte | Formel": {
+      "rows": 26,
+      "fields": {
+        "Referenz": 26,
+        "Kategorie": 26,
+        "Beschreibung": 26,
+        "Info": 22,
+        "Art": 26,
+        "Formel": 26,
+        "Abkürzung": 8,
+        "Flag": 7
+      }
+    },
+    "Kampf | Pool": {
+      "rows": 1,
+      "fields": {
+        "Referenz": 1,
+        "Kategorie": 1,
+        "Beschreibung": 1,
+        "Info": 1,
+        "Art": 1
+      }
+    },
+    "Charakterwerte | Wert": {
+      "rows": 5,
+      "fields": {
+        "Referenz": 5,
+        "Kategorie": 5,
+        "Beschreibung": 5,
+        "Info": 5,
+        "Art": 5
+      }
+    },
+    "WHK | Wert": {
+      "rows": 238,
+      "fields": {
+        "Referenz": 238,
+        "Kategorie": 238,
+        "Beschreibung": 238,
+        "Parent": 198,
+        "Art": 238,
+        "Kosten": 238
+      }
+    },
+    "Bewegung | Formel": {
+      "rows": 12,
+      "fields": {
+        "Referenz": 12,
+        "Kategorie": 12,
+        "Beschreibung": 12,
+        "Info": 12,
+        "Art": 12,
+        "Formel": 12,
+        "Flag": 3
+      }
+    },
+    "Vor- und Nachteile | Auswahl": {
+      "rows": 187,
+      "fields": {
+        "Referenz": 187,
+        "Kategorie": 187,
+        "Beschreibung": 187,
+        "Art": 187,
+        "Flag": 23,
+        "Kosten": 187,
+        "Info": 10,
+        "Verfuegbarkeit": 89
+      }
+    },
+    "Nahkampf | Pool": {
+      "rows": 30,
+      "fields": {
+        "Referenz": 30,
+        "Kategorie": 30,
+        "Beschreibung": 30,
+        "Art": 30,
+        "Pool": 30,
+        "Flag": 1
+      }
+    },
+    "Fernkampf | Formel": {
+      "rows": 27,
+      "fields": {
+        "Referenz": 27,
+        "Kategorie": 27,
+        "Beschreibung": 27,
+        "Art": 27,
+        "Formel": 27,
+        "Flag": 20,
+        "Info": 18
+      }
+    },
+    "Kampf | Formel": {
+      "rows": 9,
+      "fields": {
+        "Referenz": 9,
+        "Kategorie": 9,
+        "Beschreibung": 9,
+        "Abkürzung": 5,
+        "Info": 9,
+        "Art": 9,
+        "Formel": 9,
+        "Flag": 8
+      }
+    },
+    "Gewichtsbelastung | Formel": {
+      "rows": 7,
+      "fields": {
+        "Referenz": 7,
+        "Kategorie": 7,
+        "Beschreibung": 7,
+        "Art": 7,
+        "Formel": 7,
+        "Flag": 7
+      }
+    },
+    "Talente | Auswahl": {
+      "rows": 177,
+      "fields": {
+        "Referenz": 177,
+        "Kategorie": 177,
+        "Beschreibung": 177,
+        "Parent": 177,
+        "Art": 177,
+        "Flag": 1,
+        "Kosten": 177
+      }
+    },
+    "Charakterwerte | Fixwert": {
+      "rows": 2,
+      "fields": {
+        "Referenz": 2,
+        "Kategorie": 2,
+        "Beschreibung": 2,
+        "Info": 2,
+        "Art": 2,
+        "Formel": 2,
+        "Flag": 1
+      }
+    },
+    "Grundfertigkeit | Wert": {
+      "rows": 22,
+      "fields": {
+        "Referenz": 22,
+        "Kategorie": 22,
+        "Beschreibung": 22,
+        "Art": 22,
+        "Flag": 22,
+        "Kosten": 22,
+        "Abkürzung": 1
+      }
+    },
+    "PSI | Wert": {
+      "rows": 15,
+      "fields": {
+        "Referenz": 15,
+        "Kategorie": 15,
+        "Beschreibung": 15,
+        "Info": 15,
+        "Parent": 13,
+        "Art": 15,
+        "Flag": 15,
+        "Kosten": 15,
+        "Mindest-TaW": 13,
+        "Eig-Bonus": 15
+      }
+    },
+    "Sonderfertigkeit | Wert": {
+      "rows": 23,
+      "fields": {
+        "Referenz": 23,
+        "Kategorie": 23,
+        "Beschreibung": 23,
+        "Art": 23,
+        "Flag": 23,
+        "Kosten": 23,
+        "Abkürzung": 7
+      }
+    },
+    "Attribute | Wert": {
+      "rows": 6,
+      "fields": {
+        "Referenz": 6,
+        "Kategorie": 6,
+        "Beschreibung": 6,
+        "Abkürzung": 6,
+        "Art": 6,
+        "Kosten": 6
+      }
+    },
+    "Attribute | Formel": {
+      "rows": 1,
+      "fields": {
+        "Referenz": 1,
+        "Kategorie": 1,
+        "Beschreibung": 1,
+        "Abkürzung": 1,
+        "Art": 1,
+        "Formel": 1
+      }
+    },
+    "Eigenschaft | Wert": {
+      "rows": 10,
+      "fields": {
+        "Referenz": 10,
+        "Kategorie": 10,
+        "Beschreibung": 10,
+        "Abkürzung": 10,
+        "Art": 10,
+        "Kosten": 10
+      }
+    },
+    "KI | Wert": {
+      "rows": 29,
+      "fields": {
+        "Referenz": 29,
+        "Kategorie": 29,
+        "Beschreibung": 29,
+        "Info": 29,
+        "Art": 29,
+        "Kosten": 29,
+        "Eig-Bonus": 28,
+        "Formel": 1
+      }
+    },
+    "KI | Formel": {
+      "rows": 2,
+      "fields": {
+        "Referenz": 2,
+        "Kategorie": 2,
+        "Beschreibung": 2,
+        "Info": 2,
+        "Art": 2,
+        "Formel": 2,
+        "Kosten": 2
+      }
+    },
+    "Charakterwerte | Lookup": {
+      "rows": 2,
+      "fields": {
+        "Referenz": 2,
+        "Kategorie": 2,
+        "Beschreibung": 2,
+        "Info": 2,
+        "Art": 2,
+        "Formel": 2
+      }
+    },
+    "Sprache & Kultur | Wert": {
+      "rows": 38,
+      "fields": {
+        "Referenz": 38,
+        "Kategorie": 38,
+        "Beschreibung": 38,
+        "Art": 38,
+        "Kosten": 38
+      }
+    },
+    "Nahkampf | Wert": {
+      "rows": 30,
+      "fields": {
+        "Referenz": 30,
+        "Kategorie": 30,
+        "Beschreibung": 30,
+        "Parent": 25,
+        "Art": 30,
+        "Info": 7
+      }
+    },
+    "Bewegung | Fixwert": {
+      "rows": 6,
+      "fields": {
+        "Referenz": 6,
+        "Kategorie": 6,
+        "Beschreibung": 6,
+        "Info": 6,
+        "Art": 6,
+        "Formel": 6
+      }
+    },
+    "Eigenschaftsbonus | Formel": {
+      "rows": 10,
+      "fields": {
+        "Referenz": 10,
+        "Kategorie": 10,
+        "Beschreibung": 10,
+        "Abkürzung": 10,
+        "Art": 10,
+        "Formel": 10
+      }
+    },
+    "Fernkampf | Wert": {
+      "rows": 9,
+      "fields": {
+        "Referenz": 9,
+        "Kategorie": 9,
+        "Beschreibung": 9,
+        "Art": 9,
+        "Parent": 5
+      }
+    },
+    "Nahkampf | Formel": {
+      "rows": 10,
+      "fields": {
+        "Referenz": 10,
+        "Kategorie": 10,
+        "Beschreibung": 10,
+        "Info": 10,
+        "Art": 10,
+        "Formel": 10
+      }
+    }
+  },
+  "findingCounts": {
+    "pool_art_without_pool": 1,
+    "value_art_with_formula": 1,
+    "invalid_reference_format": 21,
+    "parent_reference_spelling": 2,
+    "bare_version_suffix": 7,
+    "spelling_selbstbeherrschung": 3,
+    "stufe_separator": 2,
+    "dependency_cycle": 4
+  }
+}

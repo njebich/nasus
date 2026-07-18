@@ -1,0 +1,2996 @@
+[
+  {
+    "sheet": "Werte",
+    "address": "A1:AG1547",
+    "headers": [
+      "Referenz",
+      "Kategorie",
+      "Beschreibung",
+      "Abkürzung",
+      "Info",
+      "Parent",
+      "Art",
+      "Formel",
+      "Pool",
+      "Flag",
+      "Grad",
+      "Kosten",
+      "Verfuegbarkeit",
+      "",
+      "Mindest-TaW",
+      "Eig-Bonus",
+      "Wirkung",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "firstRows": [
+      [
+        "Referenz",
+        "Kategorie",
+        "Beschreibung",
+        "Abkürzung",
+        "Info",
+        "Parent",
+        "Art",
+        "Formel",
+        "Pool",
+        "Flag",
+        "Grad",
+        "Kosten",
+        "Verfuegbarkeit",
+        null,
+        "Mindest-TaW",
+        "Eig-Bonus",
+        "Wirkung",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "spruchmagie_erdbeschwoerung_1_splitterwand",
+        "Spruchmagie",
+        "Splitterwand",
+        null,
+        null,
+        "Erdbeschwörung",
+        "Wert",
+        null,
+        null,
+        "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen.",
+        1,
+        "WENN(wert=0;0;10+(wert-1)*grad)",
+        null,
+        null,
+        null,
+        "eig_bonus_k_staerke",
+        "Der Magier erschafft eine Wand aus Erde. Die Wahrnehmung durch diese Wand ist stark erschwert bis unmöglich: Alle FK-Attacken sind um Aura*2 erschwert. Wer versucht, die Wand zu durchdringen, erleidet Elementarschaden auf jeder TZ. Während der Effektdauer entfaltet die Wand nur die halbe Wirkung. Schaden: W4+Magie, RB 6 auf jede TZ.",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "spruchmagie_erdbeschwoerung_2_splitterstrahl",
+        "Spruchmagie",
+        "Splitterstrahl",
+        null,
+        null,
+        "Erdbeschwörung",
+        "Wert",
+        null,
+        null,
+        "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen.",
+        2,
+        "WENN(wert=0;0;10+(wert-1)*grad)",
+        null,
+        null,
+        null,
+        "eig_bonus_k_staerke",
+        "Aus der Handfläche des Magiers schießt ein (M) cm dicker Strahl aus Erde. Schaden: W10+Magie, RB 3, pro sec, Treffer auf eine FK-TZ mit 1 zusätzlichen TZ-Reroll.",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "spruchmagie_erdbeschwoerung_3_steinschlag",
+        "Spruchmagie",
+        "Steinschlag",
+        null,
+        null,
+        "Erdbeschwörung",
+        "Wert",
+        null,
+        null,
+        "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen.",
+        3,
+        "WENN(wert=0;0;10+(wert-1)*grad)",
+        null,
+        null,
+        null,
+        "eig_bonus_k_staerke",
+        "Der Magus erschafft um das Opfer eine Kugel aus Erde.  Treffer auf FK-TZ mit 2 TZ-Rerolls auf die gewünschte Trefferzone. Schaden: 2W6 + Magie, RB 6.",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "spruchmagie_erdbeschwoerung_4_grosse_splitterwand",
+        "Spruchmagie",
+        "Große Splitterwand",
+        null,
+        null,
+        "Erdbeschwörung",
+        "Wert",
+        null,
+        null,
+        "ACHTUNG: In der Quelle (NN_Spruchmagie_0.57) gibt es mehrere Zeilen mit gleichem Schule+Grad+Name aber abweichendem Wirkungstext (vermutlich alte+neue Version nebeneinander stehen geblieben) - hier wurde die letzte Version uebernommen, bitte pruefen.",
+        4,
+        "WENN(wert=0;0;10+(wert-1)*grad)",
+        null,
+        null,
+        null,
+        "eig_bonus_k_staerke",
+        "Der Magier erschafft eine Wand aus Erde. Die Wahrnehmung durch diese Wand ist stark erschwert bis unmöglich: Alle FK-Attacken sind um Aura*2 erschwert. Wer versucht, die Wand zu durchdringen, erleidet Elementarschaden auf jeder TZ. Während der Effektdauer entfaltet die Wand nur die halbe Wirkung. Schaden: 2W6 + Magie, RB 6. Länge max. (M) m, Breite max. (M)*5cm",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    ],
+    "flagColumns": [
+      9
+    ],
+    "populatedRows": 1374
+  },
+  {
+    "sheet": "WHK Dump",
+    "address": "A2:J382",
+    "headers": [
+      "Dressur",
+      "Reittier",
+      "Nutztier",
+      "Wachtier",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "Apothekarius"
+    ],
+    "firstRows": [
+      [
+        "Dressur",
+        "Reittier",
+        "Nutztier",
+        "Wachtier",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Apothekarius"
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Archäologe"
+      ],
+      [
+        "Akrobat",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Bestatter"
+      ],
+      [
+        "Alchemie",
+        "Gifte",
+        "Heiltränke",
+        "Sprengstoffe",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Architekt"
+      ],
+      [
+        "Medizin",
+        "Anatomie",
+        "Erstversorgung",
+        "Chirurgie",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Archivar"
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 367
+  },
+  {
+    "sheet": "EP-Stufe-Kreis",
+    "address": "A1:C65",
+    "headers": [
+      "EP ab",
+      "Stufe",
+      "Kreis"
+    ],
+    "firstRows": [
+      [
+        "EP ab",
+        "Stufe",
+        "Kreis"
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        20,
+        1,
+        1
+      ],
+      [
+        60,
+        2,
+        1
+      ],
+      [
+        120,
+        3,
+        1
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 65
+  },
+  {
+    "sheet": "WHK-Spez-Kosten",
+    "address": "A1:C41",
+    "headers": [
+      "Wert",
+      "EP-Kosten (Schritt)",
+      "Gesamt-EP"
+    ],
+    "firstRows": [
+      [
+        "Wert",
+        "EP-Kosten (Schritt)",
+        "Gesamt-EP"
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        4,
+        4
+      ],
+      [
+        2,
+        1,
+        5
+      ],
+      [
+        3,
+        1,
+        6
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 41
+  },
+  {
+    "sheet": "Eigenschaften-Kosten",
+    "address": "A1:C66",
+    "headers": [
+      "Wert",
+      "Gesamt-EP",
+      "EP-Kosten (Schritt)"
+    ],
+    "firstRows": [
+      [
+        "Wert",
+        "Gesamt-EP",
+        "EP-Kosten (Schritt)"
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        30,
+        30
+      ],
+      [
+        2,
+        60,
+        30
+      ],
+      [
+        3,
+        90,
+        30
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 66
+  },
+  {
+    "sheet": "Voelker-Maxima",
+    "address": "A1:E111",
+    "headers": [
+      "Volk",
+      "Eigenschaft",
+      "Erstellungs-Min",
+      "Erstellungs-Max",
+      "Max (ab Kreis 3)"
+    ],
+    "firstRows": [
+      [
+        "Volk",
+        "Eigenschaft",
+        "Erstellungs-Min",
+        "Erstellungs-Max",
+        "Max (ab Kreis 3)"
+      ],
+      [
+        "Dalkini",
+        "Ausstrahlung",
+        9,
+        21,
+        31
+      ],
+      [
+        "Dalkini",
+        "Intelligenz",
+        9,
+        21,
+        31
+      ],
+      [
+        "Dalkini",
+        "Mut",
+        10,
+        22,
+        31
+      ],
+      [
+        "Dalkini",
+        "Sinnesschaerfe",
+        9,
+        21,
+        31
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 111
+  },
+  {
+    "sheet": "PSI-Zauberstufen",
+    "address": "A1:D106",
+    "headers": [
+      "Referenz",
+      "Stufe",
+      "Erschwerung",
+      "ASP-Kosten"
+    ],
+    "firstRows": [
+      [
+        "Referenz",
+        "Stufe",
+        "Erschwerung",
+        "ASP-Kosten"
+      ],
+      [
+        "psi_telekinese",
+        1,
+        3,
+        10
+      ],
+      [
+        "psi_telekinese",
+        2,
+        6,
+        15
+      ],
+      [
+        "psi_telekinese",
+        3,
+        9,
+        25
+      ],
+      [
+        "psi_telekinese",
+        4,
+        12,
+        40
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 106
+  },
+  {
+    "sheet": "KI-Baum-Kanten",
+    "address": "A1:C30",
+    "headers": [
+      "Faehigkeit",
+      "Vorbedingung",
+      "Mindest-TaW"
+    ],
+    "firstRows": [
+      [
+        "Faehigkeit",
+        "Vorbedingung",
+        "Mindest-TaW"
+      ],
+      [
+        "ki_ki-schutz",
+        "ki_abhaertung",
+        10
+      ],
+      [
+        "ki_geschossen_ausweichen",
+        "ki_abwehr",
+        15
+      ],
+      [
+        "ki_geschossen_ausweichen",
+        "ki_adlerauge",
+        30
+      ],
+      [
+        "ki_magie_aufspueren",
+        "ki_adlerauge",
+        20
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 30
+  },
+  {
+    "sheet": "Preisliste",
+    "address": "A1:I973",
+    "headers": [
+      "Art",
+      "Name",
+      "Anzahl",
+      "Einheit",
+      "Gewicht in kg",
+      "Dublonen",
+      "",
+      "WHK",
+      "Spezialisierung"
+    ],
+    "firstRows": [
+      [
+        "Art",
+        "Name",
+        "Anzahl",
+        "Einheit",
+        "Gewicht in kg",
+        "Dublonen",
+        null,
+        "WHK",
+        "Spezialisierung"
+      ],
+      [
+        "Reittiere",
+        "Drache, Flug",
+        1,
+        "Stück",
+        "XXX",
+        "------",
+        "Selten",
+        "Abrichten",
+        "Drache"
+      ],
+      [
+        "Reittiere",
+        "Greif, Flug",
+        1,
+        "Stück",
+        "XXX",
+        "------",
+        "Selten",
+        "Abrichten",
+        "Greife"
+      ],
+      [
+        "Reittiere",
+        "Chocobo, Abgeh,",
+        1,
+        "Stück",
+        "XXX",
+        470,
+        "Elf",
+        "Abrichten",
+        "Laufvogel"
+      ],
+      [
+        "Reittiere",
+        "Chocobo, Alt ",
+        1,
+        "Stück",
+        "XXX",
+        282,
+        "Elf",
+        "Abrichten",
+        "Laufvogel"
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 973
+  },
+  {
+    "sheet": "Alchemika",
+    "address": "A1:N119",
+    "headers": [
+      "Kategorie",
+      "Name",
+      "P",
+      "Dos",
+      "Zufuhr",
+      "z.b.S",
+      "z.b.W",
+      "Wirkung",
+      "Wd.",
+      "Leg",
+      "Haltbark",
+      "Verfügb",
+      "Preis",
+      "Rezept-Erschwerung"
+    ],
+    "firstRows": [
+      [
+        "Kategorie",
+        "Name",
+        "P",
+        "Dos",
+        "Zufuhr",
+        "z.b.S",
+        "z.b.W",
+        "Wirkung",
+        "Wd.",
+        "Leg",
+        "Haltbark",
+        "Verfügb",
+        "Preis",
+        "Rezept-Erschwerung"
+      ],
+      [
+        "Buffs",
+        "XS. Ambrosia",
+        90,
+        "J",
+        "Nahrung",
+        "7sec",
+        "7min",
+        "(M)  Man wird binnen 24h, 1W20+4 Jahre Jünger",
+        "24h",
+        3,
+        "--",
+        "7/7/-",
+        "2000D",
+        240
+      ],
+      [
+        "Buffs",
+        "S. Ambrosia",
+        80,
+        "J",
+        "Nahrung",
+        "7sec",
+        "7min",
+        "(M)  Man wird binnen 24h, 1W12+3 Jahre Jünger",
+        "24h",
+        2,
+        "--",
+        "7/6/-",
+        "1500D",
+        150
+      ],
+      [
+        "Buffs",
+        "S. Flugtrank",
+        75,
+        "J",
+        "Nahrung",
+        "1Sec",
+        "7sec",
+        "(M)  Man kann mit 15m/s Fliegen",
+        "30min",
+        4,
+        "--",
+        "7/7/-",
+        "625D",
+        120
+      ],
+      [
+        "Buffs",
+        "S. Göttertrank",
+        75,
+        "J",
+        "Nahrung",
+        "Sofort",
+        "Sofort",
+        "(M)  ALLES +6 (keine Formeln neu rechnen)(auch über Maximal werte)",
+        "1h",
+        4,
+        "--",
+        "7/6/-",
+        "500D",
+        90
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 119
+  },
+  {
+    "sheet": "Ruestungstabelle",
+    "address": "A1:I61",
+    "headers": [
+      "",
+      "Kopf",
+      "Verarbeitung",
+      "Anpassung",
+      "RS",
+      "BE",
+      "Preis",
+      "NW",
+      "AW"
+    ],
+    "firstRows": [
+      [
+        null,
+        "Kopf",
+        "Verarbeitung",
+        "Anpassung",
+        "RS",
+        "BE",
+        "Preis",
+        "NW",
+        "AW"
+      ],
+      [
+        "Lage 1",
+        "Stoffrüstung",
+        "Meisterarbeit",
+        "angepasst",
+        3,
+        1,
+        227,
+        3,
+        2
+      ],
+      [
+        "Lage 2",
+        "Leichte Lederrüstung",
+        "Meisterarbeit",
+        "angepasst",
+        4,
+        2,
+        274,
+        3,
+        2
+      ],
+      [
+        "Lage 3",
+        "Stahl-Kettenpanzer",
+        "Meisterarbeit",
+        "angepasst",
+        6,
+        3,
+        1830,
+        3,
+        2
+      ],
+      [
+        "Lage 4",
+        "Schwerer Lederpanzer",
+        "Meisterarbeit",
+        "angepasst",
+        6,
+        4,
+        562,
+        3,
+        2
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 61
+  },
+  {
+    "sheet": "NK-Material",
+    "address": "A1:M20",
+    "headers": [
+      "Waffe",
+      "Stä-Malus",
+      "AT-",
+      "PA-",
+      "WK",
+      "1H min.Stä",
+      "2H min.Stä",
+      "Preis",
+      "Klingen-Brecher",
+      "Klingen-Schutz",
+      "",
+      "Art/Specials",
+      "Rezept-Mod"
+    ],
+    "firstRows": [
+      [
+        "Waffe",
+        "Stä-Malus",
+        "AT-",
+        "PA-",
+        "WK ",
+        "1H min.Stä",
+        "2H min.Stä",
+        "Preis",
+        "Klingen-Brecher",
+        "Klingen-Schutz",
+        null,
+        "Art/Specials",
+        "Rezept-Mod"
+      ],
+      [
+        "Eisen",
+        null,
+        null,
+        null,
+        null,
+        1,
+        1,
+        50,
+        null,
+        null,
+        "Standard",
+        null,
+        10
+      ],
+      [
+        "Stahl",
+        1,
+        null,
+        1,
+        -0.5,
+        0.9,
+        0.9,
+        125,
+        1,
+        1,
+        "ALLE",
+        null,
+        12
+      ],
+      [
+        "Qualitätsstahl",
+        1,
+        null,
+        1,
+        -0.5,
+        0.9,
+        0.9,
+        175,
+        2,
+        2,
+        "ALLE",
+        null,
+        18
+      ],
+      [
+        "Faltstahl",
+        2,
+        null,
+        1,
+        -0.5,
+        0.8,
+        0.8,
+        250,
+        3,
+        3,
+        "ALLE",
+        null,
+        30
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 20
+  },
+  {
+    "sheet": "NK-Anpassung",
+    "address": "A1:N4",
+    "headers": [
+      "Anpassung",
+      "Stä-Malus",
+      "AT-",
+      "PA-",
+      "WK",
+      "Min.Stä. 1H",
+      "Min.Stä. 2H",
+      "Preis",
+      "Klingen Brecher",
+      "Klingen Schutz",
+      "Volk",
+      "Art/Specials",
+      "",
+      "Arbeitszeit/d"
+    ],
+    "firstRows": [
+      [
+        "Anpassung",
+        "Stä-Malus",
+        "AT-",
+        "PA-",
+        "WK ",
+        "Min.Stä. 1H",
+        "Min.Stä. 2H",
+        "Preis",
+        "Klingen Brecher",
+        "Klingen Schutz",
+        "Volk",
+        "Art/Specials",
+        null,
+        "Arbeitszeit/d"
+      ],
+      [
+        "Von der Stange",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        1,
+        null,
+        null,
+        "Standard",
+        null,
+        0,
+        0
+      ],
+      [
+        "angepasst",
+        null,
+        1,
+        1,
+        null,
+        null,
+        -2,
+        2,
+        null,
+        null,
+        "ALLE",
+        null,
+        6,
+        1
+      ],
+      [
+        "Perfekt angepasst ",
+        null,
+        2,
+        2,
+        null,
+        null,
+        -4,
+        5,
+        null,
+        null,
+        "ALLE",
+        null,
+        12,
+        2
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 4
+  },
+  {
+    "sheet": "NK-Schaftmaterial",
+    "address": "A1:N16",
+    "headers": [
+      "Verstärkung des Schafts",
+      "Stä-Malus",
+      "AT-",
+      "PA-",
+      "WK",
+      "Min.Stä. 1H",
+      "Min.Stä. 2H",
+      "Preis/m",
+      "Klingen Brecher",
+      "Klingen Schutz",
+      "Volk",
+      "Art/Specials",
+      "",
+      ""
+    ],
+    "firstRows": [
+      [
+        "Verstärkung des Schafts",
+        "Stä-Malus",
+        "AT-",
+        "PA-",
+        "WK ",
+        "Min.Stä. 1H",
+        "Min.Stä. 2H",
+        "Preis/m",
+        "Klingen Brecher",
+        "Klingen Schutz",
+        "Volk",
+        "Art/Specials",
+        null,
+        null
+      ],
+      [
+        "Standard",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        0,
+        null
+      ],
+      [
+        "Eisen Verstärkt",
+        null,
+        -1,
+        -1,
+        null,
+        null,
+        2,
+        37.5,
+        null,
+        2,
+        "ALLE",
+        null,
+        10,
+        0.5
+      ],
+      [
+        "Eisen Voll",
+        null,
+        -2,
+        -2,
+        null,
+        null,
+        3,
+        275,
+        null,
+        3,
+        "ALLE",
+        null,
+        10,
+        0.5
+      ],
+      [
+        "Stahl Verstärkt",
+        null,
+        -1,
+        -1,
+        null,
+        null,
+        2,
+        93.75,
+        null,
+        3,
+        "ALLE",
+        null,
+        12,
+        0.5
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 16
+  },
+  {
+    "sheet": "NK-Fertigung",
+    "address": "A1:M8",
+    "headers": [
+      "Fertigung",
+      "Stä-Malus",
+      "AT-",
+      "PA-",
+      "WK",
+      "Min.Stä. 1H",
+      "Min.Stä. 2H",
+      "Preis",
+      "Klingen Brecher",
+      "Klingen Schutz",
+      "Volk",
+      "Art/Specials",
+      ""
+    ],
+    "firstRows": [
+      [
+        "Fertigung",
+        "Stä-Malus",
+        "AT-",
+        "PA-",
+        "WK ",
+        "Min.Stä. 1H",
+        "Min.Stä. 2H",
+        "Preis",
+        "Klingen Brecher",
+        "Klingen Schutz",
+        "Volk",
+        "Art/Specials",
+        null
+      ],
+      [
+        "Ausschuss  ",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        1.5,
+        -3,
+        -6,
+        "ALLE",
+        null,
+        -6
+      ],
+      [
+        "Goblin Massenfab.",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        2,
+        -2,
+        -3,
+        "Goblin",
+        null,
+        -4
+      ],
+      [
+        "Massenfabrikation",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        4,
+        -1,
+        -1,
+        "ALLE",
+        null,
+        -3
+      ],
+      [
+        "Gesellenarbeit",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        6,
+        null,
+        null,
+        "Standard",
+        null,
+        0
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 8
+  },
+  {
+    "sheet": "NK-Waffen-Basis",
+    "address": "A1:Z244",
+    "headers": [
+      "Hauptfertigkeit",
+      "Spezialisierung",
+      "Waffe",
+      "Ini",
+      "WK-Basis",
+      "Schadenswuerfel-1",
+      "Schadenswuerfel-2",
+      "Staerke-Teiler",
+      "Staerke-Malus-Basis",
+      "RB",
+      "AT-Basis",
+      "PA-Basis",
+      "Min-Staerke-1H-Basis",
+      "Min-Staerke-2H-Basis",
+      "Laenge-m",
+      "Tarnung",
+      "Art-Specials",
+      "Klingenbrecher-Basis",
+      "Klingenschutz-Basis",
+      "Rezept-Mod-Basis",
+      "Materialpreis-Faktor",
+      "Arbeitszeit-Tag-Basis",
+      "Volk",
+      "Fert-Spez-Maximum",
+      "RS-Basis",
+      "Preis-Basis"
+    ],
+    "firstRows": [
+      [
+        "Hauptfertigkeit",
+        "Spezialisierung",
+        "Waffe",
+        "Ini",
+        "WK-Basis",
+        "Schadenswuerfel-1",
+        "Schadenswuerfel-2",
+        "Staerke-Teiler",
+        "Staerke-Malus-Basis",
+        "RB",
+        "AT-Basis",
+        "PA-Basis",
+        "Min-Staerke-1H-Basis",
+        "Min-Staerke-2H-Basis",
+        "Laenge-m",
+        "Tarnung",
+        "Art-Specials",
+        "Klingenbrecher-Basis",
+        "Klingenschutz-Basis",
+        "Rezept-Mod-Basis",
+        "Materialpreis-Faktor",
+        "Arbeitszeit-Tag-Basis",
+        "Volk",
+        "Fert-Spez-Maximum",
+        "RS-Basis",
+        "Preis-Basis"
+      ],
+      [
+        "Unbewaffnet",
+        "Armklingen",
+        "Armklingen",
+        5,
+        3,
+        "W10",
+        "W6",
+        3,
+        -6,
+        0,
+        -2,
+        -4,
+        8,
+        null,
+        0.5,
+        0,
+        "Schnell",
+        12,
+        14,
+        10,
+        0.7,
+        3,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Stichwaffen",
+        "Fechtwaffen",
+        "Armklingen",
+        5,
+        3,
+        "W10",
+        "W6",
+        3,
+        -6,
+        0,
+        -2,
+        -4,
+        8,
+        null,
+        0.5,
+        0,
+        "Schnell",
+        12,
+        14,
+        10,
+        0.7,
+        3,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Unbewaffnet",
+        "Armklingen",
+        "Armklingen elfisch",
+        5,
+        2.5,
+        "W12",
+        "W4",
+        3,
+        -6,
+        0,
+        -2,
+        -3,
+        7,
+        null,
+        0.5,
+        0,
+        "Schnell",
+        12,
+        13,
+        12,
+        0.6,
+        4,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Stichwaffen",
+        "Fechtwaffen",
+        "Armklingen elfisch",
+        5,
+        2.5,
+        "W12",
+        "W4",
+        3,
+        -6,
+        0,
+        -2,
+        -3,
+        7,
+        null,
+        0.5,
+        0,
+        "Schnell",
+        12,
+        13,
+        12,
+        0.6,
+        4,
+        null,
+        null,
+        null,
+        null
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 244
+  },
+  {
+    "sheet": "Entwickeln",
+    "address": "A1:E33",
+    "headers": [
+      "Bereich",
+      "Thema",
+      "Beschreibung",
+      "Status",
+      "Hinzugefuegt"
+    ],
+    "firstRows": [
+      [
+        "Bereich",
+        "Thema",
+        "Beschreibung",
+        "Status",
+        "Hinzugefuegt"
+      ],
+      [
+        "Ausruestung/Schilde",
+        "Schild-Preise/Rezept/Materialpreis",
+        "14 Schildzeilen mit #WERT!-Fehlern in NK-Waffen-Basis: Preis/Rezeptschwierigkeit/Materialpreis nicht uebernommen. Die Schilde-Quelltabelle (NN Schilde v0.1.xlsx) hat Materialpreis/Arbeitszeit/Rezept-Mod-Basis komplett unausgefuellt ('x'/'X'), und ihre Basiswerte gelten teils mit Holz statt Eisen als Grundmaterial, nicht kompatibel mit dem NK-Waffen-Materialsystem. Zeilen sind uebernommen, aber als 'aktuell nicht ausruestbar' markiert. Muss von Grund auf neu entwickelt werden (eigenes Material-/Preissystem fuer Schilde, ggf. eigene Normalisierung auf ein einheitliches Basismaterial). -- GELOEST 2026-07-16: 'Schilde v1.4.docx' vom Nutzer bereitgestellt, enthaelt saubere Preis-Basis (100D-1200D) je Schild sowie eigene Material-/Fertigungs-/Bespannungs-Tabellen (multiplikatives Preissystem, siehe Sheets Schild-Material/Schild-Fertigung/Schild-Bespannung). Ausserdem dabei einen Vorzeichenfehler gefunden und korrigiert: 11 der 12 Schilde hatten Staerke-Malus-Basis=+5 statt korrekt -5 in NK-Waffen-Basis.",
+        "Geloest",
+        "2026-07-16"
+      ],
+      [
+        "Ausruestung/Ruestung",
+        "Panzerhandschuhe, Panzerschienen, Eisenkappenstiefel, Orkischer Kampfhandschuh",
+        "Ruestungswerte fehlen fuer diese vier Gegenstaende in der Ruestungstabelle (es existiert kein Haende-/Fuesse-Slot, nur Kopf/Torso/Arme/Beine). Rezept-Mod-Basis/Materialpreis-Faktor/Arbeitszeit-Tag-Basis in NK-Waffen-Basis daher = X/x/x. Braucht: (a) Ruestungswerte-System fuer Haende/Fuesse allgemein, (b) konkrete Werte fuer diese 4 Items.",
+        "Offen",
+        "2026-07-16"
+      ],
+      [
+        "Ausruestung/Ruestung",
+        "Ruestungsmodifikatoren/Ruestungsteile-System",
+        "Es existiert kein Pendant zu NK-Material/NK-Fertigung/NK-Anpassung/NK-Schaftmaterial fuer Ruestung. Muss komplett neu entwickelt werden, analog zur NK-Waffen-Modifikatorkette. -- GELOEST 2026-07-16: System steckte bereits vollstaendig in NN NPC-Rechner 0.76.xlsx, Sheet 'RS-Sheet' (Nutzerhinweis). Als Sheets Ruestung-Basis (20 Ruestungsteile), Ruestung-Addons (4 Aufpanzerungen, Lage 5), Ruestung-Verarbeitung (4 Stufen), Ruestung-Anpassung (4 Stufen) umgesetzt. Formel (RS = Basis + Verarbeitung; BE = MAX(Lage; Basis+Verarbeitung+Anpassung); Preis = Materialkosten + Lohn*(Arbeitszeit+Zusatztage); Verfuegbarkeit = MAX ueber alle 3 Komponenten) gegen das bestehende Beispiel-Set in Sheet Ruestungstabelle verifiziert (Stoffruestung+Meisterarbeit+angepasst -> RS=3/BE=1/Preis=227/NW=3/AW=2, alle 5 Werte exakt reproduziert).",
+        "Geloest",
+        "2026-07-16"
+      ],
+      [
+        "Ausruestung/Waffen",
+        "Ork'sche (FK/NK-Hybrid)",
+        "Pistole/Muskete, die gleichzeitig als Nahkampfwaffe zaehlt. Nur ueber Fertigung/Anpassung modifizierbar, Preis stammt aus der FK-Tabelle; die NK-Version wird beim Kauf der FK-Waffe automatisch mitgeliefert. Grenzfall zwischen FK- und NK-System, noch nicht in NK-Waffen-Basis integriert.",
+        "Offen",
+        "2026-07-16"
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 33
+  },
+  {
+    "sheet": "Schild-Material",
+    "address": "A1:K23",
+    "headers": [
+      "Material",
+      "Staerke-Malus-Mod",
+      "AT-Mod",
+      "PA-Mod",
+      "WK-Mod",
+      "Klingenbrecher-Mod",
+      "Klingenschutz-Mod",
+      "RS-Mod",
+      "Min-Staerke-Faktor",
+      "Preis-Faktor",
+      "Art-Specials"
+    ],
+    "firstRows": [
+      [
+        "Material",
+        "Staerke-Malus-Mod",
+        "AT-Mod",
+        "PA-Mod",
+        "WK-Mod",
+        "Klingenbrecher-Mod",
+        "Klingenschutz-Mod",
+        "RS-Mod",
+        "Min-Staerke-Faktor",
+        "Preis-Faktor",
+        "Art-Specials"
+      ],
+      [
+        "Holz",
+        -6,
+        2,
+        2,
+        -1.5,
+        -11,
+        -10,
+        -5,
+        0.5,
+        0.2,
+        null
+      ],
+      [
+        "Hart Holz",
+        -5,
+        1,
+        2,
+        -1,
+        -4,
+        -5,
+        -3,
+        0.7,
+        3,
+        null
+      ],
+      [
+        "Leder",
+        0,
+        3,
+        3,
+        0,
+        -20,
+        -15,
+        -7,
+        0.45,
+        0.1,
+        null
+      ],
+      [
+        "Spinnenwebe",
+        -6,
+        3,
+        4,
+        -2,
+        -11,
+        -5,
+        3,
+        0.4,
+        6,
+        "Nur Fernkampf-RS"
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 23
+  },
+  {
+    "sheet": "Schild-Fertigung",
+    "address": "A1:D8",
+    "headers": [
+      "Fertigung",
+      "Klingenbrecher-Mod",
+      "Klingenschutz-Mod",
+      "Preis-Faktor"
+    ],
+    "firstRows": [
+      [
+        "Fertigung",
+        "Klingenbrecher-Mod",
+        "Klingenschutz-Mod",
+        "Preis-Faktor"
+      ],
+      [
+        "Ausschuss",
+        -3,
+        -6,
+        0.3
+      ],
+      [
+        "Goblin Massenfab.",
+        -2,
+        -3,
+        0.5
+      ],
+      [
+        "Massenfabrikation",
+        -1,
+        -1,
+        0.75
+      ],
+      [
+        "Gesellenarbeit",
+        0,
+        0,
+        1
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 8
+  },
+  {
+    "sheet": "Schild-Bespannung",
+    "address": "A1:G6",
+    "headers": [
+      "Bespannung",
+      "Klingenbrecher-Mod",
+      "Klingenschutz-Mod",
+      "RS-Mod",
+      "Min-Staerke-Faktor",
+      "Preis",
+      "Art-Specials"
+    ],
+    "firstRows": [
+      [
+        "Bespannung",
+        "Klingenbrecher-Mod",
+        "Klingenschutz-Mod",
+        "RS-Mod",
+        "Min-Staerke-Faktor",
+        "Preis",
+        "Art-Specials"
+      ],
+      [
+        "Stoff",
+        0,
+        0,
+        null,
+        null,
+        20,
+        null
+      ],
+      [
+        "Spinnenwebe",
+        0,
+        1,
+        3,
+        1.05,
+        600,
+        "Nur FK"
+      ],
+      [
+        "Leder",
+        0,
+        2,
+        1,
+        1.1,
+        25,
+        null
+      ],
+      [
+        "Drachenschuppe",
+        1,
+        2,
+        4,
+        1.2,
+        "Meister (individuell durch Spielleitung)",
+        "-50% Einzelelement-Schaden"
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 6
+  },
+  {
+    "sheet": "Schild-Verplatung",
+    "address": "A1:G14",
+    "headers": [
+      "Material",
+      "Klingenbrecher-Mod",
+      "Klingenschutz-Mod",
+      "RS-Mod",
+      "Min-Staerke-Faktor",
+      "Preis-Faktor",
+      "Flag"
+    ],
+    "firstRows": [
+      [
+        "Material",
+        "Klingenbrecher-Mod",
+        "Klingenschutz-Mod",
+        "RS-Mod",
+        "Min-Staerke-Faktor",
+        "Preis-Faktor",
+        "Flag"
+      ],
+      [
+        "Schwarzfells",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Keine Werte in Quelle vorhanden - nur Materialliste, siehe Entwickeln"
+      ],
+      [
+        "Diamantspart",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Keine Werte in Quelle vorhanden - nur Materialliste, siehe Entwickeln"
+      ],
+      [
+        "Bronze",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Keine Werte in Quelle vorhanden - nur Materialliste, siehe Entwickeln"
+      ],
+      [
+        "Eisen",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "Keine Werte in Quelle vorhanden - nur Materialliste, siehe Entwickeln"
+      ]
+    ],
+    "flagColumns": [
+      6
+    ],
+    "populatedRows": 14
+  },
+  {
+    "sheet": "Artefakt-Magus-Faehigkeiten",
+    "address": "A1:G12",
+    "headers": [
+      "Rang",
+      "Name",
+      "Max-Zaubergrad-Wirkungsstufe",
+      "Gehalt",
+      "Dublonen-pro-Mana",
+      "Angenommene-M",
+      "Verfuegbarkeit"
+    ],
+    "firstRows": [
+      [
+        "Rang",
+        "Name",
+        "Max-Zaubergrad-Wirkungsstufe",
+        "Gehalt",
+        "Dublonen-pro-Mana",
+        "Angenommene-M",
+        "Verfuegbarkeit"
+      ],
+      [
+        1,
+        "-",
+        2,
+        11,
+        0.5,
+        5,
+        1
+      ],
+      [
+        2,
+        "-",
+        2,
+        22,
+        1,
+        10,
+        2
+      ],
+      [
+        3,
+        "Magus",
+        2,
+        44,
+        2,
+        20,
+        3
+      ],
+      [
+        4,
+        "Magus Magister",
+        3,
+        60,
+        6,
+        25,
+        4
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 12
+  },
+  {
+    "sheet": "Artefakt-Seelensteine",
+    "address": "A1:C11",
+    "headers": [
+      "Zauberstufe",
+      "Karat-pro-Mana",
+      "Dublonen-pro-Mana"
+    ],
+    "firstRows": [
+      [
+        "Zauberstufe",
+        "Karat-pro-Mana",
+        "Dublonen-pro-Mana"
+      ],
+      [
+        1,
+        0.6,
+        5
+      ],
+      [
+        2,
+        0.5,
+        10
+      ],
+      [
+        3,
+        0.4,
+        17
+      ],
+      [
+        4,
+        0.3,
+        26
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 11
+  },
+  {
+    "sheet": "Artefakt-Manamultiplikator",
+    "address": "A1:B11",
+    "headers": [
+      "Differenz",
+      "Manamultiplikator"
+    ],
+    "firstRows": [
+      [
+        "Differenz",
+        "Manamultiplikator"
+      ],
+      [
+        1,
+        0.6666666666666666
+      ],
+      [
+        2,
+        0.4444444444444444
+      ],
+      [
+        3,
+        0.2962962962962962
+      ],
+      [
+        4,
+        0.1975308641975308
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 11
+  },
+  {
+    "sheet": "Artefakt-Basis",
+    "address": "A1:L58",
+    "headers": [
+      "Referenz",
+      "Name",
+      "Beschreibung",
+      "Zaubergrad",
+      "Mana-Basis",
+      "Vorbereitungszeit-sec",
+      "Effektdauer-sec",
+      "Wirkungsdauer-Basis",
+      "Wirkungsdauer-Einheit",
+      "Wirkung-Basis",
+      "Wirkung-Einheit",
+      "Eigenschaft"
+    ],
+    "firstRows": [
+      [
+        "Referenz",
+        "Name",
+        "Beschreibung",
+        "Zaubergrad",
+        "Mana-Basis",
+        "Vorbereitungszeit-sec",
+        "Effektdauer-sec",
+        "Wirkungsdauer-Basis",
+        "Wirkungsdauer-Einheit",
+        "Wirkung-Basis",
+        "Wirkung-Einheit",
+        "Eigenschaft"
+      ],
+      [
+        "artefakt_licht",
+        "Licht",
+        "Das Artefakt beginnt zu leuchten. Bei Erschaffung muss die Strahlart festgelegt werden: Rundumlicht, Strahl oder Kegel. Das Artefakt leuchtet so hell wie:",
+        1,
+        10,
+        1,
+        "sofort",
+        5,
+        "min",
+        40,
+        "Fackeln",
+        null
+      ],
+      [
+        "artefakt_magisches_makeover",
+        "Magisches Makeover",
+        "Der Magus kann seine Kleidung, seine Nägel und sein Haar in den gewünschten Zustand versetzen. Sämtliche Verunreinigungen oder unangenehmen Gerüche werden entfernt. Verwundungen und Vergiftungen werden hiervon nicht beeinflusst. ",
+        1,
+        20,
+        1,
+        30,
+        "permanent",
+        null,
+        40,
+        "%",
+        null
+      ],
+      [
+        "artefakt_in_nahrung_verwandeln",
+        "In Nahrung verwandeln",
+        "Der Träger kann unbelebte Materie, die er mit dem Artefakt berührt, in Nahrung verwandeln. Diese Nahrung ist nahezu geschmacklos, deckt aber alle Bedürfnisse des Organismus ab. Es ist möglich, sich ausschließlich von magischer Nahrung zu ernähren.",
+        1,
+        42,
+        1,
+        60,
+        "permanent",
+        null,
+        700,
+        "Gramm",
+        null
+      ],
+      [
+        "artefakt_whk_talentwert_erhoehen",
+        "WHK-Talentwert erhöhen",
+        "Der Wert einer festgelegten Handwerks-, Wissens- oder Kultur- Talentes erhöht sich auf magische Weise. Der Wert muss vorher mindestens 4 betragen haben.",
+        1,
+        15,
+        1,
+        "sofort",
+        7,
+        "h",
+        14,
+        "TaP",
+        null
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 58
+  },
+  {
+    "sheet": "Artefakt-Kosten",
+    "address": "A1:G400",
+    "headers": [
+      "Referenz",
+      "Name",
+      "Artefakt-Grad",
+      "Kosten-einmalig",
+      "Verfuegbarkeit-einmalig",
+      "Kosten-permanent",
+      "Verfuegbarkeit-permanent"
+    ],
+    "firstRows": [
+      [
+        "Referenz",
+        "Name",
+        "Artefakt-Grad",
+        "Kosten-einmalig",
+        "Verfuegbarkeit-einmalig",
+        "Kosten-permanent",
+        "Verfuegbarkeit-permanent"
+      ],
+      [
+        "artefakt_licht",
+        "Licht",
+        1,
+        76,
+        3,
+        525,
+        5
+      ],
+      [
+        "artefakt_licht",
+        "Licht",
+        2,
+        218,
+        3,
+        975,
+        5
+      ],
+      [
+        "artefakt_licht",
+        "Licht",
+        3,
+        552,
+        3,
+        1730,
+        5
+      ],
+      [
+        "artefakt_licht",
+        "Licht",
+        4,
+        920,
+        4,
+        2368,
+        5
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 400
+  },
+  {
+    "sheet": "Verfuegbarkeit-Modifikatoren",
+    "address": "A1:C36",
+    "headers": [
+      "Kategorie",
+      "Auspraegung",
+      "Faktor"
+    ],
+    "firstRows": [
+      [
+        "Kategorie",
+        "Auspraegung",
+        "Faktor"
+      ],
+      [
+        "Herstellungsort",
+        "Import, wird nicht hergestellt",
+        0.5
+      ],
+      [
+        "Herstellungsort",
+        "Teilweiser Import, Herstellung im Reich",
+        0.75
+      ],
+      [
+        "Herstellungsort",
+        "Herstellung im Reich",
+        1
+      ],
+      [
+        "Herstellungsort",
+        "Herstellung in der Region",
+        1.5
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 35
+  },
+  {
+    "sheet": "Ruestung-Basis",
+    "address": "A1:H21",
+    "headers": [
+      "Ruestungsteil",
+      "Lage",
+      "RS-Basis",
+      "BE-Basis",
+      "Verfuegbarkeit-NW",
+      "Verfuegbarkeit-AW",
+      "Materialkosten",
+      "Arbeitszeit-Tag-Basis"
+    ],
+    "firstRows": [
+      [
+        "Ruestungsteil",
+        "Lage",
+        "RS-Basis",
+        "BE-Basis",
+        "Verfuegbarkeit-NW",
+        "Verfuegbarkeit-AW",
+        "Materialkosten",
+        "Arbeitszeit-Tag-Basis"
+      ],
+      [
+        "Leichte Stoffrüstung",
+        1,
+        1,
+        1,
+        1,
+        1,
+        16,
+        1
+      ],
+      [
+        "Stoffrüstung",
+        1,
+        2,
+        2,
+        1,
+        1,
+        32,
+        1
+      ],
+      [
+        "Schwere Stoffrüstung",
+        1,
+        3,
+        3,
+        1,
+        1,
+        48,
+        1
+      ],
+      [
+        "Leichte Lederrüstung",
+        2,
+        3,
+        3,
+        1,
+        1,
+        14,
+        2
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 21
+  },
+  {
+    "sheet": "Ruestung-Addons",
+    "address": "A1:F5",
+    "headers": [
+      "Addon",
+      "Lage",
+      "RS",
+      "BE",
+      "Verfuegbarkeit-NW",
+      "Verfuegbarkeit-AW"
+    ],
+    "firstRows": [
+      [
+        "Addon",
+        "Lage",
+        "RS",
+        "BE",
+        "Verfuegbarkeit-NW",
+        "Verfuegbarkeit-AW"
+      ],
+      [
+        "Leichte Drachenschuppen",
+        5,
+        3,
+        2,
+        6,
+        6
+      ],
+      [
+        "Drachenschuppen",
+        5,
+        5,
+        4,
+        6,
+        6
+      ],
+      [
+        "Schwere Drachenschuppen",
+        5,
+        7,
+        6,
+        6,
+        6
+      ],
+      [
+        "Spinnweben",
+        5,
+        0,
+        0,
+        7,
+        7
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 5
+  },
+  {
+    "sheet": "Ruestung-Verarbeitung",
+    "address": "A1:F5",
+    "headers": [
+      "Verarbeitung",
+      "RS-Mod",
+      "BE-Mod",
+      "Verfuegbarkeit-NW",
+      "Verfuegbarkeit-AW",
+      "Lohn-pro-Tag"
+    ],
+    "firstRows": [
+      [
+        "Verarbeitung",
+        "RS-Mod",
+        "BE-Mod",
+        "Verfuegbarkeit-NW",
+        "Verfuegbarkeit-AW",
+        "Lohn-pro-Tag"
+      ],
+      [
+        "Gesellenarbeit",
+        null,
+        null,
+        1,
+        1,
+        6
+      ],
+      [
+        "Meisterarbeit",
+        1,
+        null,
+        3,
+        2,
+        65
+      ],
+      [
+        "Großmeisterarbeit",
+        2,
+        null,
+        5,
+        3,
+        71
+      ],
+      [
+        "Einzelstück",
+        2,
+        -1,
+        7,
+        7,
+        142
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 5
+  },
+  {
+    "sheet": "Ruestung-Anpassung",
+    "address": "A1:F5",
+    "headers": [
+      "Anpassung",
+      "RS-Mod",
+      "BE-Mod",
+      "Verfuegbarkeit-NW",
+      "Verfuegbarkeit-AW",
+      "Zusaetzliche-Tage"
+    ],
+    "firstRows": [
+      [
+        "Anpassung",
+        "RS-Mod",
+        "BE-Mod",
+        "Verfuegbarkeit-NW",
+        "Verfuegbarkeit-AW",
+        "Zusaetzliche-Tage"
+      ],
+      [
+        "völlig unpassend",
+        null,
+        2,
+        1,
+        1,
+        0
+      ],
+      [
+        "von der Stange",
+        null,
+        0,
+        1,
+        1,
+        0
+      ],
+      [
+        "angepasst",
+        null,
+        -1,
+        3,
+        2,
+        2
+      ],
+      [
+        "perfekt angepasst",
+        null,
+        -2,
+        5,
+        3,
+        4
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 5
+  },
+  {
+    "sheet": "Munition-Feuerwaffen",
+    "address": "A1:J35",
+    "headers": [
+      "Geeignet fuer",
+      "Art",
+      "Kaliber-mm",
+      "Preis-1-Schuss",
+      "Preis-10-Schuss",
+      "Preis-50-Schuss",
+      "Preis-100-Schuss",
+      "Preis-500-Schuss",
+      "Preis-1000-Schuss",
+      "Besonderheiten"
+    ],
+    "firstRows": [
+      [
+        "Geeignet fuer",
+        "Art",
+        "Kaliber-mm",
+        "Preis-1-Schuss",
+        "Preis-10-Schuss",
+        "Preis-50-Schuss",
+        "Preis-100-Schuss",
+        "Preis-500-Schuss",
+        "Preis-1000-Schuss",
+        "Besonderheiten"
+      ],
+      [
+        "Vorderlader",
+        "S.P.&Blei",
+        12,
+        0.3669,
+        3.6691,
+        18.3456,
+        36.6912,
+        183.456,
+        366.912,
+        null
+      ],
+      [
+        "Vorderlader",
+        "S.P.&Blei",
+        13,
+        0.3746,
+        3.7456,
+        18.7278,
+        37.4556,
+        187.278,
+        374.556,
+        null
+      ],
+      [
+        "Vorderlader",
+        "S.P.&Blei",
+        14,
+        0.3822,
+        3.822,
+        19.11,
+        38.22,
+        191.1,
+        382.2,
+        null
+      ],
+      [
+        "Vorderlader",
+        "S.P.&Blei",
+        15,
+        0.3898,
+        3.8984,
+        19.4922,
+        38.9844,
+        194.922,
+        389.844,
+        null
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 35
+  },
+  {
+    "sheet": "Munition-Ressourcen",
+    "address": "A1:J17",
+    "headers": [
+      "Material",
+      "Dublonen-pro-KG",
+      "Massenfabrikation-Dublonen-pro-KG",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "firstRows": [
+      [
+        "Material",
+        "Dublonen-pro-KG",
+        "Massenfabrikation-Dublonen-pro-KG",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Messing",
+        32,
+        25.6,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Blei",
+        12,
+        9.6,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Schwarzpulver",
+        85,
+        68,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Papier",
+        15,
+        12,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 15
+  },
+  {
+    "sheet": "Boegen-Basis",
+    "address": "A1:N42",
+    "headers": [
+      "Name",
+      "Volk",
+      "Material",
+      "Min-Staerke",
+      "Schaden",
+      "RB",
+      "Modifikatoren-roh",
+      "RW-m",
+      "Ladezeit-sec",
+      "Nachlade-Teiler",
+      "Preis",
+      "Verfuegbarkeit-NW",
+      "Verfuegbarkeit-AW",
+      "Verfuegbarkeit-Volk"
+    ],
+    "firstRows": [
+      [
+        "Name",
+        "Volk",
+        "Material",
+        "Min-Staerke",
+        "Schaden",
+        "RB",
+        "Modifikatoren-roh",
+        "RW-m",
+        "Ladezeit-sec",
+        "Nachlade-Teiler",
+        "Preis",
+        "Verfuegbarkeit-NW",
+        "Verfuegbarkeit-AW",
+        "Verfuegbarkeit-Volk"
+      ],
+      [
+        "Improvisierter Bogen",
+        "Alle",
+        "Holz",
+        7,
+        "1W4",
+        0,
+        "+4/0/-15/x/x",
+        "15m",
+        6,
+        9,
+        "nicht V.",
+        null,
+        null,
+        null
+      ],
+      [
+        "Goblin Kurzbogen",
+        "Goblin",
+        "Holz",
+        5,
+        "1W4+1",
+        1,
+        "+8/+2/-13/-25/x/x",
+        "15m",
+        6,
+        9,
+        "50D",
+        3,
+        4,
+        1
+      ],
+      [
+        "Goblin Jagdbogen",
+        "Goblin",
+        "Holz",
+        7,
+        "1W6+1",
+        2,
+        "+6/+2/-8/-22/x/x",
+        "20m",
+        6,
+        9,
+        "60D",
+        3,
+        4,
+        1
+      ],
+      [
+        "Goblin Langbogen",
+        "Goblin",
+        "Holz",
+        10,
+        "1W6+1",
+        3,
+        "+5/+2/-8/-20/-30",
+        "60m",
+        7,
+        9,
+        "100D",
+        3,
+        4,
+        1
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 42
+  },
+  {
+    "sheet": "Pfeile",
+    "address": "A1:K27",
+    "headers": [
+      "Name",
+      "Schaden-Mod",
+      "RB-Mod",
+      "RW-Mod-Spalte1",
+      "RW-Mod-Spalte2",
+      "Preis",
+      "Verfuegbarkeit-NW",
+      "Verfuegbarkeit-AW",
+      "Verfuegbarkeit-Volk",
+      "BE",
+      "Spezialitaeten"
+    ],
+    "firstRows": [
+      [
+        "Name",
+        "Schaden-Mod",
+        "RB-Mod",
+        "RW-Mod-Spalte1",
+        "RW-Mod-Spalte2",
+        "Preis",
+        "Verfuegbarkeit-NW",
+        "Verfuegbarkeit-AW",
+        "Verfuegbarkeit-Volk",
+        "BE",
+        "Spezialitaeten"
+      ],
+      [
+        "Improvisierter-Pfeil",
+        "+1W4",
+        "0",
+        "-15m",
+        "-15m",
+        "nichts",
+        null,
+        null,
+        null,
+        "1",
+        null
+      ],
+      [
+        "Holzspitzen-Pfeil",
+        "+1W6",
+        "0",
+        "-7m",
+        "-7m",
+        "50 FZ",
+        1,
+        5,
+        null,
+        "1",
+        null
+      ],
+      [
+        "Knochenspitzen-Pfeil",
+        "+1W6",
+        "0",
+        "0",
+        "0",
+        "100FZ",
+        4,
+        4,
+        null,
+        "1",
+        null
+      ],
+      [
+        "Steinspitzen-Pfeil",
+        "+1W8",
+        "0",
+        "0",
+        "0",
+        "200 FZ",
+        1,
+        4,
+        null,
+        "1",
+        null
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 27
+  },
+  {
+    "sheet": "Armbrust-Basis",
+    "address": "A1:L39",
+    "headers": [
+      "Name",
+      "Volk",
+      "Spanntechnik-roh",
+      "Schaden",
+      "RB",
+      "Modifikatoren-roh",
+      "RW-m",
+      "Preis",
+      "Verfuegbarkeit-NW",
+      "Verfuegbarkeit-AW",
+      "Verfuegbarkeit-Volk",
+      "Notiz"
+    ],
+    "firstRows": [
+      [
+        "Name",
+        "Volk",
+        "Spanntechnik-roh",
+        "Schaden",
+        "RB",
+        "Modifikatoren-roh",
+        "RW-m",
+        "Preis",
+        "Verfuegbarkeit-NW",
+        "Verfuegbarkeit-AW",
+        "Verfuegbarkeit-Volk",
+        "Notiz"
+      ],
+      [
+        "Improvisierte Armbrust",
+        "Alle",
+        "Hand: 9,13sec:4 / Geissfuss: xx,xxsec:x / Winde: xx,xxsec:x",
+        "1W6",
+        2,
+        "+8/-4/-25/-39/x",
+        "5m",
+        "nicht V.",
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Hand Armbrust (Daikini)",
+        "Daikini",
+        "Hand: 9,14sec:4 / Geissfuss: 5,30sec:2 / Winde: 3,60sec:1",
+        "1W6",
+        3,
+        "+11/-3/-24/-38/x",
+        "5m",
+        "100D",
+        6,
+        7,
+        4,
+        null
+      ],
+      [
+        "Leichte Armbrust (Daikini)",
+        "Daikini",
+        "Hand: 12,14sec:4 / Geissfuss: 7,30sec:2 / Winde: 4,60sec:1",
+        "1W8",
+        4,
+        "+10/+2/-14/-31/x",
+        "10m",
+        "120D",
+        6,
+        7,
+        2,
+        null
+      ],
+      [
+        "Mittelschwere Armbrust (Daikini)",
+        "Daikini",
+        "Hand: 25,14sec:4 / Geissfuss: 12,30sec:2 / Winde: 7,60sec:1",
+        "1W10",
+        5,
+        "+9/+6/-9/-25/x",
+        "15m",
+        "200D",
+        6,
+        7,
+        3,
+        null
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 39
+  },
+  {
+    "sheet": "Bolzen",
+    "address": "A1:K25",
+    "headers": [
+      "Name",
+      "Schaden-Mod",
+      "RB-Mod",
+      "RW-Mod-Spalte1",
+      "RW-Mod-Spalte2",
+      "Preis",
+      "Verfuegbarkeit-NW",
+      "Verfuegbarkeit-AW",
+      "Verfuegbarkeit-Volk",
+      "BE",
+      "Spezialitaeten"
+    ],
+    "firstRows": [
+      [
+        "Name",
+        "Schaden-Mod",
+        "RB-Mod",
+        "RW-Mod-Spalte1",
+        "RW-Mod-Spalte2",
+        "Preis",
+        "Verfuegbarkeit-NW",
+        "Verfuegbarkeit-AW",
+        "Verfuegbarkeit-Volk",
+        "BE",
+        "Spezialitaeten"
+      ],
+      [
+        "Improvisierter-Bolzen",
+        "+1W4",
+        "0",
+        "-15",
+        "-15",
+        "nicht V",
+        null,
+        null,
+        null,
+        "1",
+        null
+      ],
+      [
+        "Holzspitzen-Bolzen",
+        "+1W4",
+        "0",
+        "-7",
+        "-7",
+        "200 FZ",
+        6,
+        6,
+        null,
+        "1",
+        null
+      ],
+      [
+        "Knochenspitzen-Bolzen",
+        "+1W6",
+        "0",
+        "0",
+        "0",
+        "400FZ",
+        6,
+        6,
+        null,
+        "1",
+        null
+      ],
+      [
+        "Steinspitzen-Bolzen",
+        "+1W8",
+        "0",
+        "0",
+        "0",
+        "800 FZ",
+        6,
+        6,
+        null,
+        "1",
+        null
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 25
+  },
+  {
+    "sheet": "Runengewehr-Basis",
+    "address": "A1:J5",
+    "headers": [
+      "Name",
+      "Munitionsrune-Slots",
+      "RW-max-m",
+      "Mod-10m",
+      "Mod-30m",
+      "Mod-60m",
+      "Mod-100m",
+      "Mod-150m",
+      "Mod-210m",
+      "Preis"
+    ],
+    "firstRows": [
+      [
+        "Name",
+        "Munitionsrune-Slots",
+        "RW-max-m",
+        "Mod-10m",
+        "Mod-30m",
+        "Mod-60m",
+        "Mod-100m",
+        "Mod-150m",
+        "Mod-210m",
+        "Preis"
+      ],
+      [
+        "Zwergisch Standard",
+        1,
+        "100m",
+        12,
+        6,
+        0,
+        -6,
+        -12,
+        null,
+        "85D"
+      ],
+      [
+        "Zwergisch Militaer Neu",
+        2,
+        "115m",
+        12,
+        6,
+        1,
+        -5,
+        -10,
+        -15,
+        "190D+"
+      ],
+      [
+        "Goblinisch kurz",
+        1,
+        "80m",
+        12,
+        5,
+        -2,
+        -8,
+        -14,
+        null,
+        "65D"
+      ],
+      [
+        "Drow modifiziert Zwergisch",
+        1,
+        "105m",
+        12,
+        6,
+        0,
+        -5,
+        -10,
+        null,
+        "130D+"
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 5
+  },
+  {
+    "sheet": "Runengewehr-Munition",
+    "address": "A1:E8",
+    "headers": [
+      "Munitionsrune",
+      "Schaden-Formel",
+      "RB",
+      "Zusatzeffekt",
+      "Preis"
+    ],
+    "firstRows": [
+      [
+        "Munitionsrune",
+        "Schaden-Formel",
+        "RB",
+        "Zusatzeffekt",
+        "Preis"
+      ],
+      [
+        "Saeure",
+        "W8+St.",
+        "RSx2",
+        "Wenn SP>0: nach 2 und 5 sec je (W6+St.) SP (gleiche TZ)",
+        "2,5D"
+      ],
+      [
+        "Feuer",
+        "2W8+(2xSt.)",
+        "0",
+        null,
+        "2D"
+      ],
+      [
+        "Luft",
+        "W6+St.",
+        "0",
+        "Immer Selbstbeherrschungs-Probe zusaetzlich erschwert um (3xSt.) gegen Kampfunfaehigkeit fuer Differenz in Sekunden",
+        "3,5D"
+      ],
+      [
+        "Erde",
+        "2W10+St.",
+        "St.",
+        null,
+        "3D"
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 8
+  },
+  {
+    "sheet": "Runengewehr-Gewehrrunen",
+    "address": "A1:B8",
+    "headers": [
+      "Stufe",
+      "Preis"
+    ],
+    "firstRows": [
+      [
+        "Stufe",
+        "Preis"
+      ],
+      [
+        1,
+        "35D"
+      ],
+      [
+        2,
+        "70D"
+      ],
+      [
+        3,
+        "200D"
+      ],
+      [
+        4,
+        "450D"
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 8
+  },
+  {
+    "sheet": "Sprachstufe-Kosten",
+    "address": "A1:C6",
+    "headers": [
+      "Wert",
+      "Gesamt-EP",
+      "EP-Kosten (Schritt)"
+    ],
+    "firstRows": [
+      [
+        "Wert",
+        "Gesamt-EP",
+        "EP-Kosten (Schritt)"
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        15,
+        15
+      ],
+      [
+        2,
+        30,
+        15
+      ],
+      [
+        3,
+        50,
+        20
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 6
+  },
+  {
+    "sheet": "Kulturstufe-Kosten",
+    "address": "A1:C6",
+    "headers": [
+      "Wert",
+      "Gesamt-EP",
+      "EP-Kosten (Schritt)"
+    ],
+    "firstRows": [
+      [
+        "Wert",
+        "Gesamt-EP",
+        "EP-Kosten (Schritt)"
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        10,
+        10
+      ],
+      [
+        2,
+        25,
+        15
+      ],
+      [
+        3,
+        40,
+        15
+      ]
+    ],
+    "flagColumns": [],
+    "populatedRows": 6
+  }
+]

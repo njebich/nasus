@@ -6,6 +6,8 @@
 import { getRule, findParentRule, evalReferenz } from '../engine/rules';
 import { computeSheet, makeValueSource } from '../engine/characterSheet';
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
+import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
+import { getTalentMaximumBonus } from '../engine/talenteMaximum';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
@@ -82,10 +84,26 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
       // ep_gesamt noch nicht auswertbar (z.B. ganz frischer Charakter) -> Kreis 0 annehmen.
     }
     const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
-    if (grenzen && (wert < grenzen.min || wert > grenzen.max)) {
-      throw new MutationError(
-        `'${rule.referenz}' muss fuer ${character.spezies} zwischen ${grenzen.min} und ${grenzen.max} liegen`,
-      );
+    if (grenzen) {
+      const effectiveMax = grenzen.max + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
+      if (wert < grenzen.min || wert > effectiveMax) {
+        throw new MutationError(
+          `'${rule.referenz}' muss fuer ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`,
+        );
+      }
+    }
+  }
+
+  // Regel (Nutzer 2026-07-18, im Zuge der Talente-Wirkung-Analyse): Grundfertigkeit/
+  // Sonderfertigkeit/Nahkampf/Fernkampf/WHK/Spruchmagie/Attribute haben einen Basis-Maximalwert
+  // (siehe fertigkeitenGrenzen.ts), den "Maximum"-Talente (talenteMaximum.ts) fuer einzelne
+  // Referenzen/Kategorien/Zauberschulen erhoehen koennen. Vorher gab es hierfuer KEINE
+  // Obergrenze - jede Kosten-Formel (z.B. "wert*9") war unbegrenzt gueltig.
+  const fertigkeitBaseMax = getFertigkeitBaseMax(rule.kategorie);
+  if (fertigkeitBaseMax !== undefined) {
+    const effectiveMax = fertigkeitBaseMax + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
+    if (wert > effectiveMax) {
+      throw new MutationError(`'${rule.referenz}' darf das Maximum von ${effectiveMax} nicht überschreiten`);
     }
   }
 

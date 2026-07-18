@@ -12,6 +12,7 @@ import { RULES, type RuleEntry } from '../data/rules';
 import { LOOKUP_TABLES } from '../data/lookups';
 import { evalReferenz, evalKostenFor, type CharacterValueSource } from './rules';
 import { getPoolCapBasis, computeGutMax, computeMeisterlichMax } from './poolCaps';
+import { getTalentModifikatorBonus as talentModifikatorBonus } from './talenteModifikator';
 import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
@@ -107,6 +108,9 @@ export function makeValueSource(character: CharacterState): CharacterValueSource
     // gesamt RHg" - Summe der RH ueber ALLE Slots (alle 4 TZ-Gruppen x 5 Lagen zusammen).
     getRhGesamt(): number {
       return ruestungSlotEntries(character).reduce((sum, e) => sum + e.computedStatsSnapshot.rh, 0);
+    },
+    getTalentModifikatorBonus(referenz: string): number {
+      return talentModifikatorBonus(character, referenz);
     },
   };
 }

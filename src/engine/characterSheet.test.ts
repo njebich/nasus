@@ -153,4 +153,37 @@ describe('computeSheet', () => {
     // (5+5+5)/40 = 0.375 -> aufgerundet = 1
     expect(hochsprung?.computedValue).toBe(1);
   });
+
+  describe('Talent-Modifikator (Nutzer 2026-07-18, Talente-Wirkung-Analyse: Zaeher Bursche addiert auf Selbstbeherrschung/Gesundheit/Trefferschwelle)', () => {
+    function findCharakterwert(sheet: ReturnType<typeof computeSheet>, referenz: string) {
+      return sheet.byKategorie['Charakterwerte']?.find((r) => r.rule.referenz === referenz)?.computedValue;
+    }
+
+    it('ohne Talent bleiben Selbstbeherrschung/Gesundheit/Trefferschwelle unveraendert', () => {
+      const character = createCharacter('Test');
+      const sheet = computeSheet(character);
+      expect(findCharakterwert(sheet, 'selbstbeherrschung')).toBe(12); // (0+0+0+0+0)/7+0+12
+      expect(findCharakterwert(sheet, 'gesundheit')).toBe(0);
+      expect(findCharakterwert(sheet, 'trefferschwelle')).toBe(5); // 0+5
+    });
+
+    it('Zaeher Bursche Stufe 1 addiert +1 Selbstbeherrschung und +2 Gesundheit', () => {
+      const character = createCharacter('Test');
+      character.selections['talente_zaeher_bursche_stufe_1'] = 1;
+      const sheet = computeSheet(character);
+      expect(findCharakterwert(sheet, 'selbstbeherrschung')).toBe(13);
+      expect(findCharakterwert(sheet, 'gesundheit')).toBe(2);
+      expect(findCharakterwert(sheet, 'trefferschwelle')).toBe(5); // Stufe 1 wirkt nicht auf Trefferschwelle
+    });
+
+    it('mehrere Stufen gleichzeitig gewaehlt addieren sich (Stufe 1+2)', () => {
+      const character = createCharacter('Test');
+      character.selections['talente_zaeher_bursche_stufe_1'] = 1;
+      character.selections['talente_zaeher_bursche_stufe_2'] = 1;
+      const sheet = computeSheet(character);
+      expect(findCharakterwert(sheet, 'selbstbeherrschung')).toBe(12 + 1 + 3);
+      expect(findCharakterwert(sheet, 'gesundheit')).toBe(2 + 4);
+      expect(findCharakterwert(sheet, 'trefferschwelle')).toBe(5 + 1);
+    });
+  });
 });

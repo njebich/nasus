@@ -148,4 +148,47 @@ describe('characterMutations', () => {
       expect(updated.values['eig_k_staerke']).toBe(60);
     });
   });
+
+  describe('Fertigkeitsmaximum (Nutzer 2026-07-18, Talente-Wirkung-Analyse): Basis-Max je Kategorie + Talent-Boni', () => {
+    it('lehnt einen Wert oberhalb des Basis-Max fuer Sonderfertigkeit (12) ab', () => {
+      const character = withEpGesamt(1000);
+      expect(() => setValue(character, 'sf_alchemieresistenz', 13)).toThrow(MutationError);
+      const updated = setValue(character, 'sf_alchemieresistenz', 12);
+      expect(updated.values['sf_alchemieresistenz']).toBe(12);
+    });
+
+    it('erlaubt einen hoeheren Wert, wenn das passende Maximum-Talent gewaehlt ist (Alchemieresistenz Stufe 1 -> sf_alchemieresistenz +6)', () => {
+      let character = withEpGesamt(1000);
+      character.selections['talente_alchemieresistenz_stufe_1'] = 1;
+      const updated = setValue(character, 'sf_alchemieresistenz', 18);
+      expect(updated.values['sf_alchemieresistenz']).toBe(18);
+      expect(() => setValue(updated, 'sf_alchemieresistenz', 19)).toThrow(MutationError);
+    });
+
+    it('Basis-Max fuer Nahkampf/Fernkampf/WHK/Spruchmagie ist 24, fuer Attribute 7', () => {
+      const character = withEpGesamt(1000);
+      expect(() => setValue(character, 'fk_boegen', 25)).toThrow(MutationError);
+      expect(setValue(character, 'fk_boegen', 24).values['fk_boegen']).toBe(24);
+      expect(() => setValue(character, 'att_aura', 8)).toThrow(MutationError);
+      expect(setValue(character, 'att_aura', 7).values['att_aura']).toBe(7);
+    });
+
+    it('Kategorie-weites Talent (Grundfertigkeiten Stufe 1) erhoeht das Maximum JEDER Grundfertigkeit um 2', () => {
+      let character = withEpGesamt(1000);
+      character.selections['talente_grundfertigkeiten_stufe_1'] = 1;
+      expect(setValue(character, 'gr_klettern', 14).values['gr_klettern']).toBe(14);
+      expect(() => setValue(character, 'gr_klettern', 15)).toThrow(MutationError);
+      // Sonderfertigkeit ist nicht betroffen (nur Grundfertigkeit-Kategorie)
+      expect(() => setValue(character, 'sf_ausweichen', 14)).toThrow(MutationError);
+    });
+
+    it('Zauberschul-Talent (Magus Feuerbeschwoerung Stufe 1) erhoeht das Maximum aller Feuerbeschwoerung-Zauber um 6', () => {
+      let character = withEpGesamt(1000);
+      character.selections['talente_magus_stufe_1_feuerbeschwoerungs_magus'] = 1;
+      const updated = setValue(character, 'spruchmagie_feuerbeschwoerung_1_flammenwand', 30);
+      expect(updated.values['spruchmagie_feuerbeschwoerung_1_flammenwand']).toBe(30);
+      // andere Schule bleibt beim Basis-Max von 24
+      expect(() => setValue(character, 'spruchmagie_wasserbeschwoerung_1_frostwand', 30)).toThrow(MutationError);
+    });
+  });
 });

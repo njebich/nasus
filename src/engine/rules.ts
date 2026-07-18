@@ -78,6 +78,10 @@ export interface CharacterValueSource {
   /** RHg: Summe der RH ueber ALLE Ruestungs-Slots (alle TZ-Gruppen x Lagen) - siehe
    *  computeGewichtsbelastungRbe unten. Optional aus demselben Grund wie getRsGruppe. */
   getRhGesamt?(): number;
+  /** Additive Talent-Boni auf eine Formel-Referenz (z.B. Zaeher Bursche -> Selbstbeherrschung/
+   *  Gesundheit/Trefferschwelle), siehe engine/talenteModifikator.ts. Optional aus demselben
+   *  Grund wie getRsGruppe. */
+  getTalentModifikatorBonus?(referenz: string): number;
 }
 
 export class CycleError extends EvalError {
@@ -220,6 +224,13 @@ function evalReferenzInternal(referenz: string, state: EvalRunState): Value {
   if (rule.art === 'Formel' || rule.art === 'Pool' || rule.art === 'Lookup') {
     result = applyRoundingRule(rule, result);
     result = applyZeroFloor(key, result);
+  }
+
+  // Additive Talent-Boni (Nutzer 2026-07-18, z.B. Zaeher Bursche -> Selbstbeherrschung/
+  // Gesundheit/Trefferschwelle) wirken NACH Rundung/Nullgrenze, als eigene Bonus-Schicht.
+  if (rule.art === 'Formel' && typeof result === 'number') {
+    const bonus = state.values.getTalentModifikatorBonus?.(key) ?? 0;
+    if (bonus !== 0) result = result + bonus;
   }
 
   state.memo.set(memoKey, result);

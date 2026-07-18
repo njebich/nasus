@@ -1,7 +1,7 @@
 // Ausruestungs-Ansicht: Preisliste, Artefakte, Ruestung (Basis+Verarbeitung+Anpassung-
-// Komposition), Schilde (Basis-Preis) mit Kaufen-Buttons, Waffen als reine Browse-Liste
-// (keine Preise ohne die - mit Nutzer auf Phase 9 vertagte - Material/Fertigung-Formel),
-// plus "Mein Inventar". Keine Markt-Kontext-Faktoren angewendet (siehe equipmentPricing.ts).
+// Komposition), Schilde und Waffen (je Basis+Material+Fertigung(+Anpassung/Schaftmaterial)-
+// Komposition) mit Kaufen-Buttons, plus "Mein Inventar". Keine Markt-Kontext-Faktoren
+// angewendet (siehe equipmentPricing.ts).
 
 import type { ComputedSheet } from '../engine/characterSheet';
 import { ruestungSlotKey, type CharacterState } from '../state/characterStore';
@@ -10,10 +10,11 @@ import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
-import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
+import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
+import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
 
 export interface AusruestungCallbacks {
   onBuyPreisliste: (sourceRow: number, quantity: number) => void;
@@ -23,6 +24,9 @@ export interface AusruestungCallbacks {
   ) => void;
   onUnequipRuestung: (gruppe: RsGruppe, lage: number) => void;
   onBuyShield: (sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, bespannungSourceRow: number) => void;
+  onBuyWeapon: (
+    sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, anpassungSourceRow: number, schaftmaterialSourceRow: number,
+  ) => void;
   onRemoveEquipment: (equipmentId: string) => void;
 }
 
@@ -207,12 +211,49 @@ function renderShieldRow(row: (typeof SHIELDS)[number], character: CharacterStat
     </div>`;
 }
 
-function renderWeaponRow(row: (typeof WEAPONS)[number]): string {
-  const stats = ['AT-Basis', 'PA-Basis', 'RS-Basis', 'Laenge-m'].map((h) => `${h}: ${row[h] ?? '–'}`).join(' | ');
+/** Transiente Picker-Auswahl je Waffe (Regel Nutzer 2026-07-18: "fang an damit, die nk-waffen
+ *  inkl. herstellungs-modifikatoren zu implementieren" - analog zum Schild-Picker, aber mit 4
+ *  statt 3 Ebenen: Material/Fertigung/Anpassung/Schaftmaterial). */
+const weaponPicker = new Map<number, {
+  materialSourceRow: number; fertigungSourceRow: number; anpassungSourceRow: number; schaftmaterialSourceRow: number;
+}>();
+
+function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterState): string {
+  const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
+  const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
+  const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
+  const schaftmaterialOptionen = NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies));
+  const sel = weaponPicker.get(row.sourceRow) ?? {
+    materialSourceRow: materialOptionen[0]?.sourceRow ?? 0,
+    fertigungSourceRow: fertigungOptionen[0]?.sourceRow ?? 0,
+    anpassungSourceRow: anpassungOptionen[0]?.sourceRow ?? 0,
+    schaftmaterialSourceRow: schaftmaterialOptionen[0]?.sourceRow ?? 0,
+  };
+  const material = materialOptionen.find((m) => m.sourceRow === sel.materialSourceRow) ?? materialOptionen[0];
+  const fertigung = fertigungOptionen.find((f) => f.sourceRow === sel.fertigungSourceRow) ?? fertigungOptionen[0];
+  const anpassung = anpassungOptionen.find((a) => a.sourceRow === sel.anpassungSourceRow) ?? anpassungOptionen[0];
+  const schaftmaterial = schaftmaterialOptionen.find((s) => s.sourceRow === sel.schaftmaterialSourceRow) ?? schaftmaterialOptionen[0];
+  const composed = composeWeapon(row, material, fertigung, anpassung, schaftmaterial);
+
   return `
-    <div class="ausruestung-row">
+    <div class="ausruestung-row" data-weapon="${row.sourceRow}">
       <span class="stat-label">${escapeHtml(row.name)}</span>
-      <span class="stat-cost">${stats}</span>
+      <select class="waffe-material-select" data-weapon="${row.sourceRow}">
+        ${materialOptionen.map((m) => `<option value="${m.sourceRow}" ${m.sourceRow === material.sourceRow ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
+      </select>
+      <select class="waffe-fertigung-select" data-weapon="${row.sourceRow}">
+        ${fertigungOptionen.map((f) => `<option value="${f.sourceRow}" ${f.sourceRow === fertigung.sourceRow ? 'selected' : ''}>${escapeHtml(f.name)}</option>`).join('')}
+      </select>
+      <select class="waffe-anpassung-select" data-weapon="${row.sourceRow}">
+        ${anpassungOptionen.map((a) => `<option value="${a.sourceRow}" ${a.sourceRow === anpassung.sourceRow ? 'selected' : ''}>${escapeHtml(a.name)}</option>`).join('')}
+      </select>
+      <select class="waffe-schaftmaterial-select" data-weapon="${row.sourceRow}">
+        ${schaftmaterialOptionen.map((s) => `<option value="${s.sourceRow}" ${s.sourceRow === schaftmaterial.sourceRow ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('')}
+      </select>
+      <span class="stat-cost">AT ${composed.at} | PA ${composed.pa} | ${composed.preis !== null ? `${composed.preis} D` : 'kein Preis (kein Materialpreis-Faktor)'}</span>
+      ${composed.preis !== null
+    ? `<button type="button" class="ausruestung-buy-weapon" data-weapon="${row.sourceRow}">Kaufen</button>`
+    : '<span></span>'}
     </div>`;
 }
 
@@ -234,6 +275,11 @@ function renderInventar(character: CharacterState): string {
       // RS des Schilds wird angezeigt, aber bewusst NICHT in rs_arme eingerechnet (Regel Nutzer
       // 2026-07-17: Anrechnung auf den linken Arm ist Kampfmodul-Scope, siehe characterMutations.ts).
       label = row ? `${row.name} (RS ${rs})` : label;
+    } else if (e.family === 'weapon') {
+      const row = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
+      const at = e.computedStatsSnapshot?.at;
+      const pa = e.computedStatsSnapshot?.pa;
+      label = row ? `${row.name} (AT ${at} | PA ${pa})` : label;
     }
     const total = (e.computedPriceSnapshot ?? 0) * e.quantity;
     return `
@@ -275,14 +321,14 @@ export function renderAusruestungView(
     <h3 class="stat-section-heading">Schilde</h3>
     <div class="ausruestung-category">${SHIELDS.map((row) => renderShieldRow(row, character)).join('')}</div>
 
-    <h3 class="stat-section-heading">Waffen (nur Übersicht - Kauf folgt in Phase 9, Preisformel noch offen)</h3>
+    <h3 class="stat-section-heading">Waffen</h3>
     <div class="ausruestung-filters">
       <select id="weapon-hauptfertigkeit-select">
         ${WEAPON_HAUPTFERTIGKEITEN.map((h) => `<option value="${escapeHtml(h)}" ${h === selectedHauptfertigkeit ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}
       </select>
       <span class="stat-cost">${filteredWeapons.length} Einträge</span>
     </div>
-    <div class="ausruestung-category">${filteredWeapons.map(renderWeaponRow).join('')}</div>
+    <div class="ausruestung-category">${filteredWeapons.map((row) => renderWeaponRow(row, character)).join('')}</div>
 
     <h3 class="stat-section-heading">Preisliste</h3>
     <div class="ausruestung-filters">
@@ -395,6 +441,49 @@ export function renderAusruestungView(
       const bespannungSourceRow = sel?.bespannungSourceRow ?? bespannungOptionen[0]?.sourceRow;
       if (materialSourceRow === undefined || fertigungSourceRow === undefined || bespannungSourceRow === undefined) return;
       callbacks.onBuyShield(shieldSourceRow, materialSourceRow, fertigungSourceRow, bespannungSourceRow);
+    });
+  });
+  function updateWeaponPicker(weaponSourceRow: number, patch: Partial<{
+    materialSourceRow: number; fertigungSourceRow: number; anpassungSourceRow: number; schaftmaterialSourceRow: number;
+  }>): void {
+    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-weapon="${weaponSourceRow}"]`);
+    const readSelect = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
+    weaponPicker.set(weaponSourceRow, {
+      materialSourceRow: readSelect('waffe-material-select'),
+      fertigungSourceRow: readSelect('waffe-fertigung-select'),
+      anpassungSourceRow: readSelect('waffe-anpassung-select'),
+      schaftmaterialSourceRow: readSelect('waffe-schaftmaterial-select'),
+      ...patch,
+    });
+    renderAusruestungView(container, sheet, character, callbacks);
+  }
+  container.querySelectorAll<HTMLSelectElement>('.waffe-material-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { materialSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.waffe-fertigung-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { fertigungSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.waffe-anpassung-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { anpassungSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.waffe-schaftmaterial-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { schaftmaterialSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-weapon').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const weaponSourceRow = Number(btn.dataset.weapon);
+      const sel = weaponPicker.get(weaponSourceRow);
+      const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
+      const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
+      const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
+      const schaftmaterialOptionen = NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies));
+      const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;
+      const fertigungSourceRow = sel?.fertigungSourceRow ?? fertigungOptionen[0]?.sourceRow;
+      const anpassungSourceRow = sel?.anpassungSourceRow ?? anpassungOptionen[0]?.sourceRow;
+      const schaftmaterialSourceRow = sel?.schaftmaterialSourceRow ?? schaftmaterialOptionen[0]?.sourceRow;
+      if (materialSourceRow === undefined || fertigungSourceRow === undefined
+        || anpassungSourceRow === undefined || schaftmaterialSourceRow === undefined) return;
+      callbacks.onBuyWeapon(weaponSourceRow, materialSourceRow, fertigungSourceRow, anpassungSourceRow, schaftmaterialSourceRow);
     });
   });
   container.querySelectorAll<HTMLButtonElement>('.inventar-remove').forEach((btn) => {

@@ -11,11 +11,12 @@ import { getTalentMaximumBonus } from '../engine/talenteMaximum';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
+import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
-import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
+import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import type { RsGruppe } from '../data/trefferzonen';
 import { ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry } from './characterStore';
 
@@ -303,6 +304,66 @@ export function buyShield(
     computedStatsSnapshot: {
       rs: composed.rs, klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz,
       at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus, minStaerke: composed.minStaerke,
+    },
+  };
+  candidate.equipment = [...candidate.equipment, entry];
+  assertBudgetOk(candidate);
+  return candidate;
+}
+
+/**
+ * Kauft eine Nahkampfwaffe, komponiert aus Basis x Material x Fertigung x Anpassung x
+ * Schaftmaterial (Regel Nutzer 2026-07-18: "fang an damit, die nk-waffen inkl. herstellungs-
+ * modifikatoren zu implementieren" - vormals nur Browse-Liste ohne Preis, siehe ausruestung.ts).
+ * Manche Basis-Zeilen (unbewaffnete Kampfstile, Ruestungsmodifikatoren) haben keinen
+ * Materialpreis-Faktor - dort ist kein automatischer Kauf moeglich (composeWeapon liefert preis=null).
+ */
+export function buyWeapon(
+  character: CharacterState, sourceRow: number,
+  materialSourceRow: number, fertigungSourceRow: number, anpassungSourceRow: number, schaftmaterialSourceRow: number,
+): CharacterState {
+  const row = NK_WAFFEN_BASIS.find((r) => r.sourceRow === sourceRow);
+  if (!row) throw new MutationError(`Waffe (Zeile ${sourceRow}) existiert nicht`);
+  if (row['Spezialisierung'] === 'Schild') throw new MutationError(`'${row.name}' ist ein Schild, siehe buyShield`);
+
+  const material = NK_MATERIAL.find((r) => r.sourceRow === materialSourceRow);
+  const fertigung = NK_FERTIGUNG.find((r) => r.sourceRow === fertigungSourceRow);
+  const anpassung = NK_ANPASSUNG.find((r) => r.sourceRow === anpassungSourceRow);
+  const schaftmaterial = NK_SCHAFTMATERIAL.find((r) => r.sourceRow === schaftmaterialSourceRow);
+  if (!material) throw new MutationError(`Material (Zeile ${materialSourceRow}) existiert nicht`);
+  if (!fertigung) throw new MutationError(`Fertigung (Zeile ${fertigungSourceRow}) existiert nicht`);
+  if (!anpassung) throw new MutationError(`Anpassung (Zeile ${anpassungSourceRow}) existiert nicht`);
+  if (!schaftmaterial) throw new MutationError(`Schaftmaterial (Zeile ${schaftmaterialSourceRow}) existiert nicht`);
+  if (!istWaffenKomponenteVerfuegbar(material, character.spezies)) {
+    throw new MutationError(`Material '${material.name}' ist fuer '${character.spezies}' nicht verfuegbar`);
+  }
+  if (!istWaffenKomponenteVerfuegbar(fertigung, character.spezies)) {
+    throw new MutationError(`Fertigung '${fertigung.name}' ist fuer '${character.spezies}' nicht verfuegbar`);
+  }
+  if (!istWaffenKomponenteVerfuegbar(anpassung, character.spezies)) {
+    throw new MutationError(`Anpassung '${anpassung.name}' ist fuer '${character.spezies}' nicht verfuegbar`);
+  }
+  if (!istWaffenKomponenteVerfuegbar(schaftmaterial, character.spezies)) {
+    throw new MutationError(`Schaftmaterial '${schaftmaterial.name}' ist fuer '${character.spezies}' nicht verfuegbar`);
+  }
+
+  const composed = composeWeapon(row, material, fertigung, anpassung, schaftmaterial);
+  if (composed.preis === null) {
+    throw new MutationError(`Kein automatischer Preis fuer '${row.name}' (kein Materialpreis-Faktor hinterlegt)`);
+  }
+
+  const candidate = clone(character);
+  const entry: EquipmentEntry = {
+    id: newEquipmentId(), family: 'weapon', baseTable: 'nk_waffen_basis', baseId: String(sourceRow),
+    selections: {
+      material: String(materialSourceRow), fertigung: String(fertigungSourceRow),
+      anpassung: String(anpassungSourceRow), schaftmaterial: String(schaftmaterialSourceRow),
+    },
+    quantity: 1, computedPriceSnapshot: composed.preis,
+    computedStatsSnapshot: {
+      at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus,
+      minStaerke1H: composed.minStaerke1H, minStaerke2H: composed.minStaerke2H,
+      klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz, rezeptMod: composed.rezeptMod,
     },
   };
   candidate.equipment = [...candidate.equipment, entry];

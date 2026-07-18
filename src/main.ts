@@ -6,7 +6,7 @@ import {
 } from './state/characterStore';
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
-  buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, removeEquipment, BudgetError, MutationError,
+  buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon, removeEquipment, BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
@@ -133,6 +133,20 @@ function handleBuyShield(sourceRow: number, materialSourceRow: number, fertigung
   if (!currentCharacter) return;
   try {
     currentCharacter = buyShield(currentCharacter, sourceRow, materialSourceRow, fertigungSourceRow, bespannungSourceRow);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyWeapon(
+  sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, anpassungSourceRow: number, schaftmaterialSourceRow: number,
+): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyWeapon(currentCharacter, sourceRow, materialSourceRow, fertigungSourceRow, anpassungSourceRow, schaftmaterialSourceRow);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
@@ -298,6 +312,7 @@ function render(): void {
         onEquipRuestung: handleEquipRuestung,
         onUnequipRuestung: handleUnequipRuestung,
         onBuyShield: handleBuyShield,
+        onBuyWeapon: handleBuyWeapon,
         onRemoveEquipment: handleRemoveEquipment,
       });
     } else if (activeTab in AUSWAHL_TABS) {

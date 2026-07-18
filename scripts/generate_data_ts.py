@@ -141,18 +141,23 @@ def read_lookup_sheet(wb, sheet_name):
     return rows
 
 
-def read_generic_rows(wb, sheet_name, name_header):
+def read_generic_rows(wb, sheet_name, name_header, header_overrides=None):
     """Liest ein Sheet generisch: jede Zeile wird ein Dict aus {original Spaltenname: Wert}
     (nur nicht-leere Zellen) plus sourceRow und ein normalisiertes "name"-Feld (Wert der
     per name_header benannten Spalte). Passend fuer die vielen kleinen, strukturell simplen
     Modifikator-Tabellen (NK-Material, Ruestung-Verarbeitung, etc.) - spart 10+ fast-identische
-    read_*-Funktionen."""
+    read_*-Funktionen. header_overrides={spalten_index: name} fuer Spalten ohne eigene
+    Kopfzeile in der Quelle (z.B. NK-Material Spalte 11 "Volk" - bei NK-Fertigung/-Anpassung/
+    -Schaftmaterial steht dort ein echter Header, bei NK-Material fehlt er in der Quelle)."""
     ws = wb[sheet_name]
+    header_overrides = header_overrides or {}
     headers = []
     for c in range(1, ws.max_column + 1):
         v = ws.cell(row=1, column=c).value
         if v:
             headers.append((c, v.strip()))
+        elif c in header_overrides:
+            headers.append((c, header_overrides[c]))
 
     rows = []
     for r in range(2, ws.max_row + 1):
@@ -485,19 +490,38 @@ GENERIC_ROW_TYPE_LINES = [
 
 
 def write_weapons_ts(wb):
-    # Phase 7 (bestaetigt mit Nutzer): NUR Basis-Waffe/-Schild, keine Material/Anpassung/
-    # Schaftmaterial/Fertigung-Komposition - die genaue Preisformel dafuer ist noch offen
-    # (vertagt auf Phase 9). NK-Waffen-Basis enthaelt sowohl Waffen als auch Schilde
-    # (Spezialisierung="Schild").
-    rows = read_generic_rows(wb, "NK-Waffen-Basis", "Waffe")
-    data = {"basis": rows}
+    # NK-Waffen-Basis enthaelt sowohl Waffen als auch Schilde (Spezialisierung="Schild").
+    # Nutzer 2026-07-18: "fang an damit, die nk-waffen inkl. herstellungs-modifikatoren zu
+    # implementieren" - Material/Fertigung/Anpassung/Schaftmaterial jetzt mit aufgenommen
+    # (analog zu Ruestung-Basis/-Verarbeitung/-Anpassung bzw. Schild-Material/-Fertigung/
+    # -Bespannung), damit engine/weaponComposition.ts damit komponieren kann.
+    basis = read_generic_rows(wb, "NK-Waffen-Basis", "Waffe")
+    # Spalte 11 (Volk-Einschraenkung) hat in der Quelle keine eigene Kopfzeile - anders als bei
+    # NK-Fertigung/-Anpassung/-Schaftmaterial, die dort "Volk" explizit benennen.
+    material = read_generic_rows(wb, "NK-Material", "Waffe", header_overrides={11: "Volk"})
+    fertigung = read_generic_rows(wb, "NK-Fertigung", "Fertigung")
+    anpassung = read_generic_rows(wb, "NK-Anpassung", "Anpassung")
+    schaftmaterial = read_generic_rows(wb, "NK-Schaftmaterial", "Verstärkung des Schafts")
+    data = {
+        "basis": basis, "material": material, "fertigung": fertigung,
+        "anpassung": anpassung, "schaftmaterial": schaftmaterial,
+    }
     path = write_json_backed_module(
         OUT_EQUIPMENT_DIR, "weapons", "WEAPONS_RAW", GENERIC_ROW_TYPE_LINES,
-        "{ basis: GenericRow[] }", data,
+        "{ basis: GenericRow[]; material: GenericRow[]; fertigung: GenericRow[]; "
+        "anpassung: GenericRow[]; schaftmaterial: GenericRow[] }", data,
     )
     with open(OUT_EQUIPMENT_DIR / "weapons.ts", "a", encoding="utf-8") as f:
         f.write("export const NK_WAFFEN_BASIS = WEAPONS_RAW.basis;\n")
-    print(f"{path}: {len(rows)} NK-Waffen-Basis-Eintraege (Waffen+Schilde) geschrieben.")
+        f.write("export const NK_MATERIAL = WEAPONS_RAW.material;\n")
+        f.write("export const NK_FERTIGUNG = WEAPONS_RAW.fertigung;\n")
+        f.write("export const NK_ANPASSUNG = WEAPONS_RAW.anpassung;\n")
+        f.write("export const NK_SCHAFTMATERIAL = WEAPONS_RAW.schaftmaterial;\n")
+    print(
+        f"{path}: {len(basis)} NK-Waffen-Basis (Waffen+Schilde), {len(material)} NK-Material, "
+        f"{len(fertigung)} NK-Fertigung, {len(anpassung)} NK-Anpassung, "
+        f"{len(schaftmaterial)} NK-Schaftmaterial geschrieben."
+    )
 
 
 def write_armor_ts(wb):

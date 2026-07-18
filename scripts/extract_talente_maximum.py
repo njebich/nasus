@@ -4,13 +4,15 @@ schreibt src/data/talenteMaximum.ts. Einmaliger Import, kein Teil der regulaeren
 generate_data_ts.py-Pipeline (die Quelle ist eine externe Analysedatei, kein werte-xlsx-Sheet).
 
 Nutzer 2026-07-18: "wir muessen die talente wirkungen in den build bringen" - von 148 Talenten
-sind 103 ("Maximum"-Talente, hier verarbeitet) mechanisch portierbar, sobald die Basis-Maximalwerte
-feststehen (Grundfertigkeit/Sonderfertigkeit=12, Nahkampf/Fernkampf/WHK/Spruchmagie=24, Attribute=7 -
-vom Nutzer bestaetigt, siehe engine/fertigkeitenGrenzen.ts). Der Rest (Modifikator-Talente,
-Kampfzeit-Regeln) wird separat behandelt.
+sind mittlerweile 109 ("Maximum"-Talente, hier verarbeitet) mechanisch portierbar, seit die
+Basis-Maximalwerte feststehen (Grundfertigkeit/Sonderfertigkeit=12, Nahkampf/Fernkampf/WHK/
+Spruchmagie=24, Attribute=7, KI/PSI=24 - vom Nutzer bestaetigt, siehe engine/fertigkeitenGrenzen.ts).
+Der Rest (Modifikator-Talente, Kampfzeit-Regeln) wird separat behandelt.
 
-KI-Faehigkeitsmaximum ("KI-Meister") wird bewusst uebersprungen - keine Basis-Maximum-Regel fuer
-die Kategorie KI definiert.
+MANUAL_MAXIMUM_OVERRIDES (siehe unten) deckt Talente ab, die strukturell Fertigkeitsmaximum-Boni
+sind, aber in der Analysedatei unter einer anderen Wirkungsklasse liefen oder keine strukturierte
+Zielreferenz hatten (u.a. KI-Meister, PSI Psinetik, Vorderlader Ladeschuetze, Charismatischer
+Fuehrer) - siehe Kommentar dort fuer Details je Eintrag.
 """
 import json
 import sys
@@ -35,8 +37,21 @@ KATEGORIE_GRUPPEN = {
 # Ueberreden & Ueberzeugen zusaetzlich um +6 Punkte"), obwohl es strukturell identisch zu den
 # regulaer erfassten Fertigkeitsmaximum-Talenten ist. "Ueberreden" existiert nicht als eigene
 # Referenz in rules.json (nur gr_ueberzeugen) - Nutzer entschied explizit: nur auf Ueberzeugen anwenden.
+#
+# "PSI Psinetik" (3 Stufen) und "Vorderlader Ladeschuetze" (2 Stufen) liefen unter "Komplexer
+# Regeltext" / Portierungsstatus "manuell modellieren", sind aber ebenfalls klare Fertigkeitsmaximum-
+# Boni (Freitext in der Impl.-Anweisung, keine strukturierte Zielreferenz). "KI-Meister" war bisher
+# komplett uebersprungen (siehe Skip-Zweig unten) - Nutzer hat 2026-07-18 in einer zweiten Runde
+# eine PSI/KI-Basiswert-Entscheidung nachgeholt (beide =24, siehe engine/fertigkeitenGrenzen.ts),
+# damit sind jetzt auch KI-Meister und PSI Psinetik portierbar.
 MANUAL_MAXIMUM_OVERRIDES = [
     {"talentReferenz": "talente_charismatischer_fuehrer", "zielReferenz": "gr_ueberzeugen", "bonus": 6},
+    {"talentReferenz": "talente_psi_psinetik_stufe_1", "zielKategorie": "PSI", "bonus": 6},
+    {"talentReferenz": "talente_psi_psinetik_stufe_2", "zielKategorie": "PSI", "bonus": 12},
+    {"talentReferenz": "talente_psi_psinetik_stufe_3", "zielKategorie": "PSI", "bonus": 18},
+    {"talentReferenz": "talente_vorderlader_ladeschuetze_stufe1", "zielReferenz": "sf_ladeschuetze_vorderlader", "bonus": 7},
+    {"talentReferenz": "talente_vorderlader_ladeschuetze_stufe2", "zielReferenz": "sf_ladeschuetze_vorderlader", "bonus": 15},
+    {"talentReferenz": "talente_ki_meister", "zielKategorie": "KI", "bonus": 18},
 ]
 
 
@@ -81,7 +96,9 @@ def extract(rows):
         ziel = r.get("Wirkung 1 – Ziel")
 
         if klasse == "KI-Fähigkeitsmaximum":
-            skipped.append((r.get("Name"), "KI-Faehigkeitsmaximum - keine Basis-Maximum-Regel fuer KI definiert"))
+            # Zielreferenz in der Quelle ("ki_ki_faehigkeiten") existiert nicht - das eigentliche
+            # Ziel ist "ALLE ki_*-Referenzen", siehe MANUAL_MAXIMUM_OVERRIDES (zielKategorie "KI").
+            skipped.append((r.get("Name"), "wird stattdessen ueber MANUAL_MAXIMUM_OVERRIDES als zielKategorie=KI abgedeckt"))
             continue
 
         if klasse == "Zauberschulmaximum":
@@ -137,11 +154,12 @@ def write_ts(entries, out_path):
         "// Jeder Eintrag ist ein TALENT, das bei Auswahl das Maximum EINER Referenz (zielReferenz),",
         '// ALLER Referenzen einer Kategorie (zielKategorie, z.B. "alle Grundfertigkeiten") oder',
         '// ALLER Referenzen mit gemeinsamem Praefix (zielPraefix, z.B. "spruchmagie_feuerbeschwoerung_"',
-        '// fuer eine Zauberschule) um den angegebenen Betrag erhoeht. KI-Faehigkeitsmaximum',
-        '// ("KI-Meister") bewusst NICHT aufgenommen - keine Basis-Maximum-Regel fuer KI definiert.',
-        '// "Charismatischer Fuehrer" ist ein manueller Override (siehe MANUAL_MAXIMUM_OVERRIDES im',
-        '// Skript) - lief in der Quelle unter einer anderen Wirkungsklasse, wirkt aber strukturell',
-        '// identisch; wirkt nur auf gr_ueberzeugen, da "Ueberreden" keine eigene Referenz ist.',
+        '// fuer eine Zauberschule) um den angegebenen Betrag erhoeht. Einige Eintraege sind manuelle',
+        '// Overrides (siehe MANUAL_MAXIMUM_OVERRIDES im Skript) - liefen in der Quelle unter einer',
+        '// anderen Wirkungsklasse oder hatten keine strukturierte Zielreferenz, wirken aber strukturell',
+        '// identisch zu den regulaer erfassten Fertigkeitsmaximum-Talenten: Charismatischer Fuehrer',
+        '// (nur gr_ueberzeugen, "Ueberreden" existiert nicht), PSI Psinetik + KI-Meister (KI/PSI-',
+        '// Basiswert=24, Nutzer 2026-07-18), Vorderlader Ladeschuetze.',
         "",
         "export interface TalentMaximumBonus {",
         "  talentReferenz: string;",

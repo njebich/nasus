@@ -6,11 +6,12 @@
 // Jeder Eintrag ist ein TALENT, das bei Auswahl das Maximum EINER Referenz (zielReferenz),
 // ALLER Referenzen einer Kategorie (zielKategorie, z.B. "alle Grundfertigkeiten") oder
 // ALLER Referenzen mit gemeinsamem Praefix (zielPraefix, z.B. "spruchmagie_feuerbeschwoerung_"
-// fuer eine Zauberschule) um den angegebenen Betrag erhoeht. KI-Faehigkeitsmaximum
-// ("KI-Meister") bewusst NICHT aufgenommen - keine Basis-Maximum-Regel fuer KI definiert.
-// "Charismatischer Fuehrer" ist ein manueller Override (siehe MANUAL_MAXIMUM_OVERRIDES im
-// Skript) - lief in der Quelle unter einer anderen Wirkungsklasse, wirkt aber strukturell
-// identisch; wirkt nur auf gr_ueberzeugen, da "Ueberreden" keine eigene Referenz ist.
+// fuer eine Zauberschule) um den angegebenen Betrag erhoeht. Einige Eintraege sind manuelle
+// Overrides (siehe MANUAL_MAXIMUM_OVERRIDES im Skript) - liefen in der Quelle unter einer
+// anderen Wirkungsklasse oder hatten keine strukturierte Zielreferenz, wirken aber strukturell
+// identisch zu den regulaer erfassten Fertigkeitsmaximum-Talenten: Charismatischer Fuehrer
+// (nur gr_ueberzeugen, "Ueberreden" existiert nicht), PSI Psinetik + KI-Meister (KI/PSI-
+// Basiswert=24, Nutzer 2026-07-18), Vorderlader Ladeschuetze.
 
 export interface TalentMaximumBonus {
   talentReferenz: string;
@@ -210,6 +211,11 @@ export const TALENT_MAXIMUM_BONUSES: TalentMaximumBonus[] = [
     "talentReferenz": "talente_kampffertigkeit_erhoehen_unbewaffnet",
     "zielReferenz": "nk_unbewaffnet",
     "bonus": 6
+  },
+  {
+    "talentReferenz": "talente_ki_meister",
+    "zielKategorie": "KI",
+    "bonus": 18
   },
   {
     "talentReferenz": "talente_ki_mentale_kapazitaet_stufe_1",
@@ -497,6 +503,21 @@ export const TALENT_MAXIMUM_BONUSES: TalentMaximumBonus[] = [
     "bonus": 24
   },
   {
+    "talentReferenz": "talente_psi_psinetik_stufe_1",
+    "zielKategorie": "PSI",
+    "bonus": 6
+  },
+  {
+    "talentReferenz": "talente_psi_psinetik_stufe_2",
+    "zielKategorie": "PSI",
+    "bonus": 12
+  },
+  {
+    "talentReferenz": "talente_psi_psinetik_stufe_3",
+    "zielKategorie": "PSI",
+    "bonus": 18
+  },
+  {
     "talentReferenz": "talente_ruestungsmanoever_stufe_1",
     "zielReferenz": "sf_ruestungsmanoever",
     "bonus": 4
@@ -525,6 +546,16 @@ export const TALENT_MAXIMUM_BONUSES: TalentMaximumBonus[] = [
     "talentReferenz": "talente_selbstbeherrschung_stufe_3",
     "zielReferenz": "sf_selbstbeherrschung",
     "bonus": 20
+  },
+  {
+    "talentReferenz": "talente_vorderlader_ladeschuetze_stufe1",
+    "zielReferenz": "sf_ladeschuetze_vorderlader",
+    "bonus": 7
+  },
+  {
+    "talentReferenz": "talente_vorderlader_ladeschuetze_stufe2",
+    "zielReferenz": "sf_ladeschuetze_vorderlader",
+    "bonus": 15
   },
   {
     "talentReferenz": "talente_whk_stufe_1",

@@ -190,5 +190,31 @@ describe('characterMutations', () => {
       // andere Schule bleibt beim Basis-Max von 24
       expect(() => setValue(character, 'spruchmagie_wasserbeschwoerung_1_frostwand', 30)).toThrow(MutationError);
     });
+
+    it('Basis-Max fuer KI/PSI ist 24 (Nutzer 2026-07-18, zweite Runde der Talente-Wirkung-Analyse), KI-Meister/PSI Psinetik erhoehen es kategorienweit', () => {
+      const character = withEpGesamt(1000);
+      expect(() => setValue(character, 'ki_regeneration', 25)).toThrow(MutationError);
+      expect(setValue(character, 'ki_regeneration', 24).values['ki_regeneration']).toBe(24);
+      expect(() => setValue(character, 'psi_telekinese', 25)).toThrow(MutationError);
+
+      let mitKiMeister = withEpGesamt(1000);
+      mitKiMeister.selections['talente_ki_meister'] = 1;
+      expect(setValue(mitKiMeister, 'ki_regeneration', 42).values['ki_regeneration']).toBe(42);
+      expect(() => setValue(mitKiMeister, 'ki_regeneration', 43)).toThrow(MutationError);
+      // PSI bleibt von KI-Meister unberuehrt
+      expect(() => setValue(mitKiMeister, 'psi_telekinese', 25)).toThrow(MutationError);
+
+      let mitPsiPsinetik = withEpGesamt(1000);
+      mitPsiPsinetik.selections['talente_psi_psinetik_stufe_1'] = 1;
+      expect(setValue(mitPsiPsinetik, 'psi_telekinese', 30).values['psi_telekinese']).toBe(30);
+      expect(() => setValue(mitPsiPsinetik, 'psi_telekinese', 31)).toThrow(MutationError);
+    });
+
+    it('manueller Override Vorderlader Ladeschuetze erhoeht sf_ladeschuetze_vorderlader', () => {
+      let character = withEpGesamt(1000);
+      character.selections['talente_vorderlader_ladeschuetze_stufe1'] = 1;
+      expect(setValue(character, 'sf_ladeschuetze_vorderlader', 19).values['sf_ladeschuetze_vorderlader']).toBe(19);
+      expect(() => setValue(character, 'sf_ladeschuetze_vorderlader', 20)).toThrow(MutationError);
+    });
   });
 });

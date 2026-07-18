@@ -18,9 +18,13 @@ describe('getFertigkeitBaseMax (Nutzer 2026-07-18, im Zuge der Talente-Wirkung-A
     expect(getFertigkeitBaseMax('Attribute')).toBe(7);
   });
 
+  it('KI/PSI haben Basis-Max 24 (Nutzer 2026-07-18, zweite Runde der Talente-Wirkung-Analyse)', () => {
+    expect(getFertigkeitBaseMax('KI')).toBe(24);
+    expect(getFertigkeitBaseMax('PSI')).toBe(24);
+  });
+
   it('Eigenschaft und andere Kategorien haben KEIN generisches Basis-Max (eigene bzw. keine Regel)', () => {
     expect(getFertigkeitBaseMax('Eigenschaft')).toBeUndefined();
-    expect(getFertigkeitBaseMax('KI')).toBeUndefined();
     expect(getFertigkeitBaseMax('Charakterwerte')).toBeUndefined();
   });
 });

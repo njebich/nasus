@@ -82,6 +82,11 @@ export interface CharacterValueSource {
    *  Gesundheit/Trefferschwelle), siehe engine/talenteModifikator.ts. Optional aus demselben
    *  Grund wie getRsGruppe. */
   getTalentModifikatorBonus?(referenz: string): number;
+  /** Multiplikativer Talent-Faktor auf eine Formel-Referenz (z.B. Mana Regeneration Stufe 1/2 ->
+   *  x1,5/x2,0 auf mana_regeneration_pro_stunde), siehe engine/talenteFaktor.ts. Default 1
+   *  (kein Effekt), wenn kein passendes Talent gewaehlt ist. Optional aus demselben Grund wie
+   *  getRsGruppe. */
+  getTalentFaktorBonus?(referenz: string): number;
 }
 
 export class CycleError extends EvalError {
@@ -231,6 +236,15 @@ function evalReferenzInternal(referenz: string, state: EvalRunState): Value {
   if (rule.art === 'Formel' && typeof result === 'number') {
     const bonus = state.values.getTalentModifikatorBonus?.(key) ?? 0;
     if (bonus !== 0) result = result + bonus;
+  }
+
+  // Multiplikativer Talent-Faktor (Nutzer 2026-07-18 zweite Runde, z.B. Mana Regeneration Stufe
+  // 1/2 -> x1,5/x2,0 auf mana_regeneration_pro_stunde) wirkt NACH dem additiven Bonus (erst
+  // Flachbetraege addieren, dann Prozent-/Faktor-Boni anwenden - uebliche Reihenfolge), und wird
+  // erneut gerundet, da eine Multiplikation eine ganzzahlige Zwischensumme wieder brechen kann.
+  if (rule.art === 'Formel' && typeof result === 'number') {
+    const faktor = state.values.getTalentFaktorBonus?.(key) ?? 1;
+    if (faktor !== 1) result = applyRoundingRule(rule, result * faktor);
   }
 
   state.memo.set(memoKey, result);

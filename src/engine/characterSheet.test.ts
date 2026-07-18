@@ -176,14 +176,44 @@ describe('computeSheet', () => {
       expect(findCharakterwert(sheet, 'trefferschwelle')).toBe(5); // Stufe 1 wirkt nicht auf Trefferschwelle
     });
 
-    it('mehrere Stufen gleichzeitig gewaehlt addieren sich (Stufe 1+2)', () => {
+    it('mehrere Stufen gleichzeitig gewaehlt: nur die hoechste zaehlt, kein Aufaddieren (Stufe 1+2, Nutzer 2026-07-18 zweite Runde)', () => {
       const character = createCharacter('Test');
       character.selections['talente_zaeher_bursche_stufe_1'] = 1;
       character.selections['talente_zaeher_bursche_stufe_2'] = 1;
       const sheet = computeSheet(character);
-      expect(findCharakterwert(sheet, 'selbstbeherrschung')).toBe(12 + 1 + 3);
-      expect(findCharakterwert(sheet, 'gesundheit')).toBe(2 + 4);
-      expect(findCharakterwert(sheet, 'trefferschwelle')).toBe(5 + 1);
+      expect(findCharakterwert(sheet, 'selbstbeherrschung')).toBe(12 + 3); // nur Stufe 2s +3, nicht +1+3
+      expect(findCharakterwert(sheet, 'gesundheit')).toBe(4); // nur Stufe 2s +4, nicht +2+4
+      expect(findCharakterwert(sheet, 'trefferschwelle')).toBe(5 + 1); // nur Stufe 2 wirkt hier ueberhaupt
+    });
+  });
+
+  describe('Talent-Faktor (Nutzer 2026-07-18 zweite Runde: Mana Regeneration Stufe 1/2 x1,5/x2,0 auf mana_regeneration_pro_stunde = att_aura*2)', () => {
+    function findCharakterwert(sheet: ReturnType<typeof computeSheet>, referenz: string) {
+      return sheet.byKategorie['Charakterwerte']?.find((r) => r.rule.referenz === referenz)?.computedValue;
+    }
+
+    it('ohne Talent: reine Basisformel att_aura*2', () => {
+      const character = createCharacter('Test');
+      character.values['att_aura'] = 5;
+      const sheet = computeSheet(character);
+      expect(findCharakterwert(sheet, 'mana_regeneration_pro_stunde')).toBe(10);
+    });
+
+    it('Stufe 1 multipliziert mit 1,5', () => {
+      const character = createCharacter('Test');
+      character.values['att_aura'] = 5;
+      character.selections['talente_mana_regeneration_stufe_1'] = 1;
+      const sheet = computeSheet(character);
+      expect(findCharakterwert(sheet, 'mana_regeneration_pro_stunde')).toBe(15); // 5*2=10, *1.5=15
+    });
+
+    it('Stufe 2 multipliziert mit 2,0, beide Stufen gleichzeitig geben nur x2,0 (nicht x3,0)', () => {
+      const character = createCharacter('Test');
+      character.values['att_aura'] = 5;
+      character.selections['talente_mana_regeneration_stufe_1'] = 1;
+      character.selections['talente_mana_regeneration_stufe_2'] = 1;
+      const sheet = computeSheet(character);
+      expect(findCharakterwert(sheet, 'mana_regeneration_pro_stunde')).toBe(20); // 5*2=10, *2.0=20
     });
   });
 });

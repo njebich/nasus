@@ -7,9 +7,13 @@
 }
 
 :root {
-  font-family: 'Nasus Old English', Georgia, serif;
+  font-family: 'Bookman Old Style', Bookman, 'URW Bookman L', Georgia, serif;
   line-height: 1.5;
   color-scheme: light dark;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Nasus Old English', Georgia, serif;
 }
 
 button, input, select, textarea {
@@ -531,6 +535,109 @@ body {
   opacity: 0.6;
   font-style: italic;
   margin: 0;
+}
+
+/* LE/RS-Tabelle (Nutzer-Mockup "S03 Kampfseite"): links eine je-Trefferzone aufklappbare Gruppe
+   (RH/RS-Summe + LE, aufklappbar zu den 5 Ruestungslagen), rechts eine feste einzeilige
+   Kennzahl je Zone. align-items:flex-start haelt die rechte Zeile an der Kopfzeile der linken
+   Gruppe fest, statt beim Aufklappen mit in die Mitte des expandierten Blocks zu wandern. */
+.kampf-tz-tabelle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.kampf-tz-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.kampf-tz-kopfzeile {
+  font-weight: 600;
+  opacity: 0.8;
+  font-size: 0.85em;
+}
+
+.kampf-tz-details {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #8884;
+  border-radius: 8px;
+  padding: 0.3rem 0.5rem;
+  background: #8881;
+}
+
+/* Muss exakt dieselbe Box (flex:1, Border-Breite, Padding) wie .kampf-tz-details der Datenzeilen
+   annehmen - sonst rechnet das Grid der Kopfzeile gegen eine andere Breite als das Grid in den
+   Trefferzonen-Zeilen, und RH/RS/LE stehen nicht mehr ueber ihren Werten. */
+.kampf-tz-kopfzeile > .kampf-tz-summary {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  background: none;
+  padding: 0.3rem 0.5rem;
+}
+
+.kampf-tz-summary {
+  display: grid;
+  grid-template-columns: 1fr 3rem 3rem 6.5rem;
+  align-items: center;
+  cursor: pointer;
+}
+
+.kampf-tz-details .kampf-tz-summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.kampf-tz-rh, .kampf-tz-rs {
+  text-align: center;
+}
+
+.kampf-tz-le {
+  text-align: right;
+}
+
+.kampf-tz-lagen {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.3rem 0 0.1rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid #8882;
+  font-size: 0.9em;
+  font-weight: 400;
+}
+
+.kampf-tz-lagen td {
+  padding: 0.15rem 0.3rem;
+}
+
+.kampf-tz-lagen td:first-child {
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.kampf-tz-lagen td:nth-child(3), .kampf-tz-lagen td:nth-child(4) {
+  text-align: center;
+  width: 2.5rem;
+}
+
+/* Unsichtbarer Platzhalter in der Kopfzeile - nimmt exakt so viel Breite wie .kampf-tz-rechts
+   in den Datenzeilen weg, sonst waechst die Kopfzeilen-Summary (einziges Flex-Kind ohne
+   Geschwister) auf die volle Zeilenbreite und die Spalten liegen nicht mehr uebereinander. */
+.kampf-tz-rechts-spacer {
+  flex: 0 0 11rem;
+  padding: 0.35rem 0.5rem;
+}
+
+.kampf-tz-rechts {
+  flex: 0 0 11rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9em;
 }
 
 .stat-dec, .stat-inc {

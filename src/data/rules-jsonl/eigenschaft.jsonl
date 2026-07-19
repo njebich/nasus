@@ -1,0 +1,10 @@
+{"abkuerzung": "Int", "art": "Wert", "beschreibung": "Intelligenz", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_g_intelligenz", "sourceRow": 213}
+{"abkuerzung": "Mut", "art": "Wert", "beschreibung": "Mut", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_g_mut", "sourceRow": 214}
+{"abkuerzung": "Sin", "art": "Wert", "beschreibung": "Sinnesschärfe", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_g_sinneschaerfe", "sourceRow": 215}
+{"abkuerzung": "Wil", "art": "Wert", "beschreibung": "Willenskraft", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_g_willenskraft", "sourceRow": 216}
+{"abkuerzung": "Ath", "art": "Wert", "beschreibung": "Athletik", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_k_athletik", "sourceRow": 217}
+{"abkuerzung": "Aus", "art": "Wert", "beschreibung": "Ausstrahlung", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_k_ausstrahlung", "sourceRow": 218}
+{"abkuerzung": "Ges", "art": "Wert", "beschreibung": "Geschicklichkeit", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_k_geschicklichkeit", "sourceRow": 219}
+{"abkuerzung": "Kon", "art": "Wert", "beschreibung": "Konstitution", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_k_konstitution", "sourceRow": 220}
+{"abkuerzung": "Sch", "art": "Wert", "beschreibung": "Schnelligkeit", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_k_schnelligkeit", "sourceRow": 221}
+{"abkuerzung": "Stä", "art": "Wert", "beschreibung": "Stärke", "kategorie": "Eigenschaft", "kostenRaw": "SVERWEIS(wert;'Eigenschaften-Kosten';2;0)", "referenz": "eig_k_staerke", "sourceRow": 222}

@@ -14,6 +14,11 @@ Betrifft:
                                              waffen/-Munition-Kataloge)
   - src/data/equipment/alchemika.ts        (Sheet "Alchemika", nur A1:P119 - Gifte/Heiltraenke/
                                              Kampftraenke/Parfum/Zustandstraenke-Katalog)
+  - src/data/rules-jsonl/*.jsonl            (Sheet "Werte", nach Kategorie aufgesplittet - reine
+                                             Lese-Projektion von rules.json fuer git-diff-
+                                             Lesbarkeit und selektives Einlesen einzelner
+                                             Kategorien, ohne die ganze rules.json laden zu
+                                             muessen. Kein eigener Input, xlsx bleibt die Quelle.)
 
 Aufruf:
     python scripts/generate_data_ts.py "werte 0.7-claude.xlsx"
@@ -30,6 +35,9 @@ import openpyxl
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUT_DATA_DIR = REPO_ROOT / "src" / "data"
 OUT_EQUIPMENT_DIR = OUT_DATA_DIR / "equipment"
+OUT_RULES_JSONL_DIR = OUT_DATA_DIR / "rules-jsonl"
+
+UMLAUT_MAP = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"})
 
 RULE_COLUMNS = [
     ("Referenz", "referenz"),
@@ -396,6 +404,43 @@ def write_rules_ts(rules, warnings):
     out_path = OUT_DATA_DIR / "rules.ts"
     out_path.write_text("\n".join(lines), encoding="utf-8")
     return out_path
+
+
+def kategorie_slug(kategorie):
+    """Dateiname-taugliches Kuerzel einer Kategorie (fuer rules-jsonl/*.jsonl)."""
+    slug = kategorie.strip().lower().translate(UMLAUT_MAP)
+    slug = "".join(ch if ch.isalnum() else "-" for ch in slug)
+    while "--" in slug:
+        slug = slug.replace("--", "-")
+    return slug.strip("-") or "sonstige"
+
+
+def write_rules_jsonl(rules):
+    """Sharded Read-Projektion von rules.json: eine .jsonl-Datei pro Kategorie, eine Zeile pro
+    Regel. Nicht die Quelle (die xlsx bleibt es) - nur damit git diffs pro Regel lesbar werden
+    und man beim Nachschlagen einer Kategorie nicht die ganze rules.json laden muss."""
+    if OUT_RULES_JSONL_DIR.exists():
+        for old_file in OUT_RULES_JSONL_DIR.glob("*.jsonl"):
+            old_file.unlink()
+    OUT_RULES_JSONL_DIR.mkdir(parents=True, exist_ok=True)
+
+    by_kategorie = {}
+    for entry in rules:
+        by_kategorie.setdefault(entry["kategorie"], []).append(entry)
+
+    index = {}
+    for kategorie, entries in by_kategorie.items():
+        slug = kategorie_slug(kategorie)
+        file_path = OUT_RULES_JSONL_DIR / f"{slug}.jsonl"
+        with file_path.open("w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry, ensure_ascii=False, sort_keys=True))
+                f.write("\n")
+        index[kategorie] = {"file": file_path.name, "count": len(entries)}
+
+    index_path = OUT_RULES_JSONL_DIR / "_index.json"
+    index_path.write_text(json.dumps(index, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
+    return len(by_kategorie)
 
 
 def write_lookups_ts(wb):
@@ -797,6 +842,9 @@ def main(xlsx_path):
         print(f"{len(warnings)} Warnung(en):")
         for w in warnings:
             print(f"  - {w}")
+
+    n_kategorien = write_rules_jsonl(rules)
+    print(f"{OUT_RULES_JSONL_DIR}: {len(rules)} Regeln in {n_kategorien} Kategorie-Dateien geschrieben.")
 
     lookups_path = write_lookups_ts(wb)
     print(f"{lookups_path}: {len(LOOKUP_SHEETS)} Lookup-Tabellen geschrieben.")

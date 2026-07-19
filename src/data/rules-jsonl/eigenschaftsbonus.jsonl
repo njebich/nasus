@@ -1,0 +1,10 @@
+{"abkuerzung": "Int.Bon", "art": "Formel", "beschreibung": "Intelligenz-Bonus", "formelRaw": "eig_g_intelligenz/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_g_intelligenz", "sourceRow": 676}
+{"abkuerzung": "Mut.Bon", "art": "Formel", "beschreibung": "Mut-Bonus", "formelRaw": "eig_g_mut/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_g_mut", "sourceRow": 677}
+{"abkuerzung": "Sin.Bon", "art": "Formel", "beschreibung": "Sinnesschärfe-Bonus", "formelRaw": "eig_g_sinneschaerfe/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_g_sinneschaerfe", "sourceRow": 678}
+{"abkuerzung": "Wil.Bon", "art": "Formel", "beschreibung": "Willenskraft-Bonus", "formelRaw": "eig_g_willenskraft/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_g_willenskraft", "sourceRow": 679}
+{"abkuerzung": "Ath.Bon", "art": "Formel", "beschreibung": "Athletik-Bonus", "formelRaw": "eig_k_athletik/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_k_athletik", "sourceRow": 680}
+{"abkuerzung": "Aus.Bon", "art": "Formel", "beschreibung": "Ausstrahlungs-Bonus", "formelRaw": "eig_k_ausstrahlung/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_k_ausstrahlung", "sourceRow": 681}
+{"abkuerzung": "Ges.Bon", "art": "Formel", "beschreibung": "Geschicklichkeits-Bonus", "formelRaw": "eig_k_geschicklichkeit/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_k_geschicklichkeit", "sourceRow": 682}
+{"abkuerzung": "Kon.Bon", "art": "Formel", "beschreibung": "Konstitutions-Bonus", "formelRaw": "eig_k_konstitution/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_k_konstitution", "sourceRow": 683}
+{"abkuerzung": "Sch.Bon", "art": "Formel", "beschreibung": "Schnelligkeits-Bonus", "formelRaw": "eig_k_schnelligkeit/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_k_schnelligkeit", "sourceRow": 684}
+{"abkuerzung": "Stä.Bon", "art": "Formel", "beschreibung": "Stärke-Bonus", "formelRaw": "eig_k_staerke/2-5", "kategorie": "Eigenschaftsbonus", "referenz": "eig_bonus_k_staerke", "sourceRow": 685}

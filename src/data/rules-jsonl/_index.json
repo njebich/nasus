@@ -1,0 +1,74 @@
+{
+  "Attribute": {
+    "count": 7,
+    "file": "attribute.jsonl"
+  },
+  "Bewegung": {
+    "count": 18,
+    "file": "bewegung.jsonl"
+  },
+  "Charakterwerte": {
+    "count": 36,
+    "file": "charakterwerte.jsonl"
+  },
+  "Eigenschaft": {
+    "count": 10,
+    "file": "eigenschaft.jsonl"
+  },
+  "Eigenschaftsbonus": {
+    "count": 10,
+    "file": "eigenschaftsbonus.jsonl"
+  },
+  "Fernkampf": {
+    "count": 36,
+    "file": "fernkampf.jsonl"
+  },
+  "Gewichtsbelastung": {
+    "count": 7,
+    "file": "gewichtsbelastung.jsonl"
+  },
+  "Grundfertigkeit": {
+    "count": 22,
+    "file": "grundfertigkeit.jsonl"
+  },
+  "KI": {
+    "count": 31,
+    "file": "ki.jsonl"
+  },
+  "Kampf": {
+    "count": 10,
+    "file": "kampf.jsonl"
+  },
+  "Nahkampf": {
+    "count": 70,
+    "file": "nahkampf.jsonl"
+  },
+  "PSI": {
+    "count": 15,
+    "file": "psi.jsonl"
+  },
+  "Sonderfertigkeit": {
+    "count": 22,
+    "file": "sonderfertigkeit.jsonl"
+  },
+  "Sprache & Kultur": {
+    "count": 38,
+    "file": "sprache-kultur.jsonl"
+  },
+  "Spruchmagie": {
+    "count": 439,
+    "file": "spruchmagie.jsonl"
+  },
+  "Talente": {
+    "count": 176,
+    "file": "talente.jsonl"
+  },
+  "Vor- und Nachteile": {
+    "count": 278,
+    "file": "vor-und-nachteile.jsonl"
+  },
+  "WHK": {
+    "count": 238,
+    "file": "whk.jsonl"
+  }
+}

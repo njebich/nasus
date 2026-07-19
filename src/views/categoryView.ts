@@ -152,8 +152,16 @@ function renderPoolRow(r: ComputedRule): string {
  *  ep_steigerungspunkte/ep_verbraucht sind in der xlsx als "SUMME(Kosten aller gewaehlten
  *  Werte)"-Formeln modelliert, die die Engine nicht auswerten kann (das kennt nur die App via
  *  spSpent/spRemaining) - die Kopfzeile zeigt den echten Wert bereits, die Zeilen hier waeren
- *  nur ein redundanter Fehler-Eintrag. */
-const HIDDEN_REFERENZEN = new Set(['ep_steigerungspunkte', 'ep_verbraucht']);
+ *  nur ein redundanter Fehler-Eintrag.
+ *  Ab Nutzer-Anfrage 2026-07-19: startbudget/-gehoben, LE (alle Koerperteile), Gesundheit,
+ *  Stufe, Kreis, Talentpunkte, Macht, Rerolls, Mana, Selbstbeherrschung im Charakterwerte-Tab
+ *  ausgeblendet - diese Werte werden andernorts (Charakterbogen/Kopfzeile) dargestellt. */
+const HIDDEN_REFERENZEN = new Set([
+  'ep_steigerungspunkte', 'ep_verbraucht',
+  'startbudget_ausruestung', 'startbudget_ausruestung_gehoben',
+  'le_arm_l', 'le_arm_r', 'le_bein_l', 'le_bein_r', 'le_brust', 'le_kopf', 'le_unterleib',
+  'gesundheit', 'stufe', 'kreis', 'talentpunkte', 'macht', 'rerolls', 'mana', 'selbstbeherrschung',
+]);
 
 export function renderCategoryView(
   container: HTMLElement,

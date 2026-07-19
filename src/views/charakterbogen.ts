@@ -142,11 +142,23 @@ function renderGrundfertigkeiten(sheet: ComputedSheet): string {
     </div>`;
 }
 
+/** Wie renderFertigkeitGruppe, aber nur TaW>0-Zeilen: Hauptfertigkeit ohne TaW wird nicht
+ *  gezeigt, und ihre Spezialisierungen einzeln nur, wenn sie selbst TaW>0 haben. */
+function renderFertigkeitGruppeNurTaw(node: HierarchyNode): string {
+  const hauptzeile = `<tr><td>${escapeHtml(node.row.rule.beschreibung ?? node.row.rule.referenz)}</td><td>${node.row.currentValue ?? 0}</td></tr>`;
+  const kinderzeilen = node.children
+    .filter((r) => (r.currentValue ?? 0) > 0)
+    .map((r) => `<tr class="bogen-spez"><td>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</td><td>${r.currentValue ?? 0}</td></tr>`)
+    .join('');
+  return hauptzeile + kinderzeilen;
+}
+
 function renderKampffertigkeiten(sheet: ComputedSheet): string {
   const nahkampf = (sheet.byKategorie['Nahkampf'] ?? []).filter((r) => r.rule.art === 'Wert');
   const fernkampf = (sheet.byKategorie['Fernkampf'] ?? []).filter((r) => r.rule.art === 'Wert');
-  const hierarchie = sortHierarchyByValue(buildHierarchy([...nahkampf, ...fernkampf]));
-  const rows = hierarchie.map(renderFertigkeitGruppe).join('');
+  const hierarchie = sortHierarchyByValue(buildHierarchy([...nahkampf, ...fernkampf]))
+    .filter((node) => (node.row.currentValue ?? 0) > 0);
+  const rows = hierarchie.map(renderFertigkeitGruppeNurTaw).join('');
   return `
     <div class="bogen-fertigkeit-spalte">
       <h4>Kampffertigkeiten</h4>
@@ -170,15 +182,16 @@ function renderSpracheUndKultur(sheet: ComputedSheet): string {
     <div class="bogen-fertigkeit-spalte">
       <h4>Sprache &amp; Kultur</h4>
       <table class="bogen-table">${rows}</table>
+      ${renderWhkNurGewaehlt(sheet)}
     </div>`;
 }
 
 function renderWhkNurGewaehlt(sheet: ComputedSheet): string {
   const whk = (sheet.byKategorie['WHK'] ?? []).filter((r) => (r.currentValue ?? 0) > 0);
-  if (whk.length === 0) return '<h3 class="bogen-section-heading">WHK</h3><p class="bogen-leer">– keine –</p>';
+  if (whk.length === 0) return '<h4>WHK</h4><p class="bogen-leer">– keine –</p>';
   const hierarchie = sortHierarchyByValue(buildHierarchy(whk));
   const rows = hierarchie.map(renderFertigkeitGruppe).join('');
-  return `<h3 class="bogen-section-heading">WHK</h3><table class="bogen-table bogen-table-whk">${rows}</table>`;
+  return `<h4>WHK</h4><table class="bogen-table bogen-table-whk">${rows}</table>`;
 }
 
 export function renderCharakterbogen(container: HTMLElement, sheet: ComputedSheet, character: CharacterState): void {
@@ -195,6 +208,5 @@ export function renderCharakterbogen(container: HTMLElement, sheet: ComputedShee
         ${renderKampffertigkeiten(sheet)}
         ${renderSpracheUndKultur(sheet)}
       </div>
-      ${renderWhkNurGewaehlt(sheet)}
     </div>`;
 }

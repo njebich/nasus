@@ -14,7 +14,7 @@ export interface PoolAllocation {
 
 export interface EquipmentEntry {
   id: string;
-  family: 'weapon' | 'shield' | 'preisliste' | 'artefakt' | 'ammo' | 'fernkampfwaffe';
+  family: 'weapon' | 'shield' | 'preisliste' | 'artefakt' | 'ammo' | 'fernkampfwaffe' | 'alchemika';
   baseTable: string;
   baseId: string;
   selections: Record<string, string>;

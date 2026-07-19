@@ -19,6 +19,7 @@ import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/eq
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { composeMunition } from '../engine/pfeilBolzenComposition';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, type FernkampfRow } from '../data/equipment/fernkampf';
+import { ALCHEMIKA } from '../data/equipment/alchemika';
 import type { RsGruppe } from '../data/trefferzonen';
 import { ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry } from './characterStore';
 
@@ -472,6 +473,33 @@ export function buyMunition(
     selections: modifikator ? { modifikator: String(modifikator.sourceRow) } : {},
     quantity, computedPriceSnapshot: composed.preisDublonen,
     computedStatsSnapshot: { fixschaden: composed.fixschaden, rb: composed.rb, rwModMeter: composed.rwModMeter, be: composed.be },
+  };
+  candidate.equipment = [...candidate.equipment, entry];
+  assertBudgetOk(candidate);
+  return candidate;
+}
+
+/**
+ * Kauft ein Alchemika-Item (Gift/Heiltrank/Kampftrank/Parfum/Zustandstrank) - fertiges Item mit
+ * festem Preis, keine Komposition (wie buyPreislisteItem/buyFernkampfwaffe). quantity = Anzahl
+ * Flaeschchen/Dosen. Gleiche Verfuegbarkeits-Kaufsperre wie Fernkampf (Nutzer-Konvention 2026-07-19
+ * fuer alle Kataloge mit der 1-7-Verfuegbarkeitsskala, siehe assertFernkampfVerfuegbar) -
+ * "Verbotener Gegenstand" (Legalitaet>2, in Beschreibung sichtbar) sperrt den Kauf NICHT, ist nur
+ * eine Anzeige-Info (Nutzer-Vorgabe: keine Spielregeln ableiten).
+ */
+export function buyAlchemika(character: CharacterState, sourceRow: number, quantity: number): CharacterState {
+  if (quantity <= 0) throw new MutationError('Anzahl muss groesser als 0 sein');
+  const row = ALCHEMIKA.find((r) => r.sourceRow === sourceRow);
+  if (!row) throw new MutationError(`Alchemika-Eintrag (Zeile ${sourceRow}) existiert nicht`);
+  assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name);
+  if (!row.preisAvailable || row.preisDublonen === undefined) {
+    throw new MutationError(`'${row.name}' ist nicht kaeuflich (kein Preis hinterlegt: "${row.preisRoh ?? '?'}")`);
+  }
+
+  const candidate = clone(character);
+  const entry: EquipmentEntry = {
+    id: newEquipmentId(), family: 'alchemika', baseTable: 'alchemika', baseId: String(sourceRow),
+    selections: {}, quantity, computedPriceSnapshot: row.preisDublonen,
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);

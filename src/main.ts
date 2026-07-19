@@ -7,7 +7,7 @@ import {
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
   buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
-  buyFernkampfwaffe, buyMunition, removeEquipment, BudgetError, MutationError,
+  buyFernkampfwaffe, buyMunition, buyAlchemika, removeEquipment, BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
@@ -176,6 +176,18 @@ function handleBuyMunition(typ: 'pfeile' | 'bolzen', basisSourceRow: number, mod
   if (!currentCharacter) return;
   try {
     currentCharacter = buyMunition(currentCharacter, typ, basisSourceRow, modifikatorSourceRow, quantity);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyAlchemika(sourceRow: number, quantity: number): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyAlchemika(currentCharacter, sourceRow, quantity);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
@@ -394,6 +406,7 @@ function render(): void {
         onBuyWeapon: handleBuyWeapon,
         onBuyFernkampfwaffe: handleBuyFernkampfwaffe,
         onBuyMunition: handleBuyMunition,
+        onBuyAlchemika: handleBuyAlchemika,
         onRemoveEquipment: handleRemoveEquipment,
       });
     } else if (activeTab in AUSWAHL_TABS) {

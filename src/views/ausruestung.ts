@@ -12,6 +12,7 @@ import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG, type Generic
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, type FernkampfRow } from '../data/equipment/fernkampf';
+import { ALCHEMIKA, type AlchemikaRow } from '../data/equipment/alchemika';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
@@ -31,6 +32,7 @@ export interface AusruestungCallbacks {
   ) => void;
   onBuyFernkampfwaffe: (typ: 'boegen' | 'armbrust', sourceRow: number) => void;
   onBuyMunition: (typ: 'pfeile' | 'bolzen', basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number) => void;
+  onBuyAlchemika: (sourceRow: number, quantity: number) => void;
   onRemoveEquipment: (equipmentId: string) => void;
 }
 
@@ -72,9 +74,52 @@ const openGruppen = new Set<RsGruppe>();
 /** Welche Oberpunkte (Mein Inventar/Ruestung/Schilde/Waffen/Preisliste/Artefakte) aufgeklappt
  *  sind (Nutzer 2026-07-18: "jeden oberpunkt ... collapsible haben, damit die tabelle nicht so
  *  lang ist") - alle standardmaessig zu, gleiches Persistenz-Muster wie openGruppen oben. */
-const TOP_SECTIONS = ['inventar', 'ruestung', 'schilde', 'waffen', 'fernkampf', 'preisliste', 'artefakte'] as const;
+const TOP_SECTIONS = ['inventar', 'ruestung', 'schilde', 'waffen', 'fernkampf', 'alchemika', 'preisliste', 'artefakte'] as const;
 type TopSection = (typeof TOP_SECTIONS)[number];
 const openTopSections = new Set<TopSection>();
+
+/** Alchemika-Katalog gruppiert nach Kategorie (Gifte/Heiltraenke/Kampftraenke/Parfum/
+ *  Zustandstraenke), collapsible je Kategorie (Nutzer 2026-07-19: "Ausgabe collapsible nach
+ *  Kategorie") - gleiches Aufklapp-Persistenz-Muster wie openGruppen/openTopSections. */
+const ALCHEMIKA_KATEGORIEN = [...new Set(ALCHEMIKA.map((r) => r.kategorie))];
+const openAlchemikaKategorien = new Set<string>();
+
+/** Transiente Mengen-Auswahl je Alchemika-Zeile (analog zum Preisliste-Mengenfeld, aber ueber
+ *  Re-Renders hinweg gemerkt statt aus dem DOM neu gelesen, da renderAlchemikaRow keine eigene
+ *  updatePicker-Funktion braucht). */
+const alchemikaQty = new Map<number, number>();
+
+function renderAlchemikaRow(row: AlchemikaRow): string {
+  const qty = alchemikaQty.get(row.sourceRow) ?? 1;
+  const gesperrt = row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
+  const priceText = row.preisDublonen === undefined
+    ? `nicht kaeuflich (${escapeHtml(row.preisRoh ?? '?')})`
+    : gesperrt ? `Verfuegbarkeit ${row.verfuegbarkeitStufe} (gesperrt)` : `${formatDublonen(row.preisDublonen)}/Stk`;
+  return `
+    <div class="ausruestung-row" data-alchemika="${row.sourceRow}">
+      <span class="stat-label">${escapeHtml(row.name)}</span>
+      <span class="stat-cost">${escapeHtml(row.wirkung)}${row.beschreibung ? ` — ${escapeHtml(row.beschreibung)}` : ''}</span>
+      <span class="stat-cost">${priceText}</span>
+      ${row.preisDublonen !== undefined && !gesperrt ? `
+        <input type="number" class="ausruestung-qty" min="1" value="${qty}" data-alchemika-qty="${row.sourceRow}" />
+        <button type="button" class="ausruestung-buy-alchemika" data-source-row="${row.sourceRow}">Kaufen</button>
+      ` : '<span></span><span></span>'}
+    </div>`;
+}
+
+function renderAlchemikaKategorie(kategorie: string): string {
+  const rows = ALCHEMIKA.filter((r) => r.kategorie === kategorie);
+  const openAttr = openAlchemikaKategorien.has(kategorie) ? ' open' : '';
+  return `
+    <div class="stat-card">
+      <details class="stat-group" data-alchemika-kategorie="${escapeHtml(kategorie)}"${openAttr}>
+        <summary>${escapeHtml(kategorie)} <span class="stat-group-count">(${rows.length} Einträge)</span></summary>
+        <div class="stat-subgroup">
+          ${rows.map(renderAlchemikaRow).join('')}
+        </div>
+      </details>
+    </div>`;
+}
 
 function renderPreislisteRow(row: (typeof PREISLISTE)[number]): string {
   const price = previewPreislistePrice(row, 1);
@@ -398,6 +443,9 @@ function renderInventar(character: CharacterState): string {
       const modRow = e.selections.modifikator ? table.find((r) => String(r.sourceRow) === e.selections.modifikator) : undefined;
       const fixschaden = e.computedStatsSnapshot?.fixschaden;
       label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${fixschaden ? ` (Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden})` : ''}` : label;
+    } else if (e.family === 'alchemika') {
+      const row = ALCHEMIKA.find((r) => String(r.sourceRow) === e.baseId);
+      label = row?.name ?? label;
     }
     const total = (e.computedPriceSnapshot ?? 0) * e.quantity;
     return `
@@ -446,6 +494,11 @@ export function renderAusruestungView(
     if (details.open) openTopSections.add(section);
     else openTopSections.delete(section);
   });
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-alchemika-kategorie]').forEach((details) => {
+    const kategorie = details.dataset.alchemikaKategorie!;
+    if (details.open) openAlchemikaKategorien.add(kategorie);
+    else openAlchemikaKategorien.delete(kategorie);
+  });
 
   container.innerHTML = `
     ${renderTopSection('inventar', 'Mein Inventar', undefined, `
@@ -479,6 +532,10 @@ export function renderAusruestungView(
         ${renderMunitionCard('pfeile')}
         ${renderMunitionCard('bolzen')}
       </div>
+    `)}
+
+    ${renderTopSection('alchemika', 'Alchemika', `${ALCHEMIKA.length} Einträge`, `
+      <div class="stat-category">${ALCHEMIKA_KATEGORIEN.map(renderAlchemikaKategorie).join('')}</div>
     `)}
 
     ${renderTopSection('preisliste', 'Preisliste', `${filteredPreisliste.length} Einträge`, `
@@ -676,6 +733,20 @@ export function renderAusruestungView(
       const basisSourceRow = sel?.basisSourceRow ?? munitionBasisOptionen(typ)[0]?.sourceRow;
       if (basisSourceRow === undefined) return;
       callbacks.onBuyMunition(typ, basisSourceRow, sel?.modifikatorSourceRow ?? null, sel?.quantity ?? 1);
+    });
+  });
+
+  container.querySelectorAll<HTMLInputElement>('[data-alchemika-qty]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const sourceRow = Number(input.dataset.alchemikaQty);
+      alchemikaQty.set(sourceRow, Math.max(1, Math.floor(Number(input.value || '1'))));
+    });
+  });
+  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-alchemika').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sourceRow = Number(btn.dataset.sourceRow);
+      const quantity = alchemikaQty.get(sourceRow) ?? 1;
+      callbacks.onBuyAlchemika(sourceRow, quantity);
     });
   });
 

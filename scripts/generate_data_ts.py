@@ -12,6 +12,8 @@ Betrifft:
   - src/data/equipment/fernkampf.ts        (Sheets "Boegen", "Armbrust", "Pfeile", "Bolzen",
                                              "Feuerwaffen-Munition" - normalisierte Fernkampf-
                                              waffen/-Munition-Kataloge)
+  - src/data/equipment/alchemika.ts        (Sheet "Alchemika", nur A1:P119 - Gifte/Heiltraenke/
+                                             Kampftraenke/Parfum/Zustandstraenke-Katalog)
 
 Aufruf:
     python scripts/generate_data_ts.py "werte 0.7-claude.xlsx"
@@ -705,6 +707,78 @@ def write_voelker_maxima_ts(wb):
     print(f"{path}: {len(rows)} Voelker-Maxima-Eintraege geschrieben.")
 
 
+def read_alchemika(wb_values):
+    """Liest Sheet "Alchemika", nur A1:P119 (Nutzer 2026-07-19: Sheet wurde ersetzt, exakter
+    Bereich vorgegeben). Feste Spaltenindizes statt Header-Namen (Nutzer hat die Zuordnung per
+    Spaltenbuchstabe vorgegeben, nicht per Spaltenname): A=Kategorie, B=magisch/profan, C=Name,
+    J=Wirkung, K=Legalitaet, M=Verfuegbarkeit, O=Kaufpreis(D). Alle anderen Spalten (Potenz,
+    Dosierbar, Zufuhr, ZbS/ZbW, Wirkungsdauer, Char_Unterwelt_Mod, Zutaten_Preis, Rezept-
+    Erschwerung) sind absichtlich NICHT erfasst - nicht Teil der angeforderten Ausruestungs-
+    tabellen-Spalten (Nutzer: "Keine Spielregeln ableiten"). Spalte O (Kaufpreis_in_D) hat eine
+    lebende Formel (=N*(K+L)) - braucht data_only=True wie Feuerwaffen-Munition, sonst landet
+    Formel-Quelltext statt berechnetem Preis im JSON."""
+    ws = wb_values["Alchemika"]
+    rows = []
+    for r in range(2, 120):
+        kategorie = cell_to_str(ws.cell(row=r, column=1).value)
+        magisch_raw = cell_to_str(ws.cell(row=r, column=2).value)
+        name = cell_to_str(ws.cell(row=r, column=3).value)
+        if not kategorie and not name:
+            continue
+        wirkung = cell_to_str(ws.cell(row=r, column=10).value)
+        legalitaet_val, _ = parse_numeric_or_sentinel(ws.cell(row=r, column=11).value)
+        verfuegbarkeit_val, _ = parse_numeric_or_sentinel(ws.cell(row=r, column=13).value)
+        preis_val, preis_roh = parse_numeric_or_sentinel(ws.cell(row=r, column=15).value)
+
+        magisch = (magisch_raw or "").strip().lower() == "magisch"
+        beschreibung_teile = []
+        if magisch:
+            beschreibung_teile.append("Magischer Trank.")
+        if legalitaet_val is not None and legalitaet_val > 2:
+            beschreibung_teile.append("Verbotener Gegenstand")
+
+        entry = {
+            "sourceRow": r,
+            "kategorie": kategorie or "",
+            "name": name or "",
+            "magisch": magisch,
+            "wirkung": wirkung or "",
+            "beschreibung": " ".join(beschreibung_teile),
+        }
+        if legalitaet_val is not None:
+            entry["legalitaet"] = int(legalitaet_val)
+        if verfuegbarkeit_val is not None:
+            entry["verfuegbarkeitStufe"] = int(verfuegbarkeit_val)
+        entry["preisAvailable"] = preis_val is not None
+        if preis_val is not None:
+            entry["preisDublonen"] = preis_val
+        elif preis_roh:
+            entry["preisRoh"] = preis_roh
+        rows.append(entry)
+    return rows
+
+
+def write_alchemika_ts(wb_values):
+    rows = read_alchemika(wb_values)
+    type_lines = [
+        "export interface AlchemikaRow {",
+        "  sourceRow: number;",
+        "  kategorie: string;",
+        "  name: string;",
+        "  magisch: boolean;",
+        "  wirkung: string;",
+        "  beschreibung: string;",
+        "  legalitaet?: number;",
+        "  verfuegbarkeitStufe?: number;",
+        "  preisAvailable: boolean;",
+        "  preisDublonen?: number;",
+        "  preisRoh?: string;",
+        "}",
+    ]
+    path = write_json_backed_module(OUT_EQUIPMENT_DIR, "alchemika", "ALCHEMIKA", type_lines, "AlchemikaRow[]", rows)
+    print(f"{path}: {len(rows)} Alchemika-Eintraege geschrieben.")
+
+
 def main(xlsx_path):
     path = Path(xlsx_path)
     if not path.exists():
@@ -734,6 +808,7 @@ def main(xlsx_path):
     write_armor_ts(wb)
     write_shields_ts(wb)
     write_fernkampf_ts(wb, wb_values)
+    write_alchemika_ts(wb_values)
     write_voelker_maxima_ts(wb)
 
 

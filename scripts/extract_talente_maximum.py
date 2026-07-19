@@ -44,6 +44,14 @@ KATEGORIE_GRUPPEN = {
 # komplett uebersprungen (siehe Skip-Zweig unten) - Nutzer hat 2026-07-18 in einer zweiten Runde
 # eine PSI/KI-Basiswert-Entscheidung nachgeholt (beide =24, siehe engine/fertigkeitenGrenzen.ts),
 # damit sind jetzt auch KI-Meister und PSI Psinetik portierbar.
+# Talente, die inzwischen im Werte-Sheet deaktiviert wurden ("#"-Praefix, siehe
+# generate_data_ts.py read_rules()) und daher nicht mehr in rules.json auftauchen - die
+# Analysedatei (Talente-Wirkung-chatgpt.xlsx) kennt diese Deaktivierung nicht, muss hier
+# explizit rausgefiltert werden, sonst schlaegt validate() fehl. "Ladeschuetze Schleuder"
+# 2026-07-19 deaktiviert (siehe Entwickeln-Sheet: die Waffe "Schleuder" existiert gar nicht
+# als eigene Fernkampf-Kategorie).
+RETIRED_TALENTE = {"talente_ladeschuetze_schleuder"}
+
 MANUAL_MAXIMUM_OVERRIDES = [
     {"talentReferenz": "talente_charismatischer_fuehrer", "zielReferenz": "gr_ueberzeugen", "bonus": 6},
     {"talentReferenz": "talente_psi_psinetik_stufe_1", "zielKategorie": "PSI", "bonus": 6},
@@ -128,6 +136,7 @@ def extract(rows):
             out.append({"talentReferenz": ref, "zielReferenz": zielref, "bonus": wert})
 
     out.extend(MANUAL_MAXIMUM_OVERRIDES)
+    out = [e for e in out if e["talentReferenz"] not in RETIRED_TALENTE]
     return out, skipped
 
 

@@ -1,0 +1,4 @@
+HAUPT: ['Hiebwaffen', 'Klingenwaffen', 'Stangenwaffen', 'Stichwaffen', 'Unbewaffnet']
+SPEZ: ['Armklingen', 'Beidhand-Hiebwaffen', 'Biss/Huftritt', 'Boxen', 'Dolche', 'Elfische Kunst der Selbstverteidigung', 'Fechtwaffen', 'Goblinische Kampfkunst', 'Hellebarden', 'Katzenmenschen Kampfkunst', 'Kettenwaffen', 'Kurzschwerter', 'Lanzen', 'Messer', "Orkisch' Raufen", 'Peitschen', 'Ringen', 'Rüstungsmodifikator', 'Schattenkampf', 'Schild', 'Schwerter', 'Speere', 'Stumpfe Hiebwaffen', 'Stäbe', 'Zweihänder', 'Äxte']
+n_rows: 241
+cols: ['Hauptfertigkeit', 'Spezialisierung', 'Waffe', 'Ini', 'WK-Basis', 'Schadenswuerfel-1', 'Schadenswuerfel-2', 'Staerke-Teiler', 'Staerke-Malus-Basis', 'RB', 'AT-Basis', 'PA-Basis', 'Min-Staerke-1H-Basis', 'Laenge-m', 'Tarnung', 'Art-Specials', 'Klingenbrecher-Basis', 'Klingenschutz-Basis', 'Rezept-Mod-Basis', 'Materialpreis-Faktor', 'Arbeitszeit-Tag-Basis', 'sourceRow', 'name']

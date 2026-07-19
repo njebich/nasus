@@ -18,7 +18,8 @@ import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../da
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { composeMunition } from '../engine/pfeilBolzenComposition';
-import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, type FernkampfRow } from '../data/equipment/fernkampf';
+import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
+import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
 import type { RsGruppe } from '../data/trefferzonen';
 import { ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry } from './characterStore';
@@ -428,6 +429,46 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'fernkampfwaffe', baseTable: typ, baseId: String(sourceRow),
     selections: {}, quantity: 1, computedPriceSnapshot: row.preisDublonen,
+  };
+  candidate.equipment = [...candidate.equipment, entry];
+  assertBudgetOk(candidate);
+  return candidate;
+}
+
+/** Kauft eine aus Vorlage + Bauart/Lademechanik/Schloss/Lauf komponierte Feuerwaffe. Die
+ * berechneten Werte und der Preis werden wie bei den anderen komponierten Gegenstaenden als
+ * Snapshot gespeichert, damit spaetere Regelwerksupdates bestehende Inventare nicht umdeuten. */
+export function buyFeuerwaffe(
+  character: CharacterState, sourceRow: number, selections: FeuerwaffenSelections,
+): CharacterState {
+  const basis = FEUERWAFFEN.find((row) => row.sourceRow === sourceRow);
+  if (!basis) throw new MutationError(`Feuerwaffe (Zeile ${sourceRow}) existiert nicht`);
+
+  let composed;
+  try {
+    composed = composeFeuerwaffe(basis, selections);
+  } catch (error) {
+    throw new MutationError(error instanceof Error ? error.message : String(error));
+  }
+  assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, basis.name);
+
+  const candidate = clone(character);
+  const entry: EquipmentEntry = {
+    id: newEquipmentId(), family: 'feuerwaffe', baseTable: 'feuerwaffen', baseId: String(sourceRow),
+    selections: {
+      bauart: String(selections.bauartSourceRow), lademechanik: String(selections.lademechanikSourceRow),
+      schloss: String(selections.schlossSourceRow), lauf: String(selections.laufSourceRow),
+    },
+    quantity: 1, computedPriceSnapshot: composed.preisDublonen,
+    computedStatsSnapshot: {
+      gewicht: composed.gewicht, minStaerke: composed.minStaerke, fixschaden: composed.fixschaden,
+      rb: composed.rb, kaliber: composed.kaliber, rw: composed.rw, nachladezeit: composed.nachladezeit,
+      nachladenTawTeiler: composed.nachladenTawTeiler, patzermodifikator: composed.patzermodifikator,
+      verfuegbarkeitRaw: composed.verfuegbarkeitRaw, verfuegbarkeitStufe: composed.verfuegbarkeitStufe,
+      herstellungszeit: composed.herstellungszeit, materialpreis: composed.materialpreis, ini: composed.ini,
+      rw10m: composed.rwMod[0], rw30m: composed.rwMod[1], rw60m: composed.rwMod[2],
+      rw100m: composed.rwMod[3], rw150m: composed.rwMod[4], rw210m: composed.rwMod[5],
+    },
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);

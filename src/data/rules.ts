@@ -28,4 +28,6 @@ export interface RuleEntry {
 export const RULES = rulesJson as unknown as RuleEntry[];
 
 // Codegen-Warnungen (siehe Konsolen-Ausgabe beim Generieren):
+// - Zeile 192: Referenz '#sf_ladeschuetze_schleuder' mit '#' auskommentiert - uebersprungen
+// - Zeile 1152: Referenz '#talente_ladeschuetze_schleuder' mit '#' auskommentiert - uebersprungen
 // - Zeile 1371: Referenz '#vn_unempfindlichkeit_gegen_alchemie' mit '#' auskommentiert - uebersprungen

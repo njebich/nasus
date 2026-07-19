@@ -10,8 +10,9 @@ Betrifft:
   - src/data/equipment/artefakte.ts        (Sheets "Artefakt-Basis" + "Artefakt-Kosten")
   - src/data/equipment/verfuegbarkeit.ts   (Sheet "Verfuegbarkeit-Modifikatoren", 2 Bloecke)
   - src/data/equipment/fernkampf.ts        (Sheets "Boegen", "Armbrust", "Pfeile", "Bolzen",
-                                             "Feuerwaffen-Munition" - normalisierte Fernkampf-
-                                             waffen/-Munition-Kataloge)
+                                             "Feuerwaffen-Munition" sowie die separate Quelle
+                                             "NN_Feuerwaffen_1.1.xlsx" - normalisierte Fernkampf-
+                                             waffen/-Munition-Kataloge und Feuerwaffen-Ressourcen)
   - src/data/equipment/alchemika.ts        (Sheet "Alchemika", nur A1:P119 - Gifte/Heiltraenke/
                                              Kampftraenke/Parfum/Zustandstraenke-Katalog)
   - src/data/rules-jsonl/*.jsonl            (Sheet "Werte", nach Kategorie aufgesplittet - reine
@@ -680,7 +681,44 @@ FERNKAMPF_ROW_TYPE_LINES = [
 ]
 
 
-def write_fernkampf_ts(wb, wb_values):
+def read_feuerwaffen(feuerwaffen_values):
+    """Liest die Feuerwaffen-Vorlagen plus ihre VLOOKUP-Ressourcentabelle. Die Quelle bleibt
+    eine eigene Arbeitsmappe, weil dort die lebenden Formeln und benannten Bereiche gepflegt
+    werden; in die SPA gelangen ausschliesslich fertig serialisierte Konstanten."""
+    waffen = read_generic_rows(feuerwaffen_values, "Waffen", "Name")
+    for row in waffen:
+        preis_raw = row.get("Preis")
+        if preis_raw is not None:
+            preis, _ = parse_numeric_or_sentinel(preis_raw)
+            if preis is not None:
+                row["preisDublonen"] = preis
+        verf_raw = row.get("Verfuegbarkeit (1-7)")
+        if verf_raw is not None:
+            try:
+                row["verfuegbarkeitStufe"] = int(float(str(verf_raw).replace(",", ".")))
+            except ValueError:
+                pass
+
+    ressourcen = read_generic_rows(
+        feuerwaffen_values, "Ressourcen-Waffen", "Name",
+        # Die Lookup-Hilfstabellen besitzen in der Quelle absichtlich keine eigenen Header.
+        header_overrides={36: "Wuerfelindex", 37: "Wuerfel", 41: "VerfRawAb", 42: "VerfStufe"},
+    )
+    wuerfel = []
+    verfuegbarkeit = []
+    for row in ressourcen:
+        index, _ = parse_numeric_or_sentinel(row.get("Wuerfelindex"))
+        if index is not None and row.get("Wuerfel"):
+            wuerfel.append({"index": index, "wuerfel": row["Wuerfel"]})
+        raw_ab, _ = parse_numeric_or_sentinel(row.get("VerfRawAb"))
+        stufe, _ = parse_numeric_or_sentinel(row.get("VerfStufe"))
+        if raw_ab is not None and stufe is not None:
+            verfuegbarkeit.append({"rawAb": raw_ab, "stufe": int(stufe)})
+
+    return waffen, ressourcen, wuerfel, verfuegbarkeit
+
+
+def write_fernkampf_ts(wb, wb_values, feuerwaffen_values):
     # Boegen/Armbrust/Pfeile/Bolzen sind normalisierte, reine Wertetabellen ohne Formeln (per
     # one-off Build-Skripten aus den jeweiligen docx-Quellen erzeugt) - data_only spielt fuer
     # sie keine Rolle. Feuerwaffen-Munition dagegen hat lebende SUMPRODUCT/COUNTIFS-Formeln in
@@ -696,14 +734,20 @@ def write_fernkampf_ts(wb, wb_values):
     pfeile = enrich_fernkampf_rows(read_generic_rows(wb, "Pfeile", "Name"))
     bolzen = enrich_fernkampf_rows(read_generic_rows(wb, "Bolzen", "Name"))
     feuerwaffen_munition = read_generic_rows(wb_values, "Feuerwaffen-Munition", "Name")
+    feuerwaffen, feuerwaffen_ressourcen, feuerwaffen_wuerfel, feuerwaffen_verfuegbarkeit = read_feuerwaffen(feuerwaffen_values)
     data = {
         "boegen": boegen, "armbrust": armbrust, "pfeile": pfeile,
         "bolzen": bolzen, "feuerwaffenMunition": feuerwaffen_munition,
+        "feuerwaffen": feuerwaffen, "feuerwaffenRessourcen": feuerwaffen_ressourcen,
+        "feuerwaffenWuerfel": feuerwaffen_wuerfel,
+        "feuerwaffenVerfuegbarkeit": feuerwaffen_verfuegbarkeit,
     }
     path = write_json_backed_module(
         OUT_EQUIPMENT_DIR, "fernkampf", "FERNKAMPF_RAW", FERNKAMPF_ROW_TYPE_LINES,
         "{ boegen: FernkampfRow[]; armbrust: FernkampfRow[]; pfeile: FernkampfRow[]; "
-        "bolzen: FernkampfRow[]; feuerwaffenMunition: GenericRow[] }", data,
+        "bolzen: FernkampfRow[]; feuerwaffenMunition: GenericRow[]; feuerwaffen: FernkampfRow[]; "
+        "feuerwaffenRessourcen: GenericRow[]; feuerwaffenWuerfel: { index: number; wuerfel: string }[]; "
+        "feuerwaffenVerfuegbarkeit: { rawAb: number; stufe: number }[] }", data,
     )
     with open(OUT_EQUIPMENT_DIR / "fernkampf.ts", "a", encoding="utf-8") as f:
         f.write("export const BOEGEN = FERNKAMPF_RAW.boegen;\n")
@@ -711,9 +755,14 @@ def write_fernkampf_ts(wb, wb_values):
         f.write("export const PFEILE = FERNKAMPF_RAW.pfeile;\n")
         f.write("export const BOLZEN = FERNKAMPF_RAW.bolzen;\n")
         f.write("export const FEUERWAFFEN_MUNITION = FERNKAMPF_RAW.feuerwaffenMunition;\n")
+        f.write("export const FEUERWAFFEN = FERNKAMPF_RAW.feuerwaffen;\n")
+        f.write("export const FEUERWAFFEN_RESSOURCEN = FERNKAMPF_RAW.feuerwaffenRessourcen;\n")
+        f.write("export const FEUERWAFFEN_WUERFEL = FERNKAMPF_RAW.feuerwaffenWuerfel;\n")
+        f.write("export const FEUERWAFFEN_VERFUEGBARKEIT = FERNKAMPF_RAW.feuerwaffenVerfuegbarkeit;\n")
     print(
         f"{path}: {len(boegen)} Boegen, {len(armbrust)} Armbrust, {len(pfeile)} Pfeile, "
-        f"{len(bolzen)} Bolzen, {len(feuerwaffen_munition)} Feuerwaffen-Munition geschrieben."
+        f"{len(bolzen)} Bolzen, {len(feuerwaffen_munition)} Feuerwaffen-Munition, "
+        f"{len(feuerwaffen)} Feuerwaffen und {len(feuerwaffen_ressourcen)} Ressourcen geschrieben."
     )
 
 
@@ -824,7 +873,7 @@ def write_alchemika_ts(wb_values):
     print(f"{path}: {len(rows)} Alchemika-Eintraege geschrieben.")
 
 
-def main(xlsx_path):
+def main(xlsx_path, feuerwaffen_xlsx_path=None):
     path = Path(xlsx_path)
     if not path.exists():
         raise SystemExit(f"Datei nicht gefunden: {path}")
@@ -834,6 +883,10 @@ def main(xlsx_path):
 
     wb = openpyxl.load_workbook(path, data_only=False)
     wb_values = openpyxl.load_workbook(path, data_only=True)
+    feuerwaffen_path = Path(feuerwaffen_xlsx_path) if feuerwaffen_xlsx_path else path.with_name("NN_Feuerwaffen_1.1.xlsx")
+    if not feuerwaffen_path.exists():
+        raise SystemExit(f"Feuerwaffen-Quelle nicht gefunden: {feuerwaffen_path}")
+    feuerwaffen_values = openpyxl.load_workbook(feuerwaffen_path, data_only=True)
 
     rules, warnings = read_rules(wb)
     rules_path = write_rules_ts(rules, warnings)
@@ -855,13 +908,13 @@ def main(xlsx_path):
     write_weapons_ts(wb)
     write_armor_ts(wb)
     write_shields_ts(wb)
-    write_fernkampf_ts(wb, wb_values)
+    write_fernkampf_ts(wb, wb_values, feuerwaffen_values)
     write_alchemika_ts(wb_values)
     write_voelker_maxima_ts(wb)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print('Aufruf: python scripts/generate_data_ts.py "werte 0.7-claude.xlsx"')
+    if len(sys.argv) not in (2, 3):
+        print('Aufruf: python scripts/generate_data_ts.py "werte 0.8-claude.xlsx" ["NN_Feuerwaffen_1.1.xlsx"]')
         sys.exit(1)
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2] if len(sys.argv) == 3 else None)

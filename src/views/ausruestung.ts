@@ -11,13 +11,17 @@ import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG, type GenericRow } from '../data/equipment/armor';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
-import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, type FernkampfRow } from '../data/equipment/fernkampf';
+import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA, type AlchemikaRow } from '../data/equipment/alchemika';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
 import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
 import { composeMunition } from '../engine/pfeilBolzenComposition';
+import {
+  composeFeuerwaffe, feuerwaffenKomponentenOptionen, feuerwaffenStandardauswahl,
+  type FeuerwaffenSelections,
+} from '../engine/feuerwaffenComposition';
 
 export interface AusruestungCallbacks {
   onBuyPreisliste: (sourceRow: number, quantity: number) => void;
@@ -31,6 +35,7 @@ export interface AusruestungCallbacks {
     sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, anpassungSourceRow: number, schaftmaterialSourceRow: number,
   ) => void;
   onBuyFernkampfwaffe: (typ: 'boegen' | 'armbrust', sourceRow: number) => void;
+  onBuyFeuerwaffe: (sourceRow: number, selections: FeuerwaffenSelections) => void;
   onBuyMunition: (typ: 'pfeile' | 'bolzen', basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number) => void;
   onBuyAlchemika: (sourceRow: number, quantity: number) => void;
   onRemoveEquipment: (equipmentId: string) => void;
@@ -366,6 +371,30 @@ function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow):
     </div>`;
 }
 
+const feuerwaffenPicker = new Map<number, FeuerwaffenSelections>();
+
+function renderFeuerwaffeRow(row: FernkampfRow): string {
+  const optionen = feuerwaffenKomponentenOptionen(row);
+  const standard = feuerwaffenStandardauswahl(row);
+  const auswahl = feuerwaffenPicker.get(row.sourceRow) ?? standard;
+  const composed = composeFeuerwaffe(row, auswahl);
+  const gesperrt = composed.verfuegbarkeitStufe >= 5;
+  const option = (items: typeof optionen.bauarten, selected: number) => items
+    .map((item) => `<option value="${item.sourceRow}" ${item.sourceRow === selected ? 'selected' : ''}>${escapeHtml(item.name)}</option>`).join('');
+  return `
+    <div class="ausruestung-row" data-feuerwaffe="${row.sourceRow}">
+      <span class="stat-label">${escapeHtml(row.name)}${row['Volk'] ? ` (${escapeHtml(row['Volk'])})` : ''}</span>
+      <select class="feuerwaffe-bauart-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.bauarten, auswahl.bauartSourceRow)}</select>
+      <select class="feuerwaffe-lademechanik-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.lademechaniken, auswahl.lademechanikSourceRow)}</select>
+      <select class="feuerwaffe-schloss-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.schloesser, auswahl.schlossSourceRow)}</select>
+      <select class="feuerwaffe-lauf-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.laeufe, auswahl.laufSourceRow)}</select>
+      <span class="stat-cost">${composed.ersterWuerfel}/${composed.zweiterWuerfel}${composed.fixschaden ? ` +${composed.fixschaden}` : ''} | RB ${composed.rb} | Kal. ${composed.kaliber} | Ini ${composed.ini}</span>
+      <span class="stat-cost">${gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : formatDublonen(composed.preisDublonen)}</span>
+      ${!gesperrt ? `<button type="button" class="ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">Kaufen</button>` : '<span></span>'}
+    </div>
+    <div class="waffe-details">Gewicht ${composed.gewicht} | Min.Stä ${composed.minStaerke} | RW ${composed.rw} | Nachladezeit ${composed.nachladezeit} | Munition ${escapeHtml(composed.munition)}</div>`;
+}
+
 /** Transiente Picker-Auswahl fuer die Munitions-Komponierer-Karten (Pfeile/Bolzen) - analog zum
  *  Schild-/Waffen-Picker, aber je Munitionstyp nur EIN Composer statt einer Zeile pro Katalog-
  *  Eintrag (Basis + optionaler Spitzen-Modifikator werden erst beim Kauf zu einem Inventar-
@@ -437,6 +466,9 @@ function renderInventar(character: CharacterState): string {
       const table = e.baseTable === 'boegen' ? BOEGEN : ARMBRUST;
       const row = table.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;
+    } else if (e.family === 'feuerwaffe') {
+      const row = FEUERWAFFEN.find((r) => String(r.sourceRow) === e.baseId);
+      label = row?.name ?? label;
     } else if (e.family === 'ammo') {
       const table = e.baseTable === 'pfeile' ? PFEILE : BOLZEN;
       const basis = table.find((r) => String(r.sourceRow) === e.baseId);
@@ -451,7 +483,7 @@ function renderInventar(character: CharacterState): string {
     return `
       <div class="inventar-row" data-equipment-id="${e.id}">
         <span class="stat-label">${escapeHtml(label)}${e.quantity > 1 ? ` ×${e.quantity}` : ''}</span>
-        <span class="stat-cost">${total} D</span>
+        <span class="stat-cost">${formatDublonen(total)}</span>
         <button type="button" class="inventar-remove" data-equipment-id="${e.id}">Entfernen</button>
       </div>`;
   }).join('');
@@ -522,11 +554,13 @@ export function renderAusruestungView(
       <div class="ausruestung-category">${filteredWeapons.map((row) => renderWeaponRow(row, character)).join('')}</div>
     `)}
 
-    ${renderTopSection('fernkampf', 'Fernkampfwaffen', `${BOEGEN.length + ARMBRUST.length} Einträge`, `
+    ${renderTopSection('fernkampf', 'Fernkampfwaffen', `${BOEGEN.length + ARMBRUST.length + FEUERWAFFEN.length} Einträge`, `
       <h4>Bögen</h4>
       <div class="ausruestung-category">${BOEGEN.map((row) => renderFernkampfwaffeRow('boegen', row)).join('')}</div>
       <h4>Armbrust</h4>
       <div class="ausruestung-category">${ARMBRUST.map((row) => renderFernkampfwaffeRow('armbrust', row)).join('')}</div>
+      <h4>Feuerwaffen</h4>
+      <div class="ausruestung-category">${FEUERWAFFEN.map(renderFeuerwaffeRow).join('')}</div>
       <h4>Munition</h4>
       <div class="ausruestung-category">
         ${renderMunitionCard('pfeile')}
@@ -704,6 +738,38 @@ export function renderAusruestungView(
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-fernkampfwaffe').forEach((btn) => {
     btn.addEventListener('click', () => {
       callbacks.onBuyFernkampfwaffe(btn.dataset.typ as 'boegen' | 'armbrust', Number(btn.dataset.sourceRow));
+    });
+  });
+  function updateFeuerwaffenPicker(sourceRow: number, patch: Partial<FeuerwaffenSelections>): void {
+    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-feuerwaffe="${sourceRow}"]`);
+    const read = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
+    feuerwaffenPicker.set(sourceRow, {
+      bauartSourceRow: read('feuerwaffe-bauart-select'),
+      lademechanikSourceRow: read('feuerwaffe-lademechanik-select'),
+      schlossSourceRow: read('feuerwaffe-schloss-select'),
+      laufSourceRow: read('feuerwaffe-lauf-select'),
+      ...patch,
+    });
+    renderAusruestungView(container, sheet, character, callbacks);
+  }
+  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-bauart-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { bauartSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-lademechanik-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { lademechanikSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-schloss-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { schlossSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-lauf-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { laufSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-feuerwaffe').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sourceRow = Number(btn.dataset.feuerwaffe);
+      const basis = FEUERWAFFEN.find((row) => row.sourceRow === sourceRow);
+      if (!basis) return;
+      callbacks.onBuyFeuerwaffe(sourceRow, feuerwaffenPicker.get(sourceRow) ?? feuerwaffenStandardauswahl(basis));
     });
   });
   function updateMunitionPicker(typ: 'pfeile' | 'bolzen', patch: Partial<{ basisSourceRow: number; modifikatorSourceRow: number | null; quantity: number }>): void {

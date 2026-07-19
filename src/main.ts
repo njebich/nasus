@@ -7,7 +7,7 @@ import {
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
   buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
-  buyFernkampfwaffe, buyMunition, buyAlchemika, removeEquipment, BudgetError, MutationError,
+  buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyAlchemika, removeEquipment, BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
@@ -19,6 +19,7 @@ import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
 import type { RsGruppe } from './data/trefferzonen';
+import type { FeuerwaffenSelections } from './engine/feuerwaffenComposition';
 import {
   VORDEFINIERTE_ORTE, WELTEN, SIEDLUNGSGROESSEN, HANDELSSTUFEN, HERSTELLUNGSORTE,
   createOrt, formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
@@ -164,6 +165,18 @@ function handleBuyFernkampfwaffe(typ: 'boegen' | 'armbrust', sourceRow: number):
   if (!currentCharacter) return;
   try {
     currentCharacter = buyFernkampfwaffe(currentCharacter, typ, sourceRow);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyFeuerwaffe(sourceRow: number, selections: FeuerwaffenSelections): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyFeuerwaffe(currentCharacter, sourceRow, selections);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
@@ -405,12 +418,17 @@ function render(): void {
         onBuyShield: handleBuyShield,
         onBuyWeapon: handleBuyWeapon,
         onBuyFernkampfwaffe: handleBuyFernkampfwaffe,
+        onBuyFeuerwaffe: handleBuyFeuerwaffe,
         onBuyMunition: handleBuyMunition,
         onBuyAlchemika: handleBuyAlchemika,
         onRemoveEquipment: handleRemoveEquipment,
       });
     } else if (activeTab in AUSWAHL_TABS) {
       renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle);
+    } else if (activeTab === 'Kampf') {
+      // Wird gerade neu gebaut (Nutzer-Mockup "S04 Kampfseite mockup") - bis dahin bleibt der
+      // Tab bewusst leer statt der alten generischen Werteliste, siehe Nutzer-Anfrage 2026-07-19.
+      viewContainer.innerHTML = '';
     } else {
       renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange);
     }

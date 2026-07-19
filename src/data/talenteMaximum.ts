@@ -278,11 +278,6 @@ export const TALENT_MAXIMUM_BONUSES: TalentMaximumBonus[] = [
     "bonus": 6
   },
   {
-    "talentReferenz": "talente_ladeschuetze_schleuder",
-    "zielReferenz": "sf_ladeschuetze_schleuder",
-    "bonus": 6
-  },
-  {
     "talentReferenz": "talente_ladeschuetze_wurfmesser",
     "zielReferenz": "sf_ladeschuetze_wurfmesser",
     "bonus": 6

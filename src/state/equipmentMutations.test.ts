@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { createCharacter } from './characterStore';
-import { buyPreislisteItem, buyArtefakt, removeEquipment, BudgetError, MutationError } from './characterMutations';
+import { buyPreislisteItem, buyArtefakt, buyFeuerwaffe, removeEquipment, BudgetError, MutationError } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
+import { FEUERWAFFEN } from '../data/equipment/fernkampf';
+import { composeFeuerwaffe, feuerwaffenStandardauswahl } from '../engine/feuerwaffenComposition';
 
 function withDublonen(bank: number) {
   const character = createCharacter('Test');
@@ -51,5 +53,29 @@ describe('buyArtefakt', () => {
     const updated = buyArtefakt(character, kostenRow.referenz, kostenRow.grad!, 'einmalig');
     const removed = removeEquipment(updated, updated.equipment[0].id);
     expect(computeSheet(removed).dublonenSpent).toBe(0);
+  });
+});
+
+describe('buyFeuerwaffe', () => {
+  const muskete = FEUERWAFFEN.find((row) => row.name === 'Muskete')!;
+  const auswahl = feuerwaffenStandardauswahl(muskete);
+  const composed = composeFeuerwaffe(muskete, auswahl);
+
+  it('speichert die vier Komponenten und belastet das Dublonenbudget mit dem komponierten Preis', () => {
+    const updated = buyFeuerwaffe(withDublonen(1000), muskete.sourceRow, auswahl);
+    expect(updated.equipment[0]).toMatchObject({
+      family: 'feuerwaffe', baseTable: 'feuerwaffen', computedPriceSnapshot: composed.preisDublonen,
+      selections: {
+        bauart: String(auswahl.bauartSourceRow), lademechanik: String(auswahl.lademechanikSourceRow),
+        schloss: String(auswahl.schlossSourceRow), lauf: String(auswahl.laufSourceRow),
+      },
+    });
+    expect(computeSheet(updated).dublonenSpent).toBe(composed.preisDublonen);
+  });
+
+  it('wendet die einheitliche Kaufsperre ab Verfuegbarkeit 5 auch auf Feuerwaffen an', () => {
+    const hakenbuechse = FEUERWAFFEN.find((row) => row.name === 'Hakenbüchse')!;
+    expect(() => buyFeuerwaffe(withDublonen(10000), hakenbuechse.sourceRow, feuerwaffenStandardauswahl(hakenbuechse)))
+      .toThrow(MutationError);
   });
 });

@@ -8,6 +8,7 @@ import type { PoolAllocation } from '../state/characterStore';
 import { prettyFormula } from '../engine/formulaDisplay';
 import { buildHierarchy, type HierarchyNode } from '../engine/hierarchy';
 import { describeSkillStufe } from '../engine/skillStufen';
+import { LADESCHUETZE_SF_FK_GATE, isLadeschuetzeSfVisible } from '../engine/ladeschuetzeGating';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
@@ -51,6 +52,25 @@ function renderEditableRow(r: ComputedRule, maxValue?: number): string {
       <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
       <button type="button" class="stat-inc" aria-label="erhoehen" ${atMax ? 'disabled' : ''}>+</button>
       <span class="stat-cost">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext ? `naechster Punkt: ${costNext}` : ''}</span>
+    </div>`;
+}
+
+/** SF "Ladeschuetze": eigene Gruppe (kein Hauptfertigkeit/Spezialisierung-Verhaeltnis, daher
+ *  ad-hoc statt ueber buildHierarchy). Jede Waffenart ist komplett ausgeblendet, bis die
+ *  zugehoerige Fernkampf-Fertigkeit > 0 ist (siehe ladeschuetzeGating.ts) - keine Sperr-Anzeige,
+ *  einfaches Weglassen. Rendert gar nichts, wenn (noch) keine Zeile sichtbar ist. */
+function renderLadeschuetzeGroup(rows: ComputedRule[], sheet: ComputedSheet): string {
+  const visible = rows.filter((r) => isLadeschuetzeSfVisible(sheet, r.rule.referenz));
+  if (visible.length === 0) return '';
+  const groupKey = 'sf_ladeschuetze_gruppe';
+  const openAttr = openGroupReferenzen.has(groupKey) ? ' open' : '';
+  const body = visible.map((r) => renderEditableRow(r)).join('');
+  return `
+    <div class="stat-card">
+      <details class="stat-group" data-referenz="${groupKey}"${openAttr}>
+        <summary>Ladeschütze <span class="stat-group-count">(${visible.length})</span></summary>
+        <div class="stat-subgroup">${body}</div>
+      </details>
     </div>`;
 }
 
@@ -181,11 +201,13 @@ export function renderCategoryView(
   const readOnly = rows.filter((r) => r.rule.art === 'Fixwert' || r.rule.art === 'Formel' || r.rule.art === 'Lookup');
   const pools = rows.filter((r) => r.rule.art === 'Pool');
 
-  const editableHierarchy = buildHierarchy(editable);
+  const ladeschuetzeRows = editable.filter((r) => r.rule.referenz in LADESCHUETZE_SF_FK_GATE);
+  const restEditable = editable.filter((r) => !(r.rule.referenz in LADESCHUETZE_SF_FK_GATE));
+  const editableHierarchy = buildHierarchy(restEditable);
   const readOnlyHierarchy = buildHierarchy(readOnly);
 
   container.innerHTML = `
-    <div class="stat-category">${editableHierarchy.map(renderEditableGroup).join('')}</div>
+    <div class="stat-category">${editableHierarchy.map(renderEditableGroup).join('')}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet)}</div>
     ${readOnly.length > 0 ? `
       <h3 class="stat-section-heading">Berechnete Werte</h3>
       <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>

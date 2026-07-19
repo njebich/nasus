@@ -1,6 +1,6 @@
 // Feuerwaffen-Komposition aus NN_Feuerwaffen_1.1.xlsx. Eine benannte Waffenzeile liefert
-// Name, Volk, Typ sowie die feste Verarbeitung/Anpassung; Bauart, Lademechanik, Schloss und
-// Lauf sind die vier austauschbaren Bauteile. Die Berechnungen entsprechen den VLOOKUP-Summen
+// Name, Volk, Typ, Bauart, Lademechanik, Schloss und Lauf; nur Verarbeitung und Anpassung sind
+// austauschbar (Nutzerkorrektur 2026-07-19). Die Berechnungen entsprechen den VLOOKUP-Summen
 // in Waffen!K:AF. Ini ist eine eigene, nutzerbestätigte Spalte (2026-07-19), derzeit überall 0.
 
 import {
@@ -12,10 +12,8 @@ import {
 } from '../data/equipment/fernkampf';
 
 export interface FeuerwaffenSelections {
-  bauartSourceRow: number;
-  lademechanikSourceRow: number;
-  schlossSourceRow: number;
-  laufSourceRow: number;
+  verarbeitungSourceRow: number;
+  anpassungSourceRow: number;
 }
 
 export interface ComposedFeuerwaffe {
@@ -78,29 +76,19 @@ function verfuegbarkeitStufe(raw: number): number {
   return stufe.stufe;
 }
 
-export function feuerwaffenKomponentenOptionen(basis: FernkampfRow): {
-  bauarten: GenericRow[]; lademechaniken: GenericRow[]; schloesser: GenericRow[]; laeufe: GenericRow[];
+export function feuerwaffenKomponentenOptionen(): {
+  verarbeitungen: GenericRow[]; anpassungen: GenericRow[];
 } {
   return {
-    bauarten: FEUERWAFFEN_RESSOURCEN.filter((row) => row['Bauart'] === 'Bauart' && row['Typ'] === basis['Typ']),
-    lademechaniken: FEUERWAFFEN_RESSOURCEN.filter((row) => row['Lademechanik'] === 'Lademechanismus'),
-    schloesser: FEUERWAFFEN_RESSOURCEN.filter((row) => row['Schloss'] === 'Schloss'),
-    laeufe: FEUERWAFFEN_RESSOURCEN.filter((row) => row['Lauf'] === 'Lauf' && row['Typ'] === basis['Typ']),
+    verarbeitungen: FEUERWAFFEN_RESSOURCEN.filter((row) => row['Verarbeitung'] === 'Verarbeitung'),
+    anpassungen: FEUERWAFFEN_RESSOURCEN.filter((row) => row['Anpassung'] === 'Anpassung'),
   };
 }
 
 export function feuerwaffenStandardauswahl(basis: FernkampfRow): FeuerwaffenSelections {
-  const passend = (name: string | undefined, discriminator: string, value: string, typ?: string): GenericRow => {
-    const row = FEUERWAFFEN_RESSOURCEN.find((candidate) => candidate.name === name
-      && candidate[discriminator] === value && (typ === undefined || candidate['Typ'] === typ));
-    if (!row) throw new Error(`Feuerwaffen-Ressource '${name ?? '?'}' (${discriminator}=${value}) fehlt`);
-    return row;
-  };
   return {
-    bauartSourceRow: passend(basis['Bauart'], 'Bauart', 'Bauart', basis['Typ']).sourceRow,
-    lademechanikSourceRow: resource(basis['Lademechanik'], 'Lademechanik', 'Lademechanismus').sourceRow,
-    schlossSourceRow: resource(basis['Schloss'], 'Schloss', 'Schloss').sourceRow,
-    laufSourceRow: passend(basis['Lauf'], 'Lauf', 'Lauf', basis['Typ']).sourceRow,
+    verarbeitungSourceRow: resource(basis['Verarbeitung'], 'Verarbeitung', 'Verarbeitung').sourceRow,
+    anpassungSourceRow: resource(basis['Anpassung'], 'Anpassung', 'Anpassung').sourceRow,
   };
 }
 
@@ -115,23 +103,15 @@ function munitionFuer(bauart: string, lademechanik: string, fallback: string): s
 export function composeFeuerwaffe(basis: FernkampfRow, selections: FeuerwaffenSelections): ComposedFeuerwaffe {
   const volk = resource(basis['Volk'], 'Volk', 'Volk');
   const typ = resource(basis['Typ'], 'Typ', 'TYP');
-  const verarbeitung = resource(basis['Verarbeitung'], 'Verarbeitung', 'Verarbeitung');
-  const anpassung = resource(basis['Anpassung'], 'Anpassung', 'Anpassung');
-  const bauartAuswahl = bySourceRow(selections.bauartSourceRow, 'Bauart', 'Bauart');
-  const lademechanikAuswahl = bySourceRow(selections.lademechanikSourceRow, 'Lademechanik', 'Lademechanismus');
-  const schlossAuswahl = bySourceRow(selections.schlossSourceRow, 'Schloss', 'Schloss');
-  const laufAuswahl = bySourceRow(selections.laufSourceRow, 'Lauf', 'Lauf');
-
-  if (bauartAuswahl['Typ'] !== basis['Typ'] || laufAuswahl['Typ'] !== basis['Typ']) {
-    throw new Error(`Bauart und Lauf muessen zum Feuerwaffen-Typ '${basis['Typ']}' passen`);
-  }
+  const verarbeitung = bySourceRow(selections.verarbeitungSourceRow, 'Verarbeitung', 'Verarbeitung');
+  const anpassung = bySourceRow(selections.anpassungSourceRow, 'Anpassung', 'Anpassung');
   // Excel sucht per VLOOKUP ausschliesslich nach dem Namen und nimmt bei Duplikaten den ersten
-  // Treffer. Das betrifft insbesondere "Gezogen" (Pistole/Gewehr). Die Auswahl bleibt typgerecht,
-  // fuer die Berechnung wird aber bewusst dieselbe First-Match-Semantik wie in der Quelle benutzt.
-  const bauart = resource(bauartAuswahl.name, 'Bauart', 'Bauart');
-  const lademechanik = resource(lademechanikAuswahl.name, 'Lademechanik', 'Lademechanismus');
-  const schloss = resource(schlossAuswahl.name, 'Schloss', 'Schloss');
-  const lauf = resource(laufAuswahl.name, 'Lauf', 'Lauf');
+  // Treffer. Das betrifft insbesondere "Gezogen" (Pistole/Gewehr); deshalb werden auch die
+  // festen Vorlagenkomponenten bewusst mit derselben First-Match-Semantik gelesen.
+  const bauart = resource(basis['Bauart'], 'Bauart', 'Bauart');
+  const lademechanik = resource(basis['Lademechanik'], 'Lademechanik', 'Lademechanismus');
+  const schloss = resource(basis['Schloss'], 'Schloss', 'Schloss');
+  const lauf = resource(basis['Lauf'], 'Lauf', 'Lauf');
 
   const gewicht = sum([volk, typ, bauart, lademechanik, lauf], 'Gewicht');
   const minStaerke = sum([volk, typ, bauart, anpassung], 'Mindeststärke');

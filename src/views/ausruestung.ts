@@ -374,20 +374,19 @@ function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow):
 const feuerwaffenPicker = new Map<number, FeuerwaffenSelections>();
 
 function renderFeuerwaffeRow(row: FernkampfRow): string {
-  const optionen = feuerwaffenKomponentenOptionen(row);
+  const optionen = feuerwaffenKomponentenOptionen();
   const standard = feuerwaffenStandardauswahl(row);
   const auswahl = feuerwaffenPicker.get(row.sourceRow) ?? standard;
   const composed = composeFeuerwaffe(row, auswahl);
   const gesperrt = composed.verfuegbarkeitStufe >= 5;
-  const option = (items: typeof optionen.bauarten, selected: number) => items
+  const option = (items: typeof optionen.verarbeitungen, selected: number) => items
     .map((item) => `<option value="${item.sourceRow}" ${item.sourceRow === selected ? 'selected' : ''}>${escapeHtml(item.name)}</option>`).join('');
   return `
     <div class="ausruestung-row" data-feuerwaffe="${row.sourceRow}">
       <span class="stat-label">${escapeHtml(row.name)}${row['Volk'] ? ` (${escapeHtml(row['Volk'])})` : ''}</span>
-      <select class="feuerwaffe-bauart-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.bauarten, auswahl.bauartSourceRow)}</select>
-      <select class="feuerwaffe-lademechanik-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.lademechaniken, auswahl.lademechanikSourceRow)}</select>
-      <select class="feuerwaffe-schloss-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.schloesser, auswahl.schlossSourceRow)}</select>
-      <select class="feuerwaffe-lauf-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.laeufe, auswahl.laufSourceRow)}</select>
+      <span class="stat-cost">${escapeHtml(row['Bauart'] ?? '-')} | ${escapeHtml(row['Lademechanik'] ?? '-')} | ${escapeHtml(row['Schloss'] ?? '-')} | ${escapeHtml(row['Lauf'] ?? '-')}</span>
+      <select class="feuerwaffe-verarbeitung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.verarbeitungen, auswahl.verarbeitungSourceRow)}</select>
+      <select class="feuerwaffe-anpassung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.anpassungen, auswahl.anpassungSourceRow)}</select>
       <span class="stat-cost">${composed.ersterWuerfel}/${composed.zweiterWuerfel}${composed.fixschaden ? ` +${composed.fixschaden}` : ''} | RB ${composed.rb} | Kal. ${composed.kaliber} | Ini ${composed.ini}</span>
       <span class="stat-cost">${gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : formatDublonen(composed.preisDublonen)}</span>
       ${!gesperrt ? `<button type="button" class="ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">Kaufen</button>` : '<span></span>'}
@@ -744,25 +743,17 @@ export function renderAusruestungView(
     const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-feuerwaffe="${sourceRow}"]`);
     const read = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
     feuerwaffenPicker.set(sourceRow, {
-      bauartSourceRow: read('feuerwaffe-bauart-select'),
-      lademechanikSourceRow: read('feuerwaffe-lademechanik-select'),
-      schlossSourceRow: read('feuerwaffe-schloss-select'),
-      laufSourceRow: read('feuerwaffe-lauf-select'),
+      verarbeitungSourceRow: read('feuerwaffe-verarbeitung-select'),
+      anpassungSourceRow: read('feuerwaffe-anpassung-select'),
       ...patch,
     });
     renderAusruestungView(container, sheet, character, callbacks);
   }
-  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-bauart-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { bauartSourceRow: Number(sel.value) }));
+  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-verarbeitung-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { verarbeitungSourceRow: Number(sel.value) }));
   });
-  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-lademechanik-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { lademechanikSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-schloss-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { schlossSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-lauf-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { laufSourceRow: Number(sel.value) }));
+  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-anpassung-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { anpassungSourceRow: Number(sel.value) }));
   });
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-feuerwaffe').forEach((btn) => {
     btn.addEventListener('click', () => {

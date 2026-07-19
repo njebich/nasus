@@ -61,13 +61,12 @@ describe('buyFeuerwaffe', () => {
   const auswahl = feuerwaffenStandardauswahl(muskete);
   const composed = composeFeuerwaffe(muskete, auswahl);
 
-  it('speichert die vier Komponenten und belastet das Dublonenbudget mit dem komponierten Preis', () => {
+  it('speichert Verarbeitung und Anpassung und belastet das Dublonenbudget mit dem komponierten Preis', () => {
     const updated = buyFeuerwaffe(withDublonen(1000), muskete.sourceRow, auswahl);
     expect(updated.equipment[0]).toMatchObject({
       family: 'feuerwaffe', baseTable: 'feuerwaffen', computedPriceSnapshot: composed.preisDublonen,
       selections: {
-        bauart: String(auswahl.bauartSourceRow), lademechanik: String(auswahl.lademechanikSourceRow),
-        schloss: String(auswahl.schlossSourceRow), lauf: String(auswahl.laufSourceRow),
+        verarbeitung: String(auswahl.verarbeitungSourceRow), anpassung: String(auswahl.anpassungSourceRow),
       },
     });
     expect(computeSheet(updated).dublonenSpent).toBe(composed.preisDublonen);

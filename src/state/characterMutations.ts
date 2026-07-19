@@ -435,7 +435,7 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
   return candidate;
 }
 
-/** Kauft eine aus Vorlage + Bauart/Lademechanik/Schloss/Lauf komponierte Feuerwaffe. Die
+/** Kauft eine aus Vorlage + Verarbeitung/Anpassung komponierte Feuerwaffe. Die
  * berechneten Werte und der Preis werden wie bei den anderen komponierten Gegenstaenden als
  * Snapshot gespeichert, damit spaetere Regelwerksupdates bestehende Inventare nicht umdeuten. */
 export function buyFeuerwaffe(
@@ -456,8 +456,7 @@ export function buyFeuerwaffe(
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'feuerwaffe', baseTable: 'feuerwaffen', baseId: String(sourceRow),
     selections: {
-      bauart: String(selections.bauartSourceRow), lademechanik: String(selections.lademechanikSourceRow),
-      schloss: String(selections.schlossSourceRow), lauf: String(selections.laufSourceRow),
+      verarbeitung: String(selections.verarbeitungSourceRow), anpassung: String(selections.anpassungSourceRow),
     },
     quantity: 1, computedPriceSnapshot: composed.preisDublonen,
     computedStatsSnapshot: {

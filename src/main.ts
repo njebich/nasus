@@ -7,7 +7,7 @@ import {
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
   buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
-  buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyAlchemika, removeEquipment, BudgetError, MutationError,
+  buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyFeuerwaffenMunition, buyAlchemika, removeEquipment, BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
@@ -20,6 +20,7 @@ import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
 import type { RsGruppe } from './data/trefferzonen';
 import type { FeuerwaffenSelections } from './engine/feuerwaffenComposition';
+import type { FeuerwaffenMunitionArt } from './data/equipment/feuerwaffenMunition';
 import {
   VORDEFINIERTE_ORTE, WELTEN, SIEDLUNGSGROESSEN, HANDELSSTUFEN, HERSTELLUNGSORTE,
   createOrt, formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
@@ -177,6 +178,18 @@ function handleBuyFeuerwaffe(sourceRow: number, selections: FeuerwaffenSelection
   if (!currentCharacter) return;
   try {
     currentCharacter = buyFeuerwaffe(currentCharacter, sourceRow, selections);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyFeuerwaffenMunition(art: FeuerwaffenMunitionArt, kaliber: number, quantity: number): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyFeuerwaffenMunition(currentCharacter, art, kaliber, quantity);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
@@ -419,6 +432,7 @@ function render(): void {
         onBuyWeapon: handleBuyWeapon,
         onBuyFernkampfwaffe: handleBuyFernkampfwaffe,
         onBuyFeuerwaffe: handleBuyFeuerwaffe,
+        onBuyFeuerwaffenMunition: handleBuyFeuerwaffenMunition,
         onBuyMunition: handleBuyMunition,
         onBuyAlchemika: handleBuyAlchemika,
         onRemoveEquipment: handleRemoveEquipment,

@@ -13,6 +13,11 @@ import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/eq
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA, type AlchemikaRow } from '../data/equipment/alchemika';
+import {
+  feuerwaffenMunitionOptionen,
+  FEUERWAFFEN_MUNITION_PREISE,
+  type FeuerwaffenMunitionArt,
+} from '../data/equipment/feuerwaffenMunition';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
@@ -36,6 +41,7 @@ export interface AusruestungCallbacks {
   ) => void;
   onBuyFernkampfwaffe: (typ: 'boegen' | 'armbrust', sourceRow: number) => void;
   onBuyFeuerwaffe: (sourceRow: number, selections: FeuerwaffenSelections) => void;
+  onBuyFeuerwaffenMunition: (art: FeuerwaffenMunitionArt, kaliber: number, quantity: number) => void;
   onBuyMunition: (typ: 'pfeile' | 'bolzen', basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number) => void;
   onBuyAlchemika: (sourceRow: number, quantity: number) => void;
   onRemoveEquipment: (equipmentId: string) => void;
@@ -376,6 +382,7 @@ function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow):
 }
 
 const feuerwaffenPicker = new Map<number, FeuerwaffenSelections>();
+const feuerwaffenMunitionQty = new Map<number, number>();
 
 function renderFeuerwaffeRow(row: FernkampfRow): string {
   const optionen = feuerwaffenKomponentenOptionen();
@@ -383,19 +390,33 @@ function renderFeuerwaffeRow(row: FernkampfRow): string {
   const auswahl = feuerwaffenPicker.get(row.sourceRow) ?? standard;
   const composed = composeFeuerwaffe(row, auswahl);
   const gesperrt = composed.verfuegbarkeitStufe >= 5;
+  const quantity = feuerwaffenMunitionQty.get(row.sourceRow) ?? 1;
+  const munitionOptionen = feuerwaffenMunitionOptionen(
+    row['Lademechanik'] ?? '', composed.munition, composed.kaliber,
+  );
   const option = (items: typeof optionen.verarbeitungen, selected: number) => items
     .map((item) => `<option value="${item.sourceRow}" ${item.sourceRow === selected ? 'selected' : ''}>${escapeHtml(item.name)}</option>`).join('');
   return `
-    <div class="ausruestung-row" data-feuerwaffe="${row.sourceRow}">
+    <div class="ausruestung-row feuerwaffe-row" data-feuerwaffe="${row.sourceRow}">
       <span class="stat-label">${escapeHtml(row.name)}</span>
       <span class="stat-cost">${escapeHtml(row['Bauart'] ?? '-')} | ${escapeHtml(row['Lademechanik'] ?? '-')} | ${escapeHtml(row['Schloss'] ?? '-')} | ${escapeHtml(row['Lauf'] ?? '-')}</span>
       <select class="feuerwaffe-verarbeitung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.verarbeitungen, auswahl.verarbeitungSourceRow)}</select>
       <select class="feuerwaffe-anpassung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.anpassungen, auswahl.anpassungSourceRow)}</select>
-      <span class="stat-cost">${composed.ersterWuerfel}/${composed.zweiterWuerfel}${composed.fixschaden ? ` +${composed.fixschaden}` : ''} | RB ${composed.rb} | Kal. ${composed.kaliber} | Ini ${composed.ini}</span>
-      <span class="stat-cost">${gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : formatDublonen(composed.preisDublonen)}</span>
-      ${!gesperrt ? `<button type="button" class="ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">Kaufen</button>` : '<span></span>'}
+      <span class="feuerwaffe-kauf">
+        <span class="stat-cost">${gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : formatDublonen(composed.preisDublonen)}</span>
+        ${!gesperrt ? `<button type="button" class="ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">Kaufen</button>` : ''}
+      </span>
     </div>
-    <div class="waffe-details">Gewicht ${composed.gewicht} | Min.Stä ${composed.minStaerke} | RW ${composed.rw} | Nachladezeit ${composed.nachladezeit} | Munition ${escapeHtml(composed.munition)}</div>`;
+    <div class="waffe-details feuerwaffe-details" data-feuerwaffe-details="${row.sourceRow}">
+      <span>${composed.ersterWuerfel}/${composed.zweiterWuerfel}${composed.fixschaden ? ` +${composed.fixschaden}` : ''} | RB ${composed.rb} | Min.St&auml; ${composed.minStaerke} | RW ${composed.rw}</span>
+      ${munitionOptionen.length ? `
+        <span class="feuerwaffe-munition-kauf">
+          <select class="feuerwaffe-munition-qty" data-feuerwaffe="${row.sourceRow}" aria-label="Munitionsmenge">
+            ${[1, 10, 100].map((qty) => `<option value="${qty}" ${qty === quantity ? 'selected' : ''}>${qty}</option>`).join('')}
+          </select>
+          ${munitionOptionen.map((ammo) => `<button type="button" class="ausruestung-buy-feuerwaffen-munition" data-feuerwaffe="${row.sourceRow}" data-art="${ammo.art}" data-kaliber="${ammo.kaliber}">${escapeHtml(ammo.label)} kaufen (${formatDublonen(ammo.preisDublonen * quantity)})</button>`).join('')}
+        </span>` : ''}
+    </div>`;
 }
 
 function renderFernkampfVolksgruppen(
@@ -501,11 +522,18 @@ function renderInventar(character: CharacterState): string {
       const row = FEUERWAFFEN.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;
     } else if (e.family === 'ammo') {
-      const table = e.baseTable === 'pfeile' ? PFEILE : BOLZEN;
-      const basis = table.find((r) => String(r.sourceRow) === e.baseId);
-      const modRow = e.selections.modifikator ? table.find((r) => String(r.sourceRow) === e.selections.modifikator) : undefined;
-      const fixschaden = e.computedStatsSnapshot?.fixschaden;
-      label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${fixschaden ? ` (Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden})` : ''}` : label;
+      if (e.baseTable === 'feuerwaffen-munition') {
+        const ammo = FEUERWAFFEN_MUNITION_PREISE.find(
+          (row) => row.art === e.baseId && String(row.kaliber) === e.selections.kaliber,
+        );
+        label = ammo ? `${ammo.label} (Kaliber ${ammo.kaliber})` : label;
+      } else {
+        const table = e.baseTable === 'pfeile' ? PFEILE : BOLZEN;
+        const basis = table.find((r) => String(r.sourceRow) === e.baseId);
+        const modRow = e.selections.modifikator ? table.find((r) => String(r.sourceRow) === e.selections.modifikator) : undefined;
+        const fixschaden = e.computedStatsSnapshot?.fixschaden;
+        label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${fixschaden ? ` (Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden})` : ''}` : label;
+      }
     } else if (e.family === 'alchemika') {
       const row = ALCHEMIKA.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;
@@ -798,6 +826,22 @@ export function renderAusruestungView(
       const basis = FEUERWAFFEN.find((row) => row.sourceRow === sourceRow);
       if (!basis) return;
       callbacks.onBuyFeuerwaffe(sourceRow, feuerwaffenPicker.get(sourceRow) ?? feuerwaffenStandardauswahl(basis));
+    });
+  });
+  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-munition-qty').forEach((select) => {
+    select.addEventListener('change', () => {
+      feuerwaffenMunitionQty.set(Number(select.dataset.feuerwaffe), Number(select.value));
+      renderAusruestungView(container, sheet, character, callbacks);
+    });
+  });
+  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-feuerwaffen-munition').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sourceRow = Number(btn.dataset.feuerwaffe);
+      callbacks.onBuyFeuerwaffenMunition(
+        btn.dataset.art as FeuerwaffenMunitionArt,
+        Number(btn.dataset.kaliber),
+        feuerwaffenMunitionQty.get(sourceRow) ?? 1,
+      );
     });
   });
   function updateMunitionPicker(typ: 'pfeile' | 'bolzen', patch: Partial<{ basisSourceRow: number; modifikatorSourceRow: number | null; quantity: number }>): void {

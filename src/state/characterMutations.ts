@@ -21,6 +21,7 @@ import { composeMunition } from '../engine/pfeilBolzenComposition';
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
+import { FEUERWAFFEN_MUNITION_PREISE, type FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
 import type { RsGruppe } from '../data/trefferzonen';
 import { ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry } from './characterStore';
 
@@ -515,6 +516,29 @@ export function buyMunition(
     computedStatsSnapshot: { fixschaden: composed.fixschaden, rb: composed.rb, rwModMeter: composed.rwModMeter, be: composed.be },
   };
   candidate.equipment = [...candidate.equipment, entry];
+  assertBudgetOk(candidate);
+  return candidate;
+}
+
+/** Kauft Feuerwaffenmunition aus der Preis-/Kalibertabelle. */
+export function buyFeuerwaffenMunition(
+  character: CharacterState, art: FeuerwaffenMunitionArt, kaliber: number, quantity: number,
+): CharacterState {
+  if (![1, 10, 100].includes(quantity)) throw new MutationError('Anzahl muss 1, 10 oder 100 sein');
+  const ammo = FEUERWAFFEN_MUNITION_PREISE.find((row) => row.art === art && row.kaliber === kaliber);
+  if (!ammo) throw new MutationError(`Keine passende Feuerwaffenmunition fuer Kaliber ${kaliber}`);
+
+  const candidate = clone(character);
+  candidate.equipment = [...candidate.equipment, {
+    id: newEquipmentId(),
+    family: 'ammo',
+    baseTable: 'feuerwaffen-munition',
+    baseId: art,
+    selections: { kaliber: String(kaliber) },
+    quantity,
+    computedPriceSnapshot: ammo.preisDublonen,
+    computedStatsSnapshot: { kaliber },
+  }];
   assertBudgetOk(candidate);
   return candidate;
 }

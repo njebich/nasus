@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createCharacter } from './characterStore';
-import { buyPreislisteItem, buyArtefakt, buyFeuerwaffe, removeEquipment, BudgetError, MutationError } from './characterMutations';
+import { buyPreislisteItem, buyArtefakt, buyFeuerwaffe, buyFeuerwaffenMunition, removeEquipment, BudgetError, MutationError } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
@@ -76,5 +76,22 @@ describe('buyFeuerwaffe', () => {
     const hakenbuechse = FEUERWAFFEN.find((row) => row.name === 'Hakenbüchse')!;
     expect(() => buyFeuerwaffe(withDublonen(10000), hakenbuechse.sourceRow, feuerwaffenStandardauswahl(hakenbuechse)))
       .toThrow(MutationError);
+  });
+});
+
+describe('buyFeuerwaffenMunition', () => {
+  it('kauft die gewaehlte Menge zum Preis des passenden Kalibers', () => {
+    const updated = buyFeuerwaffenMunition(withDublonen(100), 'blei_pulver', 19, 10);
+    expect(updated.equipment[0]).toMatchObject({
+      family: 'ammo', baseTable: 'feuerwaffen-munition', baseId: 'blei_pulver',
+      selections: { kaliber: '19' }, quantity: 10, computedPriceSnapshot: 0.42042,
+    });
+    expect(computeSheet(updated).dublonenSpent).toBeCloseTo(4.2042);
+  });
+
+  it('enthaelt auch Harpunen und die Messingkaliber 5 und 6 aus der Quelltabelle', () => {
+    expect(buyFeuerwaffenMunition(withDublonen(100), 'harpune', 16, 1).equipment).toHaveLength(1);
+    expect(buyFeuerwaffenMunition(withDublonen(100), 'messingpatrone', 5, 1).equipment).toHaveLength(1);
+    expect(buyFeuerwaffenMunition(withDublonen(100), 'messingpatrone', 6, 1).equipment).toHaveLength(1);
   });
 });

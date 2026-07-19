@@ -296,6 +296,36 @@ body {
   border-bottom: 1px solid #8882;
 }
 
+.feuerwaffe-row {
+  grid-template-columns: minmax(8rem, 0.8fr) minmax(16rem, 1.5fr) auto auto auto;
+}
+
+.feuerwaffe-kauf,
+.feuerwaffe-munition-kauf {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.feuerwaffe-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.feuerwaffe-munition-qty {
+  width: 4.5rem;
+  font: inherit;
+}
+
+@media (max-width: 900px) {
+  .feuerwaffe-row {
+    grid-template-columns: 1fr auto;
+  }
+}
+
 .ausruestung-row, .inventar-row {
   display: grid;
   grid-template-columns: 1fr auto auto auto;

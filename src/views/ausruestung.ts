@@ -89,6 +89,10 @@ const openTopSections = new Set<TopSection>();
 const ALCHEMIKA_KATEGORIEN = [...new Set(ALCHEMIKA.map((r) => r.kategorie))];
 const openAlchemikaKategorien = new Set<string>();
 
+/** Aufgeklappte Volksgruppen innerhalb der Fernkampf-Kategorien. Kategorie und Volk bilden
+ *  gemeinsam den Schluessel. Neue Gruppen fehlen bewusst im Set und starten eingeklappt. */
+const openFernkampfVolksgruppen = new Set<string>();
+
 /** Transiente Mengen-Auswahl je Alchemika-Zeile (analog zum Preisliste-Mengenfeld, aber ueber
  *  Re-Renders hinweg gemerkt statt aus dem DOM neu gelesen, da renderAlchemikaRow keine eigene
  *  updatePicker-Funktion braucht). */
@@ -362,7 +366,7 @@ function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow):
     : gesperrt ? `Verfuegbarkeit ${row.verfuegbarkeitStufe} (gesperrt)` : formatDublonen(row.preisDublonen);
   return `
     <div class="ausruestung-row" data-fernkampfwaffe="${typ}:${row.sourceRow}">
-      <span class="stat-label">${escapeHtml(row.name)}${row['Volk'] && row['Volk'] !== 'Alle' ? ` (${escapeHtml(row['Volk'])})` : ''}</span>
+      <span class="stat-label">${escapeHtml(row.name)}</span>
       <span class="stat-cost">Min.Stä ${escapeHtml(row['Min. Stä'] ?? '-')} | ${escapeHtml(row['1.W'] ?? '-')}${row['Fixschaden'] ? escapeHtml(row['Fixschaden']) : ''} | RW ${escapeHtml(row['RW'] ?? '-')} | Nachladezeit ${escapeHtml(row['Nachladezeit'] ?? '-')}</span>
       <span class="stat-cost">${preisText}</span>
       ${row.preisDublonen !== undefined && !gesperrt
@@ -383,7 +387,7 @@ function renderFeuerwaffeRow(row: FernkampfRow): string {
     .map((item) => `<option value="${item.sourceRow}" ${item.sourceRow === selected ? 'selected' : ''}>${escapeHtml(item.name)}</option>`).join('');
   return `
     <div class="ausruestung-row" data-feuerwaffe="${row.sourceRow}">
-      <span class="stat-label">${escapeHtml(row.name)}${row['Volk'] ? ` (${escapeHtml(row['Volk'])})` : ''}</span>
+      <span class="stat-label">${escapeHtml(row.name)}</span>
       <span class="stat-cost">${escapeHtml(row['Bauart'] ?? '-')} | ${escapeHtml(row['Lademechanik'] ?? '-')} | ${escapeHtml(row['Schloss'] ?? '-')} | ${escapeHtml(row['Lauf'] ?? '-')}</span>
       <select class="feuerwaffe-verarbeitung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.verarbeitungen, auswahl.verarbeitungSourceRow)}</select>
       <select class="feuerwaffe-anpassung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.anpassungen, auswahl.anpassungSourceRow)}</select>
@@ -392,6 +396,34 @@ function renderFeuerwaffeRow(row: FernkampfRow): string {
       ${!gesperrt ? `<button type="button" class="ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">Kaufen</button>` : '<span></span>'}
     </div>
     <div class="waffe-details">Gewicht ${composed.gewicht} | Min.Stä ${composed.minStaerke} | RW ${composed.rw} | Nachladezeit ${composed.nachladezeit} | Munition ${escapeHtml(composed.munition)}</div>`;
+}
+
+function renderFernkampfVolksgruppen(
+  kategorie: 'boegen' | 'armbrust' | 'feuerwaffen',
+  rows: FernkampfRow[],
+  renderRow: (row: FernkampfRow) => string,
+): string {
+  const gruppen = new Map<string, FernkampfRow[]>();
+  rows.forEach((row) => {
+    const volk = row['Volk']?.trim() || 'Ohne Volk';
+    const gruppe = gruppen.get(volk);
+    if (gruppe) gruppe.push(row);
+    else gruppen.set(volk, [row]);
+  });
+
+  return [...gruppen.entries()].map(([volk, gruppenRows]) => {
+    const gruppenKey = `${kategorie}:${volk}`;
+    const openAttr = openFernkampfVolksgruppen.has(gruppenKey) ? ' open' : '';
+    return `
+      <div class="stat-card">
+        <details class="stat-group" data-fernkampf-volksgruppe="${escapeHtml(gruppenKey)}"${openAttr}>
+          <summary>${escapeHtml(volk)} <span class="stat-group-count">(${gruppenRows.length} Eintr&auml;ge)</span></summary>
+          <div class="stat-subgroup">
+            ${gruppenRows.map(renderRow).join('')}
+          </div>
+        </details>
+      </div>`;
+  }).join('');
 }
 
 /** Transiente Picker-Auswahl fuer die Munitions-Komponierer-Karten (Pfeile/Bolzen) - analog zum
@@ -530,6 +562,11 @@ export function renderAusruestungView(
     if (details.open) openAlchemikaKategorien.add(kategorie);
     else openAlchemikaKategorien.delete(kategorie);
   });
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-fernkampf-volksgruppe]').forEach((details) => {
+    const gruppenKey = details.dataset.fernkampfVolksgruppe!;
+    if (details.open) openFernkampfVolksgruppen.add(gruppenKey);
+    else openFernkampfVolksgruppen.delete(gruppenKey);
+  });
 
   container.innerHTML = `
     ${renderTopSection('inventar', 'Mein Inventar', undefined, `
@@ -555,11 +592,11 @@ export function renderAusruestungView(
 
     ${renderTopSection('fernkampf', 'Fernkampfwaffen', `${BOEGEN.length + ARMBRUST.length + FEUERWAFFEN.length} Einträge`, `
       <h4>Bögen</h4>
-      <div class="ausruestung-category">${BOEGEN.map((row) => renderFernkampfwaffeRow('boegen', row)).join('')}</div>
+      <div class="stat-category">${renderFernkampfVolksgruppen('boegen', BOEGEN, (row) => renderFernkampfwaffeRow('boegen', row))}</div>
       <h4>Armbrust</h4>
-      <div class="ausruestung-category">${ARMBRUST.map((row) => renderFernkampfwaffeRow('armbrust', row)).join('')}</div>
+      <div class="stat-category">${renderFernkampfVolksgruppen('armbrust', ARMBRUST, (row) => renderFernkampfwaffeRow('armbrust', row))}</div>
       <h4>Feuerwaffen</h4>
-      <div class="ausruestung-category">${FEUERWAFFEN.map(renderFeuerwaffeRow).join('')}</div>
+      <div class="stat-category">${renderFernkampfVolksgruppen('feuerwaffen', FEUERWAFFEN, renderFeuerwaffeRow)}</div>
       <h4>Munition</h4>
       <div class="ausruestung-category">
         ${renderMunitionCard('pfeile')}

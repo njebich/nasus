@@ -674,6 +674,31 @@ def enrich_fernkampf_rows(rows):
     return rows
 
 
+def apply_basis_prices(rows, wb, sheet_name):
+    """Ueberschreibt die veralteten Preistexte der Ausgabe-Sheets mit den numerischen Preisen
+    aus dem jeweiligen *-Basis-Sheet. Die Basis-Sheets sind die gepflegte Preisquelle; dadurch
+    werden auch fruehere Platzhalter wie ``nicht V.``, ``250D+`` oder ``1 Mio. D`` eindeutig.
+    """
+    basis_rows = read_generic_rows(wb, sheet_name, "Name")
+    prices_by_name = {row["Name"]: row.get("Preis") for row in basis_rows}
+    if len(prices_by_name) != len(basis_rows):
+        raise SystemExit(f"Doppelte Namen im Sheet '{sheet_name}' verhindern die Preiszuordnung")
+
+    for row in rows:
+        name = row["Name"]
+        if name not in prices_by_name:
+            raise SystemExit(f"'{name}' fehlt im Preis-Quellsheet '{sheet_name}'")
+        price, raw = parse_numeric_or_sentinel(prices_by_name[name])
+        row.pop("preisDublonen", None)
+        row.pop("preisIstDelta", None)
+        if price is not None:
+            row["Preis"] = f"{cell_to_str(price)}D"
+            row["preisDublonen"] = price
+        elif raw is not None:
+            row["Preis"] = raw
+    return rows
+
+
 FERNKAMPF_ROW_TYPE_LINES = [
     "export type GenericRow = Record<string, string> & { sourceRow: number; name: string };",
     "export type FernkampfRow = Record<string, string> & { sourceRow: number; name: string; "
@@ -729,8 +754,14 @@ def write_fernkampf_ts(wb, wb_values, feuerwaffen_values):
     # bei Ruestung - siehe VERFUEGBARKEIT_SPERRE_AB in characterMutations.ts) werden nur fuer die
     # 4 Kataloge mit rohen Preis-/Verfuegbarkeit-Textspalten geparst, nicht fuer Feuerwaffen-
     # Munition (deren Preis-Spalte bereits eine fertig berechnete Formel-Zahl ist).
-    boegen = enrich_fernkampf_rows(read_generic_rows(wb, "Boegen", "Name"))
-    armbrust = enrich_fernkampf_rows(read_generic_rows(wb, "Armbrust", "Name"))
+    boegen = apply_basis_prices(
+        enrich_fernkampf_rows(read_generic_rows(wb, "Boegen", "Name")),
+        wb, "Boegen-Basis",
+    )
+    armbrust = apply_basis_prices(
+        enrich_fernkampf_rows(read_generic_rows(wb, "Armbrust", "Name")),
+        wb, "Armbrust-Basis",
+    )
     pfeile = enrich_fernkampf_rows(read_generic_rows(wb, "Pfeile", "Name"))
     bolzen = enrich_fernkampf_rows(read_generic_rows(wb, "Bolzen", "Name"))
     feuerwaffen_munition = read_generic_rows(wb_values, "Feuerwaffen-Munition", "Name")

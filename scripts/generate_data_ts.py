@@ -9,6 +9,9 @@ Betrifft:
   - src/data/equipment/preisliste.ts       (Sheet "Preisliste")
   - src/data/equipment/artefakte.ts        (Sheets "Artefakt-Basis" + "Artefakt-Kosten")
   - src/data/equipment/verfuegbarkeit.ts   (Sheet "Verfuegbarkeit-Modifikatoren", 2 Bloecke)
+  - src/data/equipment/fernkampf.ts        (Sheets "Boegen", "Armbrust", "Pfeile", "Bolzen",
+                                             "Feuerwaffen-Munition" - normalisierte Fernkampf-
+                                             waffen/-Munition-Kataloge)
 
 Aufruf:
     python scripts/generate_data_ts.py "werte 0.7-claude.xlsx"
@@ -573,6 +576,39 @@ def write_shields_ts(wb):
     )
 
 
+def write_fernkampf_ts(wb, wb_values):
+    # Boegen/Armbrust/Pfeile/Bolzen sind normalisierte, reine Wertetabellen ohne Formeln (per
+    # one-off Build-Skripten aus den jeweiligen docx-Quellen erzeugt) - data_only spielt fuer
+    # sie keine Rolle. Feuerwaffen-Munition dagegen hat lebende SUMPRODUCT/COUNTIFS-Formeln in
+    # den Preis-1-Schuss-Spalten (Lookup gegen Munition-Feuerwaffen) - die muessen aus einer
+    # data_only=True geladenen Workbook gelesen werden, sonst landet der Formel-Quelltext statt
+    # des berechneten Preises im JSON.
+    boegen = read_generic_rows(wb, "Boegen", "Name")
+    armbrust = read_generic_rows(wb, "Armbrust", "Name")
+    pfeile = read_generic_rows(wb, "Pfeile", "Name")
+    bolzen = read_generic_rows(wb, "Bolzen", "Name")
+    feuerwaffen_munition = read_generic_rows(wb_values, "Feuerwaffen-Munition", "Name")
+    data = {
+        "boegen": boegen, "armbrust": armbrust, "pfeile": pfeile,
+        "bolzen": bolzen, "feuerwaffenMunition": feuerwaffen_munition,
+    }
+    path = write_json_backed_module(
+        OUT_EQUIPMENT_DIR, "fernkampf", "FERNKAMPF_RAW", GENERIC_ROW_TYPE_LINES,
+        "{ boegen: GenericRow[]; armbrust: GenericRow[]; pfeile: GenericRow[]; "
+        "bolzen: GenericRow[]; feuerwaffenMunition: GenericRow[] }", data,
+    )
+    with open(OUT_EQUIPMENT_DIR / "fernkampf.ts", "a", encoding="utf-8") as f:
+        f.write("export const BOEGEN = FERNKAMPF_RAW.boegen;\n")
+        f.write("export const ARMBRUST = FERNKAMPF_RAW.armbrust;\n")
+        f.write("export const PFEILE = FERNKAMPF_RAW.pfeile;\n")
+        f.write("export const BOLZEN = FERNKAMPF_RAW.bolzen;\n")
+        f.write("export const FEUERWAFFEN_MUNITION = FERNKAMPF_RAW.feuerwaffenMunition;\n")
+    print(
+        f"{path}: {len(boegen)} Boegen, {len(armbrust)} Armbrust, {len(pfeile)} Pfeile, "
+        f"{len(bolzen)} Bolzen, {len(feuerwaffen_munition)} Feuerwaffen-Munition geschrieben."
+    )
+
+
 def write_voelker_maxima_ts(wb):
     # Eigenschaften-Min/Max je Volk (Nutzer 2026-07-17, werte 0.8): Erstellungs-Min/-Max gelten
     # waehrend der Charaktererstellung, "Max (ab Kreis 3)" (einheitlich 31) danach - siehe
@@ -617,6 +653,7 @@ def main(xlsx_path):
     OUT_EQUIPMENT_DIR.mkdir(parents=True, exist_ok=True)
 
     wb = openpyxl.load_workbook(path, data_only=False)
+    wb_values = openpyxl.load_workbook(path, data_only=True)
 
     rules, warnings = read_rules(wb)
     rules_path = write_rules_ts(rules, warnings)
@@ -635,6 +672,7 @@ def main(xlsx_path):
     write_weapons_ts(wb)
     write_armor_ts(wb)
     write_shields_ts(wb)
+    write_fernkampf_ts(wb, wb_values)
     write_voelker_maxima_ts(wb)
 
 

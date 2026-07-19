@@ -67,7 +67,7 @@ body {
 }
 
 .app-header h1 {
-  font-size: 1.4rem;
+  font-size: calc(1.4rem + 2pt);
   margin: 0 0 0.75rem;
 }
 
@@ -170,7 +170,7 @@ body {
 }
 
 .stat-section-heading {
-  font-size: 1rem;
+  font-size: calc(1rem + 2pt);
   margin: 1rem 0 0.5rem;
   opacity: 0.8;
 }
@@ -501,6 +501,7 @@ body {
 }
 
 .bogen-name {
+  font-size: calc(1.5em + 2pt);
   text-align: center;
   margin: 0 0 0.5rem;
 }
@@ -520,7 +521,7 @@ body {
 
 .bogen-fertigkeit-spalte h4 {
   margin: 0 0 0.35rem;
-  font-size: 0.95rem;
+  font-size: calc(0.95rem + 2pt);
 }
 
 .bogen-table {
@@ -554,8 +555,12 @@ body {
 
 .bogen-section-heading {
   margin: 0.25rem 0 0.25rem;
-  font-size: 1rem;
+  font-size: calc(1rem + 2pt);
   opacity: 0.85;
+}
+
+.ausruestung-section > h4 {
+  font-size: calc(1em + 2pt);
 }
 
 .bogen-liste {

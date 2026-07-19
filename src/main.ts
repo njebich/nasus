@@ -18,6 +18,10 @@ import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
 import type { RsGruppe } from './data/trefferzonen';
+import {
+  VORDEFINIERTE_ORTE, WELTEN, SIEDLUNGSGROESSEN, HANDELSSTUFEN, HERSTELLUNGSORTE,
+  createOrt, formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
+} from './data/orte';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -176,7 +180,30 @@ function renderNewCharacterForm(): string {
       <label>Beruf <input type="text" id="nc-beruf" /></label>
       <label>Alter <input type="text" id="nc-alter" /></label>
       <label>Geburtstag <input type="text" id="nc-geburtstag" /></label>
-      <label>Heimat <input type="text" id="nc-heimat" /></label>
+      <label>Herkunft *
+        <select id="nc-herkunft" required>
+          <option value="">-- wählen --</option>
+          ${VORDEFINIERTE_ORTE.map((ort) => `<option value="${ort.id}">${formatOrtKurz(ort)}</option>`).join('')}
+          <option value="__neu__">+ Neuen Ort anlegen</option>
+        </select>
+      </label>
+      <fieldset id="nc-neuer-ort" class="new-location-fields" hidden>
+        <legend>Neuer Herkunftsort</legend>
+        <label>Ortsname * <input type="text" id="nc-ort-name" /></label>
+        <label>AW/NW
+          <select id="nc-ort-welt"><option value="">-- offen --</option>${WELTEN.map((value) => `<option value="${value}">${value}</option>`).join('')}</select>
+        </label>
+        <label>Region <input type="text" id="nc-ort-region" /></label>
+        <label>Siedlungsgröße
+          <select id="nc-ort-siedlung"><option value="">-- offen --</option>${SIEDLUNGSGROESSEN.map((value) => `<option value="${value}">${value}</option>`).join('')}</select>
+        </label>
+        <label>Handelsstufe
+          <select id="nc-ort-handel"><option value="">-- offen --</option>${HANDELSSTUFEN.map((value) => `<option value="${value}">${value}</option>`).join('')}</select>
+        </label>
+        <label>Herstellungsort
+          <select id="nc-ort-herstellung"><option value="">-- offen --</option>${HERSTELLUNGSORTE.map((value) => `<option value="${value}">${value}</option>`).join('')}</select>
+        </label>
+      </fieldset>
       <label>Familie <input type="text" id="nc-familie" /></label>
       <label>Religion <input type="text" id="nc-religion" /></label>
       <fieldset>
@@ -249,17 +276,44 @@ function render(): void {
     render();
   });
 
+  document.querySelector<HTMLSelectElement>('#nc-herkunft')?.addEventListener('change', (e) => {
+    const isNew = (e.target as HTMLSelectElement).value === '__neu__';
+    const fields = document.querySelector<HTMLFieldSetElement>('#nc-neuer-ort');
+    const nameInput = document.querySelector<HTMLInputElement>('#nc-ort-name');
+    if (fields) fields.hidden = !isNew;
+    if (nameInput) nameInput.required = isNew;
+  });
+
   document.querySelector<HTMLFormElement>('#new-character-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.querySelector<HTMLInputElement>('#nc-name')!.value.trim();
     const spezies = document.querySelector<HTMLSelectElement>('#nc-spezies')!.value.trim();
-    if (!name || !spezies) return;
+    const herkunftAuswahl = document.querySelector<HTMLSelectElement>('#nc-herkunft')!.value;
+    if (!name || !spezies || !herkunftAuswahl) return;
+    const herkunftOrt = herkunftAuswahl === '__neu__'
+      ? createOrt({
+          name: document.querySelector<HTMLInputElement>('#nc-ort-name')!.value.trim(),
+          welt: document.querySelector<HTMLSelectElement>('#nc-ort-welt')!.value as Welt || undefined,
+          region: document.querySelector<HTMLInputElement>('#nc-ort-region')!.value.trim() || undefined,
+          siedlungsgroesse: document.querySelector<HTMLSelectElement>('#nc-ort-siedlung')!.value as Siedlungsgroesse || undefined,
+          hauptspezies: undefined,
+          etablierteMinderheiten: [],
+          handelsstufe: document.querySelector<HTMLSelectElement>('#nc-ort-handel')!.value as Handelsstufe || undefined,
+          herstellungsort: document.querySelector<HTMLSelectElement>('#nc-ort-herstellung')!.value as Herstellungsort || undefined,
+          haendler: [],
+          lokaleProduktion: [],
+        })
+      : VORDEFINIERTE_ORTE.find((ort) => ort.id === herkunftAuswahl);
+    if (!herkunftOrt) return;
     const header: Partial<Omit<CharacterHeader, 'name'>> = {
       spezies,
+      herkunftOrtId: herkunftOrt.id,
+      herkunftSnapshot: {
+        name: herkunftOrt.name, region: herkunftOrt.region ?? '', welt: herkunftOrt.welt,
+      },
       beruf: document.querySelector<HTMLInputElement>('#nc-beruf')!.value.trim() || undefined,
       alter: document.querySelector<HTMLInputElement>('#nc-alter')!.value.trim() || undefined,
       geburtstag: document.querySelector<HTMLInputElement>('#nc-geburtstag')!.value.trim() || undefined,
-      heimat: document.querySelector<HTMLInputElement>('#nc-heimat')!.value.trim() || undefined,
       familie: document.querySelector<HTMLInputElement>('#nc-familie')!.value.trim() || undefined,
       religion: document.querySelector<HTMLInputElement>('#nc-religion')!.value.trim() || undefined,
     };

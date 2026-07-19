@@ -255,14 +255,14 @@ export function equipRuestung(
 
   const composed = composeArmor(basis, verarbeitung, anpassung);
 
-  // Verfuegbarkeit-NW/-AW (Nutzer 2026-07-18): ab Stufe 5 ("Fast nie") gesperrt, je nachdem
-  // welche Region der Charakter gewaehlt hat. Keine Region gewaehlt = keine Sperre (analog zu
-  // unbekannter Spezies bei Eigenschaften, siehe eigenschaftenGrenzen.ts).
-  const verfuegbarkeit = character.region === 'Neue Welt' ? composed.verfuegbarkeitNw
-    : character.region === 'Alte Welt' ? composed.verfuegbarkeitAw
+  // AW/NW kommt aus dem stabilen Herkunftssnapshot; das fruehere, irrefuehrend `region`
+  // genannte Welt-Feld wurde entfernt.
+  const welt = character.herkunftSnapshot?.welt;
+  const verfuegbarkeit = welt === 'NW' ? composed.verfuegbarkeitNw
+    : welt === 'AW' ? composed.verfuegbarkeitAw
     : undefined;
   if (verfuegbarkeit !== undefined && verfuegbarkeit >= VERFUEGBARKEIT_SPERRE_AB) {
-    throw new MutationError(`'${basis.name}' ist in ${character.region} nicht verfuegbar (Verfuegbarkeit ${verfuegbarkeit})`);
+    throw new MutationError(`'${basis.name}' ist in ${welt} nicht verfuegbar (Verfuegbarkeit ${verfuegbarkeit})`);
   }
 
   const candidate = clone(character);

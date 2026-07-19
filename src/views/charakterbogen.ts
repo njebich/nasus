@@ -21,8 +21,16 @@ function findRule(rows: ComputedRule[], referenz: string): ComputedRule | undefi
   return rows.find((r) => r.rule.referenz === referenz);
 }
 
-function headerField(character: CharacterState, key: keyof CharacterHeader, label: string): string {
+type TextHeaderKey = Exclude<keyof CharacterHeader, 'herkunftSnapshot'>;
+
+function headerField(character: CharacterState, key: TextHeaderKey, label: string): string {
   return `<tr><th>${label}</th><td>${escapeHtml(character[key] ?? '')}</td></tr>`;
+}
+
+function herkunftField(character: CharacterState): string {
+  const snapshot = character.herkunftSnapshot;
+  const text = snapshot ? [snapshot.name, snapshot.region, snapshot.welt].filter(Boolean).join(', ') : '';
+  return `<tr><th>Herkunft</th><td>${escapeHtml(text)}</td></tr>`;
 }
 
 function renderHeaderTable(character: CharacterState): string {
@@ -35,7 +43,7 @@ function renderHeaderTable(character: CharacterState): string {
           ${headerField(character, 'beruf', 'Beruf')}
           ${headerField(character, 'alter', 'Alter')}
           ${headerField(character, 'geburtstag', 'Geburtstag')}
-          ${headerField(character, 'heimat', 'Heimat')}
+          ${herkunftField(character)}
           ${headerField(character, 'familie', 'Familie')}
           ${headerField(character, 'religion', 'Religion')}
         </table>

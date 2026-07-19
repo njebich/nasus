@@ -79,21 +79,23 @@ describe('Verfuegbarkeit-NW/-AW Kaufsperre (Nutzer 2026-07-18: ab Stufe 5 "Fast 
   const gesellenarbeit = RUESTUNG_VERARBEITUNG.find((r) => r.name === 'Gesellenarbeit')!;
   const vonDerStange = RUESTUNG_ANPASSUNG.find((r) => r.name === 'von der Stange')!;
 
-  function withRegion(region: string, bank: number) {
-    const character = createCharacter('Test', { region });
+  function withWelt(welt: 'AW' | 'NW', bank: number) {
+    const character = createCharacter('Test', {
+      herkunftOrtId: 'test-ort', herkunftSnapshot: { name: 'Testort', region: 'Testregion', welt },
+    });
     character.values['dublonen_bank'] = bank;
     return character;
   }
 
   it('Neue Welt: Faltstahlpanzer (NW=5) ist gesperrt', () => {
-    const character = withRegion('Neue Welt', 100000);
+    const character = withWelt('NW', 100000);
     expect(() => equipRuestung(
       character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
     )).toThrow(MutationError);
   });
 
   it('Alte Welt: derselbe Faltstahlpanzer (AW=3) ist frei kaeuflich', () => {
-    const character = withRegion('Alte Welt', 100000);
+    const character = withWelt('AW', 100000);
     const updated = equipRuestung(
       character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
     );
@@ -101,7 +103,7 @@ describe('Verfuegbarkeit-NW/-AW Kaufsperre (Nutzer 2026-07-18: ab Stufe 5 "Fast 
   });
 
   it('keine Region gewaehlt: keine Sperre (analog zu unbekannter Spezies bei Eigenschaften)', () => {
-    const character = createCharacter('Test'); // region bleibt leer
+    const character = createCharacter('Test'); // Herkunft/Welt bleibt leer
     character.values['dublonen_bank'] = 100000;
     const updated = equipRuestung(
       character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,

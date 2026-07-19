@@ -3,6 +3,7 @@
 
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import type { RsGruppe } from '../data/trefferzonen';
+import type { Welt } from '../data/orte';
 
 export interface PoolAllocation {
   gat: number;
@@ -44,17 +45,24 @@ export function ruestungSlotKey(gruppe: RsGruppe, lage: number): string {
 
 /** Werte, die den Charakter AUSMACHEN (reine Identitaet/Flavor, kein Punktekauf-Bezug) -
  *  mit Nutzer 2026-07-17 geklaert. Nur name+spezies sind Pflicht, der Rest darf leer sein. */
+export interface HerkunftSnapshot {
+  name: string;
+  region: string;
+  /** Bei neu angelegten Charakteren immer gesetzt; nur verlustarm migrierte Altdaten koennen
+   * ohne fruehere Welt-Auswahl voruebergehend keinen Wert besitzen. */
+  welt?: Welt;
+}
+
 export interface CharacterHeader {
   name: string;
   spezies: string;
-  /** Neue Welt/Alte Welt (Nutzer 2026-07-18) - bestimmt, welche Verfuegbarkeit-NW/-AW-Spalte fuer
-   *  Ruestungskaeufe gilt (siehe characterMutations.ts's equipRuestung). Leer = keine Region
-   *  gewaehlt, Verfuegbarkeits-Sperre greift dann nicht (wie unbekannte Spezies bei Eigenschaften). */
-  region?: string;
+  /** Stabile Druckdaten: spaetere Umbenennung oder Loeschung des Orts veraendert die Herkunft
+   * bereits angelegter Charaktere nicht. */
+  herkunftOrtId?: string;
+  herkunftSnapshot?: HerkunftSnapshot;
   beruf?: string;
   alter?: string;
   geburtstag?: string;
-  heimat?: string;
   familie?: string;
   religion?: string;
   groesse?: string;
@@ -158,7 +166,17 @@ export function listCharacters(): Array<{ id: string; name: string }> {
 export function loadCharacter(id: string): CharacterState | null {
   const raw = localStorage.getItem(characterKey(id));
   if (!raw) return null;
-  const parsed = JSON.parse(raw) as CharacterState;
+  const parsed = JSON.parse(raw) as CharacterState & { heimat?: string; region?: string };
+  // Herkunftsmigration: Das alte `region`-Feld enthielt technisch nur Alte/Neue Welt; der
+  // alte Heimat-Freitext wird zum stabilen Ortsnamen. Eine geografische Region kann aus den
+  // Altdaten nicht verlaesslich rekonstruiert werden und bleibt deshalb leer.
+  if (!parsed.herkunftSnapshot && (parsed.heimat || parsed.region)) {
+    const welt = parsed.region === 'Alte Welt' ? 'AW' : parsed.region === 'Neue Welt' ? 'NW' : undefined;
+    parsed.herkunftOrtId = parsed.herkunftOrtId ?? `migration:${parsed.id}`;
+    parsed.herkunftSnapshot = { name: parsed.heimat?.trim() || 'Unbekannter Ort', region: '', welt };
+  }
+  delete parsed.heimat;
+  delete parsed.region;
   // Migrations-Fallback fuer bereits in localStorage gespeicherte Charaktere von vor dem
   // ruestungSlots-Feld (2026-07-17) - ohne das wirft computeSheet beim Laden alter Charaktere.
   if (!parsed.ruestungSlots) parsed.ruestungSlots = {};
@@ -216,11 +234,11 @@ export function createCharacter(
     id: newId(),
     name,
     spezies: header?.spezies ?? '',
-    region: header?.region,
+    herkunftOrtId: header?.herkunftOrtId,
+    herkunftSnapshot: header?.herkunftSnapshot,
     beruf: header?.beruf,
     alter: header?.alter,
     geburtstag: header?.geburtstag,
-    heimat: header?.heimat,
     familie: header?.familie,
     religion: header?.religion,
     groesse: header?.groesse,

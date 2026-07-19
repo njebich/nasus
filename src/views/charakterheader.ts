@@ -3,15 +3,15 @@
 
 import type { CharacterState, CharacterHeader } from '../state/characterStore';
 import { VOELKER_NAMEN } from '../engine/voelker';
-import { REGIONEN_NAMEN } from '../engine/regionen';
 
 export type OnHeaderChange = (updates: Partial<CharacterHeader>) => void;
 
-const FIELDS: Array<{ key: keyof CharacterHeader; label: string; required?: boolean }> = [
+type EditableTextHeaderKey = Exclude<keyof CharacterHeader, 'name' | 'spezies' | 'herkunftOrtId' | 'herkunftSnapshot'>;
+
+const FIELDS: Array<{ key: EditableTextHeaderKey; label: string; required?: boolean }> = [
   { key: 'beruf', label: 'Beruf' },
   { key: 'alter', label: 'Alter' },
   { key: 'geburtstag', label: 'Geburtstag' },
-  { key: 'heimat', label: 'Heimat' },
   { key: 'familie', label: 'Familie' },
   { key: 'religion', label: 'Religion' },
   { key: 'groesse', label: 'Größe' },
@@ -38,17 +38,13 @@ function renderSpeziesFeld(character: CharacterState): string {
     </label>`;
 }
 
-/** Region (Nutzer 2026-07-18): bestimmt, welche der beiden Verfuegbarkeit-NW/-AW-Spalten fuer
- *  Ruestungskaeufe gilt (siehe characterMutations.ts's equipRuestung). Optional, keine Region
- *  gewaehlt = keine Verfuegbarkeits-Sperre. */
-function renderRegionFeld(character: CharacterState): string {
+function renderHerkunft(character: CharacterState): string {
+  const snapshot = character.herkunftSnapshot;
+  const text = snapshot ? [snapshot.name, snapshot.region, snapshot.welt].filter(Boolean).join(', ') : '– nicht gewählt –';
   return `
     <label class="charakterheader-field">
-      <span>Region</span>
-      <select data-field="region">
-        <option value="">-- wählen --</option>
-        ${REGIONEN_NAMEN.map((name) => `<option value="${escapeHtml(name)}" ${name === character.region ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
-      </select>
+      <span>Herkunft</span>
+      <output>${escapeHtml(text)}</output>
     </label>`;
 }
 
@@ -56,7 +52,7 @@ export function renderCharakterheader(container: HTMLElement, character: Charact
   container.innerHTML = `
     <div class="charakterheader">
       ${renderSpeziesFeld(character)}
-      ${renderRegionFeld(character)}
+      ${renderHerkunft(character)}
       ${FIELDS.map((f) => `
         <label class="charakterheader-field">
           <span>${f.label}${f.required ? ' *' : ''}</span>

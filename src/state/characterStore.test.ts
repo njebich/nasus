@@ -6,12 +6,14 @@ import { computeSheet } from '../engine/characterSheet';
 describe('createCharacter mit Charakterheader + Startbudget', () => {
   it('legt einen Charakter mit vollem Header an', () => {
     const character = createCharacter('Grimjaw', {
-      spezies: 'Ork', beruf: 'Söldner', heimat: 'Steppenreich',
+      spezies: 'Ork', beruf: 'Söldner', herkunftOrtId: 'straitmor',
+      herkunftSnapshot: { name: 'Straitmor', region: 'Orkisches Protektorat Straitmor', welt: 'NW' },
     }, 'normal');
     expect(character.name).toBe('Grimjaw');
     expect(character.spezies).toBe('Ork');
     expect(character.beruf).toBe('Söldner');
-    expect(character.heimat).toBe('Steppenreich');
+    expect(character.herkunftOrtId).toBe('straitmor');
+    expect(character.herkunftSnapshot).toEqual({ name: 'Straitmor', region: 'Orkisches Protektorat Straitmor', welt: 'NW' });
     expect(character.alter).toBeUndefined();
   });
 
@@ -105,6 +107,21 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
       vn_angst_magie_30: 1,
       vn_angst_wasser_15: 1,
     });
+  });
+
+  it('migriert Heimat und das alte Welt-Feld verlustarm in den Herkunftssnapshot', () => {
+    const id = 'alt-charakter-vor-herkunft';
+    const alterCharakter = {
+      id, name: 'Alt', spezies: 'Mensch', heimat: 'Altdorf', region: 'Neue Welt',
+      createdAt: '', updatedAt: '', values: {}, selections: {}, poolAllocations: {}, equipment: [], ruestungSlots: {},
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
+
+    const loaded = loadCharacter(id)!;
+    expect(loaded.herkunftOrtId).toBe(`migration:${id}`);
+    expect(loaded.herkunftSnapshot).toEqual({ name: 'Altdorf', region: '', welt: 'NW' });
+    expect('heimat' in loaded).toBe(false);
+    expect('region' in loaded).toBe(false);
   });
 });
 

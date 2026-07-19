@@ -322,6 +322,21 @@ body {
   gap: 0.4rem;
 }
 
+.new-character-form .new-location-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.new-character-form .new-location-fields[hidden] {
+  display: none;
+}
+
+.new-character-form .new-location-fields label {
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .new-character-form-actions {
   grid-column: 1 / -1;
   display: flex;
@@ -350,6 +365,10 @@ body {
   border: 1px solid #8888;
   border-radius: 4px;
   padding: 0.15rem 0.3rem;
+}
+
+.charakterheader-field output {
+  padding: 0.15rem 0;
 }
 
 .mutter-kultur {

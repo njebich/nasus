@@ -1,19 +1,51 @@
 @font-face {
-  font-family: 'Nasus Old English';
-  src: url('./assets/fonts/oldengl.ttf') format('truetype');
+  font-family: 'Nasus Gothic';
+  src: url('./assets/fonts/ygoth.otf') format('opentype');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Nasus Bookman';
+  src: url('./assets/fonts/texgyrebonum-regular.otf') format('opentype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nasus Bookman';
+  src: url('./assets/fonts/texgyrebonum-bold.otf') format('opentype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nasus Bookman';
+  src: url('./assets/fonts/texgyrebonum-italic.otf') format('opentype');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nasus Bookman';
+  src: url('./assets/fonts/texgyrebonum-bolditalic.otf') format('opentype');
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+}
+
 :root {
-  font-family: 'Bookman Old Style', Bookman, 'URW Bookman L', Georgia, serif;
+  font-family: 'Nasus Bookman', Georgia, serif;
   line-height: 1.5;
   color-scheme: light dark;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Nasus Old English', Georgia, serif;
+  font-family: 'Nasus Gothic', Georgia, serif;
 }
 
 button, input, select, textarea {

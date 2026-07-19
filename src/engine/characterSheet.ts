@@ -14,6 +14,7 @@ import { evalReferenz, evalKostenFor, type CharacterValueSource } from './rules'
 import { getPoolCapBasis, computeGutMax, computeMeisterlichMax } from './poolCaps';
 import { getTalentModifikatorBonus as talentModifikatorBonus } from './talenteModifikator';
 import { getTalentFaktorBonus as talentFaktorBonus } from './talenteFaktor';
+import { getArtefaktBonus as artefaktBonus } from './artefaktBonus';
 import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
@@ -32,6 +33,10 @@ export interface PoolCaps {
 export interface ComputedRule {
   rule: RuleEntry;
   currentValue?: number;
+  /** Nur fuer Art='Wert', wenn ein Eigenschafts-/Attributs-Artefakt im Inventar liegt (Nutzer
+   *  2026-07-19): currentValue + Artefakt-Bonus, zur "Basiswert (veraendert)"-Anzeige. Fliesst
+   *  selbst NICHT in kostenCurrent/kostenNext ein - siehe rules.ts/artefaktBonus.ts. */
+  alteredValue?: number;
   computedValue?: Value;
   /** Kosten in der fuer diese Kategorie zutreffenden Waehrung (SP ausser bei Talente: TaP). */
   kostenCurrent?: number;
@@ -116,6 +121,9 @@ export function makeValueSource(character: CharacterState): CharacterValueSource
     getTalentFaktorBonus(referenz: string): number {
       return talentFaktorBonus(character, referenz);
     },
+    getArtefaktBonus(referenz: string): number {
+      return artefaktBonus(character, referenz);
+    },
   };
 }
 
@@ -131,6 +139,8 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
   if (rule.art === 'Wert') {
     const currentValue = character.values[key] ?? 0;
     const result: ComputedRule = { rule, currentValue };
+    const artefaktBonusValue = values.getArtefaktBonus?.(rule.referenz) ?? 0;
+    if (artefaktBonusValue > 0) result.alteredValue = currentValue + artefaktBonusValue;
     if (rule.kostenRaw) {
       try {
         // WICHTIG: kostenCurrent als eigene Anweisung VOR kostenNext zuweisen - kostenNext kann

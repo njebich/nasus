@@ -133,7 +133,7 @@ body {
 
 .stat-row {
   display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
+  grid-template-columns: 1fr auto auto auto auto auto;
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 0.6rem;
@@ -167,6 +167,13 @@ body {
   font-size: 0.85em;
   opacity: 0.7;
   min-width: 10ch;
+}
+
+.stat-altered {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #7a3fc0;
+  cursor: help;
 }
 
 .stat-section-heading {

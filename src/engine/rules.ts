@@ -87,6 +87,10 @@ export interface CharacterValueSource {
    *  (kein Effekt), wenn kein passendes Talent gewaehlt ist. Optional aus demselben Grund wie
    *  getRsGruppe. */
   getTalentFaktorBonus?(referenz: string): number;
+  /** Dauerhafter Bonus aus einem im Inventar liegenden Eigenschafts-/Attributs-Artefakt (Nutzer
+   *  2026-07-19), siehe engine/artefaktBonus.ts. Default 0 (kein passendes Artefakt). Optional
+   *  aus demselben Grund wie getRsGruppe. */
+  getArtefaktBonus?(referenz: string): number;
 }
 
 export class CycleError extends EvalError {
@@ -176,9 +180,15 @@ function evalReferenzInternal(referenz: string, state: EvalRunState): Value {
   let result: Value;
   try {
     switch (rule.art) {
-      case 'Wert':
-        result = state.values.getWert(rule.referenz);
+      case 'Wert': {
+        // Eigenschafts-/Attributs-Artefakt-Bonus (Nutzer 2026-07-19): wirkt hier, NICHT in
+        // evalKostenFor - jede Formel, die diese Referenz als Variable nutzt, bekommt so
+        // automatisch den veraenderten Wert, waehrend die SP-Kosten (evalKostenFor bindet
+        // "wert"/"grad" direkt an candidateWert) unveraendert bleiben.
+        const artefaktBonus = state.values.getArtefaktBonus?.(rule.referenz) ?? 0;
+        result = state.values.getWert(rule.referenz) + artefaktBonus;
         break;
+      }
       case 'Fixwert':
         // Fixwert ist ein roher Referenzwert aus der xlsx (Zahl ODER Text wie "0,3 m/s"),
         // kein Spielerwert - nicht ueber character.values aufloesbar. Aktuell referenziert

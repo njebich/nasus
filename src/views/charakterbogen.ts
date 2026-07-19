@@ -79,7 +79,7 @@ function renderCharakterwerteUndAttribute(sheet: ComputedSheet): string {
     <tr><th>Erfahrungspkt.</th><td>${sheet.epGesamt}</td></tr>
     <tr><th>Steigerungspkt.</th><td>${sheet.spRemaining} / ${sheet.spTotal}</td></tr>`;
   const attributeRows = attribute
-    .map((r) => `<tr><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${r.currentValue ?? formatValue(r.computedValue)}</td></tr>`)
+    .map((r) => `<tr><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${r.currentValue ?? formatValue(r.computedValue)}${r.alteredValue !== undefined ? ` (${r.alteredValue})` : ''}</td></tr>`)
     .join('');
   return `
     <div class="bogen-zwei-spalten">
@@ -103,7 +103,7 @@ function eigenschaftZellen(eigenschaft: ComputedRule[], bonus: ComputedRule[], r
   const bon = findRule(bonus, bonusRef);
   return `
     <td>${escapeHtml(eig.rule.beschreibung ?? eig.rule.referenz)} (${escapeHtml(eig.rule.abkuerzung ?? '')})</td>
-    <td>${eig.currentValue ?? 0}</td>
+    <td>${eig.currentValue ?? 0}${eig.alteredValue !== undefined ? ` (${eig.alteredValue})` : ''}</td>
     <td>${bon ? formatValue(bon.computedValue) : ''}</td>`;
 }
 

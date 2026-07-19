@@ -35,6 +35,12 @@ function renderEditableRow(r: ComputedRule, maxValue?: number): string {
   const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
   const atMax = maxValue !== undefined && value >= maxValue;
   const stufe = describeSkillStufe(r.rule.referenz, value);
+  // Eigenschafts-/Attributs-Artefakt-Bonus (Nutzer 2026-07-19): Basiswert bleibt editierbar/
+  // unveraendert im Input, der veraenderte Wert steht nur informativ daneben in Klammern -
+  // wirkt in allen Formeln, ausser der SP-Kosten-Berechnung (siehe artefaktBonus.ts).
+  const alteredHint = r.alteredValue !== undefined
+    ? ` <span class="stat-altered" title="Durch Artefakt veraendert">(${r.alteredValue})</span>`
+    : '';
   // Formel-Tooltip auf der ganzen Zeile (nicht nur dem Label), damit er auch beim Hover ueber
   // den Wert/die Buttons erscheint - Elemente ohne eigenes title-Attribut fallen auf das des
   // naechsten Vorfahren zurueck.
@@ -42,7 +48,7 @@ function renderEditableRow(r: ComputedRule, maxValue?: number): string {
     <div class="stat-row" data-referenz="${r.rule.referenz}"${formulaTitle(r.rule.kostenRaw)}>
       <span class="stat-label">${label}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern">-</button>
-      <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+      <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
       <button type="button" class="stat-inc" aria-label="erhoehen" ${atMax ? 'disabled' : ''}>+</button>
       <span class="stat-cost">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext ? `naechster Punkt: ${costNext}` : ''}</span>
     </div>`;

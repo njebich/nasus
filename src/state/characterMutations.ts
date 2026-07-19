@@ -17,6 +17,8 @@ import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
+import { composeMunition } from '../engine/pfeilBolzenComposition';
+import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import type { RsGruppe } from '../data/trefferzonen';
 import { ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry } from './characterStore';
 
@@ -227,6 +229,16 @@ const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
  *  Chargen-Tool als hart gesperrt behandeln, statt den Wuerfelwurf zu simulieren. */
 const VERFUEGBARKEIT_SPERRE_AB = 5;
 
+/** Wie die Ruestungs-Kaufsperre oben, aber pauschal statt Region(NW/AW)-abhaengig: Boegen/
+ *  Armbrust/Pfeile/Bolzen haben nur eine einzige "Direkt beim Volk"-Verfuegbarkeit-Spalte, keinen
+ *  NW/AW-Split wie Ruestung - Nutzer 2026-07-19 bestaetigt "Kaufsperre" trotzdem einzubauen, mit
+ *  Reminder im Entwickeln-Sheet (Zeile 36), dass der Region-Split hier noch nachgeholt werden muss. */
+function assertFernkampfVerfuegbar(stufe: number | undefined, name: string): void {
+  if (stufe !== undefined && stufe >= VERFUEGBARKEIT_SPERRE_AB) {
+    throw new MutationError(`'${name}' ist nicht verfuegbar (Verfuegbarkeit ${stufe})`);
+  }
+}
+
 /**
  * Ruestet ein Ruestungsteil in den festen Slot (TZ-Gruppe × Lage) aus - ueberschreibt einen
  * bereits belegten Slot (Regel Nutzer 2026-07-17: "feste Slots: TZ-Gruppe x Lage", pro Slot
@@ -390,6 +402,76 @@ export function buyWeapon(
       minStaerke1H: composed.minStaerke1H, minStaerke2H: composed.minStaerke2H,
       klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz, rezeptMod: composed.rezeptMod,
     },
+  };
+  candidate.equipment = [...candidate.equipment, entry];
+  assertBudgetOk(candidate);
+  return candidate;
+}
+
+/**
+ * Kauft eine fertige Fernkampfwaffe (Bogen/Armbrust) - anders als NK-Waffen/Schilde/Ruestung sind
+ * Boegen/Armbrust bereits fertige Objekte mit festem Preis, keine Material/Fertigung/Anpassung-
+ * Komposition (die Boegen/Armbrust-Sheets sind normalisierte, reine Wertetabellen ohne Bauteile-
+ * System - siehe project-fk-waffen-erfassung memory).
+ */
+export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'armbrust', sourceRow: number): CharacterState {
+  const table = typ === 'boegen' ? BOEGEN : ARMBRUST;
+  const row = table.find((r) => r.sourceRow === sourceRow);
+  if (!row) throw new MutationError(`${typ === 'boegen' ? 'Bogen' : 'Armbrust'} (Zeile ${sourceRow}) existiert nicht`);
+  assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name);
+  if (row.preisDublonen === undefined) {
+    throw new MutationError(`'${row.name}' ist nicht kaeuflich (kein Preis hinterlegt: "${row['Preis'] ?? '?'}")`);
+  }
+
+  const candidate = clone(character);
+  const entry: EquipmentEntry = {
+    id: newEquipmentId(), family: 'fernkampfwaffe', baseTable: typ, baseId: String(sourceRow),
+    selections: {}, quantity: 1, computedPriceSnapshot: row.preisDublonen,
+  };
+  candidate.equipment = [...candidate.equipment, entry];
+  assertBudgetOk(candidate);
+  return candidate;
+}
+
+/**
+ * Kauft Munition (Pfeile/Bolzen), optional komponiert mit einem Spitzen-Modifikator (Nutzer
+ * 2026-07-19: "mod ändert pfeil zu neuem mod-pfeil, mod nicht einzeln kaufbar" - der Modifikator
+ * ist nie ein eigenstaendiger Kauf, siehe pfeilBolzenComposition.ts). quantity = Anzahl Geschosse
+ * (gleiches Mengen-Kaufmuster wie buyPreislisteItem).
+ */
+export function buyMunition(
+  character: CharacterState, typ: 'pfeile' | 'bolzen',
+  basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number,
+): CharacterState {
+  if (quantity <= 0) throw new MutationError('Anzahl muss groesser als 0 sein');
+  const table = typ === 'pfeile' ? PFEILE : BOLZEN;
+  const basis = table.find((r) => r.sourceRow === basisSourceRow);
+  if (!basis) throw new MutationError(`${typ === 'pfeile' ? 'Pfeil' : 'Bolzen'} (Zeile ${basisSourceRow}) existiert nicht`);
+  if (basis['Kategorie'] === 'Spitzen-Modifikator') {
+    throw new MutationError(`'${basis.name}' ist ein Spitzen-Modifikator, keine eigenstaendige Munition`);
+  }
+  let modifikator: FernkampfRow | null = null;
+  if (modifikatorSourceRow !== null) {
+    modifikator = table.find((r) => r.sourceRow === modifikatorSourceRow) ?? null;
+    if (!modifikator) throw new MutationError(`Modifikator (Zeile ${modifikatorSourceRow}) existiert nicht`);
+    if (modifikator['Kategorie'] !== 'Spitzen-Modifikator') {
+      throw new MutationError(`'${modifikator.name}' ist kein Spitzen-Modifikator`);
+    }
+  }
+
+  const composed = composeMunition(basis, modifikator);
+  const anzeigeName = modifikator ? `${modifikator.name} (${basis.name})` : basis.name;
+  assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, anzeigeName);
+  if (composed.preisDublonen === null) {
+    throw new MutationError(`'${basis.name}' ist nicht kaeuflich (kein Preis hinterlegt: "${basis['Preis'] ?? '?'}")`);
+  }
+
+  const candidate = clone(character);
+  const entry: EquipmentEntry = {
+    id: newEquipmentId(), family: 'ammo', baseTable: typ, baseId: String(basisSourceRow),
+    selections: modifikator ? { modifikator: String(modifikator.sourceRow) } : {},
+    quantity, computedPriceSnapshot: composed.preisDublonen,
+    computedStatsSnapshot: { fixschaden: composed.fixschaden, rb: composed.rb, rwModMeter: composed.rwModMeter, be: composed.be },
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);

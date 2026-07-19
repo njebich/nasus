@@ -11,10 +11,12 @@ import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG, type GenericRow } from '../data/equipment/armor';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
+import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
 import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
+import { composeMunition } from '../engine/pfeilBolzenComposition';
 
 export interface AusruestungCallbacks {
   onBuyPreisliste: (sourceRow: number, quantity: number) => void;
@@ -27,6 +29,8 @@ export interface AusruestungCallbacks {
   onBuyWeapon: (
     sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, anpassungSourceRow: number, schaftmaterialSourceRow: number,
   ) => void;
+  onBuyFernkampfwaffe: (typ: 'boegen' | 'armbrust', sourceRow: number) => void;
+  onBuyMunition: (typ: 'pfeile' | 'bolzen', basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number) => void;
   onRemoveEquipment: (equipmentId: string) => void;
 }
 
@@ -68,7 +72,7 @@ const openGruppen = new Set<RsGruppe>();
 /** Welche Oberpunkte (Mein Inventar/Ruestung/Schilde/Waffen/Preisliste/Artefakte) aufgeklappt
  *  sind (Nutzer 2026-07-18: "jeden oberpunkt ... collapsible haben, damit die tabelle nicht so
  *  lang ist") - alle standardmaessig zu, gleiches Persistenz-Muster wie openGruppen oben. */
-const TOP_SECTIONS = ['inventar', 'ruestung', 'schilde', 'waffen', 'preisliste', 'artefakte'] as const;
+const TOP_SECTIONS = ['inventar', 'ruestung', 'schilde', 'waffen', 'fernkampf', 'preisliste', 'artefakte'] as const;
 type TopSection = (typeof TOP_SECTIONS)[number];
 const openTopSections = new Set<TopSection>();
 
@@ -295,6 +299,72 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
     </div>`;
 }
 
+function formatDublonen(value: number): string {
+  return `${Math.round(value * 100) / 100} D`;
+}
+
+/** Boegen/Armbrust sind fertige Objekte mit festem Preis (keine Material/Fertigung/Anpassung-
+ *  Komposition wie NK-Waffen/Schilde/Ruestung - siehe project-fk-waffen-erfassung memory). */
+function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow): string {
+  const gesperrt = row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
+  const preisText = row.preisDublonen === undefined
+    ? `nicht kaeuflich (${escapeHtml(row['Preis'] ?? '?')})`
+    : gesperrt ? `Verfuegbarkeit ${row.verfuegbarkeitStufe} (gesperrt)` : formatDublonen(row.preisDublonen);
+  return `
+    <div class="ausruestung-row" data-fernkampfwaffe="${typ}:${row.sourceRow}">
+      <span class="stat-label">${escapeHtml(row.name)}${row['Volk'] && row['Volk'] !== 'Alle' ? ` (${escapeHtml(row['Volk'])})` : ''}</span>
+      <span class="stat-cost">Min.Stä ${escapeHtml(row['Min. Stä'] ?? '-')} | ${escapeHtml(row['1.W'] ?? '-')}${row['Fixschaden'] ? escapeHtml(row['Fixschaden']) : ''} | RW ${escapeHtml(row['RW'] ?? '-')} | Nachladezeit ${escapeHtml(row['Nachladezeit'] ?? '-')}</span>
+      <span class="stat-cost">${preisText}</span>
+      ${row.preisDublonen !== undefined && !gesperrt
+    ? `<button type="button" class="ausruestung-buy-fernkampfwaffe" data-typ="${typ}" data-source-row="${row.sourceRow}">Kaufen</button>`
+    : '<span></span>'}
+    </div>`;
+}
+
+/** Transiente Picker-Auswahl fuer die Munitions-Komponierer-Karten (Pfeile/Bolzen) - analog zum
+ *  Schild-/Waffen-Picker, aber je Munitionstyp nur EIN Composer statt einer Zeile pro Katalog-
+ *  Eintrag (Basis + optionaler Spitzen-Modifikator werden erst beim Kauf zu einem Inventar-
+ *  Eintrag verschmolzen, siehe pfeilBolzenComposition.ts). */
+const munitionPicker = new Map<'pfeile' | 'bolzen', { basisSourceRow: number; modifikatorSourceRow: number | null; quantity: number }>();
+
+function munitionBasisOptionen(typ: 'pfeile' | 'bolzen'): FernkampfRow[] {
+  return (typ === 'pfeile' ? PFEILE : BOLZEN).filter((r) => r['Kategorie'] !== 'Spitzen-Modifikator');
+}
+function munitionModOptionen(typ: 'pfeile' | 'bolzen'): FernkampfRow[] {
+  return (typ === 'pfeile' ? PFEILE : BOLZEN).filter((r) => r['Kategorie'] === 'Spitzen-Modifikator');
+}
+
+function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
+  const basisOptionen = munitionBasisOptionen(typ);
+  const modOptionen = munitionModOptionen(typ);
+  const sel = munitionPicker.get(typ) ?? { basisSourceRow: basisOptionen[0]?.sourceRow ?? 0, modifikatorSourceRow: null, quantity: 1 };
+  const basis = basisOptionen.find((r) => r.sourceRow === sel.basisSourceRow) ?? basisOptionen[0];
+  const modifikator = sel.modifikatorSourceRow !== null
+    ? modOptionen.find((r) => r.sourceRow === sel.modifikatorSourceRow) ?? null
+    : null;
+  const composed = composeMunition(basis, modifikator);
+  const gesperrt = composed.verfuegbarkeitStufe !== undefined && composed.verfuegbarkeitStufe >= 5;
+  const preisText = composed.preisDublonen === null
+    ? 'nicht kaeuflich'
+    : gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : `${formatDublonen(composed.preisDublonen)}/Stk`;
+
+  return `
+    <div class="ausruestung-row" data-munition="${typ}">
+      <select class="munition-basis-select" data-munition="${typ}">
+        ${basisOptionen.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === basis.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)} (${escapeHtml(r['Kategorie'] ?? '')})</option>`).join('')}
+      </select>
+      <select class="munition-mod-select" data-munition="${typ}">
+        <option value="" ${modifikator === null ? 'selected' : ''}>Kein Modifikator</option>
+        ${modOptionen.map((r) => `<option value="${r.sourceRow}" ${modifikator?.sourceRow === r.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
+      </select>
+      <input type="number" class="munition-qty" min="1" value="${sel.quantity}" data-munition="${typ}" />
+      <span class="stat-cost">${escapeHtml(composed.wuerfel)} | Fixschaden ${composed.fixschaden >= 0 ? '+' : ''}${composed.fixschaden} | RB ${composed.rb >= 0 ? '+' : ''}${composed.rb} | RW-Mod ${composed.rwModMeter >= 0 ? '+' : ''}${composed.rwModMeter}m | BE ${composed.be} | ${preisText}</span>
+      ${composed.preisDublonen !== null && !gesperrt
+    ? `<button type="button" class="ausruestung-buy-munition" data-munition="${typ}">Kaufen</button>`
+    : '<span></span>'}
+    </div>`;
+}
+
 function renderInventar(character: CharacterState): string {
   if (character.equipment.length === 0) {
     return '<p class="inventar-empty">Noch nichts gekauft.</p>';
@@ -318,6 +388,16 @@ function renderInventar(character: CharacterState): string {
       const at = e.computedStatsSnapshot?.at;
       const pa = e.computedStatsSnapshot?.pa;
       label = row ? `${row.name} (AT ${at} | PA ${pa})` : label;
+    } else if (e.family === 'fernkampfwaffe') {
+      const table = e.baseTable === 'boegen' ? BOEGEN : ARMBRUST;
+      const row = table.find((r) => String(r.sourceRow) === e.baseId);
+      label = row?.name ?? label;
+    } else if (e.family === 'ammo') {
+      const table = e.baseTable === 'pfeile' ? PFEILE : BOLZEN;
+      const basis = table.find((r) => String(r.sourceRow) === e.baseId);
+      const modRow = e.selections.modifikator ? table.find((r) => String(r.sourceRow) === e.selections.modifikator) : undefined;
+      const fixschaden = e.computedStatsSnapshot?.fixschaden;
+      label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${fixschaden ? ` (Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden})` : ''}` : label;
     }
     const total = (e.computedPriceSnapshot ?? 0) * e.quantity;
     return `
@@ -387,6 +467,18 @@ export function renderAusruestungView(
         </select>
       </div>
       <div class="ausruestung-category">${filteredWeapons.map((row) => renderWeaponRow(row, character)).join('')}</div>
+    `)}
+
+    ${renderTopSection('fernkampf', 'Fernkampfwaffen', `${BOEGEN.length + ARMBRUST.length} Einträge`, `
+      <h4>Bögen</h4>
+      <div class="ausruestung-category">${BOEGEN.map((row) => renderFernkampfwaffeRow('boegen', row)).join('')}</div>
+      <h4>Armbrust</h4>
+      <div class="ausruestung-category">${ARMBRUST.map((row) => renderFernkampfwaffeRow('armbrust', row)).join('')}</div>
+      <h4>Munition</h4>
+      <div class="ausruestung-category">
+        ${renderMunitionCard('pfeile')}
+        ${renderMunitionCard('bolzen')}
+      </div>
     `)}
 
     ${renderTopSection('preisliste', 'Preisliste', `${filteredPreisliste.length} Einträge`, `
@@ -552,6 +644,41 @@ export function renderAusruestungView(
       callbacks.onBuyWeapon(weaponSourceRow, materialSourceRow, fertigungSourceRow, anpassungSourceRow, schaftmaterialSourceRow);
     });
   });
+  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-fernkampfwaffe').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      callbacks.onBuyFernkampfwaffe(btn.dataset.typ as 'boegen' | 'armbrust', Number(btn.dataset.sourceRow));
+    });
+  });
+  function updateMunitionPicker(typ: 'pfeile' | 'bolzen', patch: Partial<{ basisSourceRow: number; modifikatorSourceRow: number | null; quantity: number }>): void {
+    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-munition="${typ}"]`);
+    const modValue = row?.querySelector<HTMLSelectElement>('.munition-mod-select')?.value ?? '';
+    munitionPicker.set(typ, {
+      basisSourceRow: Number(row?.querySelector<HTMLSelectElement>('.munition-basis-select')?.value ?? munitionBasisOptionen(typ)[0]?.sourceRow ?? 0),
+      modifikatorSourceRow: modValue === '' ? null : Number(modValue),
+      quantity: Math.max(1, Math.floor(Number(row?.querySelector<HTMLInputElement>('.munition-qty')?.value ?? '1'))),
+      ...patch,
+    });
+    renderAusruestungView(container, sheet, character, callbacks);
+  }
+  container.querySelectorAll<HTMLSelectElement>('.munition-basis-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateMunitionPicker(sel.dataset.munition as 'pfeile' | 'bolzen', { basisSourceRow: Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLSelectElement>('.munition-mod-select').forEach((sel) => {
+    sel.addEventListener('change', () => updateMunitionPicker(sel.dataset.munition as 'pfeile' | 'bolzen', { modifikatorSourceRow: sel.value === '' ? null : Number(sel.value) }));
+  });
+  container.querySelectorAll<HTMLInputElement>('.munition-qty').forEach((input) => {
+    input.addEventListener('change', () => updateMunitionPicker(input.dataset.munition as 'pfeile' | 'bolzen', { quantity: Math.max(1, Math.floor(Number(input.value || '1'))) }));
+  });
+  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-munition').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const typ = btn.dataset.munition as 'pfeile' | 'bolzen';
+      const sel = munitionPicker.get(typ);
+      const basisSourceRow = sel?.basisSourceRow ?? munitionBasisOptionen(typ)[0]?.sourceRow;
+      if (basisSourceRow === undefined) return;
+      callbacks.onBuyMunition(typ, basisSourceRow, sel?.modifikatorSourceRow ?? null, sel?.quantity ?? 1);
+    });
+  });
+
   container.querySelectorAll<HTMLButtonElement>('.inventar-remove').forEach((btn) => {
     btn.addEventListener('click', () => {
       callbacks.onRemoveEquipment(btn.dataset.equipmentId!);

@@ -80,6 +80,35 @@ def parse_numeric_or_sentinel(value):
         return None, text
 
 
+def parse_preis_dublonen_fz(raw):
+    """Wie parse_numeric_or_sentinel, aber fuer die Boegen/Armbrust/Pfeile/Bolzen-Preisspalten:
+    kennt zusaetzlich die Kleinwaehrung "FZ" (1000 FZ = 1 Dublone, Nutzer 2026-07-19/bereits
+    2026-07-16 im Entwickeln-Sheet festgehalten) und ein optionales fuehrendes "+" bei den
+    Spitzen-Modifikator-Zeilen (Preis-DELTA auf die Basis-Munition, nicht ihr eigener Preis).
+    Returns (value_in_dublonen_or_None, is_delta)."""
+    if raw is None:
+        return None, False
+    text = str(raw).strip()
+    is_delta = text.startswith("+")
+    if is_delta:
+        text = text[1:].strip()
+    normalized = text.replace(",", ".").replace(" ", "")
+    if normalized.upper().endswith("FZ"):
+        try:
+            return float(normalized[:-2]) / 1000.0, is_delta
+        except ValueError:
+            return None, is_delta
+    if normalized.upper().endswith("D"):
+        try:
+            return float(normalized[:-1]), is_delta
+        except ValueError:
+            return None, is_delta
+    try:
+        return float(normalized), is_delta
+    except ValueError:
+        return None, is_delta
+
+
 def read_rules(wb):
     ws = wb["Werte"]
     headers = {}
@@ -576,6 +605,34 @@ def write_shields_ts(wb):
     )
 
 
+def enrich_fernkampf_rows(rows):
+    """Ergaenzt jede Zeile um geparste numerische Felder (preisDublonen/preisIstDelta ueber
+    parse_preis_dublonen_fz, verfuegbarkeitStufe als int) - roh-Spalten bleiben zusaetzlich als
+    Strings erhalten (z.B. fuer Notiz/Kategorie/Anzeige der ungeparsten "1.W"-Wuerfelnotation)."""
+    for row in rows:
+        preis_raw = row.get("Preis")
+        if preis_raw is not None:
+            value, is_delta = parse_preis_dublonen_fz(preis_raw)
+            if value is not None:
+                row["preisDublonen"] = value
+                if is_delta:
+                    row["preisIstDelta"] = True
+        verf_raw = row.get("Verfügbarkeit")
+        if verf_raw is not None:
+            try:
+                row["verfuegbarkeitStufe"] = int(float(str(verf_raw).replace(",", ".")))
+            except ValueError:
+                pass
+    return rows
+
+
+FERNKAMPF_ROW_TYPE_LINES = [
+    "export type GenericRow = Record<string, string> & { sourceRow: number; name: string };",
+    "export type FernkampfRow = Record<string, string> & { sourceRow: number; name: string; "
+    "preisDublonen?: number; preisIstDelta?: boolean; verfuegbarkeitStufe?: number };",
+]
+
+
 def write_fernkampf_ts(wb, wb_values):
     # Boegen/Armbrust/Pfeile/Bolzen sind normalisierte, reine Wertetabellen ohne Formeln (per
     # one-off Build-Skripten aus den jeweiligen docx-Quellen erzeugt) - data_only spielt fuer
@@ -583,19 +640,23 @@ def write_fernkampf_ts(wb, wb_values):
     # den Preis-1-Schuss-Spalten (Lookup gegen Munition-Feuerwaffen) - die muessen aus einer
     # data_only=True geladenen Workbook gelesen werden, sonst landet der Formel-Quelltext statt
     # des berechneten Preises im JSON.
-    boegen = read_generic_rows(wb, "Boegen", "Name")
-    armbrust = read_generic_rows(wb, "Armbrust", "Name")
-    pfeile = read_generic_rows(wb, "Pfeile", "Name")
-    bolzen = read_generic_rows(wb, "Bolzen", "Name")
+    # preisDublonen/verfuegbarkeitStufe (Nutzer 2026-07-19: 1D=1000FZ, Kaufsperre ab Stufe 5 wie
+    # bei Ruestung - siehe VERFUEGBARKEIT_SPERRE_AB in characterMutations.ts) werden nur fuer die
+    # 4 Kataloge mit rohen Preis-/Verfuegbarkeit-Textspalten geparst, nicht fuer Feuerwaffen-
+    # Munition (deren Preis-Spalte bereits eine fertig berechnete Formel-Zahl ist).
+    boegen = enrich_fernkampf_rows(read_generic_rows(wb, "Boegen", "Name"))
+    armbrust = enrich_fernkampf_rows(read_generic_rows(wb, "Armbrust", "Name"))
+    pfeile = enrich_fernkampf_rows(read_generic_rows(wb, "Pfeile", "Name"))
+    bolzen = enrich_fernkampf_rows(read_generic_rows(wb, "Bolzen", "Name"))
     feuerwaffen_munition = read_generic_rows(wb_values, "Feuerwaffen-Munition", "Name")
     data = {
         "boegen": boegen, "armbrust": armbrust, "pfeile": pfeile,
         "bolzen": bolzen, "feuerwaffenMunition": feuerwaffen_munition,
     }
     path = write_json_backed_module(
-        OUT_EQUIPMENT_DIR, "fernkampf", "FERNKAMPF_RAW", GENERIC_ROW_TYPE_LINES,
-        "{ boegen: GenericRow[]; armbrust: GenericRow[]; pfeile: GenericRow[]; "
-        "bolzen: GenericRow[]; feuerwaffenMunition: GenericRow[] }", data,
+        OUT_EQUIPMENT_DIR, "fernkampf", "FERNKAMPF_RAW", FERNKAMPF_ROW_TYPE_LINES,
+        "{ boegen: FernkampfRow[]; armbrust: FernkampfRow[]; pfeile: FernkampfRow[]; "
+        "bolzen: FernkampfRow[]; feuerwaffenMunition: GenericRow[] }", data,
     )
     with open(OUT_EQUIPMENT_DIR / "fernkampf.ts", "a", encoding="utf-8") as f:
         f.write("export const BOEGEN = FERNKAMPF_RAW.boegen;\n")

@@ -6,7 +6,8 @@ import {
 } from './state/characterStore';
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
-  buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon, removeEquipment, BudgetError, MutationError,
+  buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
+  buyFernkampfwaffe, buyMunition, removeEquipment, BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
@@ -151,6 +152,30 @@ function handleBuyWeapon(
   if (!currentCharacter) return;
   try {
     currentCharacter = buyWeapon(currentCharacter, sourceRow, materialSourceRow, fertigungSourceRow, anpassungSourceRow, schaftmaterialSourceRow);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyFernkampfwaffe(typ: 'boegen' | 'armbrust', sourceRow: number): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyFernkampfwaffe(currentCharacter, typ, sourceRow);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleBuyMunition(typ: 'pfeile' | 'bolzen', basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = buyMunition(currentCharacter, typ, basisSourceRow, modifikatorSourceRow, quantity);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
@@ -367,6 +392,8 @@ function render(): void {
         onUnequipRuestung: handleUnequipRuestung,
         onBuyShield: handleBuyShield,
         onBuyWeapon: handleBuyWeapon,
+        onBuyFernkampfwaffe: handleBuyFernkampfwaffe,
+        onBuyMunition: handleBuyMunition,
         onRemoveEquipment: handleRemoveEquipment,
       });
     } else if (activeTab in AUSWAHL_TABS) {

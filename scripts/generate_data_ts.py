@@ -674,21 +674,27 @@ def enrich_fernkampf_rows(rows):
     return rows
 
 
-def apply_basis_prices(rows, wb, sheet_name):
-    """Ueberschreibt die veralteten Preistexte der Ausgabe-Sheets mit den numerischen Preisen
-    aus dem jeweiligen *-Basis-Sheet. Die Basis-Sheets sind die gepflegte Preisquelle; dadurch
-    werden auch fruehere Platzhalter wie ``nicht V.``, ``250D+`` oder ``1 Mio. D`` eindeutig.
+def apply_basis_names_and_prices(rows, wb, sheet_name):
+    """Uebernimmt Namen und Preise zeilenstabil aus dem jeweiligen *-Basis-Sheet.
+
+    Die Basis-Sheets sind die gepflegte Quelle. Eine Zuordnung ueber den Namen ist unzulaessig,
+    weil derselbe neue Kurzname (z.B. ``Kurzbogen``) fuer mehrere Voelker vorkommen darf.
     """
     basis_rows = read_generic_rows(wb, sheet_name, "Name")
-    prices_by_name = {row["Name"]: row.get("Preis") for row in basis_rows}
-    if len(prices_by_name) != len(basis_rows):
-        raise SystemExit(f"Doppelte Namen im Sheet '{sheet_name}' verhindern die Preiszuordnung")
+    basis_by_source_row = {row["sourceRow"]: row for row in basis_rows}
+    if len(basis_by_source_row) != len(rows):
+        raise SystemExit(
+            f"Zeilenzahl zwischen Ausgabe und Preis-/Namensquelle '{sheet_name}' weicht ab"
+        )
 
     for row in rows:
-        name = row["Name"]
-        if name not in prices_by_name:
-            raise SystemExit(f"'{name}' fehlt im Preis-Quellsheet '{sheet_name}'")
-        price, raw = parse_numeric_or_sentinel(prices_by_name[name])
+        source_row = row["sourceRow"]
+        basis = basis_by_source_row.get(source_row)
+        if basis is None:
+            raise SystemExit(f"Zeile {source_row} fehlt im Basis-Sheet '{sheet_name}'")
+        row["Name"] = basis["Name"]
+        row["name"] = basis["Name"]
+        price, raw = parse_numeric_or_sentinel(basis.get("Preis"))
         row.pop("preisDublonen", None)
         row.pop("preisIstDelta", None)
         if price is not None:
@@ -754,11 +760,11 @@ def write_fernkampf_ts(wb, wb_values, feuerwaffen_values):
     # bei Ruestung - siehe VERFUEGBARKEIT_SPERRE_AB in characterMutations.ts) werden nur fuer die
     # 4 Kataloge mit rohen Preis-/Verfuegbarkeit-Textspalten geparst, nicht fuer Feuerwaffen-
     # Munition (deren Preis-Spalte bereits eine fertig berechnete Formel-Zahl ist).
-    boegen = apply_basis_prices(
+    boegen = apply_basis_names_and_prices(
         enrich_fernkampf_rows(read_generic_rows(wb, "Boegen", "Name")),
         wb, "Boegen-Basis",
     )
-    armbrust = apply_basis_prices(
+    armbrust = apply_basis_names_and_prices(
         enrich_fernkampf_rows(read_generic_rows(wb, "Armbrust", "Name")),
         wb, "Armbrust-Basis",
     )

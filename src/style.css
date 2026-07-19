@@ -1,7 +1,19 @@
+@font-face {
+  font-family: 'Nasus Old English';
+  src: url('./assets/fonts/oldengl.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
-  font-family: system-ui, sans-serif;
+  font-family: 'Nasus Old English', Georgia, serif;
   line-height: 1.5;
   color-scheme: light dark;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
 }
 
 body {

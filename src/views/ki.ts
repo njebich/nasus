@@ -14,7 +14,9 @@
 //    Vorbedingung (kiBaumGating.ts) werden angezeigt, aber ausgegraut/deaktiviert.
 
 import type { ComputedSheet } from '../engine/characterSheet';
-import { isKiFaehigkeitUnlocked, getKiVorbedingungen, getKiTreeDepths, KONZENTRATION_REFERENZ } from '../engine/kiBaumGating';
+import {
+  isKiFaehigkeitUnlocked, getKiVorbedingungen, getKiFreischaltungen, getKiTreeDepths, KONZENTRATION_REFERENZ,
+} from '../engine/kiBaumGating';
 import {
   MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ, grundfertigkeitSlotCount, getGrundfertigkeitOptionen,
 } from '../engine/grundfertigkeitAuswahl';
@@ -75,7 +77,27 @@ function vorbedingungTitle(referenz: string, sheet: ComputedSheet): string {
     const current = row?.currentValue ?? 0;
     return `${name} ${mindestTaw} (aktuell ${current})`;
   });
-  return `Benötigt: ${parts.join(' ODER ')}`;
+  return `Benötigt: ${parts.join(' ODER ')} (kompletter Zweig ab Konzentration erforderlich)`;
+}
+
+/** Fuer bereits waehlbare Faehigkeiten (Nutzer 2026-07-20): welche Nachfolger-Faehigkeit(en)
+ *  ab welchem TaW freigeschaltet werden, z.B. "TaW 10 schaltet frei: Sprint". Faehigkeiten ohne
+ *  Nachfolger (Blaetter im Baum) liefern ''. */
+function freischaltungTitle(referenz: string, sheet: ComputedSheet): string {
+  const freischaltungen = getKiFreischaltungen(referenz);
+  if (freischaltungen.length === 0) return '';
+  const namenProTaw = new Map<number, string[]>();
+  for (const { faehigkeit, mindestTaw } of freischaltungen) {
+    const row = (sheet.byKategorie['KI'] ?? []).find((r) => r.rule.referenz === faehigkeit);
+    const name = row?.rule.beschreibung ?? faehigkeit;
+    const namen = namenProTaw.get(mindestTaw) ?? [];
+    namen.push(name);
+    namenProTaw.set(mindestTaw, namen);
+  }
+  return Array.from(namenProTaw.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([taw, namen]) => `TaW ${taw} schaltet frei: ${namen.join(', ')}`)
+    .join('\n');
 }
 
 /** "Meister der Grundfertigkeiten"-Sonderzeile: ein Dropdown je freigeschaltetem Slot (Slot 1 ab
@@ -116,7 +138,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   const probe = currentValue < 1 ? '' : currentValue + (eigBon?.value ?? 0) + 2 * getAttMagie(sheet);
   const dauer = KI_DAUER[referenz];
   const rowClass = unlocked ? '' : 'ki-row-locked';
-  const plusTitle = vorbedingungTitle(referenz, sheet);
+  const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
   const costLabel = kostenNext !== undefined ? `${kostenNext} SP` : '';
   const picksRow = referenz === MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ ? renderGrundfertigkeitPicksRow(currentValue, gewaehlt) : '';
 

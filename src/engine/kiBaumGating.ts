@@ -55,6 +55,15 @@ export function getKiVorbedingungen(referenz: string): { vorbedingung: string; m
     .map((k) => ({ vorbedingung: k.vorbedingung, mindestTaw: k.mindestTaw }));
 }
 
+/** Kehrseite von getKiVorbedingungen - fuer die "+"-Tooltip-Anzeige bei bereits waehlbaren
+ *  Faehigkeiten (Nutzer 2026-07-20): welche Nachfolger-Faehigkeit(en) ab welchem TaW auf
+ *  dieser Faehigkeit freigeschaltet werden, z.B. "TaW 10 schaltet frei: Sprint". */
+export function getKiFreischaltungen(referenz: string): { faehigkeit: string; mindestTaw: number }[] {
+  return KI_BAUM_KANTEN
+    .filter((k) => k.vorbedingung === referenz)
+    .map((k) => ({ faehigkeit: k.faehigkeit, mindestTaw: k.mindestTaw }));
+}
+
 /** Baum-Tiefe je Faehigkeit (BFS ab allen Wurzelknoten, 0-basiert) - fuer eine sinnvolle
  *  Tabellen-Reihenfolge (naeher an der Wurzel zuerst) statt reiner Alphabetik. KI-Baum-Kanten
  *  wurde am 2026-07-20 gegen das vom Nutzer bereitgestellte Baumdiagramm verifiziert und

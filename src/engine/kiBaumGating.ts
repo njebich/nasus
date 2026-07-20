@@ -5,9 +5,11 @@
 // per AskUserQuestion) - z.B. "Geschossen ausweichen" braucht Abwehr>=15 ODER Adlerauge>=30
 // ODER Gleichgewicht & Feingefuehl>=30, nicht alle drei gleichzeitig.
 //
-// Faehigkeiten, die in KI-Baum-Kanten nie in der Faehigkeit-Spalte auftauchen (Konzentration,
-// Meister der Grundfertigkeiten, Selbstheilung), sind Wurzelknoten - immer waehlbar, keine
-// Vorbedingung.
+// Faehigkeiten, die in KI-Baum-Kanten nie in der Faehigkeit-Spalte auftauchen (nur Konzentration),
+// sind Wurzelknoten - immer waehlbar, keine Vorbedingung. Konzentration ist der einzige
+// Startpunkt des Baums (Nutzer 2026-07-20, per Diagramm bestaetigt) - Meister der
+// Grundfertigkeiten und Selbstheilung sind KEINE Wurzelknoten mehr, sondern haengen selbst
+// von Vorbedingungen ab (Charisma bzw. Erleuchtung/Schlaf der Heilung).
 //
 // Bewusst nur UI-Ebene (Nutzer 2026-07-20 bestaetigt): keine Durchsetzung in
 // characterMutations.ts's setValue, analog zur SF-"Ladeschuetze"-Sichtbarkeitsregel
@@ -39,11 +41,11 @@ export function getKiVorbedingungen(referenz: string): { vorbedingung: string; m
 }
 
 /** Baum-Tiefe je Faehigkeit (BFS ab allen Wurzelknoten, 0-basiert) - fuer eine sinnvolle
- *  Tabellen-Reihenfolge (naeher an der Wurzel zuerst) statt reiner Alphabetik. Nutzer 2026-07-20:
- *  "wir kuemmern uns in neuer Session um die korrekten Baumkanten" - diese Tiefenberechnung
- *  arbeitet bewusst mit den AKTUELLEN (moeglicherweise fehlerhaften) KI-Baum-Kanten-Daten, keine
- *  Sonderregeln/Overrides. Unerreichbare Knoten (sollte bei 28 vollstaendig abgedeckten
- *  Faehigkeiten nicht vorkommen) fallen auf Number.POSITIVE_INFINITY (ans Ende sortiert). */
+ *  Tabellen-Reihenfolge (naeher an der Wurzel zuerst) statt reiner Alphabetik. KI-Baum-Kanten
+ *  wurde am 2026-07-20 gegen das vom Nutzer bereitgestellte Baumdiagramm verifiziert und
+ *  korrigiert (Konzentration einziger Startpunkt). Unerreichbare Knoten (sollte bei 28
+ *  vollstaendig abgedeckten Faehigkeiten nicht vorkommen) fallen auf Number.POSITIVE_INFINITY
+ *  (ans Ende sortiert). */
 export function getKiTreeDepths(referenzen: string[]): Map<string, number> {
   const depths = new Map<string, number>();
   const roots = referenzen.filter((r) => !FAEHIGKEITEN_MIT_VORBEDINGUNG.has(r));

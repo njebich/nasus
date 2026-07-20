@@ -77,17 +77,12 @@ export interface NahkampfRow {
   npa: PoolFieldState;
   gpa: PoolFieldState;
   mpa: PoolFieldState;
-  /** Poolpunkte (PP) - Summe der aus dem Waffen-Pool ausgegebenen (allocated) Punkte ueber alle
-   *  sechs Felder, nicht der Anzeigewert (value) inkl. automatischem Overflow. */
+  /** Poolpunkte (PP) - verbleibendes Budget des geteilten Waffen-Pools (Spez-Punkte + AT/PA-
+   *  Ueberschuss ueber 20 minus bereits verteilter Punkte), siehe poolFieldsForRow. */
   pp: number;
   kb: number;
   ks: number;
   ini: number;
-}
-
-function computePP(fields: Pick<NahkampfRow, 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa'>): number {
-  return fields.nat.allocated + fields.gat.allocated + fields.mat.allocated
-    + fields.npa.allocated + fields.gpa.allocated + fields.mpa.allocated;
 }
 
 function findWeaponBasis(baseId: string): WeaponRow | undefined {
@@ -113,12 +108,18 @@ interface PoolContext {
 
 function poolFieldsForRow(
   ctx: PoolContext, poolReferenz: string, key: string, hauptfertigkeit: string, atBonus: number, paBonus: number,
-): Pick<NahkampfRow, 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa'> {
+): Pick<NahkampfRow, 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa' | 'pp'> {
   const poolRule = ctx.sheet.byKategorie['Nahkampf']?.find((r) => r.rule.referenz === poolReferenz);
   const allocation = ctx.character.poolAllocations[`${poolReferenz}::${key}`]
     ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
   const overflow = computeWeaponAtPaOverflow(hauptfertigkeit, atBonus, paBonus, ctx.values);
   const caps = poolRule?.poolCaps;
+  const rowAllocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa + allocation.nat + allocation.npa;
+  // Poolpunkte (PP) sind PRO ZEILE: dieser Waffe eigener AT/PA-Ueberschuss ueber 20 plus die
+  // Spez-Punkte des Pools (z.B. 7), minus NUR das, was auf DIESE Zeile entfallen ist - NICHT die
+  // Summe ueber Geschwister-Waffen desselben Pools (Nutzer 2026-07-20: "spend is per row, not for
+  // the total pool"), obwohl das Budget selbst pool-weit geteilt ist (siehe setWaffenPoolAllocation).
+  const pp = overflow.atOverflow + overflow.paOverflow + Number(poolRule?.computedValue ?? 0) - rowAllocatedTotal;
   return {
     nat: { value: overflow.uncAtWeapon + allocation.nat, allocated: allocation.nat, max: overflow.natMax },
     gat: { value: allocation.gat, allocated: allocation.gat, max: caps?.gatMax },
@@ -126,6 +127,7 @@ function poolFieldsForRow(
     npa: { value: overflow.uncPaWeapon + allocation.npa, allocated: allocation.npa, max: overflow.npaMax },
     gpa: { value: allocation.gpa, allocated: allocation.gpa, max: caps?.gpaMax },
     mpa: { value: allocation.mpa, allocated: allocation.mpa, max: caps?.mpaMax },
+    pp,
   };
 }
 
@@ -155,6 +157,7 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       : {
         nat: { value: 0, allocated: 0 }, gat: { value: 0, allocated: 0 }, mat: { value: 0, allocated: 0 },
         npa: { value: 0, allocated: 0 }, gpa: { value: 0, allocated: 0 }, mpa: { value: 0, allocated: 0 },
+        pp: 0,
       };
     return {
       key: e.id,
@@ -167,7 +170,6 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       rb: snap.rb ?? 0,
       poolReferenz: usable ? poolReferenz : null,
       ...poolFields,
-      pp: computePP(poolFields),
       kb: snap.klingenbrecher ?? 0,
       ks: snap.klingenschutz ?? 0,
       ini: Math.round(Number(evalReferenz('ini', ctx.values))) + num(basis, 'Ini'),
@@ -200,6 +202,7 @@ function buildUnbewaffnetRow(ctx: PoolContext, key: string, label: string, basis
     : {
       nat: { value: 0, allocated: 0 }, gat: { value: 0, allocated: 0 }, mat: { value: 0, allocated: 0 },
       npa: { value: 0, allocated: 0 }, gpa: { value: 0, allocated: 0 }, mpa: { value: 0, allocated: 0 },
+      pp: 0,
     };
   return {
     key,
@@ -211,7 +214,6 @@ function buildUnbewaffnetRow(ctx: PoolContext, key: string, label: string, basis
     rb: num(basis, 'RB'),
     poolReferenz,
     ...poolFields,
-    pp: computePP(poolFields),
     kb: num(basis, 'Klingenbrecher-Basis'),
     ks: num(basis, 'Klingenschutz-Basis'),
     ini: Math.round(Number(evalReferenz('ini', ctx.values))) + num(basis, 'Ini'),

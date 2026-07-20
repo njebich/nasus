@@ -449,11 +449,13 @@ function renderFernkampfVolksgruppen(
   }).join('');
 }
 
-/** Transiente Picker-Auswahl fuer die Munitions-Komponierer-Karten (Pfeile/Bolzen) - analog zum
- *  Schild-/Waffen-Picker, aber je Munitionstyp nur EIN Composer statt einer Zeile pro Katalog-
- *  Eintrag (Basis + optionaler Spitzen-Modifikator werden erst beim Kauf zu einem Inventar-
- *  Eintrag verschmolzen, siehe pfeilBolzenComposition.ts). */
-const munitionPicker = new Map<'pfeile' | 'bolzen', { basisSourceRow: number; modifikatorSourceRow: number | null; quantity: number }>();
+/** Transiente Auswahl je Pfeil-/Bolzenart. Die Basis steht als vollstaendige Liste fest; nur der
+ *  optionale Spitzen-Modifikator und die Kaufmenge werden pro Zeile ausgewaehlt. */
+const munitionPicker = new Map<string, { modifikatorSourceRow: number | null; quantity: number }>();
+
+function munitionPickerKey(typ: 'pfeile' | 'bolzen', basisSourceRow: number): string {
+  return `${typ}:${basisSourceRow}`;
+}
 
 function munitionBasisOptionen(typ: 'pfeile' | 'bolzen'): FernkampfRow[] {
   return (typ === 'pfeile' ? PFEILE : BOLZEN).filter((r) => r['Kategorie'] !== 'Spitzen-Modifikator');
@@ -465,32 +467,31 @@ function munitionModOptionen(typ: 'pfeile' | 'bolzen'): FernkampfRow[] {
 function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
   const basisOptionen = munitionBasisOptionen(typ);
   const modOptionen = munitionModOptionen(typ);
-  const sel = munitionPicker.get(typ) ?? { basisSourceRow: basisOptionen[0]?.sourceRow ?? 0, modifikatorSourceRow: null, quantity: 1 };
-  const basis = basisOptionen.find((r) => r.sourceRow === sel.basisSourceRow) ?? basisOptionen[0];
-  const modifikator = sel.modifikatorSourceRow !== null
-    ? modOptionen.find((r) => r.sourceRow === sel.modifikatorSourceRow) ?? null
-    : null;
-  const composed = composeMunition(basis, modifikator);
-  const gesperrt = composed.verfuegbarkeitStufe !== undefined && composed.verfuegbarkeitStufe >= 5;
-  const preisText = composed.preisDublonen === null
-    ? 'nicht kaeuflich'
-    : gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : `${formatDublonen(composed.preisDublonen)}/Stk`;
+  return basisOptionen.map((basis) => {
+    const sel = munitionPicker.get(munitionPickerKey(typ, basis.sourceRow)) ?? { modifikatorSourceRow: null, quantity: 1 };
+    const modifikator = sel.modifikatorSourceRow !== null
+      ? modOptionen.find((r) => r.sourceRow === sel.modifikatorSourceRow) ?? null
+      : null;
+    const composed = composeMunition(basis, modifikator);
+    const gesperrt = composed.verfuegbarkeitStufe !== undefined && composed.verfuegbarkeitStufe >= 5;
+    const preisText = composed.preisDublonen === null
+      ? 'nicht kaeuflich'
+      : gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : `${formatDublonen(composed.preisDublonen)}/Stk`;
 
-  return `
-    <div class="ausruestung-row" data-munition="${typ}">
-      <select class="munition-basis-select" data-munition="${typ}">
-        ${basisOptionen.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === basis.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)} (${escapeHtml(r['Kategorie'] ?? '')})</option>`).join('')}
-      </select>
-      <select class="munition-mod-select" data-munition="${typ}">
-        <option value="" ${modifikator === null ? 'selected' : ''}>Kein Modifikator</option>
-        ${modOptionen.map((r) => `<option value="${r.sourceRow}" ${modifikator?.sourceRow === r.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
-      </select>
-      <input type="number" class="munition-qty" min="1" value="${sel.quantity}" data-munition="${typ}" />
-      <span class="stat-cost">${escapeHtml(composed.wuerfel)} | Fixschaden ${composed.fixschaden >= 0 ? '+' : ''}${composed.fixschaden} | RB ${composed.rb >= 0 ? '+' : ''}${composed.rb} | RW-Mod ${composed.rwModMeter >= 0 ? '+' : ''}${composed.rwModMeter}m | BE ${composed.be} | ${preisText}</span>
-      ${composed.preisDublonen !== null && !gesperrt
-    ? `<button type="button" class="ausruestung-buy-munition" data-munition="${typ}">Kaufen</button>`
-    : '<span></span>'}
-    </div>`;
+    return `
+      <div class="ausruestung-row munition-row" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}">
+        <span class="munition-name">${escapeHtml(basis.name)} <span class="munition-kategorie">(${escapeHtml(basis['Kategorie'] ?? '')})</span></span>
+        <select class="munition-mod-select" data-munition="${typ}" aria-label="Modifikator f&uuml;r ${escapeHtml(basis.name)}">
+          <option value="" ${modifikator === null ? 'selected' : ''}>Kein Modifikator</option>
+          ${modOptionen.map((r) => `<option value="${r.sourceRow}" ${modifikator?.sourceRow === r.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
+        </select>
+        <input type="number" class="munition-qty" min="1" value="${sel.quantity}" data-munition="${typ}" aria-label="Menge f&uuml;r ${escapeHtml(basis.name)}" />
+        <span class="stat-cost">${escapeHtml(composed.wuerfel)} | Fixschaden ${composed.fixschaden >= 0 ? '+' : ''}${composed.fixschaden} | RB ${composed.rb >= 0 ? '+' : ''}${composed.rb} | RW-Mod ${composed.rwModMeter >= 0 ? '+' : ''}${composed.rwModMeter}m | BE ${composed.be} | ${preisText}</span>
+        ${composed.preisDublonen !== null && !gesperrt
+      ? `<button type="button" class="ausruestung-buy-munition" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}">Kaufen</button>`
+      : '<span></span>'}
+      </div>`;
+  }).join('');
 }
 
 function renderInventar(character: CharacterState): string {
@@ -621,15 +622,15 @@ export function renderAusruestungView(
     `)}
 
     ${renderTopSection('boegen', 'Bögen', `${BOEGEN.length} Einträge`, `
-      <div class="stat-category">${renderFernkampfVolksgruppen('boegen', BOEGEN, (row) => renderFernkampfwaffeRow('boegen', row))}</div>
       <h4>Pfeile</h4>
       <div class="ausruestung-category">${renderMunitionCard('pfeile')}</div>
+      <div class="stat-category">${renderFernkampfVolksgruppen('boegen', BOEGEN, (row) => renderFernkampfwaffeRow('boegen', row))}</div>
     `)}
 
     ${renderTopSection('armbrueste', 'Armbrüste', `${ARMBRUST.length} Einträge`, `
-      <div class="stat-category">${renderFernkampfVolksgruppen('armbrust', ARMBRUST, (row) => renderFernkampfwaffeRow('armbrust', row))}</div>
       <h4>Bolzen</h4>
       <div class="ausruestung-category">${renderMunitionCard('bolzen')}</div>
+      <div class="stat-category">${renderFernkampfVolksgruppen('armbrust', ARMBRUST, (row) => renderFernkampfwaffeRow('armbrust', row))}</div>
     `)}
 
     ${renderTopSection('feuerwaffen', 'Feuerwaffen', `${FEUERWAFFEN.length} Einträge`, `
@@ -848,32 +849,32 @@ export function renderAusruestungView(
       );
     });
   });
-  function updateMunitionPicker(typ: 'pfeile' | 'bolzen', patch: Partial<{ basisSourceRow: number; modifikatorSourceRow: number | null; quantity: number }>): void {
-    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-munition="${typ}"]`);
+  function updateMunitionPicker(typ: 'pfeile' | 'bolzen', basisSourceRow: number): void {
+    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-munition="${typ}"][data-basis-source-row="${basisSourceRow}"]`);
     const modValue = row?.querySelector<HTMLSelectElement>('.munition-mod-select')?.value ?? '';
-    munitionPicker.set(typ, {
-      basisSourceRow: Number(row?.querySelector<HTMLSelectElement>('.munition-basis-select')?.value ?? munitionBasisOptionen(typ)[0]?.sourceRow ?? 0),
+    munitionPicker.set(munitionPickerKey(typ, basisSourceRow), {
       modifikatorSourceRow: modValue === '' ? null : Number(modValue),
       quantity: Math.max(1, Math.floor(Number(row?.querySelector<HTMLInputElement>('.munition-qty')?.value ?? '1'))),
-      ...patch,
     });
     renderAusruestungView(container, sheet, character, callbacks);
   }
-  container.querySelectorAll<HTMLSelectElement>('.munition-basis-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateMunitionPicker(sel.dataset.munition as 'pfeile' | 'bolzen', { basisSourceRow: Number(sel.value) }));
-  });
   container.querySelectorAll<HTMLSelectElement>('.munition-mod-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateMunitionPicker(sel.dataset.munition as 'pfeile' | 'bolzen', { modifikatorSourceRow: sel.value === '' ? null : Number(sel.value) }));
+    sel.addEventListener('change', () => {
+      const row = sel.closest<HTMLElement>('[data-basis-source-row]');
+      if (row) updateMunitionPicker(sel.dataset.munition as 'pfeile' | 'bolzen', Number(row.dataset.basisSourceRow));
+    });
   });
   container.querySelectorAll<HTMLInputElement>('.munition-qty').forEach((input) => {
-    input.addEventListener('change', () => updateMunitionPicker(input.dataset.munition as 'pfeile' | 'bolzen', { quantity: Math.max(1, Math.floor(Number(input.value || '1'))) }));
+    input.addEventListener('change', () => {
+      const row = input.closest<HTMLElement>('[data-basis-source-row]');
+      if (row) updateMunitionPicker(input.dataset.munition as 'pfeile' | 'bolzen', Number(row.dataset.basisSourceRow));
+    });
   });
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-munition').forEach((btn) => {
     btn.addEventListener('click', () => {
       const typ = btn.dataset.munition as 'pfeile' | 'bolzen';
-      const sel = munitionPicker.get(typ);
-      const basisSourceRow = sel?.basisSourceRow ?? munitionBasisOptionen(typ)[0]?.sourceRow;
-      if (basisSourceRow === undefined) return;
+      const basisSourceRow = Number(btn.dataset.basisSourceRow);
+      const sel = munitionPicker.get(munitionPickerKey(typ, basisSourceRow));
       callbacks.onBuyMunition(typ, basisSourceRow, sel?.modifikatorSourceRow ?? null, sel?.quantity ?? 1);
     });
   });

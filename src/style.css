@@ -370,12 +370,21 @@ body {
 }
 
 .ausruestung-row.munition-row {
-  grid-template-columns: minmax(10rem, 1fr) minmax(10rem, auto) 4rem minmax(24rem, 2fr) max-content;
-  overflow-x: auto;
+  grid-template-columns: minmax(12rem, 1fr) minmax(10rem, 0.8fr) 4rem 12rem;
+  grid-template-areas:
+    "name mod quantity buy"
+    "details details details details";
+  align-items: center;
+  height: auto;
+  overflow: visible;
+  row-gap: 0.25rem;
 }
 
 .munition-name {
+  grid-area: name;
   font-weight: 600;
+  min-width: 0;
+  white-space: normal;
 }
 
 .munition-kategorie {
@@ -385,9 +394,43 @@ body {
 }
 
 .munition-qty {
+  grid-area: quantity;
   width: 4rem;
   min-width: 4rem;
   font: inherit;
+}
+
+.munition-row > .munition-mod-select {
+  grid-area: mod;
+  min-width: 0;
+  width: 100%;
+}
+
+.munition-row > .stat-cost {
+  grid-area: details;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.munition-row > :last-child {
+  grid-area: buy;
+}
+
+@media (max-width: 760px) {
+  .ausruestung-row.munition-row {
+    grid-template-columns: minmax(0, 1fr) 4rem;
+    grid-template-areas:
+      "name quantity"
+      "mod mod"
+      "details details"
+      "buy buy";
+  }
+
+  .munition-row > :last-child {
+    justify-self: stretch;
+    width: 100%;
+  }
 }
 
 .ausruestung-qty {

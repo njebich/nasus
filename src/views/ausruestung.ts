@@ -483,7 +483,9 @@ function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
           <option value="" ${modifikator === null ? 'selected' : ''}>Kein Modifikator</option>
           ${modOptionen.map((r) => `<option value="${r.sourceRow}" ${modifikator?.sourceRow === r.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
         </select>
-        <input type="number" class="munition-qty" min="1" value="${sel.quantity}" data-munition="${typ}" aria-label="Menge f&uuml;r ${escapeHtml(basis.name)}" />
+        <select class="munition-qty" data-munition="${typ}" aria-label="Menge f&uuml;r ${escapeHtml(basis.name)}">
+          ${[1, 10, 100].map((qty) => `<option value="${qty}" ${qty === sel.quantity ? 'selected' : ''}>${qty}</option>`).join('')}
+        </select>
         <span class="stat-cost">${escapeHtml(composed.wuerfel)} | Fixschaden ${composed.fixschaden >= 0 ? '+' : ''}${composed.fixschaden} | RB ${composed.rb >= 0 ? '+' : ''}${composed.rb} | RW-Mod ${composed.rwModMeter >= 0 ? '+' : ''}${composed.rwModMeter}m | BE ${composed.be}${composed.preisDublonen === null ? ' | nicht käuflich' : ''}</span>
         ${composed.preisDublonen !== null
       ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-munition${gesperrt ? ' ausruestung-buy-locked' : ''}" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(composed.verfuegbarkeitStufe!) : kaufenLabel(composed.preisDublonen * sel.quantity)}</button>`
@@ -852,7 +854,7 @@ export function renderAusruestungView(
     const modValue = row?.querySelector<HTMLSelectElement>('.munition-mod-select')?.value ?? '';
     munitionPicker.set(munitionPickerKey(typ, basisSourceRow), {
       modifikatorSourceRow: modValue === '' ? null : Number(modValue),
-      quantity: Math.max(1, Math.floor(Number(row?.querySelector<HTMLInputElement>('.munition-qty')?.value ?? '1'))),
+      quantity: Math.max(1, Math.floor(Number(row?.querySelector<HTMLSelectElement>('.munition-qty')?.value ?? '1'))),
     });
     renderAusruestungView(container, sheet, character, callbacks);
   }
@@ -870,10 +872,10 @@ export function renderAusruestungView(
       if (button && Number.isFinite(unitPrice)) button.textContent = kaufenLabel(unitPrice * quantity);
     });
   });
-  container.querySelectorAll<HTMLInputElement>('.munition-qty').forEach((input) => {
-    input.addEventListener('change', () => {
-      const row = input.closest<HTMLElement>('[data-basis-source-row]');
-      if (row) updateMunitionPicker(input.dataset.munition as 'pfeile' | 'bolzen', Number(row.dataset.basisSourceRow));
+  container.querySelectorAll<HTMLSelectElement>('.munition-qty').forEach((select) => {
+    select.addEventListener('change', () => {
+      const row = select.closest<HTMLElement>('[data-basis-source-row]');
+      if (row) updateMunitionPicker(select.dataset.munition as 'pfeile' | 'bolzen', Number(row.dataset.basisSourceRow));
     });
   });
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-munition').forEach((btn) => {

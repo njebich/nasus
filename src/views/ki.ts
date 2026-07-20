@@ -115,7 +115,14 @@ function buildRows(sheet: ComputedSheet) {
     // je naeher an einer Wurzel, desto weiter oben, ansonsten alphabetisch. Konzentration wird
     // zusaetzlich explizit an die erste Stelle gezwungen (Nutzer-Anweisung), da sie sonst mit
     // den anderen zwei (aktuell noch fehlerhaften, siehe kiBaumGating.ts) Wurzeln gleichauf laege.
+    // Gruppierung (Nutzer 2026-07-20): freigeschaltete Faehigkeiten nach oben, darunter gesperrte -
+    // innerhalb "freigeschaltet" wiederum TaW>0 vor TaW=0. Jede Gruppe behaelt die obige
+    // Freischalt-Reihenfolge (Tiefe/Alphabet) als Tie-Breaker.
     .sort((a, b) => {
+      const groupOf = (r: { unlocked: boolean; currentValue: number }) => (r.unlocked ? (r.currentValue > 0 ? 0 : 1) : 2);
+      const ga = groupOf(a);
+      const gb = groupOf(b);
+      if (ga !== gb) return ga - gb;
       if (a.referenz === 'ki_konzentration') return -1;
       if (b.referenz === 'ki_konzentration') return 1;
       if (a.depth !== b.depth) return a.depth - b.depth;

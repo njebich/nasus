@@ -7,7 +7,8 @@ import {
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, setWaffenPoolAllocation, updateHeader,
   buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
-  buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyFeuerwaffenMunition, buyAlchemika, removeEquipment, BudgetError, MutationError,
+  buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyFeuerwaffenMunition, buyAlchemika, removeEquipment,
+  setGrundfertigkeitPick, BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
@@ -84,6 +85,18 @@ function handleWaffenPoolChange(poolReferenz: string, equipmentId: string, alloc
   if (!currentCharacter) return;
   try {
     currentCharacter = setWaffenPoolAllocation(currentCharacter, poolReferenz, equipmentId, allocation);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleGrundfertigkeitPick(talentReferenz: string, slotIndex: number, grundfertigkeitReferenz: string): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = setGrundfertigkeitPick(currentCharacter, talentReferenz, slotIndex, grundfertigkeitReferenz);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
@@ -456,7 +469,7 @@ function render(): void {
     } else if (activeTab === 'Kampf') {
       renderKampfView(viewContainer, sheet, currentCharacter, handleWaffenPoolChange);
     } else if (activeTab === 'KI') {
-      renderKiView(viewContainer, sheet, handleValueChange);
+      renderKiView(viewContainer, sheet, handleValueChange, currentCharacter.grundfertigkeitAuswahl, handleGrundfertigkeitPick);
     } else {
       renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange);
     }

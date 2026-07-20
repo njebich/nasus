@@ -44,6 +44,9 @@ function clone(character: CharacterState): CharacterState {
     poolAllocations: { ...character.poolAllocations },
     equipment: character.equipment.map((e) => ({ ...e, selections: { ...e.selections } })),
     ruestungSlots: { ...character.ruestungSlots },
+    grundfertigkeitAuswahl: Object.fromEntries(
+      Object.entries(character.grundfertigkeitAuswahl ?? {}).map(([k, v]) => [k, [...v]]),
+    ),
   };
 }
 
@@ -153,6 +156,40 @@ export function removeSelection(character: CharacterState, referenz: string): Ch
   const candidate = clone(character);
   delete candidate.selections[rule.referenz.toLowerCase()];
   return candidate; // Entfernen macht das Budget nie schlechter, keine Pruefung noetig
+}
+
+/** Setzt die fest gewaehlte Grundfertigkeit fuer einen Slot eines Talents mit Grundfertigkeit-
+ *  Auswahl (aktuell nur 'Meister der Grundfertigkeiten', siehe grundfertigkeitAuswahl.ts). Eine
+ *  Grundfertigkeit darf innerhalb desselben Talents nicht doppelt gewaehlt werden - eine
+ *  Kollision entfernt die Auswahl aus ihrem bisherigen Slot (die Reihenfolge der Slots hat sonst
+ *  keine Bedeutung). leer ('') loescht den Slot wieder. */
+export function setGrundfertigkeitPick(
+  character: CharacterState,
+  talentReferenz: string,
+  slotIndex: number,
+  grundfertigkeitReferenz: string,
+): CharacterState {
+  const talentRule = getRule(talentReferenz);
+  if (!talentRule) throw new MutationError(`Referenz '${talentReferenz}' existiert nicht`);
+  if (grundfertigkeitReferenz) {
+    const gfRule = getRule(grundfertigkeitReferenz);
+    if (!gfRule || gfRule.kategorie !== 'Grundfertigkeit') {
+      throw new MutationError(`'${grundfertigkeitReferenz}' ist keine Grundfertigkeit`);
+    }
+  }
+
+  const candidate = clone(character);
+  const key = talentReferenz.toLowerCase();
+  const slots = [...(candidate.grundfertigkeitAuswahl[key] ?? [])];
+  if (grundfertigkeitReferenz) {
+    for (let i = 0; i < slots.length; i++) {
+      if (i !== slotIndex && slots[i] === grundfertigkeitReferenz) slots[i] = '';
+    }
+  }
+  while (slots.length <= slotIndex) slots.push('');
+  slots[slotIndex] = grundfertigkeitReferenz;
+  candidate.grundfertigkeitAuswahl[key] = slots;
+  return candidate;
 }
 
 export function setPoolAllocation(character: CharacterState, referenz: string, allocation: PoolAllocation): CharacterState {

@@ -15,8 +15,13 @@
 
 import type { ComputedSheet } from '../engine/characterSheet';
 import { isKiFaehigkeitUnlocked, getKiVorbedingungen, getKiTreeDepths } from '../engine/kiBaumGating';
+import {
+  MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ, grundfertigkeitSlotCount, getGrundfertigkeitOptionen,
+} from '../engine/grundfertigkeitAuswahl';
 import { KI_DAUER } from '../data/kiFaehigkeiten';
 import type { OnValueChange } from './categoryView';
+
+export type OnGrundfertigkeitPick = (talentReferenz: string, slotIndex: number, grundfertigkeitReferenz: string) => void;
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -64,7 +69,38 @@ function vorbedingungTitle(referenz: string, sheet: ComputedSheet): string {
   return `Benötigt: ${parts.join(' ODER ')}`;
 }
 
-function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet): string {
+/** "Meister der Grundfertigkeiten"-Sonderzeile: ein Dropdown je freigeschaltetem Slot (Slot 1 ab
+ *  TaW 1, danach alle 5 TaW ein weiteres, siehe grundfertigkeitSlotCount) - Nutzer-Anweisung
+ *  2026-07-20. Eine bereits in einem anderen Slot gewaehlte Grundfertigkeit wird in den uebrigen
+ *  Dropdowns deaktiviert, damit sich Mehrfachauswahl nicht versehentlich ueberschneidet. */
+function renderGrundfertigkeitPicksRow(currentValue: number, gewaehlt: string[]): string {
+  const slotCount = grundfertigkeitSlotCount(currentValue);
+  if (slotCount === 0) return '';
+  const optionen = getGrundfertigkeitOptionen();
+
+  const dropdowns = Array.from({ length: slotCount }, (_, slotIndex) => {
+    const selected = gewaehlt[slotIndex] ?? '';
+    const options = optionen
+      .filter((o) => o.referenz === selected || !gewaehlt.includes(o.referenz))
+      .map((o) => `<option value="${o.referenz}"${o.referenz === selected ? ' selected' : ''}>${escapeHtml(o.name)}</option>`)
+      .join('');
+    return `
+      <select class="ki-grundfertigkeit-pick" data-slot-index="${slotIndex}" aria-label="Grundfertigkeit Slot ${slotIndex + 1}">
+        <option value="">– wählen –</option>
+        ${options}
+      </select>`;
+  }).join('');
+
+  return `
+    <tr class="ki-grundfertigkeit-picks-row" data-referenz="${MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ}-picks">
+      <td colspan="7">
+        <span class="ki-grundfertigkeit-picks-label">Gewählte Grundfertigkeiten:</span>
+        ${dropdowns}
+      </td>
+    </tr>`;
+}
+
+function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet, gewaehlt: string[]): string {
   const { referenz, name, currentValue, kostenNext, wirkung, unlocked } = r;
   const eigBon = getEigBonusValue(sheet, r.eigBonusReferenz);
   // Probe ist nur sinnvoll, sobald die Faehigkeit ueberhaupt gelernt ist (Nutzer 2026-07-20).
@@ -73,6 +109,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   const rowClass = unlocked ? '' : 'ki-row-locked';
   const plusTitle = vorbedingungTitle(referenz, sheet);
   const costLabel = kostenNext !== undefined ? `${kostenNext} SP` : '';
+  const picksRow = referenz === MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ ? renderGrundfertigkeitPicksRow(currentValue, gewaehlt) : '';
 
   return `
     <tr class="${rowClass}" data-referenz="${referenz}">
@@ -88,7 +125,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
         <span class="stat-cost">${costLabel}</span>
       </td>
-    </tr>`;
+    </tr>${picksRow}`;
 }
 
 function buildRows(sheet: ComputedSheet) {
@@ -130,8 +167,15 @@ function buildRows(sheet: ComputedSheet) {
     });
 }
 
-export function renderKiView(container: HTMLElement, sheet: ComputedSheet, onChange: OnValueChange): void {
+export function renderKiView(
+  container: HTMLElement,
+  sheet: ComputedSheet,
+  onChange: OnValueChange,
+  grundfertigkeitAuswahl: Record<string, string[]>,
+  onGrundfertigkeitPick: OnGrundfertigkeitPick,
+): void {
   const rows = buildRows(sheet);
+  const gewaehlt = grundfertigkeitAuswahl[MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ] ?? [];
 
   container.innerHTML = `
     ${renderInfoBlock()}
@@ -140,7 +184,7 @@ export function renderKiView(container: HTMLElement, sheet: ComputedSheet, onCha
         <thead><tr>
           <th>Probe</th><th>Name</th><th>Wirkung</th><th>Eig.Bon</th><th>VD</th><th>WD</th><th>TaW</th>
         </tr></thead>
-        <tbody>${rows.map((r) => renderRow(r, sheet)).join('')}</tbody>
+        <tbody>${rows.map((r) => renderRow(r, sheet, gewaehlt)).join('')}</tbody>
       </table>
     </div>`;
 
@@ -155,6 +199,13 @@ export function renderKiView(container: HTMLElement, sheet: ComputedSheet, onCha
     tr.querySelector('.stat-dec')?.addEventListener('click', () => {
       if (!row.unlocked) return;
       onChange(referenz, Math.max(0, row.currentValue - 1));
+    });
+  });
+
+  container.querySelectorAll<HTMLSelectElement>('.ki-grundfertigkeit-pick').forEach((select) => {
+    select.addEventListener('change', () => {
+      const slotIndex = Number(select.dataset.slotIndex);
+      onGrundfertigkeitPick(MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ, slotIndex, select.value);
     });
   });
 }

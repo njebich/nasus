@@ -102,6 +102,10 @@ export interface CharacterState extends CharacterHeader {
    *  ruestungSlotKey). Getrennt von `equipment`, da Ruestung an feste Slots gebunden ist,
    *  waehrend `equipment` eine freie Liste ohne Zonen-/Lagen-Beschraenkung bleibt. */
   ruestungSlots: Record<string, RuestungSlotEntry>;
+  /** Pro Talent mit Grundfertigkeit-Auswahl (aktuell nur `ki_meister_der_grundfertigkeiten`) die
+   *  fest gewaehlten Grundfertigkeit-Referenzen, ein Array-Index je freigeschaltetem Slot (Slot-
+   *  Anzahl skaliert mit dem TaW des Talents selbst, siehe ki.ts's grundfertigkeitSlotCount). */
+  grundfertigkeitAuswahl: Record<string, string[]>;
 }
 
 /**
@@ -192,6 +196,8 @@ export function loadCharacter(id: string): CharacterState | null {
   // Migrations-Fallback fuer bereits in localStorage gespeicherte Charaktere von vor dem
   // ruestungSlots-Feld (2026-07-17) - ohne das wirft computeSheet beim Laden alter Charaktere.
   if (!parsed.ruestungSlots) parsed.ruestungSlots = {};
+  // Migrations-Fallback fuer Charaktere von vor dem grundfertigkeitAuswahl-Feld (2026-07-20).
+  if (!parsed.grundfertigkeitAuswahl) parsed.grundfertigkeitAuswahl = {};
   // Angst-Referenzen wurden von vn_<stufenname>_<thema> auf das numerische, exklusiv
   // auswertbare Schema vn_angst_<thema>_<5|10|15|20|25|30> umgestellt. Bei alten, zuvor noch
   // gleichzeitig moeglichen Mehrfachauswahlen bleibt pro Thema deterministisch die hoechste
@@ -267,6 +273,7 @@ export function createCharacter(
     poolAllocations: {},
     equipment: [],
     ruestungSlots: {},
+    grundfertigkeitAuswahl: {},
   };
   if (startbudget) {
     const preset = STARTBUDGET_PRESETS[startbudget];

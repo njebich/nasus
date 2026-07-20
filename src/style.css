@@ -935,3 +935,20 @@ body {
 .ki-row-locked .stat-inc, .ki-row-locked .stat-dec {
   cursor: not-allowed;
 }
+
+.ki-grundfertigkeit-picks-row td {
+  text-align: left;
+  white-space: normal;
+  padding-top: 0.2rem;
+  padding-bottom: 0.6rem;
+}
+
+.ki-grundfertigkeit-picks-label {
+  margin-right: 0.5rem;
+  opacity: 0.75;
+  font-size: 0.9em;
+}
+
+.ki-grundfertigkeit-pick {
+  margin: 0.15rem 0.3rem 0.15rem 0;
+}

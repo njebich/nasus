@@ -279,8 +279,11 @@ function formatRangeCell(rangeModRaw: string | number, basisValue: number, gutVa
   const meisterlich = meisterlichValue + rangeMod;
   if (![normal, gut, meisterlich].every(Number.isFinite)) return 'x';
   let out = `${normal}`;
-  if (gut > 1) out += ` g${gut}`;
-  if (meisterlich > 21) out += ` m${meisterlich}`;
+  // Gating auf dem TALENT-Wert selbst (vor Reichweiten-Modifikator), nicht auf der Summe -
+  // sonst wuerde ein positiver Reichweiten-Bonus (z.B. Bogen bei 10m: +4) den ungetalenteten
+  // Sockelwert (1 bzw. 21) ueber die Schwelle heben und die Spalte faelschlich anzeigen.
+  if (gutValue > 1) out += ` g${gut}`;
+  if (meisterlichValue > 21) out += ` m${meisterlich}`;
   return out;
 }
 

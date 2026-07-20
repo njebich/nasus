@@ -54,6 +54,12 @@ describe('buyArtefakt', () => {
     const removed = removeEquipment(updated, updated.equipment[0].id);
     expect(computeSheet(removed).dublonenSpent).toBe(0);
   });
+
+  it('wendet die Kaufsperre ab Verfügbarkeit 5 auch auf Artefakte an', () => {
+    const gesperrt = ARTEFAKT_KOSTEN.find((r) => Number(r.verfuegbarkeitPermanent) >= 5 && r.kostenPermanent)!;
+    const character = withDublonen(Number(gesperrt.kostenPermanent));
+    expect(() => buyArtefakt(character, gesperrt.referenz, gesperrt.grad!, 'permanent')).toThrow(MutationError);
+  });
 });
 
 describe('buyFeuerwaffe', () => {

@@ -353,6 +353,22 @@ body {
   border-bottom: 1px solid #8882;
 }
 
+.ausruestung-buy-button {
+  box-sizing: border-box;
+  width: 12rem;
+  min-height: 2rem;
+  white-space: nowrap;
+}
+
+.ausruestung-buy-button.ausruestung-buy-locked:disabled {
+  color: #555;
+  background: #d2d2d2;
+  border-color: #aaa;
+  cursor: not-allowed;
+  opacity: 0.72;
+  font-size: 0.72rem;
+}
+
 .ausruestung-row.munition-row {
   grid-template-columns: minmax(10rem, 1fr) minmax(10rem, auto) 4rem minmax(24rem, 2fr) max-content;
   overflow-x: auto;

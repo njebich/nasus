@@ -94,7 +94,7 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
       const effectiveMax = grenzen.max + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
       if (wert < grenzen.min || wert > effectiveMax) {
         throw new MutationError(
-          `'${rule.referenz}' muss fuer ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`,
+          `'${rule.referenz}' muss für ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`,
         );
       }
     }
@@ -188,11 +188,11 @@ function newEquipmentId(): string {
 export function buyPreislisteItem(character: CharacterState, sourceRow: number, quantity: number): CharacterState {
   const row = PREISLISTE.find((r) => r.sourceRow === sourceRow);
   if (!row) throw new MutationError(`Preisliste-Eintrag (Zeile ${sourceRow}) existiert nicht`);
-  if (quantity <= 0) throw new MutationError('Anzahl muss groesser als 0 sein');
+  if (quantity <= 0) throw new MutationError('Anzahl muss größer als 0 sein');
 
   const unitPrice = previewPreislistePrice(row, 1);
   if (unitPrice === null) {
-    throw new MutationError(`'${row.name}' ist nicht kaeuflich (kein Preis hinterlegt: "${row.preisRoh}")`);
+    throw new MutationError(`'${row.name}' ist nicht käuflich (kein Preis hinterlegt: "${row.preisRoh}")`);
   }
 
   const candidate = clone(character);
@@ -211,8 +211,15 @@ export function buyArtefakt(
   const kostenRow = ARTEFAKT_KOSTEN.find((r) => r.referenz === referenz && r.grad === grad);
   if (!kostenRow) throw new MutationError(`Artefakt '${referenz}' Grad ${grad} existiert nicht`);
 
+  const verfuegbarkeit = Number(variant === 'einmalig'
+    ? kostenRow.verfuegbarkeitEinmalig
+    : kostenRow.verfuegbarkeitPermanent);
+  if (Number.isFinite(verfuegbarkeit) && verfuegbarkeit >= 5) {
+    throw new MutationError(`'${referenz}' Grad ${grad} (${variant}) ist nicht verfügbar (Verfügbarkeit ${verfuegbarkeit})`);
+  }
+
   const price = previewArtefaktPrice(kostenRow, variant);
-  if (price === null) throw new MutationError(`Kein Preis fuer '${referenz}' Grad ${grad} (${variant}) hinterlegt`);
+  if (price === null) throw new MutationError(`Kein Preis für '${referenz}' Grad ${grad} (${variant}) hinterlegt`);
 
   const candidate = clone(character);
   const entry: EquipmentEntry = {
@@ -238,7 +245,7 @@ const VERFUEGBARKEIT_SPERRE_AB = 5;
  *  Reminder im Entwickeln-Sheet (Zeile 36), dass der Region-Split hier noch nachgeholt werden muss. */
 function assertFernkampfVerfuegbar(stufe: number | undefined, name: string): void {
   if (stufe !== undefined && stufe >= VERFUEGBARKEIT_SPERRE_AB) {
-    throw new MutationError(`'${name}' ist nicht verfuegbar (Verfuegbarkeit ${stufe})`);
+    throw new MutationError(`'${name}' ist nicht verfügbar (Verfügbarkeit ${stufe})`);
   }
 }
 
@@ -255,13 +262,13 @@ export function equipRuestung(
 ): CharacterState {
   if (!RS_GRUPPEN.includes(gruppe)) throw new MutationError(`Unbekannte TZ-Gruppe '${gruppe}'`);
   if (!RUESTUNG_LAGEN.includes(lage as (typeof RUESTUNG_LAGEN)[number])) {
-    throw new MutationError(`Lage '${lage}' ist ungueltig (erlaubt: 1-5)`);
+    throw new MutationError(`Lage '${lage}' ist ungültig (erlaubt: 1-5)`);
   }
 
   const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === basisSourceRow);
   const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === verarbeitungSourceRow);
   const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === anpassungSourceRow);
-  if (!basis) throw new MutationError(`Ruestungsteil (Zeile ${basisSourceRow}) existiert nicht`);
+  if (!basis) throw new MutationError(`Rüstungsteil (Zeile ${basisSourceRow}) existiert nicht`);
   if (!verarbeitung) throw new MutationError(`Verarbeitung (Zeile ${verarbeitungSourceRow}) existiert nicht`);
   if (!anpassung) throw new MutationError(`Anpassung (Zeile ${anpassungSourceRow}) existiert nicht`);
   if (Number(basis['Lage']) !== lage) {
@@ -277,7 +284,7 @@ export function equipRuestung(
     : welt === 'AW' ? composed.verfuegbarkeitAw
     : undefined;
   if (verfuegbarkeit !== undefined && verfuegbarkeit >= VERFUEGBARKEIT_SPERRE_AB) {
-    throw new MutationError(`'${basis.name}' ist in ${welt} nicht verfuegbar (Verfuegbarkeit ${verfuegbarkeit})`);
+    throw new MutationError(`'${basis.name}' ist in ${welt} nicht verfügbar (Verfügbarkeit ${verfuegbarkeit})`);
   }
 
   const candidate = clone(character);
@@ -323,15 +330,15 @@ export function buyShield(
   if (!fertigung) throw new MutationError(`Schild-Fertigung (Zeile ${fertigungSourceRow}) existiert nicht`);
   if (!bespannung) throw new MutationError(`Schild-Bespannung (Zeile ${bespannungSourceRow}) existiert nicht`);
   if (!istSchildKomponenteVerfuegbar(material.name, character.spezies)) {
-    throw new MutationError(`Material '${material.name}' ist nur fuer Zentauren verfuegbar`);
+    throw new MutationError(`Material '${material.name}' ist nur für Zentauren verfügbar`);
   }
   if (!istSchildKomponenteVerfuegbar(bespannung.name, character.spezies)) {
-    throw new MutationError(`Bespannung '${bespannung.name}' ist nur fuer Zentauren verfuegbar`);
+    throw new MutationError(`Bespannung '${bespannung.name}' ist nur für Zentauren verfügbar`);
   }
 
   const composed = composeShield(row, material, fertigung, bespannung);
   if (composed.preis === null) {
-    throw new MutationError(`Kein automatischer Preis fuer diese Kombination (Materialpreis liegt im Ermessen der Spielleitung)`);
+    throw new MutationError(`Kein automatischer Preis für diese Kombination (Materialpreis liegt im Ermessen der Spielleitung)`);
   }
 
   const candidate = clone(character);
@@ -375,21 +382,21 @@ export function buyWeapon(
   if (!anpassung) throw new MutationError(`Anpassung (Zeile ${anpassungSourceRow}) existiert nicht`);
   if (!schaftmaterial) throw new MutationError(`Schaftmaterial (Zeile ${schaftmaterialSourceRow}) existiert nicht`);
   if (!istWaffenKomponenteVerfuegbar(material, character.spezies)) {
-    throw new MutationError(`Material '${material.name}' ist fuer '${character.spezies}' nicht verfuegbar`);
+    throw new MutationError(`Material '${material.name}' ist für '${character.spezies}' nicht verfügbar`);
   }
   if (!istWaffenKomponenteVerfuegbar(fertigung, character.spezies)) {
-    throw new MutationError(`Fertigung '${fertigung.name}' ist fuer '${character.spezies}' nicht verfuegbar`);
+    throw new MutationError(`Fertigung '${fertigung.name}' ist für '${character.spezies}' nicht verfügbar`);
   }
   if (!istWaffenKomponenteVerfuegbar(anpassung, character.spezies)) {
-    throw new MutationError(`Anpassung '${anpassung.name}' ist fuer '${character.spezies}' nicht verfuegbar`);
+    throw new MutationError(`Anpassung '${anpassung.name}' ist für '${character.spezies}' nicht verfügbar`);
   }
   if (!istWaffenKomponenteVerfuegbar(schaftmaterial, character.spezies)) {
-    throw new MutationError(`Schaftmaterial '${schaftmaterial.name}' ist fuer '${character.spezies}' nicht verfuegbar`);
+    throw new MutationError(`Schaftmaterial '${schaftmaterial.name}' ist für '${character.spezies}' nicht verfügbar`);
   }
 
   const composed = composeWeapon(row, material, fertigung, anpassung, schaftmaterial);
   if (composed.preis === null) {
-    throw new MutationError(`Kein automatischer Preis fuer '${row.name}' (kein Materialpreis-Faktor hinterlegt)`);
+    throw new MutationError(`Kein automatischer Preis für '${row.name}' (kein Materialpreis-Faktor hinterlegt)`);
   }
 
   const candidate = clone(character);
@@ -423,7 +430,7 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
   if (!row) throw new MutationError(`${typ === 'boegen' ? 'Bogen' : 'Armbrust'} (Zeile ${sourceRow}) existiert nicht`);
   assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name);
   if (row.preisDublonen === undefined) {
-    throw new MutationError(`'${row.name}' ist nicht kaeuflich (kein Preis hinterlegt: "${row['Preis'] ?? '?'}")`);
+    throw new MutationError(`'${row.name}' ist nicht käuflich (kein Preis hinterlegt: "${row['Preis'] ?? '?'}")`);
   }
 
   const candidate = clone(character);
@@ -485,7 +492,7 @@ export function buyMunition(
   character: CharacterState, typ: 'pfeile' | 'bolzen',
   basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number,
 ): CharacterState {
-  if (quantity <= 0) throw new MutationError('Anzahl muss groesser als 0 sein');
+  if (quantity <= 0) throw new MutationError('Anzahl muss größer als 0 sein');
   const table = typ === 'pfeile' ? PFEILE : BOLZEN;
   const basis = table.find((r) => r.sourceRow === basisSourceRow);
   if (!basis) throw new MutationError(`${typ === 'pfeile' ? 'Pfeil' : 'Bolzen'} (Zeile ${basisSourceRow}) existiert nicht`);
@@ -505,7 +512,7 @@ export function buyMunition(
   const anzeigeName = modifikator ? `${modifikator.name} (${basis.name})` : basis.name;
   assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, anzeigeName);
   if (composed.preisDublonen === null) {
-    throw new MutationError(`'${basis.name}' ist nicht kaeuflich (kein Preis hinterlegt: "${basis['Preis'] ?? '?'}")`);
+    throw new MutationError(`'${basis.name}' ist nicht käuflich (kein Preis hinterlegt: "${basis['Preis'] ?? '?'}")`);
   }
 
   const candidate = clone(character);
@@ -526,7 +533,7 @@ export function buyFeuerwaffenMunition(
 ): CharacterState {
   if (![1, 10, 100].includes(quantity)) throw new MutationError('Anzahl muss 1, 10 oder 100 sein');
   const ammo = FEUERWAFFEN_MUNITION_PREISE.find((row) => row.art === art && row.kaliber === kaliber);
-  if (!ammo) throw new MutationError(`Keine passende Feuerwaffenmunition fuer Kaliber ${kaliber}`);
+  if (!ammo) throw new MutationError(`Keine passende Feuerwaffenmunition für Kaliber ${kaliber}`);
 
   const candidate = clone(character);
   candidate.equipment = [...candidate.equipment, {
@@ -552,12 +559,12 @@ export function buyFeuerwaffenMunition(
  * eine Anzeige-Info (Nutzer-Vorgabe: keine Spielregeln ableiten).
  */
 export function buyAlchemika(character: CharacterState, sourceRow: number, quantity: number): CharacterState {
-  if (quantity <= 0) throw new MutationError('Anzahl muss groesser als 0 sein');
+  if (quantity <= 0) throw new MutationError('Anzahl muss größer als 0 sein');
   const row = ALCHEMIKA.find((r) => r.sourceRow === sourceRow);
   if (!row) throw new MutationError(`Alchemika-Eintrag (Zeile ${sourceRow}) existiert nicht`);
   assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name);
   if (!row.preisAvailable || row.preisDublonen === undefined) {
-    throw new MutationError(`'${row.name}' ist nicht kaeuflich (kein Preis hinterlegt: "${row.preisRoh ?? '?'}")`);
+    throw new MutationError(`'${row.name}' ist nicht käuflich (kein Preis hinterlegt: "${row.preisRoh ?? '?'}")`);
   }
 
   const candidate = clone(character);

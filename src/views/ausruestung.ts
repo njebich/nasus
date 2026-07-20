@@ -51,6 +51,14 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function kaufenLabel(preis: number): string {
+  return `Kaufen (${formatDublonen(preis)})`;
+}
+
+function gesperrtLabel(verfuegbarkeit: number): string {
+  return `(gesperrt) Verfügbarkeit ${verfuegbarkeit}`;
+}
+
 const PREISLISTE_ARTEN = [...new Set(PREISLISTE.map((r) => r.art).filter((a): a is string => !!a))].sort();
 const SHIELDS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] === 'Schild');
 const WEAPONS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] !== 'Schild');
@@ -110,18 +118,14 @@ const alchemikaQty = new Map<number, number>();
 function renderAlchemikaRow(row: AlchemikaRow): string {
   const qty = alchemikaQty.get(row.sourceRow) ?? 1;
   const gesperrt = row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
-  const priceText = row.preisDublonen === undefined
-    ? `nicht kaeuflich (${escapeHtml(row.preisRoh ?? '?')})`
-    : gesperrt ? `Verfuegbarkeit ${row.verfuegbarkeitStufe} (gesperrt)` : `${formatDublonen(row.preisDublonen)}/Stk`;
   return `
     <div class="ausruestung-row" data-alchemika="${row.sourceRow}">
       <span class="stat-label">${escapeHtml(row.name)}</span>
       <span class="stat-cost">${escapeHtml(row.wirkung)}${row.beschreibung ? ` — ${escapeHtml(row.beschreibung)}` : ''}</span>
-      <span class="stat-cost">${priceText}</span>
-      ${row.preisDublonen !== undefined && !gesperrt ? `
-        <input type="number" class="ausruestung-qty" min="1" value="${qty}" data-alchemika-qty="${row.sourceRow}" />
-        <button type="button" class="ausruestung-buy-alchemika" data-source-row="${row.sourceRow}">Kaufen</button>
-      ` : '<span></span><span></span>'}
+      ${row.preisDublonen !== undefined ? `
+        <input type="number" class="ausruestung-qty" min="1" value="${qty}" data-alchemika-qty="${row.sourceRow}" ${gesperrt ? 'disabled' : ''}/>
+        <button type="button" class="ausruestung-buy-button ausruestung-buy-alchemika${gesperrt ? ' ausruestung-buy-locked' : ''}" data-source-row="${row.sourceRow}" data-unit-price="${row.preisDublonen}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(row.verfuegbarkeitStufe!) : kaufenLabel(row.preisDublonen * qty)}</button>
+      ` : `<span class="stat-cost">nicht käuflich (${escapeHtml(row.preisRoh ?? '?')})</span><span></span>`}
     </div>`;
 }
 
@@ -141,15 +145,13 @@ function renderAlchemikaKategorie(kategorie: string): string {
 
 function renderPreislisteRow(row: (typeof PREISLISTE)[number]): string {
   const price = previewPreislistePrice(row, 1);
-  const priceText = price !== null ? `${price} D` : `nicht kaeuflich (${escapeHtml(row.preisRoh ?? '?')})`;
   return `
     <div class="ausruestung-row">
       <span class="stat-label">${escapeHtml(row.name ?? '')}</span>
-      <span class="stat-cost">${priceText}</span>
       ${price !== null ? `
         <input type="number" class="ausruestung-qty" min="1" value="1" data-source-row="${row.sourceRow}" />
-        <button type="button" class="ausruestung-buy" data-source-row="${row.sourceRow}">Kaufen</button>
-      ` : '<span></span><span></span>'}
+        <button type="button" class="ausruestung-buy-button ausruestung-buy" data-source-row="${row.sourceRow}" data-unit-price="${price}">${kaufenLabel(price)}</button>
+      ` : `<span class="stat-cost">nicht käuflich (${escapeHtml(row.preisRoh ?? '?')})</span><span></span>`}
     </div>`;
 }
 
@@ -158,11 +160,15 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number]): string {
   const options = kostenRows.map((k) => {
     const einmalig = previewArtefaktPrice(k, 'einmalig');
     const permanent = previewArtefaktPrice(k, 'permanent');
+    const verfuegbarkeitEinmalig = Number(k.verfuegbarkeitEinmalig);
+    const verfuegbarkeitPermanent = Number(k.verfuegbarkeitPermanent);
+    const einmaligGesperrt = Number.isFinite(verfuegbarkeitEinmalig) && verfuegbarkeitEinmalig >= 5;
+    const permanentGesperrt = Number.isFinite(verfuegbarkeitPermanent) && verfuegbarkeitPermanent >= 5;
     return `
       <div class="artefakt-grad-row">
         <span>Grad ${escapeHtml(k.grad ?? '?')}</span>
-        ${einmalig !== null ? `<button type="button" class="ausruestung-buy-artefakt" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="einmalig">Einmalig kaufen (${einmalig} D)</button>` : ''}
-        ${permanent !== null ? `<button type="button" class="ausruestung-buy-artefakt" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="permanent">Permanent kaufen (${permanent} D)</button>` : ''}
+        ${einmalig !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${einmaligGesperrt ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="einmalig" ${einmaligGesperrt ? 'disabled' : ''}>${einmaligGesperrt ? gesperrtLabel(verfuegbarkeitEinmalig) : `Einmalig kaufen (${formatDublonen(einmalig)})`}</button>` : ''}
+        ${permanent !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${permanentGesperrt ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="permanent" ${permanentGesperrt ? 'disabled' : ''}>${permanentGesperrt ? gesperrtLabel(verfuegbarkeitPermanent) : `Permanent kaufen (${formatDublonen(permanent)})`}</button>` : ''}
       </div>`;
   }).join('');
   // <details> als direktes Flex-Item hat einen Chromium-Renderbug (open=false im DOM, Inhalt
@@ -278,9 +284,9 @@ function renderShieldRow(row: (typeof SHIELDS)[number], character: CharacterStat
       <select class="schild-bespannung-select" data-shield="${row.sourceRow}">
         ${bespannungOptionen.map((b) => `<option value="${b.sourceRow}" ${b.sourceRow === bespannung.sourceRow ? 'selected' : ''}>${escapeHtml(b.name)}</option>`).join('')}
       </select>
-      <span class="stat-cost">RS ${composed.rs} | ${composed.preis !== null ? `${composed.preis} D` : 'kein Preis (Meister-Ermessen)'}</span>
+      <span class="stat-cost">RS ${composed.rs}${composed.preis === null ? ' | kein Preis (Meister-Ermessen)' : ''}</span>
       ${composed.preis !== null
-    ? `<button type="button" class="ausruestung-buy-shield" data-shield="${row.sourceRow}">Kaufen</button>`
+    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-shield" data-shield="${row.sourceRow}">${kaufenLabel(composed.preis)}</button>`
     : '<span></span>'}
     </div>`;
 }
@@ -352,9 +358,9 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
       <select class="waffe-schaftmaterial-select" data-weapon="${row.sourceRow}">
         ${schaftmaterialOptionen.map((s) => `<option value="${s.sourceRow}" ${s.sourceRow === schaftmaterial.sourceRow ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('')}
       </select>` : ''}
-      <span class="stat-cost">AT ${composed.at} | PA ${composed.pa} | ${composed.preis !== null ? `${composed.preis} D` : 'kein Preis (kein Materialpreis-Faktor)'}</span>
+      <span class="stat-cost">AT ${composed.at} | PA ${composed.pa}${composed.preis === null ? ' | kein Preis (kein Materialpreis-Faktor)' : ''}</span>
       ${composed.preis !== null
-    ? `<button type="button" class="ausruestung-buy-weapon" data-weapon="${row.sourceRow}">Kaufen</button>`
+    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-weapon" data-weapon="${row.sourceRow}">${kaufenLabel(composed.preis)}</button>`
     : '<span></span>'}
     </div>
     <div class="waffe-details">
@@ -370,17 +376,13 @@ function formatDublonen(value: number): string {
  *  Komposition wie NK-Waffen/Schilde/Ruestung - siehe project-fk-waffen-erfassung memory). */
 function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow): string {
   const gesperrt = row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
-  const preisText = row.preisDublonen === undefined
-    ? `nicht kaeuflich (${escapeHtml(row['Preis'] ?? '?')})`
-    : gesperrt ? `Verfuegbarkeit ${row.verfuegbarkeitStufe} (gesperrt)` : formatDublonen(row.preisDublonen);
   return `
     <div class="ausruestung-row" data-fernkampfwaffe="${typ}:${row.sourceRow}">
       <span class="stat-label">${escapeHtml(row.name)}</span>
       <span class="stat-cost">Min.Stä ${escapeHtml(row['Min. Stä'] ?? '-')} | ${escapeHtml(row['1.W'] ?? '-')}${row['Fixschaden'] ? escapeHtml(row['Fixschaden']) : ''} | RW ${escapeHtml(row['RW'] ?? '-')} | Nachladezeit ${escapeHtml(row['Nachladezeit'] ?? '-')}</span>
-      <span class="stat-cost">${preisText}</span>
-      ${row.preisDublonen !== undefined && !gesperrt
-    ? `<button type="button" class="ausruestung-buy-fernkampfwaffe" data-typ="${typ}" data-source-row="${row.sourceRow}">Kaufen</button>`
-    : '<span></span>'}
+      ${row.preisDublonen !== undefined
+    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-fernkampfwaffe${gesperrt ? ' ausruestung-buy-locked' : ''}" data-typ="${typ}" data-source-row="${row.sourceRow}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(row.verfuegbarkeitStufe!) : kaufenLabel(row.preisDublonen)}</button>`
+    : `<span class="stat-cost">nicht käuflich (${escapeHtml(row['Preis'] ?? '?')})</span>`}
     </div>`;
 }
 
@@ -406,8 +408,8 @@ function renderFeuerwaffeRow(row: FernkampfRow): string {
       <select class="feuerwaffe-verarbeitung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.verarbeitungen, auswahl.verarbeitungSourceRow)}</select>
       <select class="feuerwaffe-anpassung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.anpassungen, auswahl.anpassungSourceRow)}</select>
       ${gesperrt
-    ? `<span class="stat-cost feuerwaffe-gesperrt">Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)</span>`
-    : `<button type="button" class="ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">Kaufen (${formatDublonen(composed.preisDublonen)})</button>`}
+    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-feuerwaffe ausruestung-buy-locked" data-feuerwaffe="${row.sourceRow}" disabled>${gesperrtLabel(composed.verfuegbarkeitStufe)}</button>`
+    : `<button type="button" class="ausruestung-buy-button ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">${kaufenLabel(composed.preisDublonen)}</button>`}
     </div>
     <div class="waffe-details feuerwaffe-details" data-feuerwaffe-details="${row.sourceRow}">
       <span>${escapeHtml(row['Bauart'] ?? '-')} | ${escapeHtml(row['Lademechanik'] ?? '-')} | ${escapeHtml(row['Schloss'] ?? '-')} | ${escapeHtml(row['Lauf'] ?? '-')}</span>
@@ -474,10 +476,6 @@ function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
       : null;
     const composed = composeMunition(basis, modifikator);
     const gesperrt = composed.verfuegbarkeitStufe !== undefined && composed.verfuegbarkeitStufe >= 5;
-    const preisText = composed.preisDublonen === null
-      ? 'nicht kaeuflich'
-      : gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : `${formatDublonen(composed.preisDublonen)}/Stk`;
-
     return `
       <div class="ausruestung-row munition-row" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}">
         <span class="munition-name">${escapeHtml(basis.name)} <span class="munition-kategorie">(${escapeHtml(basis['Kategorie'] ?? '')})</span></span>
@@ -486,9 +484,9 @@ function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
           ${modOptionen.map((r) => `<option value="${r.sourceRow}" ${modifikator?.sourceRow === r.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
         </select>
         <input type="number" class="munition-qty" min="1" value="${sel.quantity}" data-munition="${typ}" aria-label="Menge f&uuml;r ${escapeHtml(basis.name)}" />
-        <span class="stat-cost">${escapeHtml(composed.wuerfel)} | Fixschaden ${composed.fixschaden >= 0 ? '+' : ''}${composed.fixschaden} | RB ${composed.rb >= 0 ? '+' : ''}${composed.rb} | RW-Mod ${composed.rwModMeter >= 0 ? '+' : ''}${composed.rwModMeter}m | BE ${composed.be} | ${preisText}</span>
-        ${composed.preisDublonen !== null && !gesperrt
-      ? `<button type="button" class="ausruestung-buy-munition" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}">Kaufen</button>`
+        <span class="stat-cost">${escapeHtml(composed.wuerfel)} | Fixschaden ${composed.fixschaden >= 0 ? '+' : ''}${composed.fixschaden} | RB ${composed.rb >= 0 ? '+' : ''}${composed.rb} | RW-Mod ${composed.rwModMeter >= 0 ? '+' : ''}${composed.rwModMeter}m | BE ${composed.be}${composed.preisDublonen === null ? ' | nicht käuflich' : ''}</span>
+        ${composed.preisDublonen !== null
+      ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-munition${gesperrt ? ' ausruestung-buy-locked' : ''}" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(composed.verfuegbarkeitStufe!) : kaufenLabel(composed.preisDublonen * sel.quantity)}</button>`
       : '<span></span>'}
       </div>`;
   }).join('');
@@ -864,6 +862,14 @@ export function renderAusruestungView(
       if (row) updateMunitionPicker(sel.dataset.munition as 'pfeile' | 'bolzen', Number(row.dataset.basisSourceRow));
     });
   });
+  container.querySelectorAll<HTMLInputElement>('.ausruestung-qty[data-source-row]').forEach((input) => {
+    input.addEventListener('input', () => {
+      const button = container.querySelector<HTMLButtonElement>(`.ausruestung-buy[data-source-row="${input.dataset.sourceRow}"]`);
+      const quantity = Math.max(1, Math.floor(Number(input.value || '1')));
+      const unitPrice = Number(button?.dataset.unitPrice);
+      if (button && Number.isFinite(unitPrice)) button.textContent = kaufenLabel(unitPrice * quantity);
+    });
+  });
   container.querySelectorAll<HTMLInputElement>('.munition-qty').forEach((input) => {
     input.addEventListener('change', () => {
       const row = input.closest<HTMLElement>('[data-basis-source-row]');
@@ -880,9 +886,13 @@ export function renderAusruestungView(
   });
 
   container.querySelectorAll<HTMLInputElement>('[data-alchemika-qty]').forEach((input) => {
-    input.addEventListener('change', () => {
+    input.addEventListener('input', () => {
       const sourceRow = Number(input.dataset.alchemikaQty);
-      alchemikaQty.set(sourceRow, Math.max(1, Math.floor(Number(input.value || '1'))));
+      const quantity = Math.max(1, Math.floor(Number(input.value || '1')));
+      alchemikaQty.set(sourceRow, quantity);
+      const button = container.querySelector<HTMLButtonElement>(`.ausruestung-buy-alchemika[data-source-row="${sourceRow}"]`);
+      const unitPrice = Number(button?.dataset.unitPrice);
+      if (button && Number.isFinite(unitPrice)) button.textContent = kaufenLabel(unitPrice * quantity);
     });
   });
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-alchemika').forEach((btn) => {

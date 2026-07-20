@@ -50,8 +50,8 @@ function renderEditableRow(r: ComputedRule, maxValue?: number): string {
       <span class="stat-label">${label}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern">-</button>
       <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
-      <button type="button" class="stat-inc" aria-label="erhoehen" ${atMax ? 'disabled' : ''}>+</button>
-      <span class="stat-cost">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext ? `naechster Punkt: ${costNext}` : ''}</span>
+      <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
+      <span class="stat-cost">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext ? `nächster Punkt: ${costNext}` : ''}</span>
     </div>`;
 }
 

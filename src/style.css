@@ -296,34 +296,52 @@ body {
   border-bottom: 1px solid #8882;
 }
 
-.feuerwaffe-row {
-  grid-template-columns: minmax(8rem, 0.8fr) minmax(16rem, 1.5fr) auto auto auto;
+.ausruestung-row.feuerwaffe-row {
+  grid-template-columns: minmax(5.5rem, 0.45fr) minmax(13rem, 1.55fr) 9.5rem 8.5rem max-content;
+  column-gap: 0.3rem;
+  overflow-x: auto;
 }
 
-.feuerwaffe-kauf,
 .feuerwaffe-munition-kauf {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.feuerwaffe-row select {
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.1rem 0.2rem;
+  font-size: 0.85em;
+}
+
+.feuerwaffe-row > .stat-cost {
+  font-size: 0.82em;
+  white-space: nowrap;
+}
+
+.feuerwaffe-row button,
+.feuerwaffe-munition-kauf button {
+  padding: 0.15rem 0.35rem;
+  font-size: 0.9em;
+  white-space: nowrap;
 }
 
 .feuerwaffe-details {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .feuerwaffe-munition-qty {
-  width: 4.5rem;
+  width: 4rem;
+  min-width: 4rem;
   font: inherit;
-}
-
-@media (max-width: 900px) {
-  .feuerwaffe-row {
-    grid-template-columns: 1fr auto;
-  }
 }
 
 .ausruestung-row, .inventar-row {

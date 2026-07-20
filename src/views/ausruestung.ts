@@ -399,16 +399,15 @@ function renderFeuerwaffeRow(row: FernkampfRow): string {
   return `
     <div class="ausruestung-row feuerwaffe-row" data-feuerwaffe="${row.sourceRow}">
       <span class="stat-label">${escapeHtml(row.name)}</span>
-      <span class="stat-cost">${escapeHtml(row['Bauart'] ?? '-')} | ${escapeHtml(row['Lademechanik'] ?? '-')} | ${escapeHtml(row['Schloss'] ?? '-')} | ${escapeHtml(row['Lauf'] ?? '-')}</span>
+      <span class="stat-cost">${composed.ersterWuerfel}+${composed.zweiterWuerfel}${composed.fixschaden ? ` +${composed.fixschaden}` : ''} | RB ${composed.rb} | Min.St&auml; ${composed.minStaerke} | RW ${composed.rw}</span>
       <select class="feuerwaffe-verarbeitung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.verarbeitungen, auswahl.verarbeitungSourceRow)}</select>
       <select class="feuerwaffe-anpassung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.anpassungen, auswahl.anpassungSourceRow)}</select>
-      <span class="feuerwaffe-kauf">
-        <span class="stat-cost">${gesperrt ? `Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)` : formatDublonen(composed.preisDublonen)}</span>
-        ${!gesperrt ? `<button type="button" class="ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">Kaufen</button>` : ''}
-      </span>
+      ${gesperrt
+    ? `<span class="stat-cost feuerwaffe-gesperrt">Verfuegbarkeit ${composed.verfuegbarkeitStufe} (gesperrt)</span>`
+    : `<button type="button" class="ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">Kaufen (${formatDublonen(composed.preisDublonen)})</button>`}
     </div>
     <div class="waffe-details feuerwaffe-details" data-feuerwaffe-details="${row.sourceRow}">
-      <span>${composed.ersterWuerfel}/${composed.zweiterWuerfel}${composed.fixschaden ? ` +${composed.fixschaden}` : ''} | RB ${composed.rb} | Min.St&auml; ${composed.minStaerke} | RW ${composed.rw}</span>
+      <span>${escapeHtml(row['Bauart'] ?? '-')} | ${escapeHtml(row['Lademechanik'] ?? '-')} | ${escapeHtml(row['Schloss'] ?? '-')} | ${escapeHtml(row['Lauf'] ?? '-')}</span>
       ${munitionOptionen.length ? `
         <span class="feuerwaffe-munition-kauf">
           <select class="feuerwaffe-munition-qty" data-feuerwaffe="${row.sourceRow}" aria-label="Munitionsmenge">

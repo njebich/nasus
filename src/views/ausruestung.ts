@@ -110,6 +110,10 @@ const openAlchemikaKategorien = new Set<string>();
  *  gemeinsam den Schluessel. Neue Gruppen fehlen bewusst im Set und starten eingeklappt. */
 const openFernkampfVolksgruppen = new Set<string>();
 
+/** Pfeile/Bolzen sind eigene Untergruppen in den Fernkampf-Kategorien. Ihr Aufklappzustand
+ *  bleibt bei Modifikator- und Mengenwechseln erhalten. */
+const openMunitionGruppen = new Set<'pfeile' | 'bolzen'>();
+
 /** Transiente Mengen-Auswahl je Alchemika-Zeile (analog zum Preisliste-Mengenfeld, aber ueber
  *  Re-Renders hinweg gemerkt statt aus dem DOM neu gelesen, da renderAlchemikaRow keine eigene
  *  updatePicker-Funktion braucht). */
@@ -494,6 +498,18 @@ function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
   }).join('');
 }
 
+function renderMunitionGruppe(typ: 'pfeile' | 'bolzen', label: string): string {
+  const count = munitionBasisOptionen(typ).length;
+  const openAttr = openMunitionGruppen.has(typ) ? ' open' : '';
+  return `
+    <div class="stat-card munition-group-card">
+      <details class="stat-group" data-munition-gruppe="${typ}"${openAttr}>
+        <summary>${label} <span class="stat-group-count">(${count} Eintr&auml;ge)</span></summary>
+        <div class="ausruestung-category munition-category">${renderMunitionCard(typ)}</div>
+      </details>
+    </div>`;
+}
+
 function renderInventar(character: CharacterState): string {
   if (character.equipment.length === 0) {
     return '<p class="inventar-empty">Noch nichts gekauft.</p>';
@@ -598,6 +614,11 @@ export function renderAusruestungView(
     if (details.open) openFernkampfVolksgruppen.add(gruppenKey);
     else openFernkampfVolksgruppen.delete(gruppenKey);
   });
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-munition-gruppe]').forEach((details) => {
+    const typ = details.dataset.munitionGruppe as 'pfeile' | 'bolzen';
+    if (details.open) openMunitionGruppen.add(typ);
+    else openMunitionGruppen.delete(typ);
+  });
 
   container.innerHTML = `
     ${renderTopSection('inventar', 'Mein Inventar', undefined, `
@@ -622,14 +643,12 @@ export function renderAusruestungView(
     `)}
 
     ${renderTopSection('boegen', 'Bögen', `${BOEGEN.length} Einträge`, `
-      <h4>Pfeile</h4>
-      <div class="ausruestung-category">${renderMunitionCard('pfeile')}</div>
+      ${renderMunitionGruppe('pfeile', 'Pfeile')}
       <div class="stat-category">${renderFernkampfVolksgruppen('boegen', BOEGEN, (row) => renderFernkampfwaffeRow('boegen', row))}</div>
     `)}
 
     ${renderTopSection('armbrueste', 'Armbrüste', `${ARMBRUST.length} Einträge`, `
-      <h4>Bolzen</h4>
-      <div class="ausruestung-category">${renderMunitionCard('bolzen')}</div>
+      ${renderMunitionGruppe('bolzen', 'Bolzen')}
       <div class="stat-category">${renderFernkampfVolksgruppen('armbrust', ARMBRUST, (row) => renderFernkampfwaffeRow('armbrust', row))}</div>
     `)}
 

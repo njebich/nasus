@@ -82,10 +82,13 @@ const slotPicker = new Map<string, { basisSourceRow: number; verarbeitungSourceR
  *  Wechsel, Ausruesten, ...) faelschlich wieder zu. */
 const openGruppen = new Set<RsGruppe>();
 
-/** Welche Oberpunkte (Mein Inventar/Ruestung/Schilde/Waffen/Preisliste/Artefakte) aufgeklappt
+/** Welche Oberpunkte (Mein Inventar/Ruestung/Schilde/Waffen/Bögen/Armbrüste/Feuerwaffen/...) aufgeklappt
  *  sind (Nutzer 2026-07-18: "jeden oberpunkt ... collapsible haben, damit die tabelle nicht so
  *  lang ist") - alle standardmaessig zu, gleiches Persistenz-Muster wie openGruppen oben. */
-const TOP_SECTIONS = ['inventar', 'ruestung', 'schilde', 'waffen', 'fernkampf', 'alchemika', 'preisliste', 'artefakte'] as const;
+const TOP_SECTIONS = [
+  'inventar', 'ruestung', 'schilde', 'waffen', 'boegen', 'armbrueste', 'feuerwaffen',
+  'alchemika', 'preisliste', 'artefakte',
+] as const;
 type TopSection = (typeof TOP_SECTIONS)[number];
 const openTopSections = new Set<TopSection>();
 
@@ -617,18 +620,20 @@ export function renderAusruestungView(
       <div class="ausruestung-category">${filteredWeapons.map((row) => renderWeaponRow(row, character)).join('')}</div>
     `)}
 
-    ${renderTopSection('fernkampf', 'Fernkampfwaffen', `${BOEGEN.length + ARMBRUST.length + FEUERWAFFEN.length} Einträge`, `
-      <h4>Bögen</h4>
+    ${renderTopSection('boegen', 'Bögen', `${BOEGEN.length} Einträge`, `
       <div class="stat-category">${renderFernkampfVolksgruppen('boegen', BOEGEN, (row) => renderFernkampfwaffeRow('boegen', row))}</div>
-      <h4>Armbrust</h4>
+      <h4>Pfeile</h4>
+      <div class="ausruestung-category">${renderMunitionCard('pfeile')}</div>
+    `)}
+
+    ${renderTopSection('armbrueste', 'Armbrüste', `${ARMBRUST.length} Einträge`, `
       <div class="stat-category">${renderFernkampfVolksgruppen('armbrust', ARMBRUST, (row) => renderFernkampfwaffeRow('armbrust', row))}</div>
-      <h4>Feuerwaffen</h4>
+      <h4>Bolzen</h4>
+      <div class="ausruestung-category">${renderMunitionCard('bolzen')}</div>
+    `)}
+
+    ${renderTopSection('feuerwaffen', 'Feuerwaffen', `${FEUERWAFFEN.length} Einträge`, `
       <div class="stat-category">${renderFernkampfVolksgruppen('feuerwaffen', FEUERWAFFEN, renderFeuerwaffeRow)}</div>
-      <h4>Munition</h4>
-      <div class="ausruestung-category">
-        ${renderMunitionCard('pfeile')}
-        ${renderMunitionCard('bolzen')}
-      </div>
     `)}
 
     ${renderTopSection('alchemika', 'Alchemika', `${ALCHEMIKA.length} Einträge`, `

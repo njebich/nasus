@@ -854,11 +854,14 @@ body {
 }
 
 .kampf-pool-cell {
+  padding: 0.15rem 0.25rem !important;
+}
+
+.kampf-pool-cell-inner {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.15rem;
-  padding: 0.15rem 0.25rem !important;
 }
 
 .kampf-pool-cell .stat-dec, .kampf-pool-cell .stat-inc {

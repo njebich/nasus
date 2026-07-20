@@ -466,9 +466,11 @@ function poolCell(field: 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa', row: Nah
   const atMax = state.max !== undefined && state.allocated >= state.max;
   return `
     <td class="kampf-pool-cell" data-key="${escapeHtml(row.key)}" data-pool-referenz="${escapeHtml(row.poolReferenz)}" data-field="${field}">
-      <button type="button" class="stat-dec" aria-label="${field} verringern" ${state.allocated <= 0 ? 'disabled' : ''}>-</button>
-      <span class="kampf-pool-value">${state.value}</span>
-      <button type="button" class="stat-inc" aria-label="${field} erhöhen" ${atMax ? 'disabled' : ''}>+</button>
+      <div class="kampf-pool-cell-inner">
+        <button type="button" class="stat-dec" aria-label="${field} verringern" ${state.allocated <= 0 ? 'disabled' : ''}>-</button>
+        <span class="kampf-pool-value">${state.value}</span>
+        <button type="button" class="stat-inc" aria-label="${field} erhöhen" ${atMax ? 'disabled' : ''}>+</button>
+      </div>
     </td>`;
 }
 

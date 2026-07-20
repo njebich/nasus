@@ -15,6 +15,10 @@ Betrifft:
                                              waffen/-Munition-Kataloge und Feuerwaffen-Ressourcen)
   - src/data/equipment/alchemika.ts        (Sheet "Alchemika", nur A1:P119 - Gifte/Heiltraenke/
                                              Kampftraenke/Parfum/Zustandstraenke-Katalog)
+  - src/data/spruchmagieDetails.ts         (Sheet "Spruchmagie-Details", von
+                                             scripts/import_spruchmagie.py erzeugt - Zauber-
+                                             Statblock-Spalten, die nicht ins generische
+                                             RuleEntry/"Werte"-Sheet passen)
   - src/data/rules-jsonl/*.jsonl            (Sheet "Werte", nach Kategorie aufgesplittet - reine
                                              Lese-Projektion von rules.json fuer git-diff-
                                              Lesbarkeit und selektives Einlesen einzelner
@@ -882,6 +886,70 @@ def write_ki_baum_kanten_ts(wb):
     print(f"{path}: {len(rows)} KI-Baum-Kanten geschrieben.")
 
 
+def read_spruchmagie_details(wb):
+    """Liest Sheet "Spruchmagie-Details" (von scripts/import_spruchmagie.py erzeugt, siehe dort) -
+    die Zauber-Statblock-Spalten aus NN_Spruchmagie_0.57.xlsx, die nicht ins generische
+    RuleEntry/"Werte"-Sheet passen (Min.Int, RW, Ziel, Form, Art, Aufr., VZ, ED, WD, St.1-3,
+    Mana, Gegenprobe). "Art" wird als zauberArt gefuehrt, um nicht mit RuleEntry.art zu kollidieren."""
+    if "Spruchmagie-Details" not in wb.sheetnames:
+        return {}
+    ws = wb["Spruchmagie-Details"]
+    headers = {}
+    for c in range(1, ws.max_column + 1):
+        v = ws.cell(row=1, column=c).value
+        if v:
+            headers[v.strip()] = c
+
+    cols = [
+        ("MinInt", "minInt"), ("Gegenprobe", "gegenprobe"), ("RW", "rw"), ("Ziel", "ziel"),
+        ("Form", "form"), ("ZauberArt", "zauberArt"), ("Aufrechterhaltung", "aufrechterhaltung"),
+        ("Vorbereitungszeit", "vorbereitungszeit"), ("Einwirkdauer", "einwirkdauer"),
+        ("Wirkungsdauer", "wirkungsdauer"), ("Stufe1", "stufe1"), ("Stufe2", "stufe2"),
+        ("Stufe3", "stufe3"), ("Mana", "mana"),
+    ]
+    details = {}
+    for r in range(2, ws.max_row + 1):
+        referenz = cell_to_str(ws.cell(row=r, column=headers["Referenz"]).value)
+        if not referenz:
+            continue
+        entry = {}
+        for header, field in cols:
+            if header not in headers:
+                continue
+            val = cell_to_str(ws.cell(row=r, column=headers[header]).value)
+            if val is not None:
+                entry[field] = val
+        details[referenz] = entry
+    return details
+
+
+def write_spruchmagie_details_ts(wb):
+    details = read_spruchmagie_details(wb)
+    type_lines = [
+        "export interface SpruchmagieDetail {",
+        "  minInt?: string;",
+        "  gegenprobe?: string;",
+        "  rw?: string;",
+        "  ziel?: string;",
+        "  form?: string;",
+        "  zauberArt?: string;",
+        "  aufrechterhaltung?: string;",
+        "  vorbereitungszeit?: string;",
+        "  einwirkdauer?: string;",
+        "  wirkungsdauer?: string;",
+        "  stufe1?: string;",
+        "  stufe2?: string;",
+        "  stufe3?: string;",
+        "  mana?: string;",
+        "}",
+    ]
+    path = write_json_backed_module(
+        OUT_DATA_DIR, "spruchmagieDetails", "SPRUCHMAGIE_DETAILS", type_lines,
+        "Record<string, SpruchmagieDetail>", details,
+    )
+    print(f"{path}: {len(details)} Spruchmagie-Details-Eintraege geschrieben.")
+
+
 def read_alchemika(wb_values):
     """Liest Sheet "Alchemika", nur A1:P119 (Nutzer 2026-07-19: Sheet wurde ersetzt, exakter
     Bereich vorgegeben). Feste Spaltenindizes statt Header-Namen (Nutzer hat die Zuordnung per
@@ -993,6 +1061,7 @@ def main(xlsx_path, feuerwaffen_xlsx_path=None):
     write_alchemika_ts(wb_values)
     write_voelker_maxima_ts(wb)
     write_ki_baum_kanten_ts(wb)
+    write_spruchmagie_details_ts(wb)
 
 
 if __name__ == "__main__":

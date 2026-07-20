@@ -147,7 +147,15 @@
       "Bash(find \"/mnt\" -iname \"*NN Artefakte*\")",
       "Bash(cygpath -w \"/e/Das Western Rollenspiel/_KONSOLIDIERT/Regeln/NN Artefakte 0.52.xlsx\")",
       "Bash(find \"C:/Users/Bruder Grabag/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin\" -iname \"recalc.py\" 2>/dev/null)",
-      "Bash(python3 -c \"import docx; print\\('ok'\\)\")"
+      "Bash(python3 -c \"import docx; print\\('ok'\\)\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(git show *)",
+      "Bash(git checkout *)",
+      "Bash(grep -v \"\\\\.ts:.*//\\\\|characterMutations.ts\\\\|main.ts\\\\|ausruestung.ts\")"
     ]
   }
 }

@@ -826,3 +826,48 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Kampf-Tab (Nutzer-Mockup "S04 Kampfseite", 2026-07-19/20): Waffentabellen mit bis zu 14
+   Spalten - horizontal scrollbarer Wrapper, damit die Seite selbst nicht in die Breite laeuft
+   (siehe artifact-design-Konvention: breite Inhalte scrollen in ihrem eigenen Container). */
+.kampf-table-scroll {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.kampf-waffen-table, .kampf-ausweichen-table {
+  min-width: max-content;
+}
+
+.kampf-waffen-table th, .kampf-waffen-table td,
+.kampf-ausweichen-table th, .kampf-ausweichen-table td {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.kampf-waffen-table td:first-child, .kampf-waffen-table th:first-child {
+  text-align: left;
+}
+
+.kampf-row-unusable {
+  opacity: 0.5;
+}
+
+.kampf-pool-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.15rem 0.25rem !important;
+}
+
+.kampf-pool-cell .stat-dec, .kampf-pool-cell .stat-inc {
+  width: 1.4rem;
+  height: 1.4rem;
+  font-size: 0.85em;
+}
+
+.kampf-pool-value {
+  min-width: 1.4rem;
+  display: inline-block;
+}

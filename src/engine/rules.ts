@@ -287,6 +287,18 @@ export function evalReferenz(referenz: string, values: CharacterValueSource): Va
 }
 
 /**
+ * Wertet einen rohen Formel-Ausdruck aus (keine Regel-Referenz, kein Rundungs-/Nullgrenze-/
+ * Talent-Nachlauf wie bei evalReferenzInternal - reiner Ausdruckswert). Fuer engine/waffenPool.ts's
+ * nAT/nPA-Mechanik: braucht die UNGEDECKELTE Haelfte von at_X/pa_X-Formeln wie
+ * "MIN(20;(eig_g_mut+eig_k_athletik+nk_hiebwaffen)/3)" - hier wird nur der Ausdruck IN der
+ * MIN(20;...)-Huelle uebergeben, siehe waffenPool.ts's stripMin20.
+ */
+export function evalExpression(source: string, values: CharacterValueSource): Value {
+  const state: EvalRunState = { memo: new Map(), inProgress: new Set(), values };
+  return evalFormulaWith(source, `expr::${source}`, state);
+}
+
+/**
  * Wertet die Kosten-Formel einer Regel fuer einen Kandidatwert aus (Pseudo-Variablen
  * `wert`/`grad` sind waehrend dieser Auswertung an candidateWert gebunden).
  */

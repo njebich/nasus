@@ -768,6 +768,15 @@ def write_fernkampf_ts(wb, wb_values, feuerwaffen_values):
         enrich_fernkampf_rows(read_generic_rows(wb, "Armbrust", "Name")),
         wb, "Armbrust-Basis",
     )
+    # Ini fehlt bislang als eigene Spalte auf "Boegen"/"Armbrust" (anders als NK-Waffen-Basis und
+    # Feuerwaffen, die beide eine echte Ini-Spalte haben) - Platzhalter 0 fuer jede Zeile, bis der
+    # Nutzer echte Pro-Waffen-Ini-Werte aus einer noch zu lokalisierenden Quelldatei liefert
+    # (Nutzer 2026-07-20, Kampf-Tab-Plan). setdefault statt Ueberschreiben, falls die Spalte
+    # spaeter direkt in der xlsx ergaenzt wird - TODO Entwickeln-Sheet-Backlog-Eintrag analog zur
+    # bestehenden Rezept-Mod-Notiz (siehe weaponComposition.ts), sobald der Nutzer die echten
+    # Werte liefert.
+    for row in (*boegen, *armbrust):
+        row.setdefault("Ini", "0")
     pfeile = enrich_fernkampf_rows(read_generic_rows(wb, "Pfeile", "Name"))
     bolzen = enrich_fernkampf_rows(read_generic_rows(wb, "Bolzen", "Name"))
     feuerwaffen_munition = read_generic_rows(wb_values, "Feuerwaffen-Munition", "Name")

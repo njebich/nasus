@@ -10,6 +10,11 @@ export interface PoolAllocation {
   gpa: number;
   mat: number;
   mpa: number;
+  /** nAT/nPA-Pool-Zuschuss (Kampf-Tab, 2026-07-20): fuellt die Basis-AT/PA einer Waffenzeile bis
+   *  hoechstens 20 auf - siehe engine/waffenPool.ts's computeWeaponAtPaOverflow/natMax/npaMax.
+   *  Fuer Nicht-Waffen-Pools (z.B. le_leberschutz) bleibt dies immer 0. */
+  nat: number;
+  npa: number;
 }
 
 export interface EquipmentEntry {
@@ -84,6 +89,13 @@ export interface CharacterState extends CharacterHeader {
   // computeSheet() liest sie wie jeden anderen Wert aus dieser Map.
   values: Record<string, number>;
   selections: Record<string, number>;
+  /** Key ist entweder ein blosser Pool-Referenzname (z.B. `le_leberschutz`, kein Waffenbezug)
+   *  oder `${poolReferenz}::${equipmentId}` fuer `nk_pool_*`-Referenzen (Kampf-Tab, 2026-07-20):
+   *  Pool-Verteilung passiert seither PRO besessener Nahkampfwaffe, nicht mehr einmal pro Skill -
+   *  mehrere Waffen mit derselben Spezialisierung teilen sich weiterhin ein gemeinsames Budget
+   *  (siehe engine/characterSheet.ts's Aggregation ueber alle `${key}::*`-Geschwister-Keys).
+   *  Unbewaffnet nutzt eine synthetische equipmentId (`'unbewaffnet'` bzw.
+   *  `'unbewaffnet:<spezReferenz>'` fuer die bedingten Spezialisierungszeilen). */
   poolAllocations: Record<string, PoolAllocation>;
   equipment: EquipmentEntry[];
   /** Ausgeruestete Ruestung, ein Eintrag je belegtem Slot (`${gruppe}:${lage}` - siehe

@@ -5,7 +5,7 @@ import {
   type CharacterState, type CharacterHeader, type StartbudgetPreset,
 } from './state/characterStore';
 import {
-  setValue, addSelection, removeSelection, setPoolAllocation, updateHeader,
+  setValue, addSelection, removeSelection, setPoolAllocation, setWaffenPoolAllocation, updateHeader,
   buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
   buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyFeuerwaffenMunition, buyAlchemika, removeEquipment, BudgetError, MutationError,
 } from './state/characterMutations';
@@ -15,6 +15,7 @@ import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView } from './views/ausruestung';
 import { renderCharakterheader } from './views/charakterheader';
 import { renderCharakterbogen } from './views/charakterbogen';
+import { renderKampfView } from './views/kampf';
 import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
@@ -70,6 +71,18 @@ function handlePoolChange(referenz: string, allocation: PoolAllocation): void {
   if (!currentCharacter) return;
   try {
     currentCharacter = setPoolAllocation(currentCharacter, referenz, allocation);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleWaffenPoolChange(poolReferenz: string, equipmentId: string, allocation: PoolAllocation): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = setWaffenPoolAllocation(currentCharacter, poolReferenz, equipmentId, allocation);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
@@ -440,9 +453,7 @@ function render(): void {
     } else if (activeTab in AUSWAHL_TABS) {
       renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle);
     } else if (activeTab === 'Kampf') {
-      // Wird gerade neu gebaut (Nutzer-Mockup "S04 Kampfseite mockup") - bis dahin bleibt der
-      // Tab bewusst leer statt der alten generischen Werteliste, siehe Nutzer-Anfrage 2026-07-19.
-      viewContainer.innerHTML = '';
+      renderKampfView(viewContainer, sheet, currentCharacter, handleWaffenPoolChange);
     } else {
       renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange);
     }

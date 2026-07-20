@@ -19,6 +19,7 @@ import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/eq
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { composeMunition } from '../engine/pfeilBolzenComposition';
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
+import { computeWeaponAtPaOverflow, resolveWaffenRowBasis } from '../engine/waffenPool';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
 import { FEUERWAFFEN_MUNITION_PREISE, type FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
@@ -157,7 +158,10 @@ export function setPoolAllocation(character: CharacterState, referenz: string, a
   const rule = getRule(referenz);
   if (!rule) throw new MutationError(`Referenz '${referenz}' existiert nicht`);
   if (rule.art !== 'Pool') throw new MutationError(`'${referenz}' ist Art='${rule.art}', kein Pool`);
-  if (allocation.gat < 0 || allocation.gpa < 0 || allocation.mat < 0 || allocation.mpa < 0) {
+  if (
+    allocation.gat < 0 || allocation.gpa < 0 || allocation.mat < 0 || allocation.mpa < 0
+    || allocation.nat < 0 || allocation.npa < 0
+  ) {
     throw new MutationError('Pool-Zuteilung darf nicht negativ sein');
   }
 
@@ -166,7 +170,7 @@ export function setPoolAllocation(character: CharacterState, referenz: string, a
 
   const computed = computeSheet(candidate).byKategorie[rule.kategorie]?.find((r) => r.rule.referenz === rule.referenz);
   const budget = Number(computed?.computedValue ?? 0);
-  const allocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa;
+  const allocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa + allocation.nat + allocation.npa;
   if (allocatedTotal > budget) {
     throw new BudgetError(`Nicht genug Pool-Punkte: benoetigt ${allocatedTotal}, verfuegbar ${budget}`);
   }
@@ -176,6 +180,55 @@ export function setPoolAllocation(character: CharacterState, referenz: string, a
     if (allocation.gpa > gpaMax) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaMax})`);
     if (allocation.mat > matMax) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matMax})`);
     if (allocation.mpa > mpaMax) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaMax})`);
+  }
+
+  return candidate;
+}
+
+/**
+ * Verteilt Pool-Punkte auf EINE besessene Nahkampfwaffe (oder eine synthetische Unbewaffnet-Zeile,
+ * siehe resolveWaffenRowBasis) - Kampf-Tab (2026-07-20), Gegenstueck zu setPoolAllocation, aber
+ * pro Waffe statt pro Skill. gAT/gPA/mAT/mPA teilen sich weiterhin ein Skill-weites Budget (siehe
+ * characterSheet.ts's Aggregation ueber `${poolReferenz}::*`); nAT/nPA sind dagegen NICHT ueber
+ * Geschwister gedeckelt, sondern jeweils auf das, was DIESE Zeile bis 20 braucht (natMax/npaMax).
+ */
+export function setWaffenPoolAllocation(
+  character: CharacterState, poolReferenz: string, equipmentId: string, allocation: PoolAllocation,
+): CharacterState {
+  const rule = getRule(poolReferenz);
+  if (!rule) throw new MutationError(`Referenz '${poolReferenz}' existiert nicht`);
+  if (rule.art !== 'Pool') throw new MutationError(`'${poolReferenz}' ist Art='${rule.art}', kein Pool`);
+  if (
+    allocation.gat < 0 || allocation.gpa < 0 || allocation.mat < 0 || allocation.mpa < 0
+    || allocation.nat < 0 || allocation.npa < 0
+  ) {
+    throw new MutationError('Pool-Zuteilung darf nicht negativ sein');
+  }
+
+  const candidate = clone(character);
+  candidate.poolAllocations[`${rule.referenz.toLowerCase()}::${equipmentId}`] = allocation;
+
+  const sheet = computeSheet(candidate);
+  const computed = sheet.byKategorie[rule.kategorie]?.find((r) => r.rule.referenz === rule.referenz);
+  const budget = Number(computed?.computedValue ?? 0) + (computed?.weaponOverflowBudget ?? 0);
+  const aggregate = computed?.poolAllocation ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
+  const allocatedTotal = aggregate.gat + aggregate.gpa + aggregate.mat + aggregate.mpa + aggregate.nat + aggregate.npa;
+  if (allocatedTotal > budget) {
+    throw new BudgetError(`Nicht genug Pool-Punkte: benoetigt ${allocatedTotal}, verfuegbar ${budget}`);
+  }
+  if (computed?.poolCaps) {
+    const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
+    if (aggregate.gat > gatMax) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatMax})`);
+    if (aggregate.gpa > gpaMax) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaMax})`);
+    if (aggregate.mat > matMax) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matMax})`);
+    if (aggregate.mpa > mpaMax) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaMax})`);
+  }
+
+  const basis = resolveWaffenRowBasis(character, equipmentId);
+  if (basis) {
+    const overflow = computeWeaponAtPaOverflow(basis.hauptfertigkeit, basis.atBonus, basis.paBonus, makeValueSource(candidate));
+    if (allocation.nat > overflow.natMax) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
+    if (allocation.npa > overflow.npaMax) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
   }
 
   return candidate;
@@ -411,6 +464,7 @@ export function buyWeapon(
       at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus,
       minStaerke1H: composed.minStaerke1H, minStaerke2H: composed.minStaerke2H,
       klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz, rezeptMod: composed.rezeptMod,
+      rb: composed.rb,
     },
   };
   candidate.equipment = [...candidate.equipment, entry];

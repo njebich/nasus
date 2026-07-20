@@ -18,7 +18,7 @@ function characterWithHiebwaffenSkill(epGesamt: number, nkHiebwaffen: number) {
 describe('setPoolAllocation', () => {
   it('lehnt eine Nicht-Pool-Referenz ab', () => {
     const character = createCharacter('Test');
-    expect(() => setPoolAllocation(character, 'eig_g_mut', { gat: 1, gpa: 0, mat: 0, mpa: 0 })).toThrow(MutationError);
+    expect(() => setPoolAllocation(character, 'eig_g_mut', { gat: 1, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 })).toThrow(MutationError);
   });
 
   it('erlaubt eine Zuteilung innerhalb des Pool-Budgets und der gAT/mAT-Obergrenzen', () => {
@@ -30,26 +30,26 @@ describe('setPoolAllocation', () => {
     expect(pool?.computedValue).toBe(16);
     expect(pool?.poolCaps).toEqual({ gatMax: 10, gpaMax: 10, matMax: 26, mpaMax: 26 });
 
-    const updated = setPoolAllocation(character, 'nk_pool_hiebwaffen', { gat: 5, gpa: 5, mat: 0, mpa: 0 });
-    expect(updated.poolAllocations['nk_pool_hiebwaffen']).toEqual({ gat: 5, gpa: 5, mat: 0, mpa: 0 });
+    const updated = setPoolAllocation(character, 'nk_pool_hiebwaffen', { gat: 5, gpa: 5, mat: 0, mpa: 0, nat: 0, npa: 0 });
+    expect(updated.poolAllocations['nk_pool_hiebwaffen']).toEqual({ gat: 5, gpa: 5, mat: 0, mpa: 0, nat: 0, npa: 0 });
   });
 
   it('lehnt eine Zuteilung ab, die das Pool-Budget ueberschreitet', () => {
     const character = characterWithHiebwaffenSkill(100000, 24);
-    expect(() => setPoolAllocation(character, 'nk_pool_hiebwaffen', { gat: 15, gpa: 15, mat: 0, mpa: 0 }))
+    expect(() => setPoolAllocation(character, 'nk_pool_hiebwaffen', { gat: 15, gpa: 15, mat: 0, mpa: 0, nat: 0, npa: 0 }))
       .toThrow(BudgetError);
   });
 
   it('lehnt eine Zuteilung ab, die die gAT-Obergrenze ueberschreitet, auch wenn genug Pool-Budget da waere', () => {
     const character = characterWithHiebwaffenSkill(100000, 24);
     // gAT-max ist 10 (siehe oben) - 11 darf nicht gehen, selbst wenn das Budget (16) es zuliesse.
-    expect(() => setPoolAllocation(character, 'nk_pool_hiebwaffen', { gat: 11, gpa: 0, mat: 0, mpa: 0 }))
+    expect(() => setPoolAllocation(character, 'nk_pool_hiebwaffen', { gat: 11, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }))
       .toThrow(BudgetError);
   });
 
   it('lehnt negative Zuteilungswerte ab', () => {
     const character = characterWithHiebwaffenSkill(100000, 24);
-    expect(() => setPoolAllocation(character, 'nk_pool_hiebwaffen', { gat: -1, gpa: 0, mat: 0, mpa: 0 }))
+    expect(() => setPoolAllocation(character, 'nk_pool_hiebwaffen', { gat: -1, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }))
       .toThrow(MutationError);
   });
 });

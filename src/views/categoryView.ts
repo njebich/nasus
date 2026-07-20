@@ -140,17 +140,19 @@ function renderEditableGroup(node: HierarchyNode): string {
     </div>`;
 }
 
-function poolField(label: string, value: number, max: number | undefined): string {
-  const maxAttr = max !== undefined ? `max="${max}"` : '';
+function poolFieldReadOnly(label: string, value: number, max: number | undefined): string {
   const maxHint = max !== undefined ? ` / ${max}` : '';
   return `
-    <label class="pool-field">
+    <span class="pool-field pool-field-readonly">
       <span>${label}</span>
-      <input type="number" class="pool-input" data-field="${label.toLowerCase()}" min="0" ${maxAttr} value="${value}" />
-      <span class="pool-max-hint">${maxHint}</span>
-    </label>`;
+      <span class="pool-value-readonly">${value}${maxHint}</span>
+    </span>`;
 }
 
+/** Pool-Zuteilung ist seit dem Kampf-Tab (2026-07-20) reine Anzeige hier: die eigentliche
+ *  Verteilung passiert pro besessener Waffe auf dem Kampf-Tab (siehe views/kampf.ts,
+ *  onWaffenPoolChange) - diese aggregierte Summe ueber alle Waffen einer Spezialisierung bleibt
+ *  nur zur Uebersicht auf dem Nahkampf-Tab stehen. */
 function renderPoolRow(r: ComputedRule): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   if (r.error) {
@@ -159,17 +161,20 @@ function renderPoolRow(r: ComputedRule): string {
         <div class="stat-label">${label} <span class="stat-error" title="${escapeHtml(r.error)}">nicht definiert ⚠</span></div>
       </div>`;
   }
-  const alloc = r.poolAllocation ?? { gat: 0, gpa: 0, mat: 0, mpa: 0 };
+  const alloc = r.poolAllocation ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
   const caps = r.poolCaps;
+  const budget = Number(r.computedValue ?? 0) + (r.weaponOverflowBudget ?? 0);
   return `
-    <div class="pool-row" data-referenz="${r.rule.referenz}">
+    <div class="pool-row pool-row-readonly" data-referenz="${r.rule.referenz}">
       <div class="stat-label">${label}</div>
-      <div class="pool-budget">Budget: ${formatComputedValue(r.computedValue)} | zugeteilt: ${alloc.gat + alloc.gpa + alloc.mat + alloc.mpa} | übrig: ${formatComputedValue(r.poolRemaining)}</div>
+      <div class="pool-budget">Budget: ${formatComputedValue(budget)} | zugeteilt: ${alloc.gat + alloc.gpa + alloc.mat + alloc.mpa + alloc.nat + alloc.npa} | übrig: ${formatComputedValue(r.poolRemaining)} <span class="pool-hint">(Verteilung im Kampf-Tab)</span></div>
       <div class="pool-fields">
-        ${poolField('gAT', alloc.gat, caps?.gatMax)}
-        ${poolField('gPA', alloc.gpa, caps?.gpaMax)}
-        ${poolField('mAT', alloc.mat, caps?.matMax)}
-        ${poolField('mPA', alloc.mpa, caps?.mpaMax)}
+        ${poolFieldReadOnly('nAT', alloc.nat, undefined)}
+        ${poolFieldReadOnly('gAT', alloc.gat, caps?.gatMax)}
+        ${poolFieldReadOnly('mAT', alloc.mat, caps?.matMax)}
+        ${poolFieldReadOnly('nPA', alloc.npa, undefined)}
+        ${poolFieldReadOnly('gPA', alloc.gpa, caps?.gpaMax)}
+        ${poolFieldReadOnly('mPA', alloc.mpa, caps?.mpaMax)}
       </div>
     </div>`;
 }
@@ -194,7 +199,9 @@ export function renderCategoryView(
   sheet: ComputedSheet,
   kategorie: string,
   onChange: OnValueChange,
-  onPoolChange: OnPoolChange,
+  // Pool-Zeilen sind hier seit dem Kampf-Tab (2026-07-20) reine Anzeige (siehe renderPoolRow) -
+  // Parameter bleibt aus Signatur-/Aufrufer-Kompatibilitaet erhalten, wird aber nicht mehr genutzt.
+  _onPoolChange: OnPoolChange,
 ): void {
   const rows = (sheet.byKategorie[kategorie] ?? []).filter((r) => !HIDDEN_REFERENZEN.has(r.rule.referenz));
   const editable = rows.filter((r) => r.rule.art === 'Wert');
@@ -259,17 +266,7 @@ export function renderCategoryView(
     });
   });
 
-  container.querySelectorAll<HTMLElement>('.pool-row[data-referenz]').forEach((row) => {
-    const referenz = row.dataset.referenz!;
-    const poolRule = pools.find((r) => r.rule.referenz === referenz);
-    row.querySelectorAll<HTMLInputElement>('.pool-input').forEach((input) => {
-      input.addEventListener('change', () => {
-        const current = poolRule?.poolAllocation ?? { gat: 0, gpa: 0, mat: 0, mpa: 0 };
-        const field = input.dataset.field as 'gat' | 'gpa' | 'mat' | 'mpa';
-        const parsed = Math.max(0, Math.floor(Number(input.value)));
-        const next: PoolAllocation = { ...current, [field]: Number.isFinite(parsed) ? parsed : current[field] };
-        onPoolChange(referenz, next);
-      });
-    });
-  });
+  // Pool-Zuteilung ist hier seit dem Kampf-Tab (2026-07-20) reine Anzeige (renderPoolRow) - keine
+  // Eingabefelder mehr, daher keine Event-Wiring noetig (Verteilung passiert jetzt pro Waffe auf
+  // dem Kampf-Tab, siehe views/kampf.ts).
 }

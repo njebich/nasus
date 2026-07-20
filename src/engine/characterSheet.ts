@@ -12,6 +12,7 @@ import { RULES, type RuleEntry } from '../data/rules';
 import { LOOKUP_TABLES } from '../data/lookups';
 import { evalReferenz, evalKostenFor, type CharacterValueSource } from './rules';
 import { getPoolCapBasis, computeGutMax, computeMeisterlichMax } from './poolCaps';
+import { computeNkPoolOverflowBudget } from './waffenPool';
 import { getTalentModifikatorBonus as talentModifikatorBonus } from './talenteModifikator';
 import { getTalentFaktorBonus as talentFaktorBonus } from './talenteFaktor';
 import { getArtefaktBonus as artefaktBonus } from './artefaktBonus';
@@ -50,8 +51,13 @@ export interface ComputedRule {
   poolAllocation?: PoolAllocation;
   /** Nur fuer Art='Pool', wenn eine Basis-Waffenart ableitbar ist (siehe poolCaps.ts). */
   poolCaps?: PoolCaps;
-  /** Nur fuer Art='Pool': computedValue (Budget) minus Summe der aktuellen Zuteilung. */
+  /** Nur fuer Art='Pool': Budget (computedValue + weaponOverflowBudget) minus Summe der
+   *  aktuellen Zuteilung. */
   poolRemaining?: number;
+  /** Nur fuer `nk_pool_*`-Referenzen (Kampf-Tab, 2026-07-20): Summe aus
+   *  computeNkPoolOverflowBudget - AT/PA-Ueberschuss ueber 20 besessener Waffen dieses Pools,
+   *  der on top von computedValue ins Budget einfliesst (siehe waffenPool.ts). */
+  weaponOverflowBudget?: number;
   error?: string;
 }
 
@@ -127,6 +133,22 @@ export function makeValueSource(character: CharacterState): CharacterValueSource
   };
 }
 
+/** Summiert alle `${key}::*`-Geschwister-Zuteilungen (eine pro besessener Waffe) plus einen evtl.
+ *  noch vorhandenen alten Flach-Key unter `key` selbst (Altdaten-Vertraeglichkeit) zu EINER
+ *  Gesamt-Zuteilung fuer die aggregierte Anzeige (z.B. Nahkampf-Tab, jetzt read-only). */
+function aggregatePoolAllocation(character: CharacterState, key: string): PoolAllocation {
+  const zero: PoolAllocation = { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
+  const siblingPrefix = `${key}::`;
+  const all: PoolAllocation[] = [];
+  for (const [k, v] of Object.entries(character.poolAllocations)) {
+    if (k === key || k.startsWith(siblingPrefix)) all.push(v);
+  }
+  return all.reduce((sum, a) => ({
+    gat: sum.gat + a.gat, gpa: sum.gpa + a.gpa, mat: sum.mat + a.mat, mpa: sum.mpa + a.mpa,
+    nat: sum.nat + (a.nat ?? 0), npa: sum.npa + (a.npa ?? 0),
+  }), zero);
+}
+
 function computeRule(rule: RuleEntry, character: CharacterState, values: CharacterValueSource): ComputedRule {
   const key = rule.referenz.toLowerCase();
 
@@ -187,13 +209,27 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
       return { rule, error: err instanceof Error ? err.message : String(err) };
     }
 
-    const allocation = character.poolAllocations[key] ?? { gat: 0, gpa: 0, mat: 0, mpa: 0 };
-    const allocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa;
+    // Kampf-Tab (2026-07-20): nk_pool_*-Referenzen verteilen sich seither PRO besessener Waffe
+    // (Key `${referenz}::${equipmentId}`), nicht mehr einmal pro Skill - diese Ansicht hier
+    // (weiterhin per reinem Referenznamen abgefragt, z.B. fuer den Nahkampf-Tab) aggregiert daher
+    // ueber alle Geschwister-Keys plus einen evtl. noch vorhandenen alten Flach-Key. Nicht-Waffen-
+    // Pools (z.B. le_leberschutz) bleiben unveraendert bei ihrem einzelnen Flach-Key.
+    const isWaffenPool = rule.referenz.toLowerCase().startsWith('nk_pool_');
+    const allocation = isWaffenPool ? aggregatePoolAllocation(character, key) : (
+      character.poolAllocations[key] ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }
+    );
+    const allocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa + allocation.nat + allocation.npa;
+    // nAT/nPA-Mechanik: Waffen, deren AT/PA-Basis sie ungefoerdert schon ueber 20 traegt, spenden
+    // ihren Ueberschuss zusaetzlich ins Pool-Budget (siehe waffenPool.ts's
+    // computeNkPoolOverflowBudget) - nur fuer echte Waffen-Pools relevant.
+    const weaponOverflowBudget = isWaffenPool ? computeNkPoolOverflowBudget(rule.referenz, character, values) : 0;
+    const budgetTotal = Number(computedValue) + weaponOverflowBudget;
     const result: ComputedRule = {
       rule,
       computedValue,
       poolAllocation: allocation,
-      poolRemaining: Number(computedValue) - allocatedTotal,
+      poolRemaining: budgetTotal - allocatedTotal,
+      ...(isWaffenPool ? { weaponOverflowBudget } : {}),
     };
 
     const basis = getPoolCapBasis(rule.referenz);

@@ -11,6 +11,10 @@ import { computeRbe } from '../engine/armorComposition';
 import { aufrunden } from '../engine/functions';
 import { RUESTUNG_BASIS } from '../data/equipment/armor';
 import type { RsGruppe } from '../data/trefferzonen';
+import {
+  buildNahkampfRows, buildFeuerwaffenRows, buildArmbrustBoegenRows, buildAusweichenRow,
+  type NahkampfRow, type FeuerwaffenRow, type ArmbrustBogenRow,
+} from './kampf';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -305,6 +309,114 @@ function renderKampfLeRs(sheet: ComputedSheet, character: CharacterState): strin
     </div>`;
 }
 
+/** Read-only Spiegelung des Kampf-Tabs (Nutzer-Mockup "S04 Kampfseite", 2026-07-20): dieselben
+ *  Row-Builder-Funktionen wie views/kampf.ts, aber ohne Pool-+/--Steuerelemente - nur der aktuelle
+ *  nAT/gAT/mAT/nPA/gPA/mPA-Wert als Zahl, passend zu charakterbogen.ts's sonstigen statischen
+ *  Tabellen. */
+function renderKampfWaffenNahkampfRowReadOnly(row: NahkampfRow): string {
+  const pool = (field: 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa') => (row.usable ? row[field].value : '–');
+  return `
+    <tr class="${row.usable ? '' : 'kampf-row-unusable'}">
+      <td>${escapeHtml(row.label)}</td>
+      <td>${escapeHtml(row.schaden)}</td>
+      <td>${row.grip}</td>
+      <td>${escapeHtml(row.wk)}</td>
+      <td>${row.rb}</td>
+      <td>${pool('nat')}</td><td>${pool('gat')}</td><td>${pool('mat')}</td>
+      <td>${pool('npa')}</td><td>${pool('gpa')}</td><td>${pool('mpa')}</td>
+      <td>${row.kb}</td>
+      <td>${row.ks}</td>
+      <td>${row.ini}</td>
+    </tr>`;
+}
+
+function renderKampfWaffenFeuerwaffeRowReadOnly(row: FeuerwaffenRow): string {
+  return `
+    <tr>
+      <td>${escapeHtml(row.label)}</td><td>${escapeHtml(row.schaden)}</td><td>${row.rb}</td>
+      <td>${escapeHtml(row.munition)}</td>
+      ${row.ranges.map((r) => `<td>${escapeHtml(r)}</td>`).join('')}
+      <td>${row.rw}</td><td>${row.ladedauer}</td><td>${row.ini}</td>
+    </tr>`;
+}
+
+function renderKampfWaffenArmbrustBogenRowReadOnly(row: ArmbrustBogenRow): string {
+  return `
+    <tr>
+      <td>${escapeHtml(row.label)}</td><td>${escapeHtml(row.schaden)}</td><td>${row.rb}</td>
+      <td>${escapeHtml(row.munition)}</td>
+      ${row.ranges.map((r) => `<td>${escapeHtml(r)}</td>`).join('')}
+      <td>${escapeHtml(row.rw)}</td><td>${escapeHtml(row.ladedauer)}</td><td>${row.ini}</td>
+    </tr>`;
+}
+
+const FERNKAMPF_TABLE_HEAD = `
+  <thead><tr>
+    <th>Waffe</th><th>Schaden</th><th>RB</th><th>Munition</th>
+    <th>10m</th><th>30m</th><th>60m</th><th>100m</th><th>150m</th><th>210m</th>
+    <th>RW</th><th>Ladedauer</th><th>INI</th>
+  </tr></thead>`;
+
+function renderKampfWaffenMirror(sheet: ComputedSheet, character: CharacterState): string {
+  const nahkampf = buildNahkampfRows(character, sheet);
+  const feuerwaffen = buildFeuerwaffenRows(character);
+  const boegen = buildArmbrustBoegenRows(character, 'boegen');
+  const armbrust = buildArmbrustBoegenRows(character, 'armbrust');
+  const ausweichen = buildAusweichenRow(character);
+
+  return `
+    <h3 class="bogen-section-heading">Nahkampf (Kampf-Tab)</h3>
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-waffen-table">
+        <thead><tr>
+          <th>Waffe</th><th>Schaden</th><th>1H/2H</th><th>WK</th><th>RB</th>
+          <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
+          <th>KB</th><th>KS</th><th>INI</th>
+        </tr></thead>
+        <tbody>${nahkampf.map(renderKampfWaffenNahkampfRowReadOnly).join('')}</tbody>
+      </table>
+    </div>
+    <h3 class="bogen-section-heading">Ausweichen / Bewegung</h3>
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-ausweichen-table">
+        <thead><tr>
+          <th>n off AW</th><th>n def AW</th><th>g AW</th><th>m AW</th><th>Initiative</th>
+          <th>Ausdauer</th><th>Dauerlauf (m/KR)</th><th>Sprinten (m/KR)</th>
+          <th>Hochsprung (m)</th><th>Weitsprung (m)</th>
+        </tr></thead>
+        <tbody><tr>
+          <td>${ausweichen.offAw}</td><td>${ausweichen.defAw}</td><td>${ausweichen.gutAw}</td><td>${ausweichen.meisterlichAw}</td>
+          <td>${ausweichen.ini}</td><td>${ausweichen.ausdauer}</td><td>${ausweichen.dauerlauf}</td><td>${ausweichen.sprinten}</td>
+          <td>${ausweichen.hochsprung}</td><td>${ausweichen.weitsprung}</td>
+        </tr></tbody>
+      </table>
+    </div>
+    ${feuerwaffen.length > 0 ? `
+    <h3 class="bogen-section-heading">Feuerwaffen</h3>
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-waffen-table">
+        ${FERNKAMPF_TABLE_HEAD}
+        <tbody>${feuerwaffen.map(renderKampfWaffenFeuerwaffeRowReadOnly).join('')}</tbody>
+      </table>
+    </div>` : ''}
+    ${armbrust.length > 0 ? `
+    <h3 class="bogen-section-heading">Armbrüste</h3>
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-waffen-table">
+        ${FERNKAMPF_TABLE_HEAD}
+        <tbody>${armbrust.map(renderKampfWaffenArmbrustBogenRowReadOnly).join('')}</tbody>
+      </table>
+    </div>` : ''}
+    ${boegen.length > 0 ? `
+    <h3 class="bogen-section-heading">Bögen</h3>
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-waffen-table">
+        ${FERNKAMPF_TABLE_HEAD}
+        <tbody>${boegen.map(renderKampfWaffenArmbrustBogenRowReadOnly).join('')}</tbody>
+      </table>
+    </div>` : ''}`;
+}
+
 export function renderCharakterbogen(container: HTMLElement, sheet: ComputedSheet, character: CharacterState): void {
   container.innerHTML = `
     <div class="bogen">
@@ -320,5 +432,6 @@ export function renderCharakterbogen(container: HTMLElement, sheet: ComputedShee
         ${renderSpracheUndKultur(sheet)}
       </div>
       ${renderKampfLeRs(sheet, character)}
+      ${renderKampfWaffenMirror(sheet, character)}
     </div>`;
 }

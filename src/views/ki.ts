@@ -14,7 +14,7 @@
 //    Vorbedingung (kiBaumGating.ts) werden angezeigt, aber ausgegraut/deaktiviert.
 
 import type { ComputedSheet } from '../engine/characterSheet';
-import { isKiFaehigkeitUnlocked, getKiVorbedingungen, getKiTreeDepths } from '../engine/kiBaumGating';
+import { isKiFaehigkeitUnlocked, getKiVorbedingungen, getKiTreeDepths, KONZENTRATION_REFERENZ } from '../engine/kiBaumGating';
 import {
   MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ, grundfertigkeitSlotCount, getGrundfertigkeitOptionen,
 } from '../engine/grundfertigkeitAuswahl';
@@ -49,8 +49,12 @@ function getEigBonusValue(sheet: ComputedSheet, eigBonusReferenz: string | undef
   return { label: row.rule.abkuerzung ?? row.rule.beschreibung ?? eigBonusReferenz, value };
 }
 
+function getAttWert(sheet: ComputedSheet, referenz: string): number {
+  return (sheet.byKategorie['Attribute'] ?? []).find((r) => r.rule.referenz === referenz)?.currentValue ?? 0;
+}
+
 function getAttMagie(sheet: ComputedSheet): number {
-  return (sheet.byKategorie['Attribute'] ?? []).find((r) => r.rule.referenz === 'att_magie')?.currentValue ?? 0;
+  return getAttWert(sheet, 'att_magie');
 }
 
 /** Kante(n) + benoetigte(r) TaW als Tooltip-Text fuers "+"-Feld - unabhaengig vom Lock-Status,
@@ -58,6 +62,11 @@ function getAttMagie(sheet: ComputedSheet): number {
  *  erreicht wurde bzw. welche Alternativpfade es gibt. Wurzel-Faehigkeiten (keine Vorbedingung)
  *  liefern ''. */
 function vorbedingungTitle(referenz: string, sheet: ComputedSheet): string {
+  if (referenz === KONZENTRATION_REFERENZ) {
+    const aura = getAttWert(sheet, 'att_aura');
+    const magie = getAttMagie(sheet);
+    return `Benötigt: Aura > 0 (aktuell ${aura}) UND Magie > 0 (aktuell ${magie})`;
+  }
   const vorbedingungen = getKiVorbedingungen(referenz);
   if (vorbedingungen.length === 0) return '';
   const parts = vorbedingungen.map(({ vorbedingung, mindestTaw }) => {

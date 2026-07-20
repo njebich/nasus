@@ -6,10 +6,12 @@
 // ODER Gleichgewicht & Feingefuehl>=30, nicht alle drei gleichzeitig.
 //
 // Faehigkeiten, die in KI-Baum-Kanten nie in der Faehigkeit-Spalte auftauchen (nur Konzentration),
-// sind Wurzelknoten - immer waehlbar, keine Vorbedingung. Konzentration ist der einzige
+// sind Wurzelknoten - keine Baum-Vorbedingung. Konzentration ist der einzige
 // Startpunkt des Baums (Nutzer 2026-07-20, per Diagramm bestaetigt) - Meister der
 // Grundfertigkeiten und Selbstheilung sind KEINE Wurzelknoten mehr, sondern haengen selbst
-// von Vorbedingungen ab (Charisma bzw. Erleuchtung/Schlaf der Heilung).
+// von Vorbedingungen ab (Charisma bzw. Erleuchtung/Schlaf der Heilung). Konzentration traegt
+// zusaetzlich eine eigene, ausserhalb der Baum-Kanten liegende Sperre (Nutzer 2026-07-20):
+// Aura>0 UND Magie>0, sonst bleibt sie (und damit der ganze Baum) gesperrt.
 //
 // Bewusst nur UI-Ebene (Nutzer 2026-07-20 bestaetigt): keine Durchsetzung in
 // characterMutations.ts's setValue, analog zur SF-"Ladeschuetze"-Sichtbarkeitsregel
@@ -23,9 +25,22 @@ function kiCurrentValue(sheet: ComputedSheet, referenz: string): number {
   return ki.find((r) => r.rule.referenz === referenz)?.currentValue ?? 0;
 }
 
+function attributCurrentValue(sheet: ComputedSheet, referenz: string): number {
+  const attribute = sheet.byKategorie['Attribute'] ?? [];
+  return attribute.find((r) => r.rule.referenz === referenz)?.currentValue ?? 0;
+}
+
 const FAEHIGKEITEN_MIT_VORBEDINGUNG = new Set(KI_BAUM_KANTEN.map((k) => k.faehigkeit));
 
+// Konzentration ist der einzige Wurzelknoten (siehe oben), traegt aber eine zusaetzliche
+// Sperre ausserhalb der Baum-Kanten (Nutzer 2026-07-20): erst waehlbar, wenn Aura>0 UND
+// Magie>0 - ohne diese Attribute bleibt sie (und damit der ganze Baum) gesperrt.
+export const KONZENTRATION_REFERENZ = 'ki_konzentration';
+
 export function isKiFaehigkeitUnlocked(sheet: ComputedSheet, referenz: string): boolean {
+  if (referenz === KONZENTRATION_REFERENZ) {
+    return attributCurrentValue(sheet, 'att_aura') > 0 && attributCurrentValue(sheet, 'att_magie') > 0;
+  }
   if (!FAEHIGKEITEN_MIT_VORBEDINGUNG.has(referenz)) return true;
   return KI_BAUM_KANTEN
     .filter((k) => k.faehigkeit === referenz)

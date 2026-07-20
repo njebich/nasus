@@ -9,6 +9,7 @@ import { prettyFormula } from '../engine/formulaDisplay';
 import { buildHierarchy, type HierarchyNode } from '../engine/hierarchy';
 import { describeSkillStufe } from '../engine/skillStufen';
 import { LADESCHUETZE_SF_FK_GATE, isLadeschuetzeSfVisible } from '../engine/ladeschuetzeGating';
+import { GUT_BASIS, MEISTERLICH_BASIS } from '../engine/poolCaps';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
@@ -170,11 +171,11 @@ function renderPoolRow(r: ComputedRule): string {
       <div class="pool-budget">Budget: ${formatComputedValue(budget)} | zugeteilt: ${alloc.gat + alloc.gpa + alloc.mat + alloc.mpa + alloc.nat + alloc.npa} | übrig: ${formatComputedValue(r.poolRemaining)} <span class="pool-hint">(Verteilung im Kampf-Tab)</span></div>
       <div class="pool-fields">
         ${poolFieldReadOnly('nAT', alloc.nat, undefined)}
-        ${poolFieldReadOnly('gAT', alloc.gat, caps?.gatMax)}
-        ${poolFieldReadOnly('mAT', alloc.mat, caps?.matMax)}
+        ${poolFieldReadOnly('gAT', GUT_BASIS + alloc.gat, caps?.gatMax)}
+        ${poolFieldReadOnly('mAT', MEISTERLICH_BASIS + alloc.mat, caps?.matMax)}
         ${poolFieldReadOnly('nPA', alloc.npa, undefined)}
-        ${poolFieldReadOnly('gPA', alloc.gpa, caps?.gpaMax)}
-        ${poolFieldReadOnly('mPA', alloc.mpa, caps?.mpaMax)}
+        ${poolFieldReadOnly('gPA', GUT_BASIS + alloc.gpa, caps?.gpaMax)}
+        ${poolFieldReadOnly('mPA', MEISTERLICH_BASIS + alloc.mpa, caps?.mpaMax)}
       </div>
     </div>`;
 }

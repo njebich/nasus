@@ -20,6 +20,7 @@ import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATE
 import { composeMunition } from '../engine/pfeilBolzenComposition';
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
 import { computeWeaponAtPaOverflow, resolveWaffenRowBasis } from '../engine/waffenPool';
+import { gutBudget, meisterlichBudget } from '../engine/poolCaps';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
 import { FEUERWAFFEN_MUNITION_PREISE, type FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
@@ -176,10 +177,11 @@ export function setPoolAllocation(character: CharacterState, referenz: string, a
   }
   if (computed?.poolCaps) {
     const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
-    if (allocation.gat > gatMax) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatMax})`);
-    if (allocation.gpa > gpaMax) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaMax})`);
-    if (allocation.mat > matMax) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matMax})`);
-    if (allocation.mpa > mpaMax) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaMax})`);
+    const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
+    if (allocation.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
+    if (allocation.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
+    if (allocation.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
+    if (allocation.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
   }
 
   return candidate;
@@ -218,10 +220,11 @@ export function setWaffenPoolAllocation(
   }
   if (computed?.poolCaps) {
     const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
-    if (aggregate.gat > gatMax) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatMax})`);
-    if (aggregate.gpa > gpaMax) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaMax})`);
-    if (aggregate.mat > matMax) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matMax})`);
-    if (aggregate.mpa > mpaMax) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaMax})`);
+    const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
+    if (aggregate.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
+    if (aggregate.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
+    if (aggregate.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
+    if (aggregate.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
   }
 
   const basis = resolveWaffenRowBasis(character, equipmentId);

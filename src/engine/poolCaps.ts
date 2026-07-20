@@ -31,3 +31,23 @@ export function computeGutMax(basisWert: number): number {
 export function computeMeisterlichMax(gutMax: number): number {
   return 21 + Math.ceil((gutMax - 1) / 2);
 }
+
+// Jede Probe mit Wert > 1 hat automatisch g1/m21 (Proben v2.0.md §2) - dieses Basisband ist
+// kostenlos und kostet keine Pool-Punkte. gatMax/matMax (s.o.) sind Gesamt-Zielwerte, die dieses
+// Basisband schon einschliessen, also darf nur (Max - Basis) tatsaechlich aus dem Pool bezahlt
+// werden. Nutzer-Klarstellung 2026-07-20: das Basisband reduziert das Pool-Budget NICHT zusaetzlich
+// - es kommt einfach obendrauf, ohne selbst etwas zu kosten.
+export const GUT_BASIS = 1;
+export const MEISTERLICH_BASIS = 21;
+
+/** Wie viele rohe Pool-Punkte tatsaechlich in gAT/gPA gesteckt werden duerfen (Gesamt-Max minus
+ *  kostenloser Basis 1). */
+export function gutBudget(gutMax: number): number {
+  return Math.max(0, gutMax - GUT_BASIS);
+}
+
+/** Wie viele rohe Pool-Punkte tatsaechlich in mAT/mPA gesteckt werden duerfen (Gesamt-Max minus
+ *  kostenloser Basis 21). */
+export function meisterlichBudget(meisterlichMax: number): number {
+  return Math.max(0, meisterlichMax - MEISTERLICH_BASIS);
+}

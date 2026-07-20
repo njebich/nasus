@@ -326,10 +326,11 @@ describe('setWaffenPoolAllocation', () => {
       .find((r) => r.rule.referenz === 'nk_pool_hiebwaffen_aexte')!;
     expect(pool.weaponOverflowBudget).toBe(28);
 
-    // Das aufgestockte Budget (7+28=35) erlaubt jetzt eine mAT-Zuteilung von 20 (mAT-Obergrenze
-    // ist unveraendert 26, siehe poolCaps.ts - unbeeinflusst vom Ueberschuss-Budget), waehrend das
-    // reine Formel-Budget (7) dafuer bei weitem nicht gereicht haette.
-    const updated = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 0, gpa: 0, mat: 20, mpa: 0, nat: 0, npa: 0 });
-    expect(updated.poolAllocations['nk_pool_hiebwaffen_aexte::' + w1.id]).toEqual({ gat: 0, gpa: 0, mat: 20, mpa: 0, nat: 0, npa: 0 });
+    // Das aufgestockte Budget (7+28=35) erlaubt jetzt eine gAT-Zuteilung von 9 rohen Pool-Punkten
+    // (gAT-Gesamtziel ist unveraendert 10, siehe poolCaps.ts, davon 1 kostenlose Basis + 9 aus dem
+    // Pool zahlbar - unbeeinflusst vom Ueberschuss-Budget), waehrend das reine Formel-Budget (7)
+    // dafuer bei weitem nicht gereicht haette.
+    const updated = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 9, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+    expect(updated.poolAllocations['nk_pool_hiebwaffen_aexte::' + w1.id]).toEqual({ gat: 9, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
   });
 });

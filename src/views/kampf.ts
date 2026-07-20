@@ -12,6 +12,7 @@ import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN } from '../data/equipment/fernkampf';
 import { feuerwaffenMunitionOptionen, FEUERWAFFEN_MUNITION_PREISE } from '../data/equipment/feuerwaffenMunition';
 import { resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis } from '../engine/waffenPool';
+import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget } from '../engine/poolCaps';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -122,11 +123,11 @@ function poolFieldsForRow(
   const pp = overflow.atOverflow + overflow.paOverflow + Number(poolRule?.computedValue ?? 0) - rowAllocatedTotal;
   return {
     nat: { value: overflow.uncAtWeapon + allocation.nat, allocated: allocation.nat, max: overflow.natMax },
-    gat: { value: allocation.gat, allocated: allocation.gat, max: caps?.gatMax },
-    mat: { value: allocation.mat, allocated: allocation.mat, max: caps?.matMax },
+    gat: { value: GUT_BASIS + allocation.gat, allocated: allocation.gat, max: caps ? gutBudget(caps.gatMax) : undefined },
+    mat: { value: MEISTERLICH_BASIS + allocation.mat, allocated: allocation.mat, max: caps ? meisterlichBudget(caps.matMax) : undefined },
     npa: { value: overflow.uncPaWeapon + allocation.npa, allocated: allocation.npa, max: overflow.npaMax },
-    gpa: { value: allocation.gpa, allocated: allocation.gpa, max: caps?.gpaMax },
-    mpa: { value: allocation.mpa, allocated: allocation.mpa, max: caps?.mpaMax },
+    gpa: { value: GUT_BASIS + allocation.gpa, allocated: allocation.gpa, max: caps ? gutBudget(caps.gpaMax) : undefined },
+    mpa: { value: MEISTERLICH_BASIS + allocation.mpa, allocated: allocation.mpa, max: caps ? meisterlichBudget(caps.mpaMax) : undefined },
     pp,
   };
 }

@@ -87,7 +87,8 @@ interface OwnedWeaponPoolEntry {
   paBonus: number;
 }
 
-/** Loest fuer jede besessene Nahkampfwaffe (family='weapon') Hauptfertigkeit + Pool-Referenz auf -
+/** Loest fuer jede besessene Nahkampfwaffe/jedes Schild (family='weapon'|'shield') Hauptfertigkeit
+ *  + Pool-Referenz auf -
  *  einmal pro Waffe, unabhaengig von 1H/2H-Grip (siehe Grip-Handling-Kommentar im Plan: der
  *  AT-/PA-Bonus einer Waffe variiert nicht mit dem Griff, nur WK/Min-Staerke tun das). Waffen,
  *  deren Basiszeile nicht mehr existiert oder deren Pool sich nicht auflösen laesst (sollte bei
@@ -96,7 +97,7 @@ interface OwnedWeaponPoolEntry {
 function ownedWeaponPoolEntries(character: CharacterState): OwnedWeaponPoolEntry[] {
   const out: OwnedWeaponPoolEntry[] = [];
   for (const e of character.equipment) {
-    if (e.family !== 'weapon') continue;
+    if (e.family !== 'weapon' && e.family !== 'shield') continue;
     const basis = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
     const hauptfertigkeit = basis?.['Hauptfertigkeit'];
     if (!basis || !hauptfertigkeit) continue;
@@ -188,7 +189,7 @@ export function resolveWaffenRowBasis(character: CharacterState, equipmentId: st
       atBonus: numOrZero(row['AT-Basis']), paBonus: numOrZero(row['PA-Basis']),
     };
   }
-  const entry = character.equipment.find((e) => e.id === equipmentId && e.family === 'weapon');
+  const entry = character.equipment.find((e) => e.id === equipmentId && (e.family === 'weapon' || e.family === 'shield'));
   if (!entry) return undefined;
   const basis = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === entry.baseId);
   if (!basis) return undefined;

@@ -149,7 +149,9 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
   const grips: Array<'1H' | '2H'> = zweihaenderMoeglich ? ['1H', '2H'] : ['1H'];
 
   return grips.map((grip): NahkampfRow => {
-    const minStaerke = grip === '1H' ? (snap.minStaerke1H ?? 0) : (snap.minStaerke2H ?? 0);
+    // Schilde (family='shield') speichern ihre Mindeststaerke unter 'minStaerke' statt
+    // 'minStaerke1H' (siehe buyShield) - Schilde haben ohnehin nur den 1H-Griff (grips oben).
+    const minStaerke = grip === '1H' ? (snap.minStaerke1H ?? snap.minStaerke ?? 0) : (snap.minStaerke2H ?? 0);
     const usable = eigKStaerke >= minStaerke;
     const wk = grip === '1H' ? (snap.wk ?? 0) : Math.ceil((snap.wk ?? 0) * 1.5 * 2) / 2;
     const poolFields = usable && poolReferenz
@@ -237,7 +239,7 @@ export function buildNahkampfRows(character: CharacterState, sheet: ComputedShee
   if (unbewaffnetRow) rows.push(unbewaffnetRow);
 
   for (const e of character.equipment) {
-    if (e.family !== 'weapon') continue;
+    if (e.family !== 'weapon' && e.family !== 'shield') continue;
     rows.push(...buildOwnedWeaponRows(ctx, e));
   }
 

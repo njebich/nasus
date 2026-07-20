@@ -847,6 +847,41 @@ def write_voelker_maxima_ts(wb):
     print(f"{path}: {len(rows)} Voelker-Maxima-Eintraege geschrieben.")
 
 
+def write_ki_baum_kanten_ts(wb):
+    # KI-Faehigkeitsbaum (Nutzer 2026-07-20): "Faehigkeit" wird erst erreichbar, wenn IRGENDEINE
+    # ("Vorbedingung", Mindest-TaW)-Zeile fuer diese Faehigkeit erfuellt ist (mehrere Zeilen pro
+    # Faehigkeit = mehrere alternative Pfade, ODER-Verknuepfung, Nutzer 2026-07-20 bestaetigt).
+    # Referenz-Normalisierung: die Quelle enthaelt einen Bindestrich-Tippfehler ("ki_ki-schutz"
+    # statt "ki_ki_schutz") - Referenzen sind projektweit reines snake_case, daher pauschal
+    # Bindestrich->Unterstrich statt Alias-Liste.
+    ws = wb["KI-Baum-Kanten"]
+    rows = []
+    for r in range(2, ws.max_row + 1):
+        faehigkeit = ws.cell(row=r, column=1).value
+        vorbedingung = ws.cell(row=r, column=2).value
+        mindest_taw = ws.cell(row=r, column=3).value
+        if not faehigkeit or not vorbedingung or mindest_taw is None:
+            continue
+        rows.append({
+            "faehigkeit": str(faehigkeit).strip().replace("-", "_"),
+            "vorbedingung": str(vorbedingung).strip().replace("-", "_"),
+            "mindestTaw": mindest_taw,
+            "sourceRow": r,
+        })
+    type_lines = [
+        "export interface KiBaumKante {",
+        "  faehigkeit: string;",
+        "  vorbedingung: string;",
+        "  mindestTaw: number;",
+        "  sourceRow: number;",
+        "}",
+    ]
+    path = write_json_backed_module(
+        OUT_DATA_DIR, "kiBaumKanten", "KI_BAUM_KANTEN", type_lines, "KiBaumKante[]", rows,
+    )
+    print(f"{path}: {len(rows)} KI-Baum-Kanten geschrieben.")
+
+
 def read_alchemika(wb_values):
     """Liest Sheet "Alchemika", nur A1:P119 (Nutzer 2026-07-19: Sheet wurde ersetzt, exakter
     Bereich vorgegeben). Feste Spaltenindizes statt Header-Namen (Nutzer hat die Zuordnung per
@@ -957,6 +992,7 @@ def main(xlsx_path, feuerwaffen_xlsx_path=None):
     write_fernkampf_ts(wb, wb_values, feuerwaffen_values)
     write_alchemika_ts(wb_values)
     write_voelker_maxima_ts(wb)
+    write_ki_baum_kanten_ts(wb)
 
 
 if __name__ == "__main__":

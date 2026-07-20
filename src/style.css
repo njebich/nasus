@@ -874,3 +874,64 @@ body {
   min-width: 1.4rem;
   display: inline-block;
 }
+
+/* KI-Tab (Nutzer 2026-07-20): Info-Kasten ist ein Nachbau des Papier-Screenshots
+   "KI-Faehigkeitstabelle v2.8" - bewusst dunkel/eigenstaendig gestaltet statt wie eine normale
+   Karte, damit er klar als reine Formel-Referenz (kein Charakterwert) erkennbar ist. */
+.ki-info-block {
+  background: #14213d;
+  color: #f2f2f2;
+  border: 1px solid #8886;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.ki-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 1.5rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .ki-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ki-table th, .ki-table td {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ki-table td:nth-child(2), .ki-table td:nth-child(3) {
+  text-align: left;
+  white-space: normal;
+}
+
+.ki-name-cell {
+  min-width: 10rem;
+}
+
+.ki-wirkung-cell {
+  min-width: 18rem;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+
+.ki-taw-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.ki-row-locked {
+  opacity: 0.4;
+}
+
+.ki-row-locked .stat-inc, .ki-row-locked .stat-dec {
+  cursor: not-allowed;
+}

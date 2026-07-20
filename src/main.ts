@@ -16,6 +16,7 @@ import { renderAusruestungView } from './views/ausruestung';
 import { renderCharakterheader } from './views/charakterheader';
 import { renderCharakterbogen } from './views/charakterbogen';
 import { renderKampfView } from './views/kampf';
+import { renderKiView } from './views/ki';
 import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
@@ -33,7 +34,7 @@ const TABS = [
   'Charakterbogen',
   'Eigenschaft', 'Attribute', 'Charakterwerte', 'Grundfertigkeit', 'Sonderfertigkeit',
   'Nahkampf', 'Fernkampf', 'Kampf', 'Bewegung', 'Gewichtsbelastung', 'WHK',
-  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung',
+  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung', 'KI',
 ] as const;
 type Tab = (typeof TABS)[number];
 const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und Nachteile': false };
@@ -454,6 +455,8 @@ function render(): void {
       renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle);
     } else if (activeTab === 'Kampf') {
       renderKampfView(viewContainer, sheet, currentCharacter, handleWaffenPoolChange);
+    } else if (activeTab === 'KI') {
+      renderKiView(viewContainer, sheet, handleValueChange);
     } else {
       renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange);
     }

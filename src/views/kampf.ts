@@ -77,9 +77,17 @@ export interface NahkampfRow {
   npa: PoolFieldState;
   gpa: PoolFieldState;
   mpa: PoolFieldState;
+  /** Poolpunkte (PP) - Summe der aus dem Waffen-Pool ausgegebenen (allocated) Punkte ueber alle
+   *  sechs Felder, nicht der Anzeigewert (value) inkl. automatischem Overflow. */
+  pp: number;
   kb: number;
   ks: number;
   ini: number;
+}
+
+function computePP(fields: Pick<NahkampfRow, 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa'>): number {
+  return fields.nat.allocated + fields.gat.allocated + fields.mat.allocated
+    + fields.npa.allocated + fields.gpa.allocated + fields.mpa.allocated;
 }
 
 function findWeaponBasis(baseId: string): WeaponRow | undefined {
@@ -159,6 +167,7 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       rb: snap.rb ?? 0,
       poolReferenz: usable ? poolReferenz : null,
       ...poolFields,
+      pp: computePP(poolFields),
       kb: snap.klingenbrecher ?? 0,
       ks: snap.klingenschutz ?? 0,
       ini: Math.round(Number(evalReferenz('ini', ctx.values))) + num(basis, 'Ini'),
@@ -202,6 +211,7 @@ function buildUnbewaffnetRow(ctx: PoolContext, key: string, label: string, basis
     rb: num(basis, 'RB'),
     poolReferenz,
     ...poolFields,
+    pp: computePP(poolFields),
     kb: num(basis, 'Klingenbrecher-Basis'),
     ks: num(basis, 'Klingenschutz-Basis'),
     ini: Math.round(Number(evalReferenz('ini', ctx.values))) + num(basis, 'Ini'),
@@ -483,6 +493,7 @@ function renderNahkampfRow(row: NahkampfRow): string {
       <td>${row.grip}</td>
       <td>${escapeHtml(row.wk)}</td>
       <td>${row.rb}</td>
+      <td>${row.pp}</td>
       ${poolCell('nat', row)}${poolCell('gat', row)}${poolCell('mat', row)}
       ${poolCell('npa', row)}${poolCell('gpa', row)}${poolCell('mpa', row)}
       <td>${row.kb}</td>
@@ -497,7 +508,7 @@ function renderNahkampfTable(rows: NahkampfRow[]): string {
     <div class="kampf-table-scroll">
       <table class="bogen-table kampf-waffen-table">
         <thead><tr>
-          <th>Waffe</th><th>Schaden</th><th>1H/2H</th><th>WK</th><th>RB</th>
+          <th>Waffe</th><th>Schaden</th><th>1H/2H</th><th>WK</th><th>RB</th><th>PP</th>
           <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
           <th>KB</th><th>KS</th><th>INI</th>
         </tr></thead>

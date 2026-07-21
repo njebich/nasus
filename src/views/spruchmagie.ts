@@ -246,6 +246,14 @@ export function renderSpruchmagieView(container: HTMLElement, sheet: ComputedShe
     </div>
     ${schulen.map((s) => renderSchulGruppe(sheet, s)).join('')}`;
 
+  container.querySelectorAll<HTMLDetailsElement>('details[data-spruchmagie-schule]').forEach((details) => {
+    const schule = details.dataset.spruchmagieSchule!;
+    details.addEventListener('toggle', () => {
+      if (details.open) openSchulen.add(schule);
+      else openSchulen.delete(schule);
+    });
+  });
+
   container.querySelectorAll<HTMLTableRowElement>('tr[data-referenz]').forEach((tr) => {
     const referenz = tr.dataset.referenz!;
     const decBtn = tr.querySelector<HTMLButtonElement>('.stat-dec');

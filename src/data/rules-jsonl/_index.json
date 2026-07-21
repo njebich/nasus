@@ -28,7 +28,7 @@
     "file": "gewichtsbelastung.jsonl"
   },
   "Grundfertigkeit": {
-    "count": 22,
+    "count": 20,
     "file": "grundfertigkeit.jsonl"
   },
   "KI": {
@@ -52,7 +52,7 @@
     "file": "sonderfertigkeit.jsonl"
   },
   "Sprache & Kultur": {
-    "count": 38,
+    "count": 39,
     "file": "sprache-kultur.jsonl"
   },
   "Spruchmagie": {
@@ -64,11 +64,11 @@
     "file": "talente.jsonl"
   },
   "Vor- und Nachteile": {
-    "count": 278,
+    "count": 276,
     "file": "vor-und-nachteile.jsonl"
   },
   "WHK": {
-    "count": 238,
+    "count": 237,
     "file": "whk.jsonl"
   }
 }

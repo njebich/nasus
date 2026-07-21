@@ -1,38 +1,39 @@
-{"art": "Wert", "beschreibung": "Dalkini", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_dalkini", "sourceRow": 418}
-{"art": "Wert", "beschreibung": "Draw", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_draw", "sourceRow": 419}
-{"art": "Wert", "beschreibung": "Elfen", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_elfen", "sourceRow": 420}
-{"art": "Wert", "beschreibung": "Gnome", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_gnome", "sourceRow": 421}
-{"art": "Wert", "beschreibung": "Goblins", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_goblins", "sourceRow": 422}
-{"art": "Wert", "beschreibung": "Indianer", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_indianer", "sourceRow": 423}
-{"art": "Wert", "beschreibung": "Katzen", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_katzen", "sourceRow": 424}
-{"art": "Wert", "beschreibung": "Orks", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_orks", "sourceRow": 425}
-{"art": "Wert", "beschreibung": "Trolle", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_trolle", "sourceRow": 426}
-{"art": "Wert", "beschreibung": "Zentauren", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_zentauren", "sourceRow": 427}
-{"art": "Wert", "beschreibung": "Zwerge", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_zwerge", "sourceRow": 428}
-{"art": "Wert", "beschreibung": "Drow", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_drow", "sourceRow": 548}
-{"art": "Wert", "beschreibung": "Elfisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_elfisch", "sourceRow": 549}
-{"art": "Wert", "beschreibung": "Gnomisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_gnomisch", "sourceRow": 550}
-{"art": "Wert", "beschreibung": "Goblinisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_goblinisch", "sourceRow": 551}
-{"art": "Wert", "beschreibung": "Indianisch 10", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_10", "sourceRow": 552}
-{"art": "Wert", "beschreibung": "Indianisch 11", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_11", "sourceRow": 553}
-{"art": "Wert", "beschreibung": "Indianisch 12", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_12", "sourceRow": 554}
-{"art": "Wert", "beschreibung": "Indianisch 5", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_5", "sourceRow": 555}
-{"art": "Wert", "beschreibung": "Indianisch 6", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_6", "sourceRow": 556}
-{"art": "Wert", "beschreibung": "Indianisch 7", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_7", "sourceRow": 557}
-{"art": "Wert", "beschreibung": "Indianisch 8", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_8", "sourceRow": 558}
-{"art": "Wert", "beschreibung": "Indianisch 9", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_9", "sourceRow": 559}
-{"art": "Wert", "beschreibung": "Felinisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_felinisch", "sourceRow": 560}
-{"art": "Wert", "beschreibung": "Orkisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_orkisch", "sourceRow": 561}
-{"art": "Wert", "beschreibung": "Trollisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_trollisch", "sourceRow": 562}
-{"art": "Wert", "beschreibung": "Zwergisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_zwergisch", "sourceRow": 563}
-{"art": "Wert", "beschreibung": "Straitmor-Indianisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_straitmor_indianisch", "sourceRow": 564}
-{"art": "Wert", "beschreibung": "Doxmox-Indianisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_doxmox_indianisch", "sourceRow": 565}
-{"art": "Wert", "beschreibung": "Pakagee-Indianisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_pakagee_indianisch", "sourceRow": 566}
-{"art": "Wert", "beschreibung": "Sindyala-Indianisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_sindyala_indianisch", "sourceRow": 567}
-{"art": "Wert", "beschreibung": "Insel-Dalkin", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_insel_dalkin", "sourceRow": 568}
-{"art": "Wert", "beschreibung": "Insel-Dalkinisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_insel_dalkinisch", "sourceRow": 569}
-{"art": "Wert", "beschreibung": "Reichs-Dalkin", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_reichs_dalkin", "sourceRow": 570}
-{"art": "Wert", "beschreibung": "Dalkinische Schrift", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_schrift_dalkini", "sourceRow": 571}
-{"art": "Wert", "beschreibung": "Elfische Schrift", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_schrift_elfen", "sourceRow": 572}
-{"art": "Wert", "beschreibung": "Gnomische Schrift", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_schrift_gnome", "sourceRow": 573}
-{"art": "Wert", "beschreibung": "Zwergische Schrift", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_schrift_zwerge", "sourceRow": 574}
+{"art": "Wert", "beschreibung": "Daikinische Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_dalkini", "sourceRow": 416}
+{"art": "Wert", "beschreibung": "Drawsche Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_draw", "sourceRow": 417}
+{"art": "Wert", "beschreibung": "Elfische Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_elfen", "sourceRow": 418}
+{"art": "Wert", "beschreibung": "Gnomische Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_gnome", "sourceRow": 419}
+{"art": "Wert", "beschreibung": "Goblinsche Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_goblins", "sourceRow": 420}
+{"art": "Wert", "beschreibung": "Indianische Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_indianer", "sourceRow": 421}
+{"art": "Wert", "beschreibung": "Kultur der Katzenmenschen", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_katzen", "sourceRow": 422}
+{"art": "Wert", "beschreibung": "Orkische Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_orks", "sourceRow": 423}
+{"art": "Wert", "beschreibung": "Trollische Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_trolle", "sourceRow": 424}
+{"art": "Wert", "beschreibung": "Zentaurische Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_zentauren", "sourceRow": 425}
+{"art": "Wert", "beschreibung": "Zwergische Kultur", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Kulturstufe-Kosten';2;0)", "referenz": "ssk_kultur_zwerge", "sourceRow": 426}
+{"art": "Wert", "beschreibung": "Feline Hieroglyphen", "kategorie": "Sprache & Kultur", "kostenRaw": "WENN(wert=0;0;10+(wert-1)*wert/2)", "referenz": "ssk_feline_hieroglyphen", "sourceRow": 543}
+{"art": "Wert", "beschreibung": "Drow", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_drow", "sourceRow": 546}
+{"art": "Wert", "beschreibung": "Elfisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_elfisch", "sourceRow": 547}
+{"art": "Wert", "beschreibung": "Gnomisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_gnomisch", "sourceRow": 548}
+{"art": "Wert", "beschreibung": "Goblinisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_goblinisch", "sourceRow": 549}
+{"art": "Wert", "beschreibung": "Indianisch 10", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_10", "sourceRow": 550}
+{"art": "Wert", "beschreibung": "Indianisch 11", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_11", "sourceRow": 551}
+{"art": "Wert", "beschreibung": "Indianisch 12", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_12", "sourceRow": 552}
+{"art": "Wert", "beschreibung": "Indianisch 5", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_5", "sourceRow": 553}
+{"art": "Wert", "beschreibung": "Indianisch 6", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_6", "sourceRow": 554}
+{"art": "Wert", "beschreibung": "Indianisch 7", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_7", "sourceRow": 555}
+{"art": "Wert", "beschreibung": "Indianisch 8", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_8", "sourceRow": 556}
+{"art": "Wert", "beschreibung": "Indianisch 9", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_indianisch_9", "sourceRow": 557}
+{"art": "Wert", "beschreibung": "Felinisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_felinisch", "sourceRow": 558}
+{"art": "Wert", "beschreibung": "Orkisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_orkisch", "sourceRow": 559}
+{"art": "Wert", "beschreibung": "Trollisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_trollisch", "sourceRow": 560}
+{"art": "Wert", "beschreibung": "Zwergisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_zwergisch", "sourceRow": 561}
+{"art": "Wert", "beschreibung": "Straitmor-Indianisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_straitmor_indianisch", "sourceRow": 562}
+{"art": "Wert", "beschreibung": "Doxmox-Indianisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_doxmox_indianisch", "sourceRow": 563}
+{"art": "Wert", "beschreibung": "Pakagee-Indianisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_pakagee_indianisch", "sourceRow": 564}
+{"art": "Wert", "beschreibung": "Sindyala-Indianisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_sindyala_indianisch", "sourceRow": 565}
+{"art": "Wert", "beschreibung": "Insel-Dalkin", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_insel_dalkin", "sourceRow": 566}
+{"art": "Wert", "beschreibung": "Insel-Dalkinisch", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_insel_dalkinisch", "sourceRow": 567}
+{"art": "Wert", "beschreibung": "Reichs-Dalkin", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_sprache_reichs_dalkin", "sourceRow": 568}
+{"art": "Wert", "beschreibung": "Dalkinische Schrift", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_schrift_dalkini", "sourceRow": 569}
+{"art": "Wert", "beschreibung": "Elfische Schrift", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_schrift_elfen", "sourceRow": 570}
+{"art": "Wert", "beschreibung": "Gnomische Schrift", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_schrift_gnome", "sourceRow": 571}
+{"art": "Wert", "beschreibung": "Zwergische Schrift", "kategorie": "Sprache & Kultur", "kostenRaw": "SVERWEIS(wert;'Sprachstufe-Kosten';2;0)", "referenz": "ssk_schrift_zwerge", "sourceRow": 572}

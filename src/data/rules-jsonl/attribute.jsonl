@@ -1,7 +1,7 @@
-{"abkuerzung": "Aur", "art": "Wert", "beschreibung": "Aura", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_aura", "sourceRow": 206}
-{"abkuerzung": "Ess", "art": "Wert", "beschreibung": "Essenz", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_essenz", "sourceRow": 207}
-{"abkuerzung": "Glü", "art": "Wert", "beschreibung": "Glück", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_glueck", "sourceRow": 208}
-{"abkuerzung": "Kar", "art": "Wert", "beschreibung": "Karma", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_karma", "sourceRow": 209}
-{"abkuerzung": "Mag", "art": "Wert", "beschreibung": "Magie", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_magie", "sourceRow": 210}
-{"abkuerzung": "Vit", "art": "Wert", "beschreibung": "Vitalität", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_vitalitaet", "sourceRow": 211}
-{"abkuerzung": "Wei", "art": "Formel", "beschreibung": "Weisheit", "formelRaw": "kreis+1", "kategorie": "Attribute", "referenz": "att_weisheit", "sourceRow": 212}
+{"abkuerzung": "Aur", "art": "Wert", "beschreibung": "Aura", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_aura", "sourceRow": 204}
+{"abkuerzung": "Ess", "art": "Wert", "beschreibung": "Essenz", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_essenz", "sourceRow": 205}
+{"abkuerzung": "Glü", "art": "Wert", "beschreibung": "Glück", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_glueck", "sourceRow": 206}
+{"abkuerzung": "Kar", "art": "Wert", "beschreibung": "Karma", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_karma", "sourceRow": 207}
+{"abkuerzung": "Mag", "art": "Wert", "beschreibung": "Magie", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_magie", "sourceRow": 208}
+{"abkuerzung": "Vit", "art": "Wert", "beschreibung": "Vitalität", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_vitalitaet", "sourceRow": 209}
+{"abkuerzung": "Wei", "art": "Formel", "beschreibung": "Weisheit", "formelRaw": "kreis+1", "kategorie": "Attribute", "referenz": "att_weisheit", "sourceRow": 210}

@@ -29,7 +29,7 @@ describe('getTalentMaximumBonus (Nutzer 2026-07-18: Talente-Wirkung-Analyse, "Ma
   it('zielKategorie: Talent erhoeht ALLE Referenzen einer Kategorie (Grundfertigkeiten Stufe 1 -> +2 auf jede Grundfertigkeit)', () => {
     const character = withSelection('talente_grundfertigkeiten_stufe_1');
     expect(getTalentMaximumBonus(character, 'gr_klettern', 'Grundfertigkeit')).toBe(2);
-    expect(getTalentMaximumBonus(character, 'gr_dauerlauf', 'Grundfertigkeit')).toBe(2);
+    expect(getTalentMaximumBonus(character, 'gr_laufen', 'Grundfertigkeit')).toBe(2);
     expect(getTalentMaximumBonus(character, 'sf_ausweichen', 'Sonderfertigkeit')).toBe(0);
   });
 

@@ -17,6 +17,14 @@ function formulaTooltip(raw: string | undefined): string {
   return tooltipAttr(prettyFormula(raw));
 }
 
+// Eigener Trigger (statt am ganzen Row-Label) - Kosten-Tooltip (formulaTooltip) und
+// Wirkung-Tooltip sollen unabhaengig voneinander per Hover erreichbar sein, siehe
+// PLAN-Tooltip-System.md Phase 2 Punkt 1: Wirkung statt Kosten im Tooltip.
+function wirkungIcon(wirkung: string | undefined): string {
+  if (!wirkung) return '';
+  return `<span class="stat-info-icon"${tooltipAttr(wirkung)}>ⓘ</span>`;
+}
+
 function renderRow(r: ComputedRule): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   // Talente kosten TaP (eigener, von SP komplett getrennter Pool), alles andere (z.B.
@@ -27,7 +35,7 @@ function renderRow(r: ComputedRule): string {
   return `
     <label class="auswahl-row" data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
       <input type="checkbox" class="auswahl-checkbox" ${r.selected ? 'checked' : ''} />
-      <span class="stat-label">${label}${errorNote}</span>
+      <span class="stat-label">${label}${wirkungIcon(r.rule.wirkung)}${errorNote}</span>
       <span class="stat-cost">${cost}</span>
     </label>`;
 }

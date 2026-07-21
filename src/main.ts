@@ -20,7 +20,7 @@ import { renderKampfView } from './views/kampf';
 import { renderKiView } from './views/ki';
 import { renderSpruchmagieView } from './views/spruchmagie';
 import { renderPsiView } from './views/psi';
-import { initTooltips } from './views/tooltip';
+import { initTooltips, tooltipAttr } from './views/tooltip';
 import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
@@ -42,6 +42,14 @@ const TABS = [
 ] as const;
 type Tab = (typeof TABS)[number];
 const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und Nachteile': false };
+
+// Tab-Intro-Texte aus `tooltips text.txt` (Zeilen "tab_..."): erklaeren die Kategorie als
+// Ganzes (z.B. wie Grundfertigkeiten grundsaetzlich funktionieren), gehoeren daher an den
+// Tab-Button selbst statt an eine einzelne Zeile - siehe PLAN-Tooltip-System.md Phase 2.
+const TAB_INTRO: Partial<Record<Tab, string>> = {
+  'Grundfertigkeit': 'Grundfertigkeiten werden, sofern der Meister sie für die Probe zulässt, zum Probenwert addiert. Zugelassene Grundfertigkeiten werden entweder vom Meister mit der Probe angesagt, oder wenn er eine Eigenschaftsprobe verlangt, so wird vom Spieler nachgefragt ob er eine bestimmte verwenden darf, die er als passend ansieht. Für eine Probe darf höchstens eine Grundfertigkeit verwendet werden. Der Meister kann aber auch mehr als eine Grundfertigkeit zulassen, dann darf der Charakter eine davon auswählen. Der einzige Unterschied zwischen körperlichen und geistigen Grundfertigkeiten ist, dass der Meister dadurch einen Anhaltspunkt hat, ob eine Grundfertigkeitsprobe durch GBE behindert werden sollte: In der Regel bei körperlichen 1-fach und bei geistigen nicht. Durch Kampf oder andere Ereignisse erhaltene BE gilt für alle Grundfertigkeiten gleich.',
+  'Sonderfertigkeit': 'Sonderfertigkeiten werden in der Regel nicht mit eigenen Proben abgefragt; sie sind entweder in Formeln vertreten oder geben Boni auf Tabellenproben.',
+};
 
 // Beim Start den zuletzt aktiven Charakter wiederherstellen (siehe characterStore.ts) - sonst
 // faellt jeder Seiten-Reload auf die leere Auswahl zurueck, obwohl der Charakter noch da ist.
@@ -344,7 +352,7 @@ function render(): void {
       ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
       ${currentCharacter ? `
         <nav class="tab-nav">
-          ${TABS.map((tab) => `<button type="button" class="tab-btn" data-tab="${tab}" ${activeTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
+          ${TABS.map((tab) => `<button type="button" class="tab-btn" data-tab="${tab}"${tooltipAttr(TAB_INTRO[tab])} ${activeTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
         </nav>` : ''}
     </header>
     <main id="view-container"></main>

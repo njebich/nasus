@@ -29,6 +29,14 @@ function formulaTooltip(raw: string | undefined): string {
   return tooltipAttr(prettyFormula(raw));
 }
 
+// Eigener Trigger (statt am ganzen Row-Label) - Formel-Tooltip und Info-Tooltip sollen
+// unabhaengig voneinander per Hover erreichbar sein, siehe PLAN-Tooltip-System.md Phase 2 und
+// das gleiche Muster in talenteVornachteile.ts (dort fuer Wirkung statt Info).
+function infoIcon(info: string | undefined): string {
+  if (!info) return '';
+  return `<span class="stat-info-icon"${tooltipAttr(info)}>ⓘ</span>`;
+}
+
 /** maxValue: nur bei Spezialisierungen gesetzt (Regel Nutzer 2026-07-17: Spezialisierung
  *  darf nie hoeher als der TaW der Hauptfertigkeit sein) - deckelt Input und "+"-Button. */
 function renderEditableRow(r: ComputedRule, maxValue?: number): string {
@@ -49,7 +57,7 @@ function renderEditableRow(r: ComputedRule, maxValue?: number): string {
   // naechsten Vorfahren zurueck.
   return `
     <div class="stat-row" data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
-      <span class="stat-label">${label}${errorNote(r)}</span>
+      <span class="stat-label">${label}${infoIcon(r.rule.info)}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern">-</button>
       <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
       <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
@@ -91,7 +99,7 @@ function renderReadOnlyRow(r: ComputedRule): string {
     : escapeHtml(formatComputedValue(r.computedValue ?? r.fixedText ?? '–'));
   return `
     <div class="stat-row stat-row-readonly"${formulaTooltip(r.rule.formelRaw)}>
-      <span class="stat-label">${label}</span>
+      <span class="stat-label">${label}${infoIcon(r.rule.info)}</span>
       <span class="stat-value-readonly">${display}</span>
     </div>`;
 }

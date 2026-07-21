@@ -153,6 +153,12 @@ body {
   cursor: help;
 }
 
+.stat-info-icon {
+  opacity: 0.6;
+  cursor: help;
+  font-size: 0.9em;
+}
+
 .stat-value {
   width: 5ch;
   text-align: center;

@@ -1,0 +1,173 @@
+UI-Gruppen-Referenz (Nasus Chargen-App)
+Stand: 2026-07-22
+
+Zweck: Zuordnung "wie es im Browser heisst" (In-App-Label) <-> "wie es im Code/
+in den Daten heisst" (interner Bezeichner), damit du beim Reden mit Claude
+eine ganze Tab-Gruppe oder Untergruppe eindeutig benennen kannst statt
+einzelne Zeilen beschreiben zu muessen. Kategorie-Namen entsprechen 1:1 den
+Dateinamen in src/data/rules-jsonl/ (z.B. Kategorie "Vor- und Nachteile" ->
+vor-und-nachteile.jsonl), siehe src/data/rules-jsonl/_index.json fuer die
+volle Liste inkl. Zeilenanzahl.
+
+====================================================================
+1. HAUPT-TABS (Navigationsleiste oben)
+====================================================================
+Format: In-App-Label | interner Bezeichner (== data-tab-Attribut) |
+        Render-Funktion | Daten-Kategorie(n)
+
+Charakterbogen
+  interner Bezeichner: Charakterbogen
+  Render-Funktion:     renderCharakterbogen (views/charakterbogen.ts)
+  Daten:               Sammelansicht ueber mehrere Kategorien (LE, Gesundheit,
+                        Stufe, Kreis, Eigenschaftsbonus, ...), keine eigene
+                        Kategorie
+
+Eigenschaft
+  interner Bezeichner: Eigenschaft
+  Render-Funktion:     renderCategoryView (generisch, views/categoryView.ts)
+  Daten:               Kategorie "Eigenschaft" (10 Zeilen)
+
+Attribute
+  interner Bezeichner: Attribute
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Attribute" (6 Zeilen, Essenz entfernt)
+
+Charakterwerte
+  interner Bezeichner: Charakterwerte
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Charakterwerte" (36 Zeilen)
+
+Grundfertigkeit
+  interner Bezeichner: Grundfertigkeit
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Grundfertigkeit" (20 Zeilen)
+  Hinweis:              Tab-Intro-Tooltip vorhanden (Hover auf den Tab-Button)
+
+Sonderfertigkeit
+  interner Bezeichner: Sonderfertigkeit
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Sonderfertigkeit" (22 Zeilen, davon 8 in der
+                        "Ladeschuetze"-Untergruppe, siehe Abschnitt 2)
+  Hinweis:              Tab-Intro-Tooltip vorhanden (Hover auf den Tab-Button)
+
+Nahkampf
+  interner Bezeichner: Nahkampf
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Nahkampf" (70 Zeilen)
+
+Fernkampf
+  interner Bezeichner: Fernkampf
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Fernkampf" (36 Zeilen)
+
+Kampf
+  interner Bezeichner: Kampf
+  Render-Funktion:     renderKampfView (views/kampf.ts)
+  Daten:               liest die Nahkampf-Pool-Zuteilung pro Waffe (Kategorie
+                        "Nahkampf", Art=Pool) - NICHT die separate 10-zeilige
+                        Kategorie "Kampf" aus der Werte-Tabelle, die aktuell
+                        nirgends direkt als Liste gerendert wird (nur in Tests
+                        gelesen)
+
+Bewegung
+  interner Bezeichner: Bewegung
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Bewegung" (18 Zeilen)
+
+Gewichtsbelastung
+  interner Bezeichner: Gewichtsbelastung
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Gewichtsbelastung" (7 Zeilen)
+
+WHK
+  interner Bezeichner: WHK
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "WHK" (237 Zeilen)
+
+Sprache & Kultur
+  interner Bezeichner: Sprache & Kultur
+  Render-Funktion:     renderCategoryView (generisch)
+  Daten:               Kategorie "Sprache & Kultur" (39 Zeilen)
+
+Talente
+  interner Bezeichner: Talente
+  Render-Funktion:     renderAuswahlView (views/talenteVornachteile.ts),
+                        GRUPPIERT nach Parent (Charakterklasse)
+  Daten:               Kategorie "Talente" (176 Zeilen)
+  Hinweis:              aufklappbare Gruppen, Zustand bleibt beim
+                        TaW-Steigern erhalten
+
+Vor- und Nachteile
+  interner Bezeichner: Vor- und Nachteile
+  Render-Funktion:     renderAuswahlView (views/talenteVornachteile.ts),
+                        UNGRUPPIERT (flache Liste)
+  Daten:               Kategorie "Vor- und Nachteile" (276 Zeilen)
+
+Ausrüstung
+  interner Bezeichner: Ausrüstung
+  Render-Funktion:     renderAusruestungView (views/ausruestung.ts)
+  Daten:               eigene Datenquelle (Preisliste/Alchemika/Boegen/
+                        Armbrust/Feuerwaffen/Artefakte/Ruestung/Schilde) -
+                        NICHT aus der Werte-Tabelle. Siehe Abschnitt 2 fuer
+                        die 10 Unterabschnitte.
+
+KI
+  interner Bezeichner: KI
+  Render-Funktion:     renderKiView (views/ki.ts)
+  Daten:               Kategorie "KI" (30 Zeilen)
+
+Spruchmagie
+  interner Bezeichner: Spruchmagie
+  Render-Funktion:     renderSpruchmagieView (views/spruchmagie.ts),
+                        GRUPPIERT nach Parent (Zauberschule)
+  Daten:               Kategorie "Spruchmagie" (330 Zeilen)
+
+Psi
+  interner Bezeichner: Psi (Tab-Label) - Achtung, die Daten-Kategorie heisst
+                        abweichend "PSI" (grossgeschrieben)
+  Render-Funktion:     renderPsiView (views/psi.ts)
+  Daten:               Kategorie "PSI" (15 Zeilen)
+
+====================================================================
+2. UNTERGRUPPEN INNERHALB EINZELNER TABS
+====================================================================
+
+Ausrüstung - 10 auf-/zuklappbare Abschnitte (jeder einzeln, Zustand bleibt
+beim Kaufen/Aendern erhalten):
+  "Mein Inventar"   (intern: inventar)
+  "Rüstung"         (intern: ruestung)
+  "Schilde"         (intern: schilde)
+  "Waffen"          (intern: waffen)        - Nahkampfwaffen
+  "Bögen"           (intern: boegen)        - weiter untergliedert nach Volksgruppe
+  "Armbrüste"       (intern: armbrueste)    - weiter untergliedert nach Volksgruppe
+  "Feuerwaffen"     (intern: feuerwaffen)   - weiter untergliedert nach Volksgruppe
+  "Alchemika"       (intern: alchemika)     - weiter untergliedert nach Kategorie
+                                               (Gifte/Heiltränke/Kampfträenke/
+                                               Parfum/Zustandstränke)
+  "Preisliste"      (intern: preisliste)
+  "Artefakte"       (intern: artefakte)
+
+Sonderfertigkeit - "Ladeschütze"-Sammelgruppe:
+  8 Fertigkeiten (Armbrust/Blasrohr/Bogen/Kanone/Patrone/Rune/Vorderlader/
+  Wurfmesser), jede einzeln erst sichtbar sobald die zugehoerige
+  Fernkampf-Fertigkeit > 0 ist.
+
+Talente:
+  Gruppiert nach "Parent" (Charakterklasse), aufklappbar.
+
+Spruchmagie:
+  Gruppiert nach "Parent" (Zauberschule), aufklappbar.
+
+Generische Kategorie-Tabs (Eigenschaft/Attribute/Grundfertigkeit/
+Sonderfertigkeit/Nahkampf/Fernkampf/Bewegung/Gewichtsbelastung/WHK/
+Charakterwerte/Sprache & Kultur):
+  Hauptfertigkeiten mit Spezialisierungen erscheinen als aufklappbare Gruppe
+  (Hierarchie ueber "Parent"); Spezialisierungen werden erst angeboten,
+  sobald der TaW der Hauptfertigkeit > 0 ist.
+
+====================================================================
+3. SONSTIGES
+====================================================================
+"Eigenschaftsbonus" ist KEIN eigener Tab, sondern eine interne
+Daten-Kategorie (10 Zeilen), die z.B. auf dem Charakterbogen-Tab und in
+KI/Spruchmagie/Psi fuer "gute Probe"-Boni gelesen wird.

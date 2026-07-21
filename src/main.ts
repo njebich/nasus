@@ -19,6 +19,7 @@ import { renderCharakterbogen } from './views/charakterbogen';
 import { renderKampfView } from './views/kampf';
 import { renderKiView } from './views/ki';
 import { renderSpruchmagieView } from './views/spruchmagie';
+import { renderPsiView } from './views/psi';
 import { initTooltips } from './views/tooltip';
 import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
@@ -37,7 +38,7 @@ const TABS = [
   'Charakterbogen',
   'Eigenschaft', 'Attribute', 'Charakterwerte', 'Grundfertigkeit', 'Sonderfertigkeit',
   'Nahkampf', 'Fernkampf', 'Kampf', 'Bewegung', 'Gewichtsbelastung', 'WHK',
-  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung', 'KI', 'Spruchmagie',
+  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung', 'KI', 'Spruchmagie', 'Psi',
 ] as const;
 type Tab = (typeof TABS)[number];
 const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und Nachteile': false };
@@ -474,6 +475,8 @@ function render(): void {
       renderKiView(viewContainer, sheet, handleValueChange, currentCharacter.grundfertigkeitAuswahl, handleGrundfertigkeitPick);
     } else if (activeTab === 'Spruchmagie') {
       renderSpruchmagieView(viewContainer, sheet, handleValueChange);
+    } else if (activeTab === 'Psi') {
+      renderPsiView(viewContainer, sheet, handleValueChange);
     } else {
       renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange);
     }

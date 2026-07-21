@@ -151,7 +151,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
       <td>${escapeHtml(dauer?.vd ?? '–')}</td>
       <td>${escapeHtml(dauer?.wd ?? '–')}</td>
       <td class="ki-taw-cell">
-        <button type="button" class="stat-dec" aria-label="verringern" ${!unlocked || currentValue <= 0 ? 'disabled' : ''}>-</button>
+        <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
         <span class="kampf-pool-value">${currentValue}</span>
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
         <span class="stat-cost">${costLabel}</span>
@@ -228,7 +228,7 @@ export function renderKiView(
       onChange(referenz, row.currentValue + 1);
     });
     tr.querySelector('.stat-dec')?.addEventListener('click', () => {
-      if (!row.unlocked) return;
+      if (row.currentValue <= 0) return;
       onChange(referenz, Math.max(0, row.currentValue - 1));
     });
   });

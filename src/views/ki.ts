@@ -29,12 +29,18 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function renderInfoBlock(): string {
+/** talente_me_sparen: "Immer halbe ME" (Nutzer 2026-07-21) - ME-Kosten sind hier (wie bei PSI/
+ *  Spruchmagie) nur eine Referenzformel im Info-Kasten, keine live berechnete Zahl (Erschwerung
+ *  ist eine situative Tischentscheidung, kein gespeicherter Charakterwert) - deshalb wirkt das
+ *  Talent hier als Verdopplung des Teilers (:2 -> :4) statt als numerische Halbierung. */
+function renderInfoBlock(sheet: ComputedSheet): string {
+  const meSparen = (sheet.byKategorie['Talente'] ?? []).find((r) => r.rule.referenz === 'talente_me_sparen')?.selected ?? false;
+  const meTeiler = meSparen ? 4 : 2;
   return `
     <div class="ki-info-block">
       <div class="ki-info-grid">
-        <div><b>Probe</b> = (W30-W12) ≤ (TaW + Eig.Bon. + 2 × Magie) − Zuschlag − (ME:2)</div>
-        <div><b>ME-Kosten</b> = (Erschwerung − Aura) : 2</div>
+        <div><b>Probe</b> = (W30-W12) ≤ (TaW + Eig.Bon. + 2 × Magie) − Zuschlag − (ME:${meTeiler})</div>
+        <div><b>ME-Kosten</b> = (Erschwerung − Aura) : ${meTeiler}</div>
         <div><b>MK</b> = Willenskraft + Aura + Vitalität + Stufe + MK</div>
         <div><b>Regeneration</b> = (Aura:2) pro min</div>
         <div><b>V.Dauer verkürzen:</b> V. Dauer : 2/3/4/usw. pro +2/+3/+4/usw.</div>
@@ -57,6 +63,24 @@ function getAttWert(sheet: ComputedSheet, referenz: string): number {
 
 function getAttMagie(sheet: ComputedSheet): number {
   return getAttWert(sheet, 'att_magie');
+}
+
+function getAttAura(sheet: ComputedSheet): number {
+  return getAttWert(sheet, 'att_aura');
+}
+
+function isTalentSelected(sheet: ComputedSheet, referenz: string): boolean {
+  return (sheet.byKategorie['Talente'] ?? []).find((r) => r.rule.referenz === referenz)?.selected ?? false;
+}
+
+/** Gute KI-Probe (talente_ki_gute_stufe_1/2): Stufe 1 = Magie, Stufe 2 = Magie + Aura, gedeckelt
+ *  auf Normale:2 (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt"). */
+function getGuteProbe(sheet: ComputedSheet, normaleProbe: number): number | undefined {
+  const stufe2 = isTalentSelected(sheet, 'talente_ki_gute_stufe_2');
+  const stufe1 = stufe2 || isTalentSelected(sheet, 'talente_ki_gute_stufe_1');
+  if (!stufe1) return undefined;
+  const gute = stufe2 ? getAttMagie(sheet) + getAttAura(sheet) : getAttMagie(sheet);
+  return Math.min(gute, Math.floor(normaleProbe / 2));
 }
 
 /** Kante(n) + benoetigte(r) TaW als Tooltip-Text fuers "+"-Feld - unabhaengig vom Lock-Status,
@@ -135,7 +159,9 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   const { referenz, name, currentValue, kostenNext, wirkung, unlocked } = r;
   const eigBon = getEigBonusValue(sheet, r.eigBonusReferenz);
   // Probe ist nur sinnvoll, sobald die Faehigkeit ueberhaupt gelernt ist (Nutzer 2026-07-20).
-  const probe = currentValue < 1 ? '' : currentValue + (eigBon?.value ?? 0) + 2 * getAttMagie(sheet);
+  const normaleProbe = currentValue + (eigBon?.value ?? 0) + 2 * getAttMagie(sheet);
+  const guteProbe = currentValue < 1 ? undefined : getGuteProbe(sheet, normaleProbe);
+  const probe = currentValue < 1 ? '' : guteProbe !== undefined ? `${normaleProbe} / G${guteProbe}` : `${normaleProbe}`;
   const dauer = KI_DAUER[referenz];
   const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
@@ -209,7 +235,7 @@ export function renderKiView(
   const gewaehlt = grundfertigkeitAuswahl[MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ] ?? [];
 
   container.innerHTML = `
-    ${renderInfoBlock()}
+    ${renderInfoBlock(sheet)}
     <div class="kampf-table-scroll">
       <table class="bogen-table ki-table">
         <thead><tr>

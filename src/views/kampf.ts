@@ -11,7 +11,7 @@ import type { CharacterState, PoolAllocation } from '../state/characterStore';
 import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN } from '../data/equipment/fernkampf';
 import { feuerwaffenMunitionOptionen, FEUERWAFFEN_MUNITION_PREISE } from '../data/equipment/feuerwaffenMunition';
-import { resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis } from '../engine/waffenPool';
+import { resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier } from '../engine/waffenPool';
 import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget } from '../engine/poolCaps';
 import { getOwnedKampfmodulTalentInfo } from '../engine/talenteKampfmodulInfo';
 
@@ -85,6 +85,13 @@ export interface NahkampfRow {
   kb: number;
   ks: number;
   ini: number;
+  /** talente_kampf_mit_zwei_waffen_stufe_1-4 (Nutzer 2026-07-21): Eignungs-Flag pro 1H-Waffe -
+   *  WK (unmodifizierter Listenwert) <= Kappungswert der hoechsten besessenen Stufe. `undefined`
+   *  = nicht anwendbar (kein Talent besessen, Stangenwaffe, 2H-Griff oder Unbewaffnet-Zeile). Die
+   *  eigentliche Kombi-Mechanik (n-Mod/Mindeststaerke-Summe, 1,5x-WK-Attacke, WK-Summe-Parade fuer
+   *  ein konkretes Waffenpaar) ist eine Kampfrunden-Entscheidung (welche zwei Waffen genau) und
+   *  bleibt bewusst dem geplanten Loadout-System vorbehalten (siehe Entwickeln-Log). */
+  zweiWaffenFaehig?: boolean;
 }
 
 function findWeaponBasis(baseId: string): WeaponRow | undefined {
@@ -108,13 +115,24 @@ interface PoolContext {
   values: CharacterValueSource;
 }
 
+const ZWEI_WAFFEN_WK_CAP: Record<number, number> = { 1: 3.5, 2: 4.5, 3: 5.5, 4: 6.5 };
+
+/** Hoechster besessener talente_kampf_mit_zwei_waffen_stufe_1-4 -> WK-Kappungswert
+ *  (unmodifizierter Listenwert), sonst undefined (Talent nicht besessen). */
+function getZweiWaffenCap(character: CharacterState): number | undefined {
+  for (let stufe = 4; stufe >= 1; stufe--) {
+    if ((character.selections[`talente_kampf_mit_zwei_waffen_stufe_${stufe}`] ?? 0) > 0) return ZWEI_WAFFEN_WK_CAP[stufe];
+  }
+  return undefined;
+}
+
 function poolFieldsForRow(
   ctx: PoolContext, poolReferenz: string, key: string, hauptfertigkeit: string, atBonus: number, paBonus: number,
 ): Pick<NahkampfRow, 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa' | 'pp'> {
   const poolRule = ctx.sheet.byKategorie['Nahkampf']?.find((r) => r.rule.referenz === poolReferenz);
   const allocation = ctx.character.poolAllocations[`${poolReferenz}::${key}`]
     ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
-  const overflow = computeWeaponAtPaOverflow(hauptfertigkeit, atBonus, paBonus, ctx.values);
+  const overflow = computeWeaponAtPaOverflow(hauptfertigkeit, atBonus, paBonus, ctx.values, getKampfstilModifier(ctx.character));
   const caps = poolRule?.poolCaps;
   const rowAllocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa + allocation.nat + allocation.npa;
   // Poolpunkte (PP) sind PRO ZEILE: dieser Waffe eigener AT/PA-Ueberschuss ueber 20 plus die
@@ -133,7 +151,7 @@ function poolFieldsForRow(
   };
 }
 
-function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][number]): NahkampfRow[] {
+function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][number], zweiWaffenCap: number | undefined): NahkampfRow[] {
   const basis = findWeaponBasis(e.baseId);
   if (!basis) return [];
   const snap = e.computedStatsSnapshot ?? {};
@@ -156,6 +174,9 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
     const minStaerke = grip === '1H' ? (snap.minStaerke1H ?? snap.minStaerke ?? 0) : (snap.minStaerke2H ?? 0);
     const usable = eigKStaerke >= minStaerke;
     const wk = grip === '1H' ? (snap.wk ?? 0) : Math.ceil((snap.wk ?? 0) * 1.5 * 2) / 2;
+    const zweiWaffenFaehig = zweiWaffenCap !== undefined && grip === '1H' && hauptfertigkeit !== 'Stangenwaffen' && usable
+      ? wk <= zweiWaffenCap
+      : undefined;
     const poolFields = usable && poolReferenz
       ? poolFieldsForRow(ctx, poolReferenz, e.id, hauptfertigkeit, snap.at ?? 0, snap.pa ?? 0)
       : {
@@ -177,6 +198,7 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       kb: snap.klingenbrecher ?? 0,
       ks: snap.klingenschutz ?? 0,
       ini: Math.round(Number(evalReferenz('ini', ctx.values))) + num(basis, 'Ini'),
+      zweiWaffenFaehig,
     };
   });
 }
@@ -240,9 +262,10 @@ export function buildNahkampfRows(character: CharacterState, sheet: ComputedShee
   const unbewaffnetRow = buildUnbewaffnetRow(ctx, 'unbewaffnet', 'Unbewaffnet', unbewaffnetBasis);
   if (unbewaffnetRow) rows.push(unbewaffnetRow);
 
+  const zweiWaffenCap = getZweiWaffenCap(character);
   for (const e of character.equipment) {
     if (e.family !== 'weapon' && e.family !== 'shield') continue;
-    rows.push(...buildOwnedWeaponRows(ctx, e));
+    rows.push(...buildOwnedWeaponRows(ctx, e, zweiWaffenCap));
   }
 
   for (const spezReferenz of UNBEWAFFNET_SPEZ_REFERENZEN) {
@@ -523,8 +546,9 @@ function poolCell(field: 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa', row: Nah
     </td>`;
 }
 
-function renderNahkampfRow(row: NahkampfRow): string {
+function renderNahkampfRow(row: NahkampfRow, showZweiWaffen: boolean): string {
   const unusable = !row.usable;
+  const zweiWaffenCell = row.zweiWaffenFaehig === undefined ? '–' : row.zweiWaffenFaehig ? '✓' : '✗';
   return `
     <tr class="${unusable ? 'kampf-row-unusable' : ''}" title="${unusable ? escapeHtml(row.unusableReason ?? '') : ''}">
       <td>${escapeHtml(row.label)}</td>
@@ -538,10 +562,14 @@ function renderNahkampfRow(row: NahkampfRow): string {
       <td>${row.kb}</td>
       <td>${row.ks}</td>
       <td>${row.ini}</td>
+      ${showZweiWaffen ? `<td title="Kampf mit zwei Waffen: WK-faehig fuer die hoechste besessene Stufe">${zweiWaffenCell}</td>` : ''}
     </tr>`;
 }
 
 function renderNahkampfTable(rows: NahkampfRow[]): string {
+  // Spalte "2-Waffen" nur, wenn das Talent (irgend)eine Stufe besessen wird - siehe
+  // getZweiWaffenCap/zweiWaffenFaehig-Kommentar in NahkampfRow.
+  const showZweiWaffen = rows.some((r) => r.zweiWaffenFaehig !== undefined);
   return `
     <h3 class="bogen-section-heading">Nahkampf</h3>
     <div class="kampf-table-scroll">
@@ -550,8 +578,9 @@ function renderNahkampfTable(rows: NahkampfRow[]): string {
           <th>Waffe</th><th>Schaden</th><th>1H/2H</th><th>WK</th><th>RB</th><th>PP</th>
           <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
           <th>KB</th><th>KS</th><th>INI</th>
+          ${showZweiWaffen ? '<th>2-Waffen</th>' : ''}
         </tr></thead>
-        <tbody>${rows.map(renderNahkampfRow).join('')}</tbody>
+        <tbody>${rows.map((r) => renderNahkampfRow(r, showZweiWaffen)).join('')}</tbody>
       </table>
     </div>`;
 }

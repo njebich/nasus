@@ -66,9 +66,10 @@ export interface WeaponAtPaOverflow {
 
 export function computeWeaponAtPaOverflow(
   hauptfertigkeit: string, weaponAtBonus: number, weaponPaBonus: number, values: CharacterValueSource,
+  kampfstilModifier: { at: number; pa: number } = { at: 0, pa: 0 },
 ): WeaponAtPaOverflow {
-  const uncAtWeapon = uncappedBasis('at', hauptfertigkeit, values) + weaponAtBonus;
-  const uncPaWeapon = uncappedBasis('pa', hauptfertigkeit, values) + weaponPaBonus;
+  const uncAtWeapon = uncappedBasis('at', hauptfertigkeit, values) + weaponAtBonus + kampfstilModifier.at;
+  const uncPaWeapon = uncappedBasis('pa', hauptfertigkeit, values) + weaponPaBonus + kampfstilModifier.pa;
   return {
     uncAtWeapon,
     uncPaWeapon,
@@ -77,6 +78,23 @@ export function computeWeaponAtPaOverflow(
     atOverflow: Math.max(0, uncAtWeapon - 20),
     paOverflow: Math.max(0, uncPaWeapon - 20),
   };
+}
+
+/** Permanenter Modifikator aus talente_offensiver_kampfstil_stufe_1-3 / talente_verteidiger_
+ *  stufe_1-3 (Nutzer 2026-07-21: "permanent flat modifier", nicht Stufen-kumulativ - je Talent-
+ *  Familie zaehlt nur die hoechste besessene Stufe, analog zu anderen Stufen-Talenten wie Kampf
+ *  mit zwei Waffen, deren Stufe-3-Wirkung den Gesamtwert und nicht ein Delta beschreibt). Wirkt
+ *  auf ALLE nAT/nPA-Formeln zugleich, siehe computeWeaponAtPaOverflow. */
+export function getKampfstilModifier(character: CharacterState): { at: number; pa: number } {
+  const stufe = (prefix: string): number => {
+    if ((character.selections[`${prefix}_stufe_3`] ?? 0) > 0) return 3;
+    if ((character.selections[`${prefix}_stufe_2`] ?? 0) > 0) return 2;
+    if ((character.selections[`${prefix}_stufe_1`] ?? 0) > 0) return 1;
+    return 0;
+  };
+  const offensiv = stufe('talente_offensiver_kampfstil');
+  const verteidiger = stufe('talente_verteidiger');
+  return { at: offensiv - verteidiger, pa: -offensiv + verteidiger };
 }
 
 interface OwnedWeaponPoolEntry {
@@ -209,9 +227,10 @@ export function computeNkPoolOverflowBudget(
   poolReferenz: string, character: CharacterState, values: CharacterValueSource,
 ): number {
   let total = 0;
+  const modifier = getKampfstilModifier(character);
   for (const entry of ownedWeaponPoolEntries(character)) {
     if (entry.poolReferenz !== poolReferenz) continue;
-    const overflow = computeWeaponAtPaOverflow(entry.hauptfertigkeit, entry.atBonus, entry.paBonus, values);
+    const overflow = computeWeaponAtPaOverflow(entry.hauptfertigkeit, entry.atBonus, entry.paBonus, values, modifier);
     total += overflow.atOverflow + overflow.paOverflow;
   }
   return total;

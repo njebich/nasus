@@ -47,6 +47,25 @@ BEREITS_FORMELVERDRAHTET = {
     "talente_fernkampfgeschick_stufe_2",
     "talente_fernkampfgeschick_stufe_3",
 }
+# Nutzer 2026-07-21 ("talente-add-implementation-charaktererstellung.txt"): diese Gruppe war
+# urspruenglich bewusst als Kampfmodul-Info-only eingestuft (siehe Docstring), wurde aber auf
+# Nutzer-Wunsch nachtraeglich doch auf Charakterebene verdrahtet - direkt in views/ki.ts,
+# views/psi.ts, views/spruchmagie.ts, views/kampf.ts, engine/waffenPool.ts (kein Eintrag in
+# talenteMaximum/-Modifikator/-Faktor.ts, daher hier per Hand statt ueber read_built_referenzen()
+# ausgeschlossen). Kampf mit zwei Waffen Stufe 1-4 bekommt bewusst nur ein Eignungs-Flag (WK-Cap)
+# statt echter Paar-Mechanik - siehe Entwickeln-Log "Kampf/Loadout" fuer den offenen Rest.
+BEREITS_ANDERWEITIG_VERDRAHTET = {
+    "talente_ki_gute_stufe_1", "talente_ki_gute_stufe_2",
+    "talente_psi_gute_stufe_1", "talente_psi_gute_stufe_2",
+    "talente_spruchgute_stufe_1", "talente_spruchgute_stufe_2",
+    "talente_spruchmagie_stufe_2_zaubern", "talente_spruchmagie_stufe_3_zaubern",
+    "talente_offensiver_kampfstil_stufe_1", "talente_offensiver_kampfstil_stufe_2", "talente_offensiver_kampfstil_stufe_3",
+    "talente_verteidiger_stufe_1", "talente_verteidiger_stufe_2", "talente_verteidiger_stufe_3",
+    "talente_kampf_mit_zwei_waffen_stufe_1", "talente_kampf_mit_zwei_waffen_stufe_2",
+    "talente_kampf_mit_zwei_waffen_stufe_3", "talente_kampf_mit_zwei_waffen_stufe_4",
+    "talente_me_sparen",
+    "talente_schnell_zaubern_stufe_1", "talente_schnell_zaubern_stufe_2", "talente_schnell_zaubern_stufe_3",
+}
 
 
 def read_rows(xlsx_path):
@@ -89,7 +108,10 @@ def extract(rows):
         if r.get("Wirkungsklasse") not in KAMPFMODUL_WIRKUNGSKLASSEN:
             continue
         for ref in [x.strip() for x in (r.get("Werte-Referenz(en)") or "").split("\n") if x.strip()]:
-            if ref in RETIRED_TALENTE or ref in BEREITS_FORMELVERDRAHTET or ref in bereits_gebaut:
+            if (
+                ref in RETIRED_TALENTE or ref in BEREITS_FORMELVERDRAHTET
+                or ref in BEREITS_ANDERWEITIG_VERDRAHTET or ref in bereits_gebaut
+            ):
                 continue
             refs.add(ref)
     return sorted(refs)

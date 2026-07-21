@@ -57,6 +57,20 @@ function getEigBonusValue(sheet: ComputedSheet, eigBonusReferenz: string | undef
   return { label: row.rule.abkuerzung ?? row.rule.beschreibung ?? eigBonusReferenz, value };
 }
 
+function isTalentSelected(sheet: ComputedSheet, referenz: string): boolean {
+  return (sheet.byKategorie['Talente'] ?? []).find((r) => r.rule.referenz === referenz)?.selected ?? false;
+}
+
+/** Gute PSI-Probe (talente_psi_gute_stufe_1/2): Stufe 1 = Magie, Stufe 2 = Magie + Eigenschaftsbonus,
+ *  gedeckelt auf Normale:2 (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt"). */
+function getGuteProbe(sheet: ComputedSheet, normaleProbe: number, eigBonWert: number): number | undefined {
+  const stufe2 = isTalentSelected(sheet, 'talente_psi_gute_stufe_2');
+  const stufe1 = stufe2 || isTalentSelected(sheet, 'talente_psi_gute_stufe_1');
+  if (!stufe1) return undefined;
+  const gute = stufe2 ? getAttMagie(sheet) + eigBonWert : getAttMagie(sheet);
+  return Math.min(gute, Math.floor(normaleProbe / 2));
+}
+
 /** Kante(n) + benoetigte(r) TaW als Tooltip - die beiden Wurzeln (Telekinese/Empathie, kein
  *  parent) tragen stattdessen das Aura/Magie-Gate aus psiBaumGating.ts (Nutzer 2026-07-21). */
 function vorbedingungTitle(referenz: string, sheet: ComputedSheet): string {
@@ -125,7 +139,9 @@ function buildRows(sheet: ComputedSheet): Row[] {
 function renderRow(r: Row, sheet: ComputedSheet): string {
   const { referenz, name, currentValue, unlocked } = r;
   const eigBon = getEigBonusValue(sheet, r.eigBonusReferenz);
-  const probe = currentValue < 1 ? '' : currentValue + (eigBon?.value ?? 0) + getAttAura(sheet) + getAttMagie(sheet);
+  const normaleProbe = currentValue + (eigBon?.value ?? 0) + getAttAura(sheet) + getAttMagie(sheet);
+  const guteProbe = currentValue < 1 ? undefined : getGuteProbe(sheet, normaleProbe, eigBon?.value ?? 0);
+  const probe = currentValue < 1 ? '' : guteProbe !== undefined ? `${normaleProbe} / G${guteProbe}` : `${normaleProbe}`;
   const detail = PSI_ZAUBERTABELLE[referenz];
   const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);

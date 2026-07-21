@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { resolveWaffenPoolReferenz, computeWeaponAtPaOverflow } from './waffenPool';
+import { resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, getKampfstilModifier } from './waffenPool';
 import type { CharacterValueSource } from './rules';
+import { createCharacter } from '../state/characterStore';
 
 function values(vals: Record<string, number>): CharacterValueSource {
   return {
@@ -48,5 +49,33 @@ describe('computeWeaponAtPaOverflow', () => {
     expect(overflow.natMax).toBe(14); // 20 - 6
     expect(overflow.atOverflow).toBe(0);
     expect(overflow.paOverflow).toBe(0);
+  });
+
+  it('kampfstilModifier verschiebt uncAtWeapon/uncPaWeapon und damit auch natMax/npaMax', () => {
+    const v = values({ eig_g_mut: 10, eig_k_athletik: 10, eig_k_schnelligkeit: 10, nk_hiebwaffen: 10 });
+    const overflow = computeWeaponAtPaOverflow('Hiebwaffen', -4, -4, v, { at: 2, pa: -2 });
+    expect(overflow.uncAtWeapon).toBe(8);
+    expect(overflow.uncPaWeapon).toBe(4);
+    expect(overflow.natMax).toBe(12); // 20 - 8
+    expect(overflow.npaMax).toBe(16); // 20 - 4
+  });
+});
+
+describe('getKampfstilModifier', () => {
+  it('liefert {at:0,pa:0} ohne Talente', () => {
+    expect(getKampfstilModifier(createCharacter('Test'))).toEqual({ at: 0, pa: 0 });
+  });
+
+  it('Offensiver Kampfstil Stufe 2: +2 AT / -2 PA (nur hoechste besessene Stufe zaehlt)', () => {
+    const character = createCharacter('Test');
+    character.selections['talente_offensiver_kampfstil_stufe_1'] = 1;
+    character.selections['talente_offensiver_kampfstil_stufe_2'] = 1;
+    expect(getKampfstilModifier(character)).toEqual({ at: 2, pa: -2 });
+  });
+
+  it('Verteidiger Stufe 3: -3 AT / +3 PA', () => {
+    const character = createCharacter('Test');
+    character.selections['talente_verteidiger_stufe_3'] = 1;
+    expect(getKampfstilModifier(character)).toEqual({ at: -3, pa: 3 });
   });
 });

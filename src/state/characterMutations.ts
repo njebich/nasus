@@ -19,7 +19,7 @@ import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/eq
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { composeMunition } from '../engine/pfeilBolzenComposition';
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
-import { computeWeaponAtPaOverflow, resolveWaffenRowBasis } from '../engine/waffenPool';
+import { computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier } from '../engine/waffenPool';
 import { gutBudget, meisterlichBudget } from '../engine/poolCaps';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
@@ -266,7 +266,9 @@ export function setWaffenPoolAllocation(
 
   const basis = resolveWaffenRowBasis(character, equipmentId);
   if (basis) {
-    const overflow = computeWeaponAtPaOverflow(basis.hauptfertigkeit, basis.atBonus, basis.paBonus, makeValueSource(candidate));
+    const overflow = computeWeaponAtPaOverflow(
+      basis.hauptfertigkeit, basis.atBonus, basis.paBonus, makeValueSource(candidate), getKampfstilModifier(candidate),
+    );
     if (allocation.nat > overflow.natMax) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
     if (allocation.npa > overflow.npaMax) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
   }

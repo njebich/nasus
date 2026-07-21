@@ -15,6 +15,7 @@
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import { canLearnSpell, canIncreaseSpell } from '../engine/spruchmagieGating';
 import { SPRUCHMAGIE_DETAILS, type SpruchmagieDetail } from '../data/spruchmagieDetails';
+import { aufrunden } from '../engine/functions';
 import type { OnValueChange } from './categoryView';
 
 const STUFE_2_TALENT_REFERENZ = 'talente_spruchmagie_stufe_2_zaubern';
@@ -46,6 +47,29 @@ function getEigBonusValue(sheet: ComputedSheet, eigBonusReferenz: string | undef
 
 function isTalentSelected(sheet: ComputedSheet, referenz: string): boolean {
   return (sheet.byKategorie['Talente'] ?? []).find((r) => r.rule.referenz === referenz)?.selected ?? false;
+}
+
+/** talente_schnell_zaubern_stufe_1-3 (Nutzer 2026-07-21, nicht kumulativ - nur die hoechste
+ *  besessene Stufe zaehlt, siehe Talent-Wirkungstext): VZ-Teiler fuer St.1/St.2/St.3, in
+ *  derselben Reihenfolge wie unlockedStufen. Baseline OHNE das Talent ist bereits :1/:2/:3 (das
+ *  Zaubern auf hoeherer Stufe verkuerzt die VZ inhaerent) - Schnell Zaubern erhoeht diese Teiler. */
+function getSchnellZauberTeiler(sheet: ComputedSheet): [number, number, number] {
+  if (isTalentSelected(sheet, 'talente_schnell_zaubern_stufe_3')) return [4, 5, 6];
+  if (isTalentSelected(sheet, 'talente_schnell_zaubern_stufe_2')) return [3, 4, 5];
+  if (isTalentSelected(sheet, 'talente_schnell_zaubern_stufe_1')) return [2, 3, 4];
+  return [1, 2, 3];
+}
+
+/** Teilt einen VZ-Rohwert (ueberwiegend Sekunden-Zahlen, z.T. mit "sec"-Suffix wie "7sec") durch
+ *  den Teiler und rundet auf (aufrunden, dieselbe Konvention wie der Rest der Engine) - laesst
+ *  nicht-numerische Werte unveraendert statt sie falsch zu verstuemmeln. */
+function divideVzValue(raw: string, teiler: number): string {
+  if (teiler === 1) return raw;
+  const match = /^([\d.,]+)\s*(.*)$/.exec(raw.trim());
+  if (!match) return raw;
+  const num = Number(match[1].replace(',', '.'));
+  if (!Number.isFinite(num)) return raw;
+  return `${aufrunden(num / teiler, 0)}${match[2]}`;
 }
 
 interface Row {
@@ -112,11 +136,39 @@ function renderStufenCell(stufen: Array<{ label: string; erschwerung: number }>)
   return escapeHtml(stufen.map((s) => s.erschwerung).join(' / '));
 }
 
+/** Gute Spruchzauberprobe (talente_spruchgute_stufe_1/2, schulen-uebergreifend): Stufe 1 =
+ *  Weisheit, Stufe 2 = Weisheit + Eigenschaftsbonus, gedeckelt auf Normale:2 pro Zauberstufe
+ *  (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt"). */
+function getGuteProbe(sheet: ComputedSheet, normaleProbe: number, eigBonWert: number): number | undefined {
+  const stufe2 = isTalentSelected(sheet, 'talente_spruchgute_stufe_2');
+  const stufe1 = stufe2 || isTalentSelected(sheet, 'talente_spruchgute_stufe_1');
+  if (!stufe1) return undefined;
+  const weisheit = getAttWert(sheet, 'att_weisheit');
+  const gute = stufe2 ? weisheit + eigBonWert : weisheit;
+  return Math.min(gute, Math.floor(normaleProbe / 2));
+}
+
 function renderZauberprobeCell(sheet: ComputedSheet, row: Row, stufen: Array<{ label: string; erschwerung: number }>): string {
   if (row.currentValue <= 0 || stufen.length === 0) return '';
   const eigBon = getEigBonusValue(sheet, row.rule.eigBonus)?.value ?? 0;
   const magie = getAttMagie(sheet);
-  const werte = stufen.map((s) => row.currentValue + eigBon + magie - s.erschwerung);
+  const werte = stufen.map((s) => {
+    const normale = row.currentValue + eigBon + magie - s.erschwerung;
+    const gute = getGuteProbe(sheet, normale, eigBon);
+    return gute !== undefined ? `${normale}/G${gute}` : `${normale}`;
+  });
+  return escapeHtml(werte.join(' / '));
+}
+
+/** VZ (Vorbereitungszeit) je freigeschalteter Stufe, geteilt durch den Schnell-Zaubern-Teiler
+ *  dieser Stufe (talente_schnell_zaubern_stufe_1-3, Baseline :1/:2/:3 - siehe getSchnellZauberTeiler),
+ *  analog renderZauberprobeCell. Ohne St.2/St.3-Talent bleibt es bei einem einzelnen Wert. */
+function renderVzCell(sheet: ComputedSheet, detail: SpruchmagieDetail | undefined, stufenCount: number): string {
+  const raw = detail?.vorbereitungszeit;
+  if (!raw) return '–';
+  const teiler = getSchnellZauberTeiler(sheet);
+  if (stufenCount <= 1) return escapeHtml(divideVzValue(raw, teiler[0]));
+  const werte = Array.from({ length: stufenCount }, (_, i) => divideVzValue(raw, teiler[i]));
   return escapeHtml(werte.join(' / '));
 }
 
@@ -154,7 +206,7 @@ function renderRow(sheet: ComputedSheet, row: Row): string {
       <td>${escapeHtml(detail?.form ?? '–')}</td>
       <td>${escapeHtml(detail?.zauberArt ?? '–')}</td>
       <td>${escapeHtml(detail?.aufrechterhaltung ?? '–')}</td>
-      <td>${escapeHtml(detail?.vorbereitungszeit ?? '–')}</td>
+      <td>${renderVzCell(sheet, detail, stufen.length)}</td>
       <td>${escapeHtml(detail?.einwirkdauer ?? '–')}</td>
       <td>${escapeHtml(detail?.wirkungsdauer ?? '–')}</td>
       <td>${renderStufenCell(stufen)}</td>

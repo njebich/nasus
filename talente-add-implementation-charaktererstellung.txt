@@ -1,0 +1,98 @@
+[talente_ki_gute_stufe_1]
+KI gute Stufe 1
+Gute KI-Probe = Magie. Die höchstmögliche Gute ist Normale :2.
+
+[talente_ki_gute_stufe_2]
+KI gute Stufe 2
+Gute KI-Probe = Magie + Aura. Die höchstmögliche Gute ist Normale :2.
+
+[talente_kampf_mit_zwei_waffen_stufe_1]
+Kampf mit zwei Waffen Stufe 1
+Erlaubt dem Charakter, zwei Waffen mit max. WK 3,5 (unmodifizierter Listenwert) im Kampf zu führen und unbewaffnete Extra-Aktionen mit der Nebenhand auszuführen.  Dieses Talent kann nicht auf Stangenwaffen angewendet werden. 
+Die n-Mods und Mindeststärken beider Waffen werden addiert.
+Bei Attacken gilt die 1,5-fache WK der Waffe mit der höheren WK, bei Paraden werden beide WK addiert.
+Der Charakter attackiert mit den Werten der Waffe, die jeweils zum Angriff genutzt wird, und pariert immer mit dem besseren Paradewert beider Waffen.
+
+[talente_kampf_mit_zwei_waffen_stufe_2]
+Kampf mit zwei Waffen Stufe 2
+Erlaubt dem Charakter, zwei Waffen mit max. WK 4,5 (unmodifizierter Listenwert) im Kampf zu führen.
+
+[talente_kampf_mit_zwei_waffen_stufe_3]
+Kampf mit zwei Waffen Stufe 3
+Erlaubt dem Charakter, zwei Waffen mit max. WK 5,5 (unmodifizierter Listenwert) im Kampf zu führen.
+
+[talente_kampf_mit_zwei_waffen_stufe_4]
+Kampf mit zwei Waffen Stufe 4
+Erlaubt dem Charakter, zwei Waffen mit max. WK 6,5 (unmodifizierter Listenwert) im Kampf zu führen.
+[talente_linkshaendig_pistolenschiessen]
+Linkshändig Pistolenschießen
+Ermöglicht es dem Schützen wenn er nur mit der linken Hand mit einer Pistole schießt, statt auf seinen halben auf seinen vollen Probenwert zu würfeln.
+
+[talente_me_sparen]
+ME sparen
+Immer halbe ME.
+[talente_mehrfachschuss_stufe_1_doppelschuss]
+Mehrfachschuss Stufe 1 "Doppelschuss"
+Ermöglicht nicht-spezialisierbare FK-Fertigkeiten [Bogenart]-Doppelschuss (18 St.p. pro Punkt)  –  FK-Formel für Doppelschuss wird zu (Ges+Sin+Fert+Spez+Doppelschuss):4. Bei Anwendung eines Doppelschusses wird der Probenwert halbiert.
+
+[talente_mehrfachschuss_stufe_2_tripelschuss]
+Mehrfachschuss Stufe 2 "Tripelschuss"
+Tripelschuss ermöglicht nicht-spezialisierbare FK-Fertigkeiten [Bogenart]-Tripelschuss (18 St.p. pro Punkt)  –  FK-Formel für Tripelschuss wird zu (Ges+Sin+Fert+Spez+Doppelschuss+Tripelschuss):4. Bei Anwendung eines Tripelschusses wird der Probenwert gedrittelt.
+[talente_mit_zwei_pistolen_schiessen]
+Mit Zwei Pistolen schießen
+Ermöglicht es dem Schützen wenn er mit zwei Pistolen schießt, mit beiden Pistolen statt auf seinen halben auf seinen vollen Probenwert zu würfeln.
+[talente_psi_gute_stufe_1]
+PSI gute Stufe 1
+Gute PSI-Probe = Magie. Die höchstmögliche Gute ist Normale:2.
+
+[talente_psi_gute_stufe_2]
+PSI gute Stufe 2
+Gute PSI-Probe = Magie + Eigenschaftsbonus. Die höchstmögliche Gute ist Normale:2.
+[talente_schnell_zaubern_stufe_1]
+Schnell Zaubern Stufe 1
+Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :2/:3/:4.
+
+[talente_schnell_zaubern_stufe_2]
+Schnell Zaubern Stufe 2
+Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :3/:4/:5. Nicht kumulativ mit anderen Stufen dieses Vorteils.
+
+[talente_schnell_zaubern_stufe_3]
+Schnell Zaubern Stufe 3
+Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :4/:5/:6. Nicht kumulativ mit anderen Stufen dieses Vorteils.
+[talente_spruchgute_stufe_1]
+Spruchgute Stufe 1
+In allen Zauberschulen Gute Spruchzauberprobe = Weisheit. Die höchstmögliche Gute ist Normale:2.
+
+[talente_spruchgute_stufe_2]
+Spruchgute Stufe 2
+In allen Zauberschulen Gute Spruchzauberprobe = Weisheit + Eigenschaftsbonus. Die höchstmögliche Gute ist Normale:2.
+
+[talente_spruchmagie_stufe_2_zaubern]
+Spruchmagie Stufe 2 zaubern
+In allen Zauberschulen ist es möglich, Sprüche auf Stufe 2 zu sprechen.
+
+[talente_spruchmagie_stufe_3_zaubern]
+Spruchmagie Stufe 3 zaubern
+In allen Zauberschulen ist es möglich, Sprüche auf Stufe 3 zu sprechen.
+[talente_offensiver_kampfstil_stufe_1]
+Offensiver Kampfstil Stufe 1
+alle nAT+1 und nPA-1
+
+[talente_offensiver_kampfstil_stufe_2]
+Offensiver Kampfstil Stufe 2
+alle nAT+2 und nPA-2
+
+[talente_offensiver_kampfstil_stufe_3]
+Offensiver Kampfstil Stufe 3
+alle nAT+3 und nPA-3
+[talente_verteidiger_stufe_1]
+Verteidiger Stufe 1
+alle nAT-1 und nPA+1
+
+[talente_verteidiger_stufe_2]
+Verteidiger Stufe 2
+alle nAT-2 und nPA+2
+
+[talente_verteidiger_stufe_3]
+Verteidiger Stufe 3
+alle nAT-3 und nPA+3

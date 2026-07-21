@@ -104,6 +104,7 @@ export const RULES = rulesJson as unknown as RuleEntry[];
 // - Zeile 90: Referenz '#spruchmagie_beherrschung_3_schmerzt_unterdruecken' mit '#' auskommentiert - uebersprungen
 // - Zeile 91: Referenz '#spruchmagie_beherrschung_2_zoegern' mit '#' auskommentiert - uebersprungen
 // - Zeile 190: Referenz '#sf_ladeschuetze_schleuder' mit '#' auskommentiert - uebersprungen
+// - Zeile 205: Referenz '#att_essenz' mit '#' auskommentiert - uebersprungen
 // - Zeile 249: Referenz '#ki_ki_faehigkeiten' mit '#' auskommentiert - uebersprungen
 // - Zeile 440: Referenz '#spruchmagie_erdbeschwoerung_3_steinkugel_salve' mit '#' auskommentiert - uebersprungen
 // - Zeile 441: Referenz '#spruchmagie_erdbeschwoerung_3_steinkugel_salve_nr' mit '#' auskommentiert - uebersprungen

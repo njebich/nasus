@@ -1,5 +1,4 @@
 {"abkuerzung": "Aur", "art": "Wert", "beschreibung": "Aura", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_aura", "sourceRow": 204}
-{"abkuerzung": "Ess", "art": "Wert", "beschreibung": "Essenz", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_essenz", "sourceRow": 205}
 {"abkuerzung": "Glü", "art": "Wert", "beschreibung": "Glück", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_glueck", "sourceRow": 206}
 {"abkuerzung": "Kar", "art": "Wert", "beschreibung": "Karma", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_karma", "sourceRow": 207}
 {"abkuerzung": "Mag", "art": "Wert", "beschreibung": "Magie", "kategorie": "Attribute", "kostenRaw": "80+wert*20", "referenz": "att_magie", "sourceRow": 208}

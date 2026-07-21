@@ -293,6 +293,8 @@ def read_artefakt_basis(wb):
         entry = {k: v for k, v in entry.items() if v is not None}
         if not entry.get("referenz"):
             continue
+        if entry["referenz"].startswith("#"):
+            continue
         entry["sourceRow"] = r
         rows.append(entry)
     return rows
@@ -304,6 +306,8 @@ def read_artefakt_kosten(wb):
     for r in range(2, ws.max_row + 1):
         referenz = cell_to_str(ws.cell(row=r, column=1).value)
         if not referenz:
+            continue
+        if referenz.startswith("#"):
             continue
         entry = {
             "sourceRow": r,

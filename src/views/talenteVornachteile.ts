@@ -4,6 +4,7 @@
 
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import { prettyFormula } from '../engine/formulaDisplay';
+import { tooltipAttr } from './tooltip';
 
 export type OnToggle = (referenz: string, selected: boolean) => void;
 
@@ -11,9 +12,9 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function formulaTitle(raw: string | undefined): string {
+function formulaTooltip(raw: string | undefined): string {
   if (!raw) return '';
-  return ` title="${escapeHtml(prettyFormula(raw))}"`;
+  return tooltipAttr(prettyFormula(raw));
 }
 
 function renderRow(r: ComputedRule): string {
@@ -24,7 +25,7 @@ function renderRow(r: ComputedRule): string {
   const cost = r.kostenSelect !== undefined ? `${r.kostenSelect > 0 ? '-' : '+'}${Math.abs(r.kostenSelect)} ${waehrung}` : '';
   const errorNote = r.error ? `<span class="stat-error" title="${escapeHtml(r.error)}">⚠</span>` : '';
   return `
-    <label class="auswahl-row" data-referenz="${r.rule.referenz}"${formulaTitle(r.rule.kostenRaw)}>
+    <label class="auswahl-row" data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
       <input type="checkbox" class="auswahl-checkbox" ${r.selected ? 'checked' : ''} />
       <span class="stat-label">${label}${errorNote}</span>
       <span class="stat-cost">${cost}</span>

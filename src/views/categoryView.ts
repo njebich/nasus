@@ -10,6 +10,7 @@ import { buildHierarchy, type HierarchyNode } from '../engine/hierarchy';
 import { describeSkillStufe } from '../engine/skillStufen';
 import { LADESCHUETZE_SF_FK_GATE, isLadeschuetzeSfVisible } from '../engine/ladeschuetzeGating';
 import { GUT_BASIS, MEISTERLICH_BASIS } from '../engine/poolCaps';
+import { tooltipAttr } from './tooltip';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
@@ -23,9 +24,9 @@ function errorNote(r: ComputedRule): string {
 }
 
 /** Formel-Tooltip fuers Label: zeigt die Formel (formelRaw/poolRaw/kostenRaw) mit Abkuerzungen. */
-function formulaTitle(raw: string | undefined): string {
+function formulaTooltip(raw: string | undefined): string {
   if (!raw) return '';
-  return ` title="${escapeHtml(prettyFormula(raw))}"`;
+  return tooltipAttr(prettyFormula(raw));
 }
 
 /** maxValue: nur bei Spezialisierungen gesetzt (Regel Nutzer 2026-07-17: Spezialisierung
@@ -47,7 +48,7 @@ function renderEditableRow(r: ComputedRule, maxValue?: number): string {
   // den Wert/die Buttons erscheint - Elemente ohne eigenes title-Attribut fallen auf das des
   // naechsten Vorfahren zurueck.
   return `
-    <div class="stat-row" data-referenz="${r.rule.referenz}"${formulaTitle(r.rule.kostenRaw)}>
+    <div class="stat-row" data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
       <span class="stat-label">${label}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern">-</button>
       <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
@@ -89,7 +90,7 @@ function renderReadOnlyRow(r: ComputedRule): string {
     ? `<span class="stat-error" title="${escapeHtml(r.error)}">nicht definiert ⚠</span>`
     : escapeHtml(formatComputedValue(r.computedValue ?? r.fixedText ?? '–'));
   return `
-    <div class="stat-row stat-row-readonly"${formulaTitle(r.rule.formelRaw)}>
+    <div class="stat-row stat-row-readonly"${formulaTooltip(r.rule.formelRaw)}>
       <span class="stat-label">${label}</span>
       <span class="stat-value-readonly">${display}</span>
     </div>`;

@@ -19,6 +19,7 @@ import { renderCharakterbogen } from './views/charakterbogen';
 import { renderKampfView } from './views/kampf';
 import { renderKiView } from './views/ki';
 import { renderSpruchmagieView } from './views/spruchmagie';
+import { initTooltips } from './views/tooltip';
 import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
 import type { ArtefaktVariant } from './engine/equipmentPricing';
@@ -479,4 +480,5 @@ function render(): void {
   }
 }
 
+initTooltips();
 render();

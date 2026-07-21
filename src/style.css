@@ -186,6 +186,28 @@ body {
   grid-template-columns: 1fr auto;
 }
 
+/* Tooltip-Komponente (Plan-Phase 0/1, siehe PLAN-Tooltip-System.md): ersetzt natives title=.
+   Fixe max-width, Hoehe waechst mit dem Inhalt ("fixed width, dynamic length"). Canvas/
+   CanvasText statt fester Hex-Farben, damit es wie der Rest der App automatisch mit
+   color-scheme: light dark mitzieht (siehe :root oben). */
+.app-tooltip {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  max-width: 320px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  background: Canvas;
+  color: CanvasText;
+  border: 1px solid #8888;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
 .stat-value-readonly {
   font-variant-numeric: tabular-nums;
   opacity: 0.85;

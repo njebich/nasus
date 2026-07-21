@@ -861,6 +861,16 @@ body {
   min-width: max-content;
 }
 
+.kampf-talente-hinweis {
+  opacity: 0.75;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+
+.kampf-talente-table td:last-child {
+  white-space: pre-line;
+}
+
 .kampf-waffen-table th, .kampf-waffen-table td,
 .kampf-ausweichen-table th, .kampf-ausweichen-table td {
   text-align: center;

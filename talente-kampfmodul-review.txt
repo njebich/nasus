@@ -1,0 +1,249 @@
+Talente-Kampfmodul-Info: 60 Talente (nur Info-Zeile im Kampf-Tab, keine
+mechanische Wirkung im Chargen-Tool - siehe src/data/talenteKampfmodul.ts)
+==========================================================================================
+
+[talente_berittenes_armbrustschiessen_stufe_1]
+Berittenes Armbrustschießen Stufe 1
+Veringert den FK-Modifikator für "vom laufenden Pferd" beim Armbrustschießen um 3.
+
+[talente_berittenes_armbrustschiessen_stufe_2]
+Berittenes Armbrustschießen Stufe 2
+Veringert den FK-Modifikator für "vom laufenden Pferd" beim Armbrustschießen um 7.
+
+[talente_berittenes_bogenschiessen_stufe_1]
+Berittenes Bogenschießen Stufe 1
+Veringert den FK-Modifikator für "vom laufenden Pferd" beim Bogenschießen um 3.
+
+[talente_berittenes_bogenschiessen_stufe_2]
+Berittenes Bogenschießen Stufe 2
+Veringert den FK-Modifikator für "vom laufenden Pferd" beim Bogenschießen um 7.
+
+[talente_berittenes_musketenschiessen_stufe_1]
+Berittenes Musketenschießen Stufe 1
+Veringert den FK-Modifikator für "vom laufenden Pferd" beim Musketenschießen um 3.
+
+[talente_berittenes_musketenschiessen_stufe_2]
+Berittenes Musketenschießen Stufe 2
+Veringert den FK-Modifikator für "vom laufenden Pferd" beim Musketenschießen um 7.
+
+[talente_berittenes_pistolenschiessen_stufe_1]
+Berittenes Pistolenschießen Stufe 1
+Verringert den FK-Modifikator für "vom laufenden Pferd" beim Pistolenschießen auf 3.
+
+[talente_berittenes_pistolenschiessen_stufe_2]
+Berittenes Pistolenschießen Stufe 2
+Verringert den FK-Modifikator für "vom laufenden Pferd" beim Pistolenschießen auf 7.
+
+[talente_berittenes_werfen_stufe_1]
+Berittenes Werfen Stufe 1
+Verringert den FK-Modifikator für "vom laufenden Pferd" beim Werfen von Wurfwaffen um 3.
+
+[talente_berittenes_werfen_stufe_2]
+Berittenes Werfen Stufe 2
+Verringert den FK-Modifikator für "vom laufenden Pferd" beim Werfen von Wurfwaffen um 7.
+
+[talente_blutmagie_stufe_1]
+Blutmagie Stufe 1
+Der Einsatz der Blutmagie-Fähigkeit erfordert eine blutende Wunde mit einem Punkt Blutung, und in jedem Fall eine Mut-Probe. Die Mut-Probe kann jede Sekunde wiederholt werden. Der Magier kann, wenn er sich eine blutende Wunde zufügt (ein Punkt Blutung), oder eine solche bereits hat, seine gute Spruchzauberprobe ohne weitere zeitliche Verzögerung um 1 Punkt pro Gesundheitspunkt, den er freiwillig opfert, erhöhen. Dabei kann seine gute Probe bis zur normalen Probe steigen. Er kann bis zu seiner gesamten momentanen Gesundheit + Vitalität opfern. Die Punkte werden erst nach Ende der Effektdauer bzw. Scheitern der Spruchprobe von der Gesundheit abgezogen. Wenn er dabei mehr als TS an Gesundheit verliert, muss er eine SB-Probe und ggf. eine Konzentrationsprobe würfeln.
+
+[talente_blutmagie_stufe_2]
+Blutmagie Stufe 2
+Der Einsatz der Blutmagie-Fähigkeit erfordert eine blutende Wunde mit einem Punkt Blutung, und in jedem Fall eine Mut-Probe. Die Mut-Probe kann jede Sekunde wiederholt werden. Der Magier kann, wenn er sich eine blutende Wunde zufügt (ein Punkt Blutung), oder eine solche bereits hat, seine gute Spruchzauberprobe ohne weitere zeitliche Verzögerung um 2 Punkte pro Gesundheitspunkt, den er freiwillig opfert, erhöhen. Dabei kann seine gute Probe bis zur normalen Probe steigen. Er kann bis zu seiner gesamten momentanen Gesundheit + Vitalität opfern. Die Punkte werden erst nach Ende der Effektdauer bzw. Scheitern der Spruchprobe von der Gesundheit abgezogen. Wenn er dabei mehr als TS an Gesundheit verliert, muss er eine SB-Probe und ggf. eine Konzentrationsprobe würfeln.
+
+[talente_blutmagie_stufe_3]
+Blutmagie Stufe 3
+Der Einsatz der Blutmagie-Fähigkeit erfordert eine blutende Wunde mit einem Punkt Blutung, und in jedem Fall eine Mut-Probe. Die Mut-Probe kann jede Sekunde wiederholt werden. Der Magier kann, wenn er sich eine blutende Wunde zufügt (ein Punkt Blutung), oder eine solche bereits hat, seine gute Spruchzauberprobe ohne weitere zeitliche Verzögerung um 3 Punkte pro Gesundheitspunkt, den er freiwillig opfert, erhöhen. Dabei kann seine gute Probe bis zur normalen Probe steigen. Er kann bis zu seiner gesamten momentanen Gesundheit + Vitalität opfern. Die Punkte werden erst nach Ende der Effektdauer bzw. Scheitern der Spruchprobe von der Gesundheit abgezogen. Wenn er dabei mehr als TS an Gesundheit verliert, muss er eine SB-Probe und ggf. eine Konzentrationsprobe würfeln.
+
+[talente_entwaffnen]
+Entwaffnen
+Wird im Nahkampf erst angesagt, nach dem der Verteidiger seine Aktion gewählt hat. Ermöglicht es, dem Gegner die Waffe aus der Hand zu schlagen, durch um X erschwerte AT. Die Erschwerung muss mindestens 6 betragen, der Gegner muss bei einer PA der gleichen oder einer schlechter PA-Kl. als die AT-Kl. (und nur bei einer solchen PA) eine um X erschwerte Geschicklichtkeits-Probe ablegen, um seine Waffe nicht fallenzulassen. Gute oder meisterliche AT hat keine weitere Auswirkung auf die Ges-Probe. Die Waffe fällt immer so, dass sie innerhalb von W4 KR wieder aufgehoben werden kann ährend des Aufhebens AT/PA/AW-Klasse -1)
+
+[talente_finte]
+Finte
+Der Angreifer erschwert sich seine AT-Probe um X Punkte. Man kann nicht mehrere Finten hintereinander schlagen. Gelingt die Finte, verursacht der Angriff keinen Schaden und der Fintierte hat in der nächsten Sekunde seine nPA und nAW erschwert um 2*X bei einer normalen AT, bei einer guten um 3*X, bei einer meisterlichen um 4*X, bei einer fröhlichen Finte um 6*X. Egal wie die Ini. in der nächsten Sekunde ausfällt, und egal ob pariert oder def./off. ausgewichen wurde, der Fintierte hat diese Erschwerung auf seine nPA und nAW, aber nur gegen den Angreifer der die Finte geschlagen hat. (Wenn der Angreifer laut n/g/mAT/PA-Tab an der Ini. bleibt, so bleibt er an der Ini. und eventuelle zusätzliche Wirkungen zugunsten des Angreifers treten nicht in Kraft. Wenn er die Ini. verlieren sollte, so verliert er die Ini. und eventuelle zusätzliche Wirkungen zugunsten des Fintierten treten in Kraft. (Eine Stä-Vgl.Probe tritt immer in Kraft.) Wenn die Ini. neu bestimmt wird ist es egal ob der Angreifer sie gewinnt oder verliert, der Fintierte hat den Finten-Malus von letzter Sekunde noch.)
+
+[talente_fliegend_schiessen]
+Fliegend Schießen
+Verändert den FK-Modifikator für "Schütze fliegend" mit allen Waffen auf 0/+1.
+
+[talente_gezielter_schuss]
+Gezielter Schuss
+Ermöglicht es dem Schützen, sich die FK-Probe um 3 zu erschweren, und dafür 2 TZ-Rerolls auf kritische TZ zu erhalten.
+
+[talente_ki_gute_stufe_1]
+KI gute Stufe 1
+Gute KI-Probe = Magie. Die höchstmögliche Gute ist Normale :2.
+
+[talente_ki_gute_stufe_2]
+KI gute Stufe 2
+Gute KI-Probe = Magie + Aura. Die höchstmögliche Gute ist Normale :2.
+
+[talente_kampf_mit_zwei_waffen_stufe_1]
+Kampf mit zwei Waffen Stufe 1
+Erlaubt dem Charakter, zwei Waffen mit max. WK 3,5 (unmodifizierter Listenwert) im Kampf zu führen und unbewaffnete Extra-Aktionen mit der Nebenhand auszuführen.  Dieses Talent kann nicht auf Stangenwaffen angewendet werden. 
+Die n-Mods und Mindeststärken beider Waffen werden addiert.
+Bei Attacken gilt die 1,5-fache WK der Waffe mit der höheren WK, bei Paraden werden beide WK addiert.
+Der Charakter attackiert mit den Werten der Waffe, die jeweils zum Angriff genutzt wird, und pariert immer mit dem besseren Paradewert beider Waffen.
+
+[talente_kampf_mit_zwei_waffen_stufe_2]
+Kampf mit zwei Waffen Stufe 2
+Erlaubt dem Charakter, zwei Waffen mit max. WK 4,5 (unmodifizierter Listenwert) im Kampf zu führen.
+
+[talente_kampf_mit_zwei_waffen_stufe_3]
+Kampf mit zwei Waffen Stufe 3
+Erlaubt dem Charakter, zwei Waffen mit max. WK 5,5 (unmodifizierter Listenwert) im Kampf zu führen.
+
+[talente_kampf_mit_zwei_waffen_stufe_4]
+Kampf mit zwei Waffen Stufe 4
+Erlaubt dem Charakter, zwei Waffen mit max. WK 6,5 (unmodifizierter Listenwert) im Kampf zu führen.
+
+[talente_konter]
+Konter
+Ermöglicht dem Krieger nach einer um 15 erschwerten Parade, die um eine Klasse höher war als die Attacke, eine Konterattacke mit AT-Klasse -1.
+
+[talente_linkshaendig_pistolenschiessen]
+Linkshändig Pistolenschießen
+Ermöglicht es dem Schützen wenn er nur mit der linken Hand mit einer Pistole schießt, statt auf seinen halben auf seinen vollen Probenwert zu würfeln.
+
+[talente_me_sparen]
+ME sparen
+Immer halbe ME.
+
+[talente_mehrfachschuss_stufe_1_doppelschuss]
+Mehrfachschuss Stufe 1 "Doppelschuss"
+Ermöglicht nicht-spezialisierbare FK-Fertigkeiten [Bogenart]-Doppelschuss (18 St.p. pro Punkt)  –  FK-Formel für Doppelschuss wird zu (Ges+Sin+Fert+Spez+Doppelschuss):4. Bei Anwendung eines Doppelschusses wird der Probenwert halbiert.
+
+[talente_mehrfachschuss_stufe_2_tripelschuss]
+Mehrfachschuss Stufe 2 "Tripelschuss"
+Tripelschuss ermöglicht nicht-spezialisierbare FK-Fertigkeiten [Bogenart]-Tripelschuss (18 St.p. pro Punkt)  –  FK-Formel für Tripelschuss wird zu (Ges+Sin+Fert+Spez+Doppelschuss+Tripelschuss):4. Bei Anwendung eines Tripelschusses wird der Probenwert gedrittelt.
+
+[talente_meuchler]
+Meuchler
+Ermöglicht es dem Charakter, bei einer unbemerkten AT (Gefahrensinn-Probe nicht geschafft) doppelten Schaden zu verursachen und bei guter oder meisterlicher AT die Rüstung zu ignorieren. 
+ In einem normalen Nahkampf ermöglicht dieses Talent dem Anwender, bei einer guten oder besseren AT für einen Bonuspunkt Rüstungsignorierend für seine AT zu wählen, dies schließt dann allerdings bei meisterlichen oder besseren AT aus, dass der Anwender schadenserhöhende Boni (höchster W, doppelte TP, etc.) wählt. Wird die Auswahl "2 normale Attacken" gewählt, so gilt "Rüstungsignorierend" nur für eine dieser zwei Attacken. 
+Das Talent Meuchler kann nur mit den Kampffertigkeits-Spezialisierungen Messer, Dolche und Fechtwaffen angewendet werden.
+
+[talente_mit_schild_umwerfen]
+Mit Schild umwerfen
+Vorraussetzung Schild: Wird im Nahkampf erst angesagt, nach dem der Verteidiger seine Aktion gewählt hat. Ermöglicht es, den Gegner mit einer um X erschwerten AT umzuwerfen. Die Erschwerung muss mindestens 6 betragen. Wenn der Gegner mit gleicher oder schlechterer PA-Kl. pariert als die AT-Kl. des Angreifers (was keinen Schaden verursacht) oder getroffen wird (was dann halben Schaden des Schilds verursacht), muss er eine um X erschwerte Athletik-Probe ablegen, um nicht zu fallen. Gute oder meisterliche AT haben keine weitere Auswirkung. Wenn er fällt so hat er eine Sekunde lang NK-Kl.-2 und jede Sekunde eine Ath-Probe um die NK-Kl. wieder um 1 zu erhöhen. Wenn der Verteider erfolgreich ausweicht oder mit besserer PA-Kl. pariert, so wird die ngmATPA-Tabelle konsultiert und das Umwerfen schlägt fehl.
+
+[talente_mit_zwei_pistolen_schiessen]
+Mit Zwei Pistolen schießen
+Ermöglicht es dem Schützen wenn er mit zwei Pistolen schießt, mit beiden Pistolen statt auf seinen halben auf seinen vollen Probenwert zu würfeln.
+
+[talente_offensiver_kampfstil_stufe_1]
+Offensiver Kampfstil Stufe 1
+alle nAT+1 und nPA-1
+
+[talente_offensiver_kampfstil_stufe_2]
+Offensiver Kampfstil Stufe 2
+alle nAT+2 und nPA-2
+
+[talente_offensiver_kampfstil_stufe_3]
+Offensiver Kampfstil Stufe 3
+alle nAT+3 und nPA-3
+
+[talente_psi_gute_stufe_1]
+PSI gute Stufe 1
+Gute PSI-Probe = Magie. Die höchstmögliche Gute ist Normale:2.
+
+[talente_psi_gute_stufe_2]
+PSI gute Stufe 2
+Gute PSI-Probe = Magie + Eigenschaftsbonus. Die höchstmögliche Gute ist Normale:2.
+
+[talente_point_blank_shot]
+Point-Blank Shot
+Wenn der Schütze im Nahkampf schießt, tut er dies mit einem Sofortschuss statt einem Hüftschuss, das Ziel ist hakenschlagend (insgesamt erschwert um 16).
+
+[talente_schnell_schiessen]
+Schnell Schießen
+Verändert die Zielen-Modifikatoren für "Hüftschuss" auf -8 und für "Sofortschuss" auf -4.
+
+[talente_schnell_zaubern_stufe_1]
+Schnell Zaubern Stufe 1
+Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :2/:3/:4.
+
+[talente_schnell_zaubern_stufe_2]
+Schnell Zaubern Stufe 2
+Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :3/:4/:5. Nicht kumulativ mit anderen Stufen dieses Vorteils.
+
+[talente_schnell_zaubern_stufe_3]
+Schnell Zaubern Stufe 3
+Die Zauberzeitverkürzungen der Zauberstufen 1/2/3 werden zu :4/:5/:6. Nicht kumulativ mit anderen Stufen dieses Vorteils.
+
+[talente_schnell_ziehen_armbrust]
+Schnell Ziehen Armbrust
+In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Hüftschuss oder dem Laden. Dies setzt eine geeignete Halterung voraus.
+
+[talente_schnell_ziehen_bogen]
+Schnell Ziehen Bogen
+In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Laden des Bogens. Dies setzt eine geeignete Halterung voraus.
+
+[talente_schnell_ziehen_muskete]
+Schnell Ziehen Muskete
+In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Hüftschuss oder dem Laden. Dies setzt eine geeignete Halterung voraus.
+
+[talente_schnell_ziehen_pistole]
+Schnell Ziehen Pistole
+In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Hüftschuss oder dem Laden. Dies setzt eine geeignete Halterung voraus.
+
+[talente_schnell_ziehen_wurfwaffe]
+Schnell Ziehen Wurfwaffe
+In derselben Sekunde in der man die Waffe zieht, kann damit noch agiert werden, zum Beispiel mit Hüftschuss. Dies setzt eine geeignete Halterung voraus.
+
+[talente_schnellziehen_hiebwaffen]
+Schnellziehen Hiebwaffen
+In derselben Sekunde in der man die Waffe zieht, kann damit ohne jegliche Erschwerung agiert werden. Dies setzt eine geeignete Halterung voraus.
+
+[talente_schnellziehen_klingenwaffen]
+Schnellziehen Klingenwaffen
+In derselben Sekunde in der man die Waffe zieht, kann damit ohne jegliche Erschwerung agiert werden. Dies setzt eine geeignete Halterung voraus.
+
+[talente_schnellziehen_stangenwaffen]
+Schnellziehen Stangenwaffen
+In derselben Sekunde in der man die Waffe zieht, kann damit ohne jegliche Erschwerung agiert werden. Dies setzt eine geeignete Halterung voraus.
+
+[talente_schnellziehen_stichwaffen]
+Schnellziehen Stichwaffen
+In derselben Sekunde in der man die Waffe zieht, kann damit ohne jegliche Erschwerung agiert werden. Dies setzt eine geeignete Halterung voraus.
+
+[talente_sorgfaeltiges_zielen_stufe_1]
+Sorgfältiges Zielen Stufe 1
+Verändert die Zielen-Modifikatoren für "1sec lang gezielt"  auf 0, für jede weitere Sekunde +1 (bis +7 für 8 Sekunden).
+
+[talente_sorgfaeltiges_zielen_stufe_2]
+Sorgfältiges Zielen Stufe 2
+Verändert die Zielen-Modifikatoren für "1sec lang gezielt"  auf +1, für jede weitere Sekunde +1 (bis +8 für 8 Sekunden).
+
+[talente_spruchgute_stufe_1]
+Spruchgute Stufe 1
+In allen Zauberschulen Gute Spruchzauberprobe = Weisheit. Die höchstmögliche Gute ist Normale:2.
+
+[talente_spruchgute_stufe_2]
+Spruchgute Stufe 2
+In allen Zauberschulen Gute Spruchzauberprobe = Weisheit + Eigenschaftsbonus. Die höchstmögliche Gute ist Normale:2.
+
+[talente_spruchmagie_stufe_2_zaubern]
+Spruchmagie Stufe 2 zaubern
+In allen Zauberschulen ist es möglich, Sprüche auf Stufe 2 zu sprechen.
+
+[talente_spruchmagie_stufe_3_zaubern]
+Spruchmagie Stufe 3 zaubern
+In allen Zauberschulen ist es möglich, Sprüche auf Stufe 3 zu sprechen.
+
+[talente_verteidiger_stufe_1]
+Verteidiger Stufe 1
+alle nAT-1 und nPA+1
+
+[talente_verteidiger_stufe_2]
+Verteidiger Stufe 2
+alle nAT-2 und nPA+2
+
+[talente_verteidiger_stufe_3]
+Verteidiger Stufe 3
+alle nAT-3 und nPA+3
+
+[talente_wuchtschlag]
+Wuchtschlag
+Nur bestimmte Charakterklassen: ermöglicht eine AT mit dreifachem Schaden wenn man vorher ein Sekunde steht (keine andere Aktion möglich), oder eine AT mit halbiertem nAT-Wert mit dreifachem Schaden aus dem Laufen (nur gerader Ansturm). Schließt sich mit AT-Kl.+1 in jedem Fall aus. Man muss wählen ob man die AT-Kl.+1 oder den Schadensmultiplikator des Wuchtschlags nimmt.
+

@@ -13,6 +13,7 @@ import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN } from '../data/equipment
 import { feuerwaffenMunitionOptionen, FEUERWAFFEN_MUNITION_PREISE } from '../data/equipment/feuerwaffenMunition';
 import { resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis } from '../engine/waffenPool';
 import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget } from '../engine/poolCaps';
+import { getOwnedKampfmodulTalentInfo } from '../engine/talenteKampfmodulInfo';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -476,6 +477,36 @@ export function buildAusweichenRow(character: CharacterState): AusweichenRow {
 // Rendering (interaktiv)
 // ---------------------------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------------------------
+// Talent-Effekte (Kampfmodul) - reine Info-Zeilen, keine Zahl wird hier berechnet
+// ---------------------------------------------------------------------------------------------
+
+/** 60 Talente aus data/talenteKampfmodul.ts sind reine Kampfrunden-/Proben-Mechaniken (Manoever,
+ *  Haltungswechsel, Situationsmodifikatoren) ohne editierbaren Zielwert - siehe extract_talente_
+ *  kampfmodul.py fuer die Gruppenentscheidung. Diese Liste ist bewusst nur eine Anzeige (Name +
+ *  Original-Wirkungstext), damit ein kuenftiges Kampfmodul bzw. der Meister am Tisch sieht, welche
+ *  vom Charakter gekauften Talente eine Kampfregel veraendern - nichts davon wird hier oder sonst
+ *  irgendwo im Chargen-Tool ausgewertet. */
+function renderTalenteKampfmodulBlock(character: CharacterState): string {
+  const rows = getOwnedKampfmodulTalentInfo(character);
+  if (rows.length === 0) return '';
+  return `
+    <h3 class="bogen-section-heading">Talent-Effekte (Kampfmodul)</h3>
+    <p class="kampf-talente-hinweis">Diese Talente veraendern eine Kampfregel (Manoever, Haltung,
+      Proben-Sonderfall) statt eines Charakterbogenwerts - Umsetzung folgt im Kampfmodul.
+      Hier nur als Erinnerung, welche der Charakter besitzt.</p>
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-talente-table">
+        <thead><tr><th>Talent</th><th>Wirkung</th></tr></thead>
+        <tbody>${rows.map((r) => `
+          <tr>
+            <td>${escapeHtml(r.name)}</td>
+            <td>${escapeHtml(r.wirkung)}</td>
+          </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+}
+
 export type OnWaffenPoolChange = (poolReferenz: string, equipmentId: string, allocation: PoolAllocation) => void;
 
 function poolCell(field: 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa', row: NahkampfRow): string {
@@ -619,6 +650,7 @@ export function renderKampfView(
     ${renderFeuerwaffenTable(feuerwaffenRows)}
     ${renderArmbrustBogenTable('Armbrüste', armbrustRows)}
     ${renderArmbrustBogenTable('Bögen', boegenRows)}
+    ${renderTalenteKampfmodulBlock(character)}
   `;
 
   container.querySelectorAll<HTMLButtonElement>('.kampf-pool-cell .stat-inc, .kampf-pool-cell .stat-dec').forEach((btn) => {

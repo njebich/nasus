@@ -31,6 +31,7 @@ import {
   VORDEFINIERTE_ORTE, WELTEN, SIEDLUNGSGROESSEN, HANDELSSTUFEN, HERSTELLUNGSORTE,
   createOrt, formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
 } from './data/orte';
+import { getReligionen, addReligion, addSekte, formatReligionLabel, combineReligionSekte } from './state/religionStore';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
@@ -306,7 +307,28 @@ function renderNewCharacterForm(): string {
         </label>
       </fieldset>
       <label>Familie <input type="text" id="nc-familie" /></label>
-      <label>Religion <input type="text" id="nc-religion" /></label>
+      <label>Religion
+        <select id="nc-religion">
+          <option value="">-- keine --</option>
+          ${getReligionen().map((r) => `<option value="${r.id}" title="${r.volk ?? ''}">${formatReligionLabel(r)}</option>`).join('')}
+          <option value="__neu__">+ Neue Religion anlegen</option>
+        </select>
+      </label>
+      <fieldset id="nc-neue-religion" class="new-location-fields" hidden>
+        <legend>Neue Religion</legend>
+        <label>Name * <input type="text" id="nc-religion-name" /></label>
+        <label>Volk <input type="text" id="nc-religion-volk" /></label>
+      </fieldset>
+      <label>Sekte
+        <select id="nc-sekte" disabled>
+          <option value="">-- keine --</option>
+          <option value="__neu__">+ Neue Sekte anlegen</option>
+        </select>
+      </label>
+      <fieldset id="nc-neue-sekte" class="new-location-fields" hidden>
+        <legend>Neue Sekte</legend>
+        <label>Name * <input type="text" id="nc-sekte-name" /></label>
+      </fieldset>
       <fieldset>
         <legend>Startbudget</legend>
         <label><input type="radio" name="nc-startbudget" value="normal" checked /> Normal (Stufe 0, 6490 SP, 5000D)</label>
@@ -385,6 +407,45 @@ function render(): void {
     if (nameInput) nameInput.required = isNew;
   });
 
+  const populateSekteSelect = (religionId: string): void => {
+    const sekteSelect = document.querySelector<HTMLSelectElement>('#nc-sekte');
+    if (!sekteSelect) return;
+    const sekten = getReligionen().find((r) => r.id === religionId)?.sekten ?? [];
+    sekteSelect.disabled = false;
+    sekteSelect.innerHTML = `
+      <option value="">-- keine --</option>
+      ${sekten.map((s) => `<option value="${s}">${s}</option>`).join('')}
+      <option value="__neu__">+ Neue Sekte anlegen</option>
+    `;
+    const sekteFields = document.querySelector<HTMLFieldSetElement>('#nc-neue-sekte');
+    if (sekteFields) sekteFields.hidden = true;
+  };
+
+  document.querySelector<HTMLSelectElement>('#nc-religion')?.addEventListener('change', (e) => {
+    const value = (e.target as HTMLSelectElement).value;
+    const isNew = value === '__neu__';
+    const fields = document.querySelector<HTMLFieldSetElement>('#nc-neue-religion');
+    const nameInput = document.querySelector<HTMLInputElement>('#nc-religion-name');
+    if (fields) fields.hidden = !isNew;
+    if (nameInput) nameInput.required = isNew;
+    if (!value) {
+      const sekteSelect = document.querySelector<HTMLSelectElement>('#nc-sekte');
+      if (sekteSelect) sekteSelect.disabled = true;
+      const sekteFields = document.querySelector<HTMLFieldSetElement>('#nc-neue-sekte');
+      if (sekteFields) sekteFields.hidden = true;
+      return;
+    }
+    populateSekteSelect(isNew ? '' : value);
+  });
+
+  document.querySelector<HTMLSelectElement>('#nc-sekte')?.addEventListener('change', (e) => {
+    const isNew = (e.target as HTMLSelectElement).value === '__neu__';
+    const fields = document.querySelector<HTMLFieldSetElement>('#nc-neue-sekte');
+    const nameInput = document.querySelector<HTMLInputElement>('#nc-sekte-name');
+    if (fields) fields.hidden = !isNew;
+    if (nameInput) nameInput.required = isNew;
+  });
+
   document.querySelector<HTMLFormElement>('#new-character-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.querySelector<HTMLInputElement>('#nc-name')!.value.trim();
@@ -406,6 +467,29 @@ function render(): void {
         })
       : VORDEFINIERTE_ORTE.find((ort) => ort.id === herkunftAuswahl);
     if (!herkunftOrt) return;
+    const religionAuswahl = document.querySelector<HTMLSelectElement>('#nc-religion')!.value;
+    let religionName: string | undefined;
+    let religionId: string | undefined;
+    if (religionAuswahl === '__neu__') {
+      const relName = document.querySelector<HTMLInputElement>('#nc-religion-name')!.value.trim();
+      if (relName) {
+        const religion = addReligion(relName, document.querySelector<HTMLInputElement>('#nc-religion-volk')!.value.trim() || undefined);
+        religionName = religion.name;
+        religionId = religion.id;
+      }
+    } else if (religionAuswahl) {
+      const religion = getReligionen().find((r) => r.id === religionAuswahl);
+      religionName = religion?.name;
+      religionId = religion?.id;
+    }
+    const sekteAuswahl = document.querySelector<HTMLSelectElement>('#nc-sekte')!.value;
+    let sekteName: string | undefined;
+    if (sekteAuswahl === '__neu__') {
+      const sName = document.querySelector<HTMLInputElement>('#nc-sekte-name')!.value.trim();
+      if (sName && religionId) sekteName = addSekte(religionId, sName);
+    } else if (sekteAuswahl) {
+      sekteName = sekteAuswahl;
+    }
     const header: Partial<Omit<CharacterHeader, 'name'>> = {
       spezies,
       herkunftOrtId: herkunftOrt.id,
@@ -416,7 +500,7 @@ function render(): void {
       alter: document.querySelector<HTMLInputElement>('#nc-alter')!.value.trim() || undefined,
       geburtstag: document.querySelector<HTMLInputElement>('#nc-geburtstag')!.value.trim() || undefined,
       familie: document.querySelector<HTMLInputElement>('#nc-familie')!.value.trim() || undefined,
-      religion: document.querySelector<HTMLInputElement>('#nc-religion')!.value.trim() || undefined,
+      religion: religionName ? combineReligionSekte(religionName, sekteName) : undefined,
     };
     const startbudget = (document.querySelector<HTMLInputElement>('input[name="nc-startbudget"]:checked')!.value) as StartbudgetPreset;
     currentCharacter = createCharacter(name, header, startbudget);

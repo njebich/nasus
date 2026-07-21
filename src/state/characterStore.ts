@@ -69,6 +69,9 @@ export interface CharacterHeader {
   alter?: string;
   geburtstag?: string;
   familie?: string;
+  /** Religion + optionale Sekte als EIN Freitext-Feld, "Lloth, Käsequark" (state/religionStore.ts
+   *  kennt das Format via combineReligionSekte/parseReligionSekte) - kein eigenes Sekte-Feld,
+   *  Nutzer 2026-07-22: "Sekte should add to the religion, not be new field". */
   religion?: string;
   groesse?: string;
   gewicht?: string;

@@ -91,7 +91,7 @@ describe('canLearnSpell (Regel 5/7/9/10: Weisheit-Cap + Hauszauber-Bypass um gen
   });
 });
 
-describe('canIncreaseSpell (Regel 1: Mindestintelligenz + Vorstufe TaW>=10 derselben Schule, Grad 1 ausgenommen)', () => {
+describe('canIncreaseSpell (Regel 1: Aura>0+Magie>0 + Mindestintelligenz + Vorstufe TaW>=10 derselben Schule, Grad 1 ausgenommen)', () => {
   // Reale Erdbeschwoerung-Zauber: Grad1 "Splitterwand" (Min.Int 12), Grad2 "Steinschuss" (Min.Int 13).
   const grad1 = RULES.find((r) => r.referenz === 'spruchmagie_erdbeschwoerung_1_splitterwand')!;
   const grad2 = RULES.find((r) => r.referenz === 'spruchmagie_erdbeschwoerung_2_steinschuss')!;
@@ -99,15 +99,22 @@ describe('canIncreaseSpell (Regel 1: Mindestintelligenz + Vorstufe TaW>=10 derse
   const andereSchuleGrad1 = RULES.find((r) => r.referenz === 'spruchmagie_feuerbeschwoerung_1_feuerball')
     ?? RULES.find((r) => r.kategorie === 'Spruchmagie' && r.grad === '1' && r.parent !== grad1.parent)!;
 
-  it('Grad 1: nur Mindestintelligenz zaehlt, keine Vorstufe noetig', () => {
+  function withAuraMagie(): CharacterState {
     const character = createCharacter('Test');
+    character.values['att_aura'] = 1;
+    character.values['att_magie'] = 1;
+    return character;
+  }
+
+  it('Grad 1: nur Mindestintelligenz zaehlt, keine Vorstufe noetig', () => {
+    const character = withAuraMagie();
     character.values['eig_g_intelligenz'] = 12; // = Min.Int von Splitterwand
     const sheet = computeSheet(character);
     expect(canIncreaseSpell(sheet, grad1).allowed).toBe(true);
   });
 
   it('Grad 2: ohne gelernte Vorstufe derselben Schule gesperrt', () => {
-    const character = createCharacter('Test');
+    const character = withAuraMagie();
     character.values['eig_g_intelligenz'] = 20;
     const sheet = computeSheet(character);
     const result = canIncreaseSpell(sheet, grad2);
@@ -116,7 +123,7 @@ describe('canIncreaseSpell (Regel 1: Mindestintelligenz + Vorstufe TaW>=10 derse
   });
 
   it('Grad 2: mit Vorstufe derselben Schule auf TaW>=10 erlaubt', () => {
-    const character = createCharacter('Test');
+    const character = withAuraMagie();
     character.values['eig_g_intelligenz'] = 20;
     character.values[grad1.referenz] = 10;
     const sheet = computeSheet(character);
@@ -124,7 +131,7 @@ describe('canIncreaseSpell (Regel 1: Mindestintelligenz + Vorstufe TaW>=10 derse
   });
 
   it('Grad 2: Vorstufe mit TaW<10 reicht nicht', () => {
-    const character = createCharacter('Test');
+    const character = withAuraMagie();
     character.values['eig_g_intelligenz'] = 20;
     character.values[grad1.referenz] = 9;
     const sheet = computeSheet(character);
@@ -132,7 +139,7 @@ describe('canIncreaseSpell (Regel 1: Mindestintelligenz + Vorstufe TaW>=10 derse
   });
 
   it('Grad 2: Vorstufe aus einer ANDEREN Schule zaehlt nicht', () => {
-    const character = createCharacter('Test');
+    const character = withAuraMagie();
     character.values['eig_g_intelligenz'] = 20;
     character.values[andereSchuleGrad1.referenz] = 10;
     const sheet = computeSheet(character);
@@ -140,7 +147,7 @@ describe('canIncreaseSpell (Regel 1: Mindestintelligenz + Vorstufe TaW>=10 derse
   });
 
   it('unter Mindestintelligenz gesperrt, auch bei erfuellter Vorstufe', () => {
-    const character = createCharacter('Test');
+    const character = withAuraMagie();
     character.values['eig_g_intelligenz'] = 1;
     character.values[grad1.referenz] = 10;
     const sheet = computeSheet(character);
@@ -150,12 +157,34 @@ describe('canIncreaseSpell (Regel 1: Mindestintelligenz + Vorstufe TaW>=10 derse
   });
 
   it('Integration: reale Referenz spruchmagie_erdbeschwoerung_1_splitterwand hat Min.Int 12 (aus spruchmagieDetails.json)', () => {
-    const zuNiedrig = createCharacter('Test');
+    const zuNiedrig = withAuraMagie();
     zuNiedrig.values['eig_g_intelligenz'] = 11;
     expect(canIncreaseSpell(computeSheet(zuNiedrig), grad1).allowed).toBe(false);
 
-    const reicht = createCharacter('Test');
+    const reicht = withAuraMagie();
     reicht.values['eig_g_intelligenz'] = 12;
     expect(canIncreaseSpell(computeSheet(reicht), grad1).allowed).toBe(true);
+  });
+
+  it('Aura=0 sperrt jeden Zauber, auch bei erfuellter Mindestintelligenz und Grad 1', () => {
+    const character = createCharacter('Test'); // att_aura=0, att_magie=0 per Default
+    character.values['eig_g_intelligenz'] = 12;
+    const sheet = computeSheet(character);
+    const result = canIncreaseSpell(sheet, grad1);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/Aura/);
+  });
+
+  it('Magie=0 sperrt jeden Zauber, auch mit Aura>0', () => {
+    const character = createCharacter('Test');
+    character.values['att_aura'] = 1;
+    character.values['eig_g_intelligenz'] = 12;
+    expect(canIncreaseSpell(computeSheet(character), grad1).allowed).toBe(false);
+  });
+
+  it('Aura>0 UND Magie>0 erlaubt (zusammen mit den uebrigen Gates)', () => {
+    const character = withAuraMagie();
+    character.values['eig_g_intelligenz'] = 12;
+    expect(canIncreaseSpell(computeSheet(character), grad1).allowed).toBe(true);
   });
 });

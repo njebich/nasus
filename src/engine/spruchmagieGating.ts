@@ -11,8 +11,10 @@
 //    Grad===Weisheit+1 (keine explizite Zuordnung noetig: sobald Weisheit steigt, verschiebt
 //    sich die Grenze nach oben und ein alter Hauszauber wird automatisch zu einem normalen
 //    Zauber - "da man nicht zuruecksteigern kann, ist der Zauber sowieso locked", Nutzer-Zitat).
-// 2. canIncreaseSpell: Mindestintelligenz (aus spruchmagieDetails.minInt) UND (Grad===1 ODER ein
-//    gelernter Zauber derselben Schule mit niedrigerem Grad auf TaW>=10).
+// 2. canIncreaseSpell: Aura>0 UND Magie>0 (Nutzer 2026-07-21, analog KI/PSI-Wurzel-Gate, gilt
+//    hier aber fuer JEDEN Zauber jeder Schule/jedes Grades, da Spruchmagie keinen einzelnen
+//    Baum-Wurzelknoten hat) UND Mindestintelligenz (aus spruchmagieDetails.minInt) UND
+//    (Grad===1 ODER ein gelernter Zauber derselben Schule mit niedrigerem Grad auf TaW>=10).
 
 import type { ComputedSheet } from './characterSheet';
 import type { RuleEntry } from '../data/rules';
@@ -86,9 +88,22 @@ export function canLearnSpell(sheet: ComputedSheet, rule: RuleEntry): GateResult
   return { allowed: false, reason: `Grad ${grad} liegt ueber Weisheit+1 (${weisheit + 1})` };
 }
 
-/** Gate 2 (Regel 1): Mindestintelligenz UND (Grad 1 ODER gradniedrigerer Zauber derselben
- *  Schule auf TaW>=10). Gilt fuer jede Steigerung, nicht nur den ersten Lernpunkt. */
+function attributCurrentValue(sheet: ComputedSheet, referenz: string): number {
+  return (sheet.byKategorie['Attribute'] ?? []).find((r) => r.rule.referenz === referenz)?.currentValue ?? 0;
+}
+
+/** Gate 2 (Regel 1): Aura>0 UND Magie>0 (Nutzer 2026-07-21, analog KI/PSI-Wurzel-Gate) UND
+ *  Mindestintelligenz UND (Grad 1 ODER gradniedrigerer Zauber derselben Schule auf TaW>=10).
+ *  Gilt fuer jede Steigerung, nicht nur den ersten Lernpunkt - anders als KI/PSI (nur die
+ *  Wurzeln) gibt es in Spruchmagie keinen einzelnen Baum-Wurzelknoten, daher gilt das Aura/
+ *  Magie-Gate hier direkt fuer jeden einzelnen Zauber jeder Schule/jedes Grades. */
 export function canIncreaseSpell(sheet: ComputedSheet, rule: RuleEntry): GateResult {
+  const aura = attributCurrentValue(sheet, 'att_aura');
+  const magie = attributCurrentValue(sheet, 'att_magie');
+  if (aura <= 0 || magie <= 0) {
+    return { allowed: false, reason: `Benötigt: Aura > 0 (aktuell ${aura}) UND Magie > 0 (aktuell ${magie})` };
+  }
+
   const grad = Number(rule.grad ?? 0);
   const minInt = Number(SPRUCHMAGIE_DETAILS[rule.referenz]?.minInt ?? 0);
   const intelligenz = (sheet.byKategorie['Eigenschaft'] ?? []).find(

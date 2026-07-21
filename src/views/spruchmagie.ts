@@ -129,7 +129,7 @@ function renderRow(sheet: ComputedSheet, row: Row): string {
   const { rule, currentValue, detail } = row;
   const name = rule.beschreibung ?? rule.referenz;
   const stufen = unlockedStufen(sheet, detail);
-  const rowClass = row.unlocked ? '' : 'spruchmagie-row-locked';
+  const rowClass = row.unlocked ? '' : currentValue > 0 ? 'spruchmagie-row-invalid' : 'spruchmagie-row-locked';
   const disabled = !row.unlocked;
   const plusTitle = gateTitle(row);
   const costLabel = row.kostenNext !== undefined ? `${row.kostenNext} TaW` : '';

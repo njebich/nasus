@@ -137,7 +137,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   // Probe ist nur sinnvoll, sobald die Faehigkeit ueberhaupt gelernt ist (Nutzer 2026-07-20).
   const probe = currentValue < 1 ? '' : currentValue + (eigBon?.value ?? 0) + 2 * getAttMagie(sheet);
   const dauer = KI_DAUER[referenz];
-  const rowClass = unlocked ? '' : 'ki-row-locked';
+  const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
   const costLabel = kostenNext !== undefined ? `${kostenNext} SP` : '';
   const picksRow = referenz === MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ ? renderGrundfertigkeitPicksRow(currentValue, gewaehlt) : '';

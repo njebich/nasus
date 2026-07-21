@@ -936,6 +936,16 @@ body {
   cursor: not-allowed;
 }
 
+/* TaW>0, aber Vorbedingung nachtraeglich weggefallen (z.B. Aura/Magie wieder auf 0) - Zeile
+   bleibt voll lesbar (kein Dimmen), "-" bleibt aktiv zum Zuruecksetzen, nur "+" ist gesperrt. */
+.ki-row-invalid {
+  background: rgba(220, 53, 69, 0.15);
+}
+
+.ki-row-invalid .stat-inc:disabled {
+  cursor: not-allowed;
+}
+
 .ki-grundfertigkeit-picks-row td {
   text-align: left;
   white-space: normal;
@@ -1009,5 +1019,15 @@ body {
 }
 
 .spruchmagie-row-locked .stat-inc, .spruchmagie-row-locked .stat-dec {
+  cursor: not-allowed;
+}
+
+/* TaW>0, aber Lerngate/Steigern-Gate nachtraeglich nicht mehr erfuellt - Zeile bleibt lesbar,
+   "-" bleibt aktiv zum Zuruecksetzen, nur "+" ist gesperrt (siehe .ki-row-invalid, analog). */
+.spruchmagie-row-invalid {
+  background: rgba(220, 53, 69, 0.15);
+}
+
+.spruchmagie-row-invalid .stat-inc:disabled {
   cursor: not-allowed;
 }

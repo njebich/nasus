@@ -28,12 +28,20 @@ import {
   type FeuerwaffenSelections,
 } from '../engine/feuerwaffenComposition';
 
+export interface RuestungGruppenSelection {
+  lage: number;
+  basisSourceRow: number;
+  verarbeitungSourceRow: number;
+  anpassungSourceRow: number;
+}
+
 export interface AusruestungCallbacks {
   onBuyPreisliste: (sourceRow: number, quantity: number) => void;
   onBuyArtefakt: (referenz: string, grad: string, variant: ArtefaktVariant) => void;
   onEquipRuestung: (
     gruppe: RsGruppe, lage: number, basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number,
   ) => void;
+  onEquipRuestungAlleTz: (gruppe: RsGruppe, selections: RuestungGruppenSelection[]) => void;
   onUnequipRuestung: (gruppe: RsGruppe, lage: number) => void;
   onBuyShield: (sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, bespannungSourceRow: number) => void;
   onBuyWeapon: (
@@ -243,8 +251,60 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
         ${RUESTUNG_ANPASSUNG.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === anpassung.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
       </select>
       <span class="stat-cost">RS ${composed.rs} | RH ${composed.rh} | ${composed.preis} D</span>
-      <button type="button" class="ausruestung-buy-button ruestung-equip" data-gruppe="${gruppe}" data-lage="${lage}">Ausrüsten</button>
+      <button type="button" class="ausruestung-buy-button ruestung-equip" data-gruppe="${gruppe}" data-lage="${lage}">${kaufenLabel(composed.preis)}</button>
     </div>`;
+}
+
+/** Liest fuer jede Lage der gegebenen Gruppe die "gewuenschte" Basis/Verarbeitung/Anpassung
+ *  aus - entweder das bereits Ausgeruestete, oder (falls noch leer) die aktuelle Picker-Auswahl
+ *  (bzw. deren Default). Lagen ohne Optionen (z.B. Lage 5) werden ausgelassen. Grundlage fuer
+ *  den "Für alle TZ kaufen"-Button (Nutzer 2026-07-22: "ich stelle alle lagen wie gewünscht ein
+ *  und der klick auf den button kauft alles wie auf dieser TZ auf allen anderen tz"). */
+function getGruppenSelections(gruppe: RsGruppe, character: CharacterState): RuestungGruppenSelection[] {
+  const selections: RuestungGruppenSelection[] = [];
+  for (const lage of RUESTUNG_LAGEN) {
+    const key = ruestungSlotKey(gruppe, lage);
+    const equipped = character.ruestungSlots[key];
+    if (equipped) {
+      selections.push({
+        lage, basisSourceRow: equipped.basisSourceRow,
+        verarbeitungSourceRow: equipped.verarbeitungSourceRow, anpassungSourceRow: equipped.anpassungSourceRow,
+      });
+      continue;
+    }
+    const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
+    if (optionen.length === 0) continue;
+    const sel = slotPicker.get(key) ?? {
+      basisSourceRow: optionen[0].sourceRow,
+      verarbeitungSourceRow: RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0,
+      anpassungSourceRow: RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0,
+    };
+    selections.push({ lage, ...sel });
+  }
+  return selections;
+}
+
+/** Summiert den Kaufpreis, den "Für alle TZ kaufen" tatsaechlich ausloesen wuerde: nur die
+ *  anderen 3 Gruppen, und je Lage nur wenn dort noch nichts ausgeruestet ist (Nutzer 2026-07-22:
+ *  "Überspringen und nur leere Gruppen kaufen"). */
+function berechneAlleTzPreis(
+  gruppe: RsGruppe, selections: RuestungGruppenSelection[], character: CharacterState,
+): { preis: number; anzahl: number } {
+  let preis = 0;
+  let anzahl = 0;
+  for (const { gruppe: ziel } of RS_GRUPPEN) {
+    if (ziel === gruppe) continue;
+    for (const sel of selections) {
+      if (character.ruestungSlots[ruestungSlotKey(ziel, sel.lage)]) continue;
+      const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === sel.basisSourceRow);
+      const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === sel.verarbeitungSourceRow);
+      const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === sel.anpassungSourceRow);
+      if (!basis || !verarbeitung || !anpassung) continue;
+      preis += composeArmor(basis, verarbeitung, anpassung).preis;
+      anzahl += 1;
+    }
+  }
+  return { preis, anzahl };
 }
 
 function renderRuestungGruppe(gruppe: RsGruppe, label: string, character: CharacterState): string {
@@ -255,11 +315,21 @@ function renderRuestungGruppe(gruppe: RsGruppe, label: string, character: Charac
     (sum, lage) => sum + (character.ruestungSlots[ruestungSlotKey(gruppe, lage)]?.computedStatsSnapshot.rh ?? 0), 0,
   );
   const openAttr = openGruppen.has(gruppe) ? ' open' : '';
+  const selections = getGruppenSelections(gruppe, character);
+  const { preis: alleTzPreis, anzahl: alleTzAnzahl } = berechneAlleTzPreis(gruppe, selections, character);
+  const alleTzRow = selections.length === 0 ? '' : `
+    <div class="ausruestung-row ruestung-alle-tz-row">
+      <span class="stat-label">Für alle TZ übernehmen (${label})</span>
+      ${alleTzAnzahl > 0
+    ? `<button type="button" class="ausruestung-buy-button ruestung-buy-alle-tz" data-gruppe="${gruppe}">Für alle TZ kaufen (${formatDublonen(alleTzPreis)})</button>`
+    : `<span class="stat-cost">bereits überall ausgerüstet</span>`}
+    </div>`;
   return `
     <div class="stat-card">
       <details class="stat-group" data-gruppe="${gruppe}"${openAttr}>
         <summary>${label} <span class="stat-group-count">(RS ${gesamtRs} | RH ${gesamtRh})</span></summary>
         <div class="stat-subgroup">
+          ${alleTzRow}
           ${RUESTUNG_LAGEN.map((lage) => renderRuestungSlotRow(gruppe, lage, character)).join('')}
         </div>
       </details>
@@ -828,6 +898,12 @@ export function renderAusruestungView(
       const anpassungSourceRow = sel?.anpassungSourceRow ?? RUESTUNG_ANPASSUNG[0]?.sourceRow;
       if (basisSourceRow === undefined || verarbeitungSourceRow === undefined || anpassungSourceRow === undefined) return;
       callbacks.onEquipRuestung(gruppe, lage, basisSourceRow, verarbeitungSourceRow, anpassungSourceRow);
+    });
+  });
+  container.querySelectorAll<HTMLButtonElement>('.ruestung-buy-alle-tz').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const gruppe = btn.dataset.gruppe as RsGruppe;
+      callbacks.onEquipRuestungAlleTz(gruppe, getGruppenSelections(gruppe, character));
     });
   });
   container.querySelectorAll<HTMLButtonElement>('.ruestung-unequip').forEach((btn) => {

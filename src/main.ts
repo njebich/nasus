@@ -1,7 +1,7 @@
 import './style.css';
 import {
   listCharacters, loadCharacter, createCharacter, saveCharacter, deleteCharacter,
-  getLastActiveCharacterId, setLastActiveCharacterId,
+  getLastActiveCharacterId, setLastActiveCharacterId, ruestungSlotKey,
   type CharacterState, type CharacterHeader, type StartbudgetPreset, type WaffenLoadoutComboType,
 } from './state/characterStore';
 import {
@@ -14,7 +14,7 @@ import {
 import { computeSheet, type ComputedSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
-import { renderAusruestungView } from './views/ausruestung';
+import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
 import { renderCharakterheader } from './views/charakterheader';
 import { renderCharakterbogen } from './views/charakterbogen';
 import { renderKampfView } from './views/kampf';
@@ -175,6 +175,28 @@ function handleEquipRuestung(
   } catch (err) {
     errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
   }
+  render();
+}
+
+const RUESTUNG_GRUPPEN_REIHENFOLGE: readonly RsGruppe[] = ['kopf', 'torso', 'arme', 'beine'];
+
+function handleEquipRuestungAlleTz(gruppe: RsGruppe, selections: RuestungGruppenSelection[]): void {
+  if (!currentCharacter) return;
+  try {
+    for (const ziel of RUESTUNG_GRUPPEN_REIHENFOLGE) {
+      if (ziel === gruppe) continue;
+      for (const sel of selections) {
+        if (currentCharacter.ruestungSlots[ruestungSlotKey(ziel, sel.lage)]) continue;
+        currentCharacter = equipRuestung(
+          currentCharacter, ziel, sel.lage, sel.basisSourceRow, sel.verarbeitungSourceRow, sel.anpassungSourceRow,
+        );
+      }
+    }
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  saveCharacter(currentCharacter);
   render();
 }
 
@@ -591,6 +613,7 @@ function render(): void {
         onBuyPreisliste: handleBuyPreisliste,
         onBuyArtefakt: handleBuyArtefakt,
         onEquipRuestung: handleEquipRuestung,
+        onEquipRuestungAlleTz: handleEquipRuestungAlleTz,
         onUnequipRuestung: handleUnequipRuestung,
         onBuyShield: handleBuyShield,
         onBuyWeapon: handleBuyWeapon,

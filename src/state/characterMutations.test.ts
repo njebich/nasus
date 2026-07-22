@@ -368,6 +368,28 @@ describe('setWaffenPoolAllocation', () => {
       .toThrow(BudgetError);
   });
 
+  it('eine Verringerung schlaegt nie fehl, selbst wenn eine fremde Aenderung die Zuteilung nachtraeglich ueber ihr Budget gehoben hat (Nutzer-Bugreport 2026-07-23)', () => {
+    // w1 nutzt wie im Test oben ihren kuenstlichen Ueberschuss (Budget 7+28=35), um gat=9 zu
+    // zahlen. Wird der Ueberschuss danach entfernt (z.B. Waffe umgeruestet/verkauft-und-neu-
+    // gekauft), sinkt ihr Budget zurueck auf 7 - die bestehende Zuteilung (9) liegt jetzt darueber.
+    // Das darf den Nutzer nicht aussperren: jede Verringerung muss trotzdem durchgehen.
+    const character = characterWithZweiAexten(10);
+    const [w1] = character.equipment;
+    w1.computedStatsSnapshot = { ...w1.computedStatsSnapshot, at: 10, pa: 10 };
+    const mitUeberschuss = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 9, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+
+    const ohneUeberschuss = structuredClone(mitUeberschuss);
+    const w1Reverted = ohneUeberschuss.equipment.find((e) => e.id === w1.id)!;
+    w1Reverted.computedStatsSnapshot = { ...w1Reverted.computedStatsSnapshot, at: -4, pa: -5 };
+
+    // gat=9 liegt jetzt ueber dem gesunkenen Budget (7) - eine Erhoehung wuerde weiterhin scheitern...
+    expect(() => setWaffenPoolAllocation(ohneUeberschuss, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 10, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }))
+      .toThrow(BudgetError);
+    // ...aber eine Verringerung (9 -> 8, immer noch > 7) muss trotzdem klappen.
+    const verringert = setWaffenPoolAllocation(ohneUeberschuss, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 8, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+    expect(verringert.poolAllocations['nk_pool_hiebwaffen_aexte::' + w1.id]).toEqual({ gat: 8, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+  });
+
   describe('Geweihte-Gate (Nutzer 2026-07-22): att_karma bleibt auf 0 gedeckelt ohne Gate-Talent', () => {
     it('setValue lehnt att_karma>0 ohne Geweihte-Talent ab', () => {
       const character = withEpGesamt(1000);

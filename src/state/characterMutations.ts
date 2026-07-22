@@ -248,22 +248,32 @@ export function setPoolAllocation(character: CharacterState, referenz: string, a
     throw new MutationError('Pool-Zuteilung darf nicht negativ sein');
   }
 
+  const previous = character.poolAllocations[rule.referenz.toLowerCase()]
+    ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
+  const previousTotal = previous.gat + previous.gpa + previous.mat + previous.mpa + previous.nat + previous.npa;
+
   const candidate = clone(character);
   candidate.poolAllocations[rule.referenz.toLowerCase()] = allocation;
 
-  const computed = computeSheet(candidate).byKategorie[rule.kategorie]?.find((r) => r.rule.referenz === rule.referenz);
-  const budget = Number(computed?.computedValue ?? 0);
   const allocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa + allocation.nat + allocation.npa;
-  if (allocatedTotal > budget) {
-    throw new BudgetError(`Nicht genug Pool-Punkte: benoetigt ${allocatedTotal}, verfuegbar ${budget}`);
-  }
-  if (computed?.poolCaps) {
-    const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
-    const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
-    if (allocation.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
-    if (allocation.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
-    if (allocation.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
-    if (allocation.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
+  // Eine Verringerung (Gesamtsumme sinkt oder bleibt gleich) darf NIE am Budget scheitern - sonst
+  // saesse man in einem durch fremde Aenderungen (z.B. entferntes Kampfstil-Talent) ungueltig
+  // gewordenen Zustand fest und koennte ihn nicht einmal durch Reduzieren wieder verlassen
+  // (Nutzer-Bugreport 2026-07-23). Untergrenze bleibt die 0-Pruefung oben pro Feld.
+  if (allocatedTotal > previousTotal) {
+    const computed = computeSheet(candidate).byKategorie[rule.kategorie]?.find((r) => r.rule.referenz === rule.referenz);
+    const budget = Number(computed?.computedValue ?? 0);
+    if (allocatedTotal > budget) {
+      throw new BudgetError(`Nicht genug Pool-Punkte: benoetigt ${allocatedTotal}, verfuegbar ${budget}`);
+    }
+    if (computed?.poolCaps) {
+      const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
+      const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
+      if (allocation.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
+      if (allocation.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
+      if (allocation.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
+      if (allocation.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
+    }
   }
 
   return candidate;
@@ -295,33 +305,45 @@ export function setWaffenPoolAllocation(
     throw new MutationError('Pool-Zuteilung darf nicht negativ sein');
   }
 
+  const previous = character.poolAllocations[`${rule.referenz.toLowerCase()}::${equipmentId}`]
+    ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
+  const previousTotal = previous.gat + previous.gpa + previous.mat + previous.mpa + previous.nat + previous.npa;
+
   const candidate = clone(character);
   candidate.poolAllocations[`${rule.referenz.toLowerCase()}::${equipmentId}`] = allocation;
 
-  const sheet = computeSheet(candidate);
-  const computed = sheet.byKategorie[rule.kategorie]?.find((r) => r.rule.referenz === rule.referenz);
-
-  const basis = resolveWaffenRowBasis(character, equipmentId);
-  const overflow = basis
-    ? computeWeaponAtPaOverflow(basis.hauptfertigkeit, basis.atBonus, basis.paBonus, makeValueSource(candidate), getKampfstilModifier(candidate))
-    : undefined;
-  const budget = Number(computed?.computedValue ?? 0) + (overflow ? overflow.atOverflow + overflow.paOverflow : 0);
   const allocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa + allocation.nat + allocation.npa;
-  if (allocatedTotal > budget) {
-    throw new BudgetError(`Nicht genug Pool-Punkte: benoetigt ${allocatedTotal}, verfuegbar ${budget}`);
-  }
-  if (computed?.poolCaps) {
-    const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
-    const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
-    if (allocation.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
-    if (allocation.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
-    if (allocation.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
-    if (allocation.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
-  }
+  // Eine Verringerung (Gesamtsumme sinkt oder bleibt gleich) darf NIE am Budget scheitern - sonst
+  // saesse man in einem durch fremde Aenderungen (z.B. entferntes Kampfstil-Talent, verkaufte
+  // Waffe mit dadurch gesunkenem Ueberschuss) ungueltig gewordenen Zustand fest und koennte ihn
+  // nicht einmal durch Reduzieren wieder verlassen (Nutzer-Bugreport 2026-07-23). Die tatsaechliche
+  // Untergrenze pro Feld bleibt 0 (siehe Pruefung oben) - fuer nAT/nPA entspricht das dem
+  // unmodifizierten uncAtWeapon/uncPaWeapon-Basiswert (inkl. Kampfstil-Modifikator).
+  if (allocatedTotal > previousTotal) {
+    const sheet = computeSheet(candidate);
+    const computed = sheet.byKategorie[rule.kategorie]?.find((r) => r.rule.referenz === rule.referenz);
 
-  if (overflow) {
-    if (allocation.nat > overflow.natMax) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
-    if (allocation.npa > overflow.npaMax) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
+    const basis = resolveWaffenRowBasis(character, equipmentId);
+    const overflow = basis
+      ? computeWeaponAtPaOverflow(basis.hauptfertigkeit, basis.atBonus, basis.paBonus, makeValueSource(candidate), getKampfstilModifier(candidate))
+      : undefined;
+    const budget = Number(computed?.computedValue ?? 0) + (overflow ? overflow.atOverflow + overflow.paOverflow : 0);
+    if (allocatedTotal > budget) {
+      throw new BudgetError(`Nicht genug Pool-Punkte: benoetigt ${allocatedTotal}, verfuegbar ${budget}`);
+    }
+    if (computed?.poolCaps) {
+      const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
+      const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
+      if (allocation.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
+      if (allocation.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
+      if (allocation.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
+      if (allocation.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
+    }
+
+    if (overflow) {
+      if (allocation.nat > overflow.natMax) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
+      if (allocation.npa > overflow.npaMax) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
+    }
   }
 
   return candidate;

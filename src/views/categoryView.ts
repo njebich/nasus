@@ -151,6 +151,66 @@ function renderEditableGroup(node: HierarchyNode): string {
     </div>`;
 }
 
+/** Nahkampf-Tab (Nutzer-Mockup 2026-07-22, "S05 Nahkampfwaffen"): Hauptfertigkeit +
+ *  Spezialisierungen als feste Tabelle statt aufklappbarer <details>-Karte (renderEditableGroup) -
+ *  eine Tabelle pro Hauptfertigkeit, deren AT-Basis-Zelle (Wert + -/+) ueber alle Spezialisierungs-
+ *  Zeilen gespannt ist (rowspan), weil es nur EINEN Hauptfertigkeit-Wert gibt. Klasse "stat-row"
+ *  bleibt auf der Zelle erhalten, damit die bestehende Event-Delegation (closest('.stat-row'))
+ *  unveraendert weiterfunktioniert. */
+function renderNahkampfAtCell(r: ComputedRule, rowspan: number | undefined, maxValue?: number): string {
+  const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
+  const value = r.currentValue ?? 0;
+  const costNext = r.kostenNext !== undefined ? `${r.kostenNext} SP` : '';
+  const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
+  const atMax = maxValue !== undefined && value >= maxValue;
+  const rowspanAttr = rowspan !== undefined ? ` rowspan="${rowspan}"` : '';
+  return `
+    <td class="stat-row nahkampf-at-cell"${rowspanAttr} data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
+      <button type="button" class="stat-dec" aria-label="verringern">-</button>
+      <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+      <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
+      ${costNext ? `<span class="stat-cost">nächster Punkt: ${costNext}</span>` : ''}
+    </td>`;
+}
+
+function renderNahkampfLabelCell(r: ComputedRule, rowspan: number | undefined): string {
+  const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
+  const rowspanAttr = rowspan !== undefined ? ` rowspan="${rowspan}"` : '';
+  return `<td${rowspanAttr}>${label}${infoIcon(r.rule.info)}${errorNote(r)}</td>`;
+}
+
+function renderNahkampfWaffenGroup(node: HierarchyNode): string {
+  const hauptwert = node.row.currentValue ?? 0;
+  if (node.children.length === 0) {
+    return `
+      <table class="bogen-table nahkampf-waffen-table">
+        <thead><tr><th>Waffe</th><th>AT-Basis</th></tr></thead>
+        <tbody><tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfAtCell(node.row, undefined)}</tr></tbody>
+      </table>`;
+  }
+  if (hauptwert <= 0) {
+    return `
+      <table class="bogen-table nahkampf-waffen-table">
+        <thead><tr><th>Waffe</th><th>AT-Basis</th></tr></thead>
+        <tbody>
+          <tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfAtCell(node.row, undefined)}</tr>
+          <tr><td colspan="4" class="nahkampf-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
+        </tbody>
+      </table>`;
+  }
+  const rows = node.children.map((child, i) => `
+    <tr>
+      ${i === 0 ? renderNahkampfLabelCell(node.row, node.children.length) : ''}
+      ${i === 0 ? renderNahkampfAtCell(node.row, node.children.length) : ''}
+      ${renderNahkampfLabelCell(child, undefined)}${renderNahkampfAtCell(child, undefined, hauptwert)}
+    </tr>`).join('');
+  return `
+    <table class="bogen-table nahkampf-waffen-table">
+      <thead><tr><th>Waffe</th><th>AT-Basis</th><th>Spezialisierung</th><th>AT-Basis</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
 function poolFieldReadOnly(label: string, value: number, max: number | undefined): string {
   const maxHint = max !== undefined ? ` / ${max}` : '';
   return `
@@ -227,14 +287,22 @@ export function renderCategoryView(
   const restEditable = editable.filter((r) => !(r.rule.referenz in LADESCHUETZE_SF_FK_GATE));
   const editableHierarchy = buildHierarchy(restEditable);
   const readOnlyHierarchy = buildHierarchy(readOnly);
+  // Nahkampf-Tab (Nutzer-Mockup 2026-07-22): Waffengruppen als feste Tabelle statt aufklappbarer
+  // Karte (siehe renderNahkampfWaffenGroup), und die Kampf-Pools-Sektion faellt komplett weg - die
+  // AT-Basis-Spalte in der neuen Tabelle deckt das ab, was dort bisher redundant angezeigt wurde.
+  // Andere Kategorien (z.B. "Kampf" mit seinem Leberschutz-Pool) behalten das bisherige Verhalten.
+  const isNahkampf = kategorie === 'Nahkampf';
+  const editableBlock = isNahkampf
+    ? editableHierarchy.map(renderNahkampfWaffenGroup).join('')
+    : editableHierarchy.map(renderEditableGroup).join('');
 
   container.innerHTML = `
-    <div class="stat-category">${editableHierarchy.map(renderEditableGroup).join('')}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet)}</div>
+    <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet)}</div>
     ${readOnly.length > 0 ? `
       <h3 class="stat-section-heading">Berechnete Werte</h3>
       <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>
     ` : ''}
-    ${pools.length > 0 ? `
+    ${!isNahkampf && pools.length > 0 ? `
       <h3 class="stat-section-heading">Kampf-Pools</h3>
       <div class="pool-category">${pools.map(renderPoolRow).join('')}</div>
     ` : ''}

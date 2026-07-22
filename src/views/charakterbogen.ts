@@ -274,7 +274,8 @@ function renderKampfTzGruppe(gruppe: KampfTzGruppe, sheet: ComputedSheet, charac
 /** RHg/RBE sind KEINE eigenen Regelwerk-Referenzen (siehe engine/rules.ts's
  *  computeGewichtsbelastungRbe) - hier direkt ueber dieselben Bausteine nachgerechnet, statt nur
  *  ueber die davon abgeleitete "gewichtsbelastung" (=MAX(0;RBE)) zu gehen, da das Mockup den
- *  rohen (auch negativen) RBE-Wert zeigen will. */
+ *  RBE-Wert separat von RHg zeigen will. RBE selbst ist per computeRbe() bereits auf 0 nach unten
+ *  begrenzt (Regelkorrektur Nutzer 2026-07-22), das nachtraegliche Aufrunden hier bleibt. */
 function renderKampfLeRs(sheet: ComputedSheet, character: CharacterState): string {
   const charakterwerte = sheet.byKategorie['Charakterwerte'] ?? [];
   const values = makeValueSource(character);

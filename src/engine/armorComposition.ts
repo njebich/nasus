@@ -67,7 +67,10 @@ export function composeArmor(basis: GenericRow, verarbeitung: GenericRow, anpass
  * RHg selbst ist noch nicht live berechenbar (Kampfmodul-Scope, braucht Ausruestung-pro-
  * Trefferzone-Tracking) - diese Funktion ist bewusst schon fertig+getestet fuer den Tag, an dem
  * das existiert.
+ *
+ * Regelkorrektur (Nutzer 2026-07-22): RBE selbst ist nie negativ - der rohe Quotient wird auf 0
+ * nach unten begrenzt, bevor er (z.B. in die GBE-Formel "MAX(0;RBE)") als positiver Wert einfliesst.
  */
 export function computeRbe(rhg: number, kon: number, staerke: number, sfRuestungsmanoever: number): number {
-  return (rhg - ((kon / 5 + staerke) / 2 + sfRuestungsmanoever)) / 6;
+  return Math.max(0, (rhg - ((kon / 5 + staerke) / 2 + sfRuestungsmanoever)) / 6);
 }

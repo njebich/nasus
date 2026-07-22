@@ -47,4 +47,9 @@ describe('computeRbe (Regelkorrektur Nutzer 2026-07-17)', () => {
     // RHg=30, Kon=10, Staerke=10, RSM=3 -> (30 - (6 + 3)) / 6 = 21/6 = 3.5
     expect(computeRbe(30, 10, 10, 3)).toBe(3.5);
   });
+
+  it('RBE wird nie negativ (Regelkorrektur Nutzer 2026-07-22)', () => {
+    // RHg=0, Kon=10, Staerke=10, RSM=0 -> (0 - 6) / 6 = -1, aber RBE hat Floor 0
+    expect(computeRbe(0, 10, 10, 0)).toBe(0);
+  });
 });

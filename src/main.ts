@@ -573,7 +573,7 @@ function render(): void {
         onRemoveEquipment: handleRemoveEquipment,
       });
     } else if (activeTab in AUSWAHL_TABS) {
-      renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle);
+      renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle, currentCharacter.religion);
     } else if (activeTab === 'Kampf') {
       renderKampfView(viewContainer, sheet, currentCharacter, handleWaffenPoolChange);
     } else if (activeTab === 'KI') {

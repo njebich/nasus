@@ -341,18 +341,41 @@ describe('setWaffenPoolAllocation', () => {
     });
 
     it('setValue erlaubt att_karma>0 sobald ein Geweihte-Gate-Talent gewaehlt ist', () => {
-      const character = withEpGesamt(1000);
+      const character = { ...withEpGesamt(1000), religion: 'Lloth, Orthodox' };
       const withTalent = addSelection(character, 'talente_geweihter_lloth_orthodox');
       const withKarma = setValue(withTalent, 'att_karma', 1);
       expect(withKarma.values['att_karma']).toBe(1);
     });
 
-    it('Geweihte-Gate-Talente sind gegenseitig exklusiv - eine neue Wahl ersetzt die alte', () => {
-      const character = withEpGesamt(1000);
+    it('Geweihte-Gate-Talente sind gegenseitig exklusiv - eine neue Wahl (nach Religionswechsel) ersetzt die alte', () => {
+      const character = { ...withEpGesamt(1000), religion: 'Lloth, Orthodox' };
       const withLloth = addSelection(character, 'talente_geweihter_lloth_orthodox');
-      const withKhartazh = addSelection(withLloth, 'talente_geweihter_khartazh_orthodox');
+      const withKhartazh = addSelection({ ...withLloth, religion: 'Khartazh, Orthodox' }, 'talente_geweihter_khartazh_orthodox');
       expect(withKhartazh.selections['talente_geweihter_lloth_orthodox']).toBeUndefined();
       expect(withKhartazh.selections['talente_geweihter_khartazh_orthodox']).toBe(1);
+    });
+  });
+
+  describe('Geweihte-Religions-Gate (Nutzer 2026-07-22): Gate-Talent muss zur gewaehlten Religion passen', () => {
+    it('addSelection lehnt ein Gate-Talent ohne gewaehlte Religion ab', () => {
+      const character = withEpGesamt(1000);
+      expect(() => addSelection(character, 'talente_geweihter_lloth_orthodox')).toThrow(MutationError);
+    });
+
+    it('addSelection lehnt ein Gate-Talent ab, das nicht zur gewaehlten Religion passt', () => {
+      const character = { ...withEpGesamt(1000), religion: 'Tepod, Orthodox' };
+      expect(() => addSelection(character, 'talente_geweihter_lloth_orthodox')).toThrow(MutationError);
+    });
+
+    it('addSelection lehnt ein Gate-Talent ab, wenn nur die Religion aber nicht die Sekte passt', () => {
+      const character = { ...withEpGesamt(1000), religion: 'Lloth, Käsequark' };
+      expect(() => addSelection(character, 'talente_geweihter_lloth_orthodox')).toThrow(MutationError);
+    });
+
+    it('addSelection erlaubt ein Gate-Talent, das zur gewaehlten Religion+Sekte passt', () => {
+      const character = { ...withEpGesamt(1000), religion: 'Isch, Orthodox' };
+      const updated = addSelection(character, 'talente_geweihter_isch_orthodox');
+      expect(updated.selections['talente_geweihter_isch_orthodox']).toBe(1);
     });
   });
 });

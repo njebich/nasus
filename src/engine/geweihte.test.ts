@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   getMaxKpp, getGeweihtenGradEintrag, hasGeweihterTalent, findSelectedGeweihterReferenz,
-  getAktiveGeweihteReligion,
+  getAktiveGeweihteReligion, isGeweihterReferenzErlaubt,
 } from './geweihte';
 
 describe('geweihte', () => {
@@ -32,5 +32,29 @@ describe('geweihte', () => {
   it('getAktiveGeweihteReligion loest die Referenz auf Religion+Sekte auf', () => {
     const character = { selections: { talente_geweihter_tepod_orthodox: 1 } };
     expect(getAktiveGeweihteReligion(character)).toEqual({ religion: 'Tepod', sekte: 'Orthodox' });
+  });
+
+  describe('isGeweihterReferenzErlaubt (Nutzer 2026-07-22: "gate talents behind chosen religion")', () => {
+    it('erlaubt Nicht-Gate-Talente immer, unabhaengig von der Religion', () => {
+      expect(isGeweihterReferenzErlaubt('talente_irgendwas_anderes', undefined)).toBe(true);
+    });
+
+    it('lehnt ein Gate-Talent ohne gewaehlte Charakter-Religion ab', () => {
+      expect(isGeweihterReferenzErlaubt('talente_geweihter_lloth_orthodox', undefined)).toBe(false);
+    });
+
+    it('lehnt ein Gate-Talent ab, dessen Religion nicht zur gewaehlten passt', () => {
+      expect(isGeweihterReferenzErlaubt('talente_geweihter_lloth_orthodox', 'Tepod, Orthodox')).toBe(false);
+    });
+
+    it('lehnt ein Gate-Talent ab, dessen Sekte nicht zur gewaehlten passt (nur Religion allein reicht nicht)', () => {
+      expect(isGeweihterReferenzErlaubt('talente_geweihter_lloth_orthodox', 'Lloth, Käsequark')).toBe(false);
+      expect(isGeweihterReferenzErlaubt('talente_geweihter_lloth_orthodox', 'Lloth')).toBe(false);
+    });
+
+    it('erlaubt ein Gate-Talent, dessen Religion+Sekte exakt passt (case-insensitiv)', () => {
+      expect(isGeweihterReferenzErlaubt('talente_geweihter_lloth_orthodox', 'Lloth, Orthodox')).toBe(true);
+      expect(isGeweihterReferenzErlaubt('talente_geweihter_lloth_orthodox', 'lloth, orthodox')).toBe(true);
+    });
   });
 });

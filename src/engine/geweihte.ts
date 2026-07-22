@@ -9,6 +9,13 @@
 // Geweihtengrad (Nutzer-Antwort 2026-07-22): das Kaufen des Gate-Talents setzt den Charakter
 // SOFORT auf Grad 1 "Niederer" - es gibt (noch) keine spielerseitige Steigerung auf Grad 2-7,
 // das ist als Meistermodul-Folgearbeit im Entwickeln-Sheet vermerkt (add_geweihte_rows.py).
+//
+// Religions-Gate (Nutzer 2026-07-22): ein Charakter darf nur das Gate-Talent seiner im
+// Charakterheader gewaehlten Religion+Sekte kaufen - ein Lloth-Anhaenger kann kein Geweihter
+// von Tepod werden. Sekte muss ebenfalls passen (nicht nur Religion), da die Wundertabelle
+// aktuell nur Orthodox abdeckt (siehe GEWEIHTER_RELIGION_BY_REFERENZ unten).
+import { parseReligionSekte } from '../state/religionStore';
+
 export interface GeweihtenGradEintrag {
   grad: number;
   titel: string;
@@ -49,6 +56,20 @@ export const GEWEIHTER_RELIGION_BY_REFERENZ: Record<string, { religion: string; 
   talente_geweihter_tepod_orthodox: { religion: 'Tepod', sekte: 'Orthodox' },
   talente_geweihter_isch_orthodox: { religion: 'Isch', sekte: 'Orthodox' },
 };
+
+/** Prueft, ob referenz's Gate-Talent zur gewaehlten Charakter-Religion (CharacterHeader.religion,
+ *  Format "Religion, Sekte") passt. Nicht-Gate-Talente sind immer erlaubt (true); ohne gewaehlte
+ *  Religion ist kein Gate-Talent erlaubt. */
+export function isGeweihterReferenzErlaubt(referenz: string, characterReligion: string | undefined): boolean {
+  const info = GEWEIHTER_RELIGION_BY_REFERENZ[referenz.toLowerCase()];
+  if (!info) return true;
+  if (!characterReligion) return false;
+  const { religionName, sekteName } = parseReligionSekte(characterReligion);
+  return (
+    religionName.trim().toLowerCase() === info.religion.toLowerCase()
+    && (sekteName ?? '').trim().toLowerCase() === info.sekte.toLowerCase()
+  );
+}
 
 /** Minimaler Ausschnitt aus CharacterState/ComputedSheet, den diese Datei braucht - vermeidet
  *  einen Importzyklus mit characterStore.ts/characterSheet.ts (beide importieren nichts von hier). */

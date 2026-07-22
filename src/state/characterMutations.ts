@@ -8,7 +8,7 @@ import { computeSheet, makeValueSource } from '../engine/characterSheet';
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
 import { getTalentMaximumBonus } from '../engine/talenteMaximum';
-import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent } from '../engine/geweihte';
+import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent, isGeweihterReferenzErlaubt } from '../engine/geweihte';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
@@ -141,6 +141,14 @@ export function addSelection(character: CharacterState, referenz: string): Chara
   const rule = getRule(referenz);
   if (!rule) throw new MutationError(`Referenz '${referenz}' existiert nicht`);
   if (rule.art !== 'Auswahl') throw new MutationError(`'${referenz}' ist Art='${rule.art}', keine Auswahl`);
+
+  // Regel (Nutzer 2026-07-22, Geweihte-Feature): ein Gate-Talent darf nur gekauft werden, wenn es
+  // zur im Charakterheader gewaehlten Religion+Sekte passt - siehe engine/geweihte.ts.
+  if (rule.referenz.toLowerCase().startsWith(GEWEIHTER_TALENT_PREFIX) && !isGeweihterReferenzErlaubt(rule.referenz, character.religion)) {
+    throw new MutationError(
+      `'${rule.referenz}' erfordert die passende Religion (Feld "Religion"/"Sekte" oben im Charakterheader)`,
+    );
+  }
 
   const candidate = clone(character);
   // Angststufen verwenden das Schema vn_angst_<thema>_<5|10|15|20|25|30>. Innerhalb eines

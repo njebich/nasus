@@ -743,22 +743,43 @@ body {
 
 /* Nahkampf-Tab (Nutzer-Mockup 2026-07-22): eine bogen-table je Hauptfertigkeit statt der
    aufklappbaren stat-card/details-Gruppe - siehe renderNahkampfWaffenGroup in categoryView.ts.
-   Die AT-Basis-Zelle behaelt die Klasse "stat-row" fuer die bestehende Event-Delegation, verliert
+   Jede -/Wert/+-Zelle behaelt die Klasse "stat-row" fuer die bestehende Event-Delegation, verliert
    hier aber ihre eigene Karten-Optik (Rahmen/Radius/Hintergrund/Grid), weil die Tabellenzelle
-   selbst schon einen Rahmen hat (.bogen-table td). */
+   selbst schon einen Rahmen hat (.bogen-table td). WICHTIG: `display` bleibt explizit
+   `table-cell` (nicht flex/grid wie die generische .stat-row-Regel) - mehrere BENACHBARTE <td>
+   mit einem nicht-table-cell-Display in derselben <tr> lassen den Browser sie faelschlich in
+   einer Spalte stapeln statt nebeneinander zu setzen (browser-verifizierter Bug 2026-07-22).
+   Zentrierung von Mehrfach-Inhalt (Wert-Input + Kosten-Hinweis) passiert stattdessen in einem
+   inneren <div> (.nahkampf-value-inner), das kein table-cell ist und daher unproblematisch ist. */
 .nahkampf-waffen-table {
   min-width: max-content;
   margin-bottom: 0.6rem;
 }
 
-.nahkampf-waffen-table td.stat-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
+.nahkampf-waffen-table td.nahkampf-ctrl-cell {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
   padding: 0.2rem 0.4rem;
   border-radius: 0;
   background: none;
+}
+
+.nahkampf-value-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+/* Rein optische Luecke zwischen dem Hauptfertigkeit-Block (Spalten 1-4) und dem
+   Spezialisierungs-Block (Spalten 6-9) - kein eigener Rahmen, sonst sieht es wie eine echte
+   Datenspalte aus statt wie ein Abstand. */
+.nahkampf-spacer-cell {
+  border: none !important;
+  background: none;
+  padding: 0;
+  width: 0.75rem;
 }
 
 .nahkampf-spez-locked {

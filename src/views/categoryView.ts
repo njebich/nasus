@@ -153,11 +153,22 @@ function renderEditableGroup(node: HierarchyNode): string {
 
 /** Nahkampf-Tab (Nutzer-Mockup 2026-07-22, "S05 Nahkampfwaffen"): Hauptfertigkeit +
  *  Spezialisierungen als feste Tabelle statt aufklappbarer <details>-Karte (renderEditableGroup) -
- *  eine Tabelle pro Hauptfertigkeit, deren AT-Basis-Zelle (Wert + -/+) ueber alle Spezialisierungs-
- *  Zeilen gespannt ist (rowspan), weil es nur EINEN Hauptfertigkeit-Wert gibt. Klasse "stat-row"
- *  bleibt auf der Zelle erhalten, damit die bestehende Event-Delegation (closest('.stat-row'))
- *  unveraendert weiterfunktioniert. */
-function renderNahkampfAtCell(r: ComputedRule, rowspan: number | undefined, maxValue?: number): string {
+ *  eine Tabelle pro Hauptfertigkeit. Jede Spalte (Label/-/Wert/+) ist eine EIGENE <td> (nicht ein
+ *  gebuendeltes Steuer-Element), damit alle Spezialisierungen dieselbe Spalte teilen (Nutzer-
+ *  Korrektur 2026-07-22: "all spezialisierungen are meant to be in the same column"); die ersten 5
+ *  Spalten (Waffe/-/Wert/+/Luecke) der Hauptfertigkeit sind ueber die gesamte Tabellenhoehe gespannt
+ *  (rowspan), weil es nur EINEN Hauptfertigkeit-Wert gibt, waehrend Spalte 6-9 (Spezialisierung/-/
+ *  Wert/+) sich pro Zeile aendert. Jede -/Wert/+-Zelle behaelt die Klasse "stat-row" (statt einer
+ *  Huellen-Div), damit die bestehende Event-Delegation (closest('.stat-row')) unveraendert
+ *  weiterfunktioniert - ABER die Zelle selbst darf NIE `display:flex/grid` bekommen (das ist,
+ *  wonach `.stat-row` normalerweise aussieht): mehrere BENACHBARTE <td> mit nicht-table-cell
+ *  display in derselben <tr> lassen den Browser die Zellen faelschlich in EINER Spalte stapeln
+ *  statt sie nebeneinander zu setzen (browser-verifiziert 2026-07-22 - mit Grid/Flex direkt auf
+ *  der <td> rutschten alle drei -/Wert/+-Zellen visuell in dieselbe x-Position). Deshalb bleibt
+ *  die <td> ein normales table-cell (siehe .nahkampf-ctrl-cell in style.css), und ein etwaiges
+ *  zweites Kind (Wert-Input + Kosten-Hinweis) wird in einem inneren <div> zentriert, nicht auf
+ *  Zellenebene. */
+function renderNahkampfControlCells(r: ComputedRule, rowspan: number | undefined, maxValue?: number): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   const value = r.currentValue ?? 0;
   const costNext = r.kostenNext !== undefined ? `${r.kostenNext} SP` : '';
@@ -165,11 +176,17 @@ function renderNahkampfAtCell(r: ComputedRule, rowspan: number | undefined, maxV
   const atMax = maxValue !== undefined && value >= maxValue;
   const rowspanAttr = rowspan !== undefined ? ` rowspan="${rowspan}"` : '';
   return `
-    <td class="stat-row nahkampf-at-cell"${rowspanAttr} data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
+    <td class="stat-row nahkampf-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
       <button type="button" class="stat-dec" aria-label="verringern">-</button>
-      <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+    </td>
+    <td class="stat-row nahkampf-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
+      <div class="nahkampf-value-inner">
+        <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+        ${costNext ? `<span class="stat-cost">${costNext}</span>` : ''}
+      </div>
+    </td>
+    <td class="stat-row nahkampf-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
       <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
-      ${costNext ? `<span class="stat-cost">nächster Punkt: ${costNext}</span>` : ''}
     </td>`;
 }
 
@@ -179,34 +196,41 @@ function renderNahkampfLabelCell(r: ComputedRule, rowspan: number | undefined): 
   return `<td${rowspanAttr}>${label}${infoIcon(r.rule.info)}${errorNote(r)}</td>`;
 }
 
+function renderNahkampfSpacerCell(rowspan: number): string {
+  return `<td class="nahkampf-spacer-cell" rowspan="${rowspan}"></td>`;
+}
+
 function renderNahkampfWaffenGroup(node: HierarchyNode): string {
   const hauptwert = node.row.currentValue ?? 0;
   if (node.children.length === 0) {
     return `
       <table class="bogen-table nahkampf-waffen-table">
-        <thead><tr><th>Waffe</th><th>AT-Basis</th></tr></thead>
-        <tbody><tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfAtCell(node.row, undefined)}</tr></tbody>
+        <thead><tr><th>Waffe</th><th></th><th>AT-Basis</th><th></th></tr></thead>
+        <tbody><tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfControlCells(node.row, undefined)}</tr></tbody>
       </table>`;
   }
   if (hauptwert <= 0) {
     return `
       <table class="bogen-table nahkampf-waffen-table">
-        <thead><tr><th>Waffe</th><th>AT-Basis</th></tr></thead>
+        <thead><tr><th>Waffe</th><th></th><th>AT-Basis</th><th></th></tr></thead>
         <tbody>
-          <tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfAtCell(node.row, undefined)}</tr>
+          <tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfControlCells(node.row, undefined)}</tr>
           <tr><td colspan="4" class="nahkampf-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
         </tbody>
       </table>`;
   }
+  const n = node.children.length;
   const rows = node.children.map((child, i) => `
     <tr>
-      ${i === 0 ? renderNahkampfLabelCell(node.row, node.children.length) : ''}
-      ${i === 0 ? renderNahkampfAtCell(node.row, node.children.length) : ''}
-      ${renderNahkampfLabelCell(child, undefined)}${renderNahkampfAtCell(child, undefined, hauptwert)}
+      ${i === 0 ? `${renderNahkampfLabelCell(node.row, n)}${renderNahkampfControlCells(node.row, n)}${renderNahkampfSpacerCell(n)}` : ''}
+      ${renderNahkampfLabelCell(child, undefined)}${renderNahkampfControlCells(child, undefined, hauptwert)}
     </tr>`).join('');
   return `
     <table class="bogen-table nahkampf-waffen-table">
-      <thead><tr><th>Waffe</th><th>AT-Basis</th><th>Spezialisierung</th><th>AT-Basis</th></tr></thead>
+      <thead><tr>
+        <th>Waffe</th><th></th><th>AT-Basis</th><th></th><th></th>
+        <th>Spezialisierung</th><th></th><th>AT-Basis</th><th></th>
+      </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 }

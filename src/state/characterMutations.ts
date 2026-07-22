@@ -8,6 +8,7 @@ import { computeSheet, makeValueSource } from '../engine/characterSheet';
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
 import { getTalentMaximumBonus } from '../engine/talenteMaximum';
+import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent } from '../engine/geweihte';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
@@ -118,6 +119,14 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
     }
   }
 
+  // Regel (Nutzer 2026-07-22, Geweihte-Feature): Karma bleibt auf 0 gedeckelt, solange kein
+  // Geweihte-Gate-Talent gewaehlt ist ("rang 0"/Laie) - siehe engine/geweihte.ts.
+  if (rule.referenz === 'att_karma' && wert > 0 && !hasGeweihterTalent(character)) {
+    throw new MutationError(
+      `'att_karma' erfordert ein Geweihte-Talent (Tab Talente, Gruppe "Geweihte")`,
+    );
+  }
+
   const candidate = clone(character);
   if (wert === 0) {
     delete candidate.values[rule.referenz.toLowerCase()];
@@ -142,6 +151,16 @@ export function addSelection(character: CharacterState, referenz: string): Chara
     const sameFearGroup = new RegExp(`^vn_angst_${fearGroup}_(5|10|15|20|25|30)$`, 'i');
     for (const selectedReference of Object.keys(candidate.selections)) {
       if (sameFearGroup.test(selectedReference)) delete candidate.selections[selectedReference];
+    }
+  }
+  // Geweihte-Gate-Talente sind gegenseitig exklusiv (Nutzer 2026-07-22: ein Charakter kann nicht
+  // gleichzeitig Geweihter mehrerer Religionen sein - sonst waere Geweihtengrad/Wundertabellen-
+  // Filterung mehrdeutig) - gleiche Struktur wie die Angststufen-Regel oben.
+  if (rule.referenz.toLowerCase().startsWith(GEWEIHTER_TALENT_PREFIX)) {
+    for (const selectedReference of Object.keys(candidate.selections)) {
+      if (selectedReference.startsWith(GEWEIHTER_TALENT_PREFIX) && selectedReference !== rule.referenz.toLowerCase()) {
+        delete candidate.selections[selectedReference];
+      }
     }
   }
   candidate.selections[rule.referenz.toLowerCase()] = 1;

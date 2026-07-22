@@ -5,6 +5,7 @@
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import { prettyFormula } from '../engine/formulaDisplay';
 import { tooltipAttr } from './tooltip';
+import { GEWEIHTER_TALENT_PREFIX, getGeweihtenGrad, getGeweihtenGradEintrag } from '../engine/geweihte';
 
 export type OnToggle = (referenz: string, selected: boolean) => void;
 
@@ -25,8 +26,18 @@ function wirkungIcon(wirkung: string | undefined): string {
   return `<span class="stat-info-icon"${tooltipAttr(wirkung)}>ⓘ</span>`;
 }
 
-function renderRow(r: ComputedRule): string {
-  const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
+/** Geweihte-Gate-Talente zeigen den aktuellen Geweihtengrad-Titel dynamisch vor dem Basisnamen
+ *  (Nutzer 2026-07-22: "dynamic name, no mention at grad 0") - nur wenn das Talent selbst
+ *  bereits gewaehlt ist, sonst bleibt der statische xlsx-Name ("Geweihter von X, Orthodox"). */
+function geweihterLabel(r: ComputedRule, sheet: ComputedSheet): string {
+  const base = r.rule.beschreibung ?? r.rule.referenz;
+  if (!r.rule.referenz.startsWith(GEWEIHTER_TALENT_PREFIX) || !r.selected) return base;
+  const titel = getGeweihtenGradEintrag(getGeweihtenGrad(sheet)).titel;
+  return titel ? `${titel} ${base}` : base;
+}
+
+function renderRow(r: ComputedRule, sheet: ComputedSheet): string {
+  const label = escapeHtml(geweihterLabel(r, sheet));
   // Talente kosten TaP (eigener, von SP komplett getrennter Pool), alles andere (z.B.
   // Vor-/Nachteile) kostet SP - siehe characterSheet.ts.
   const waehrung = r.rule.kategorie === 'Talente' ? 'TaP' : 'SP';
@@ -60,10 +71,10 @@ export function renderAuswahlView(
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([parent, groupRows]) => `
         <h3 class="stat-section-heading">${escapeHtml(parent)}</h3>
-        <div class="auswahl-category">${groupRows.map(renderRow).join('')}</div>
+        <div class="auswahl-category">${groupRows.map((r) => renderRow(r, sheet)).join('')}</div>
       `).join('');
   } else {
-    html = `<div class="auswahl-category">${rows.map(renderRow).join('')}</div>`;
+    html = `<div class="auswahl-category">${rows.map((r) => renderRow(r, sheet)).join('')}</div>`;
   }
 
   container.innerHTML = html;

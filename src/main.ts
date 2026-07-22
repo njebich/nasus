@@ -10,7 +10,7 @@ import {
   buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyFeuerwaffenMunition, buyAlchemika, removeEquipment,
   setGrundfertigkeitPick, BudgetError, MutationError,
 } from './state/characterMutations';
-import { computeSheet } from './engine/characterSheet';
+import { computeSheet, type ComputedSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView } from './views/ausruestung';
@@ -20,6 +20,8 @@ import { renderKampfView } from './views/kampf';
 import { renderKiView } from './views/ki';
 import { renderSpruchmagieView } from './views/spruchmagie';
 import { renderPsiView } from './views/psi';
+import { renderGeweihteView } from './views/geweihte';
+import { isGeweihterTalentSelectedInSheet } from './engine/geweihte';
 import { initTooltips, tooltipAttr } from './views/tooltip';
 import { VOELKER_NAMEN } from './engine/voelker';
 import type { PoolAllocation } from './state/characterStore';
@@ -39,10 +41,17 @@ const TABS = [
   'Charakterbogen',
   'Eigenschaft', 'Attribute', 'Charakterwerte', 'Grundfertigkeit', 'Sonderfertigkeit',
   'Nahkampf', 'Fernkampf', 'Kampf', 'Bewegung', 'Gewichtsbelastung', 'WHK',
-  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung', 'KI', 'Spruchmagie', 'Psi',
+  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung', 'KI', 'Spruchmagie', 'Psi', 'Geweihte',
 ] as const;
 type Tab = (typeof TABS)[number];
 const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und Nachteile': false };
+
+// Geweihte-Tab bleibt ausgeblendet, bis ein Geweihte-Gate-Talent gewaehlt ist (Nutzer 2026-07-22,
+// "rang 0" = "hiding of the tab Geweihte") - anders als alle anderen Tabs, die immer sichtbar sind.
+function isTabVisible(tab: Tab, sheet: ComputedSheet | null): boolean {
+  if (tab !== 'Geweihte') return true;
+  return sheet !== null && isGeweihterTalentSelectedInSheet(sheet);
+}
 
 // Tab-Intro-Texte aus `tooltips text.txt` (Zeilen "tab_..."): erklaeren die Kategorie als
 // Ganzes (z.B. wie Grundfertigkeiten grundsaetzlich funktionieren), gehoeren daher an den
@@ -50,6 +59,7 @@ const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und
 const TAB_INTRO: Partial<Record<Tab, string>> = {
   'Grundfertigkeit': 'Grundfertigkeiten werden, sofern der Meister sie für die Probe zulässt, zum Probenwert addiert. Zugelassene Grundfertigkeiten werden entweder vom Meister mit der Probe angesagt, oder wenn er eine Eigenschaftsprobe verlangt, so wird vom Spieler nachgefragt ob er eine bestimmte verwenden darf, die er als passend ansieht. Für eine Probe darf höchstens eine Grundfertigkeit verwendet werden. Der Meister kann aber auch mehr als eine Grundfertigkeit zulassen, dann darf der Charakter eine davon auswählen. Der einzige Unterschied zwischen körperlichen und geistigen Grundfertigkeiten ist, dass der Meister dadurch einen Anhaltspunkt hat, ob eine Grundfertigkeitsprobe durch GBE behindert werden sollte: In der Regel bei körperlichen 1-fach und bei geistigen nicht. Durch Kampf oder andere Ereignisse erhaltene BE gilt für alle Grundfertigkeiten gleich.',
   'Sonderfertigkeit': 'Sonderfertigkeiten werden in der Regel nicht mit eigenen Proben abgefragt; sie sind entweder in Formeln vertreten oder geben Boni auf Tabellenproben.',
+  'Geweihte': 'Zeigt Geweihtengrad, Karma-Pool-Punkte (KPP) und die verfügbaren Wunder der gewählten Religion. Die Fähigkeiten Stoßgebet/Wunder/Ritual (Probe-Basis) werden im WHK-Tab gesteigert.',
 };
 
 // Beim Start den zuletzt aktiven Charakter wiederherstellen (siehe characterStore.ts) - sonst
@@ -344,6 +354,9 @@ function renderNewCharacterForm(): string {
 function render(): void {
   const characters = listCharacters();
   const sheet = currentCharacter ? computeSheet(currentCharacter) : null;
+  // Geweihte-Tab kann durch Ab-/Umwaehlen des Gate-Talents nachtraeglich unsichtbar werden -
+  // dann auf einen immer sichtbaren Tab zurueckfallen statt eine leere Ansicht zu zeigen.
+  if (sheet && !isTabVisible(activeTab, sheet)) activeTab = 'Eigenschaft';
 
   app.innerHTML = `
     <header class="app-header">
@@ -374,7 +387,7 @@ function render(): void {
       ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
       ${currentCharacter ? `
         <nav class="tab-nav">
-          ${TABS.map((tab) => `<button type="button" class="tab-btn" data-tab="${tab}"${tooltipAttr(TAB_INTRO[tab])} ${activeTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
+          ${TABS.filter((tab) => isTabVisible(tab, sheet)).map((tab) => `<button type="button" class="tab-btn" data-tab="${tab}"${tooltipAttr(TAB_INTRO[tab])} ${activeTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
         </nav>` : ''}
     </header>
     <main id="view-container"></main>
@@ -569,6 +582,8 @@ function render(): void {
       renderSpruchmagieView(viewContainer, sheet, handleValueChange);
     } else if (activeTab === 'Psi') {
       renderPsiView(viewContainer, sheet, handleValueChange);
+    } else if (activeTab === 'Geweihte') {
+      renderGeweihteView(viewContainer, sheet, currentCharacter);
     } else {
       renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange);
     }

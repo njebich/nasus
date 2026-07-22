@@ -1003,6 +1003,36 @@ body {
   cursor: not-allowed;
 }
 
+/* Geweihte-Tab (Nutzer 2026-07-22): Wirkung-Spalte der Wundertabelle ist bewusst eine echte
+   Spalte statt Tooltip (anders als KI/Psi) - der Nutzer will die vollen Regeltexte sichtbar. */
+.geweihte-wirkung-cell {
+  min-width: 22rem;
+  max-width: 32rem;
+  white-space: normal;
+  text-align: left;
+  font-size: 0.9em;
+}
+
+.geweihte-table td {
+  vertical-align: top;
+}
+
+.geweihte-grad-table {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.geweihte-grad-aktuell {
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.geweihte-grad-hinweis {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
 .ki-grundfertigkeit-picks-row td {
   text-align: left;
   white-space: normal;

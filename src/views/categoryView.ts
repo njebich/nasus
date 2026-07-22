@@ -10,6 +10,7 @@ import { buildHierarchy, type HierarchyNode } from '../engine/hierarchy';
 import { describeSkillStufe } from '../engine/skillStufen';
 import { LADESCHUETZE_SF_FK_GATE, isLadeschuetzeSfVisible } from '../engine/ladeschuetzeGating';
 import { GUT_BASIS, MEISTERLICH_BASIS } from '../engine/poolCaps';
+import { isGeweihterTalentSelectedInSheet } from '../engine/geweihte';
 import { tooltipAttr } from './tooltip';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
@@ -213,7 +214,11 @@ export function renderCategoryView(
   // Parameter bleibt aus Signatur-/Aufrufer-Kompatibilitaet erhalten, wird aber nicht mehr genutzt.
   _onPoolChange: OnPoolChange,
 ): void {
-  const rows = (sheet.byKategorie[kategorie] ?? []).filter((r) => !HIDDEN_REFERENZEN.has(r.rule.referenz));
+  // att_karma bleibt aus dem Attribute-Tab ausgeblendet, solange kein Geweihte-Gate-Talent
+  // gewaehlt ist (Nutzer 2026-07-22, "rang 0" = "hiding of att_karma from the app").
+  const rows = (sheet.byKategorie[kategorie] ?? [])
+    .filter((r) => !HIDDEN_REFERENZEN.has(r.rule.referenz))
+    .filter((r) => r.rule.referenz !== 'att_karma' || isGeweihterTalentSelectedInSheet(sheet));
   const editable = rows.filter((r) => r.rule.art === 'Wert');
   const readOnly = rows.filter((r) => r.rule.art === 'Fixwert' || r.rule.art === 'Formel' || r.rule.art === 'Lookup');
   const pools = rows.filter((r) => r.rule.art === 'Pool');

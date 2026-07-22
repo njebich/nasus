@@ -333,4 +333,26 @@ describe('setWaffenPoolAllocation', () => {
     const updated = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 9, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
     expect(updated.poolAllocations['nk_pool_hiebwaffen_aexte::' + w1.id]).toEqual({ gat: 9, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
   });
+
+  describe('Geweihte-Gate (Nutzer 2026-07-22): att_karma bleibt auf 0 gedeckelt ohne Gate-Talent', () => {
+    it('setValue lehnt att_karma>0 ohne Geweihte-Talent ab', () => {
+      const character = withEpGesamt(1000);
+      expect(() => setValue(character, 'att_karma', 1)).toThrow(MutationError);
+    });
+
+    it('setValue erlaubt att_karma>0 sobald ein Geweihte-Gate-Talent gewaehlt ist', () => {
+      const character = withEpGesamt(1000);
+      const withTalent = addSelection(character, 'talente_geweihter_lloth_orthodox');
+      const withKarma = setValue(withTalent, 'att_karma', 1);
+      expect(withKarma.values['att_karma']).toBe(1);
+    });
+
+    it('Geweihte-Gate-Talente sind gegenseitig exklusiv - eine neue Wahl ersetzt die alte', () => {
+      const character = withEpGesamt(1000);
+      const withLloth = addSelection(character, 'talente_geweihter_lloth_orthodox');
+      const withKhartazh = addSelection(withLloth, 'talente_geweihter_khartazh_orthodox');
+      expect(withKhartazh.selections['talente_geweihter_lloth_orthodox']).toBeUndefined();
+      expect(withKhartazh.selections['talente_geweihter_khartazh_orthodox']).toBe(1);
+    });
+  });
 });

@@ -60,7 +60,7 @@
     "file": "spruchmagie.jsonl"
   },
   "Talente": {
-    "count": 176,
+    "count": 181,
     "file": "talente.jsonl"
   },
   "Vor- und Nachteile": {
@@ -68,7 +68,7 @@
     "file": "vor-und-nachteile.jsonl"
   },
   "WHK": {
-    "count": 237,
+    "count": 240,
     "file": "whk.jsonl"
   }
 }

@@ -9,6 +9,10 @@ import { GEWEIHTER_TALENT_PREFIX, getGeweihtenGrad, getGeweihtenGradEintrag } fr
 
 export type OnToggle = (referenz: string, selected: boolean) => void;
 
+/** Aufgeklappte Talente-Gruppen (Parent/Charakterklasse) - Persistenz-Muster wie openSchulen in
+ *  spruchmagie.ts/openGroupReferenzen in categoryView.ts. Alle standardmaessig zu. */
+const openParents = new Set<string>();
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -69,20 +73,47 @@ export function renderAuswahlView(
     }
     html = [...groups.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([parent, groupRows]) => `
-        <h3 class="stat-section-heading">${escapeHtml(parent)}</h3>
-        <div class="auswahl-category">${groupRows.map((r) => renderRow(r, sheet)).join('')}</div>
-      `).join('');
+      .map(([parent, groupRows]) => {
+        const openAttr = openParents.has(parent) ? ' open' : '';
+        return `
+          <div class="stat-card">
+            <details class="stat-group" data-parent="${escapeHtml(parent)}"${openAttr}>
+              <summary>${escapeHtml(parent)} <span class="stat-group-count">(${groupRows.length})</span></summary>
+              <div class="auswahl-category">${groupRows.map((r) => renderRow(r, sheet)).join('')}</div>
+            </details>
+          </div>`;
+      }).join('');
   } else {
     html = `<div class="auswahl-category">${rows.map((r) => renderRow(r, sheet)).join('')}</div>`;
   }
 
   container.innerHTML = html;
 
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-parent]').forEach((details) => {
+    const parent = details.dataset.parent!;
+    details.addEventListener('toggle', () => {
+      if (details.open) openParents.add(parent);
+      else openParents.delete(parent);
+    });
+  });
+
+  // Aufklapp-Zustand SYNCHRON vor jeder Aenderung sichern - selbes Muster wie syncOpenGroups in
+  // categoryView.ts (das native 'toggle'-Event feuert laut Spec asynchron/queued, ein Checkbox-
+  // Klick direkt nach dem Aufklappen koennte sonst vor dem Toggle-Handler re-rendern und die
+  // Gruppe faelschlich zuklappen lassen).
+  function syncOpenParents(): void {
+    container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-parent]').forEach((details) => {
+      const parent = details.dataset.parent!;
+      if (details.open) openParents.add(parent);
+      else openParents.delete(parent);
+    });
+  }
+
   container.querySelectorAll<HTMLInputElement>('.auswahl-checkbox').forEach((checkbox) => {
     checkbox.addEventListener('change', () => {
       const row = checkbox.closest<HTMLElement>('.auswahl-row')!;
       const referenz = row.dataset.referenz!;
+      syncOpenParents();
       onToggle(referenz, checkbox.checked);
     });
   });

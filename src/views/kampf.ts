@@ -7,6 +7,7 @@
 import type { ComputedSheet } from '../engine/characterSheet';
 import { makeValueSource } from '../engine/characterSheet';
 import { evalReferenz, type CharacterValueSource } from '../engine/rules';
+import { aufrunden } from '../engine/functions';
 import type { CharacterState, PoolAllocation } from '../state/characterStore';
 import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN } from '../data/equipment/fernkampf';
@@ -289,26 +290,47 @@ export function buildNahkampfRows(character: CharacterState, sheet: ComputedShee
 // Kombinierte n/g/m-Reichweitenzelle (Feuerwaffen + Armbrüste/Bögen)
 // ---------------------------------------------------------------------------------------------
 
-/** "{normal} g{gut} m{meisterlich}" - g/m nur, wenn die Talent-Investition ueber den unge-
- *  talenteten Sockelwert hinausgeht (gut>1 / meisterlich>21, siehe fernkampf.jsonl-Gating-
- *  Kommentar). rangeModRaw kann bei Bögen/Armbrust der Literalstring "x" sein (ausser Reichweite,
- *  Stammdaten-Konvention) - dann ist die ganze Zelle "x". Fuer Feuerwaffen (immer numerisch) ist
- *  die "x"-Zeile nur ein defensiver Fallback fuer den Fall eines nicht-endlichen Rechenergebnisses
- *  (Nutzer 2026-07-20: "formula will not be false [...] if it somehow is, print X" - erwartet,
- *  mit den heutigen Daten NIE aktiv zu werden). */
-function formatRangeCell(rangeModRaw: string | number, basisValue: number, gutValue: number, meisterlichValue: number): string {
+/** gFK-Divisor aus den globalen Fernkampfgeschick-Talenten (siehe fernkampf.jsonl:
+ *  fk_gute_* = WENN(stufe_2>0;1+AUFRUNDEN(x/3);WENN(stufe_1>0;1+AUFRUNDEN(x/4);1))) - Stufe 2
+ *  ersetzt Stufe 1 (kein Stacking), keine Investition -> null (gFK bleibt konstant 1, nie > 1). */
+function fkGuteDivisor(values: CharacterValueSource): number | null {
+  if (values.getWert('talente_fernkampfgeschick_stufe_2') > 0) return 3;
+  if (values.getWert('talente_fernkampfgeschick_stufe_1') > 0) return 4;
+  return null;
+}
+
+/** mFK-Divisor aus Fernkampfgeschick Stufe 3 (fk_meisterlich_* = WENN(stufe_3>0;21+AUFRUNDEN(x/20);21)). */
+function fkMeisterlichDivisor(values: CharacterValueSource): number | null {
+  return values.getWert('talente_fernkampfgeschick_stufe_3') > 0 ? 20 : null;
+}
+
+/** "{normal} g{gut} m{meisterlich}" - g/m nur, wenn ueber den ungetalenteten Sockelwert hinaus
+ *  (gut>1 / meisterlich>21). Nutzer-Korrektur 2026-07-22: gFK/mFK sind NICHT talent-fixiert,
+ *  sondern haengen selbst vom (durch rw-mod verschobenen) nFK dieser Spalte ab - laut
+ *  fernkampf.jsonl-Kommentar geht die AUFRUNDEN-Formel von der "VOLLSTAENDIGEN Probe" (Basiswert +
+ *  Waffen-Mod + Entfernungs-Mod) aus, nicht vom unmodifizierten Basiswert. Deshalb wird pro Spalte
+ *  neu gerechnet: gut = 1+AUFRUNDEN(nFK/gutDivisor), meisterlich = 21+AUFRUNDEN(nFK/meisterlichDivisor)
+ *  - bei starkem Reichweitenabzug kann eine Spalte dadurch ihr g/m sogar wieder verlieren.
+ *  rangeModRaw kann bei Bögen/Armbrust der Literalstring "x" sein (ausser Reichweite, Stammdaten-
+ *  Konvention) - dann ist die ganze Zelle "x". Fuer Feuerwaffen (immer numerisch) ist die "x"-Zeile
+ *  nur ein defensiver Fallback fuer ein nicht-endliches Rechenergebnis (Nutzer 2026-07-20: "formula
+ *  will not be false [...] if it somehow is, print X" - erwartet, mit heutigen Daten NIE aktiv). */
+function formatRangeCell(
+  rangeModRaw: string | number, basisValue: number, gutDivisor: number | null, meisterlichDivisor: number | null,
+): string {
   if (typeof rangeModRaw === 'string' && rangeModRaw.trim().toLowerCase() === 'x') return 'x';
   const rangeMod = typeof rangeModRaw === 'number' ? rangeModRaw : Number(rangeModRaw.replace(',', '.'));
   const normal = basisValue + rangeMod;
-  const gut = gutValue + rangeMod;
-  const meisterlich = meisterlichValue + rangeMod;
-  if (![normal, gut, meisterlich].every(Number.isFinite)) return 'x';
+  if (!Number.isFinite(normal)) return 'x';
   let out = `${normal}`;
-  // Gating auf dem TALENT-Wert selbst (vor Reichweiten-Modifikator), nicht auf der Summe -
-  // sonst wuerde ein positiver Reichweiten-Bonus (z.B. Bogen bei 10m: +4) den ungetalenteten
-  // Sockelwert (1 bzw. 21) ueber die Schwelle heben und die Spalte faelschlich anzeigen.
-  if (gutValue > 1) out += ` g${gut}`;
-  if (meisterlichValue > 21) out += ` m${meisterlich}`;
+  if (gutDivisor !== null) {
+    const gut = 1 + aufrunden(normal / gutDivisor, 0);
+    if (gut > 1) out += ` g${gut}`;
+  }
+  if (meisterlichDivisor !== null) {
+    const meisterlich = 21 + aufrunden(normal / meisterlichDivisor, 0);
+    if (meisterlich > 21) out += ` m${meisterlich}`;
+  }
   return out;
 }
 
@@ -330,19 +352,15 @@ export interface FeuerwaffenRow {
   ini: number;
 }
 
-const FEUERWAFFEN_TYP_POOL_REFS: Record<string, { basis: string; gut: string; meisterlich: string }> = {
-  Gewehr: {
-    basis: 'fk_basis_spez_schusswaffen_musketen', gut: 'fk_gute_spez_schusswaffen_musketen',
-    meisterlich: 'fk_meisterlich_spez_schusswaffen_musketen',
-  },
-  Pistole: {
-    basis: 'fk_basis_spez_schusswaffen_pistolen', gut: 'fk_gute_spez_schusswaffen_pistolen',
-    meisterlich: 'fk_meisterlich_spez_schusswaffen_pistolen',
-  },
+const FEUERWAFFEN_TYP_BASIS_REF: Record<string, string> = {
+  Gewehr: 'fk_basis_spez_schusswaffen_musketen',
+  Pistole: 'fk_basis_spez_schusswaffen_pistolen',
 };
 
 export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[] {
   const values = makeValueSource(character);
+  const gutDivisor = fkGuteDivisor(values);
+  const meisterlichDivisor = fkMeisterlichDivisor(values);
   const rows: FeuerwaffenRow[] = [];
 
   for (const e of character.equipment) {
@@ -351,20 +369,18 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
     if (!basis) continue;
     const snap = e.computedStatsSnapshot ?? {};
     const typ = basis['Typ'] ?? '';
-    const poolRefs = FEUERWAFFEN_TYP_POOL_REFS[typ];
-    let basisWert = 0, gutWert = 0, meisterlichWert = 0;
-    if (poolRefs) {
+    const basisRef = FEUERWAFFEN_TYP_BASIS_REF[typ];
+    let basisWert = 0;
+    if (basisRef) {
       try {
-        basisWert = Number(evalReferenz(poolRefs.basis, values));
-        gutWert = Number(evalReferenz(poolRefs.gut, values));
-        meisterlichWert = Number(evalReferenz(poolRefs.meisterlich, values));
+        basisWert = Number(evalReferenz(basisRef, values));
       } catch {
         // Referenz nicht auswertbar (z.B. fehlende Grundvoraussetzung) - Zellen bleiben "x".
       }
     }
     const rwMod: number[] = [snap.rw10m ?? 0, snap.rw30m ?? 0, snap.rw60m ?? 0, snap.rw100m ?? 0, snap.rw150m ?? 0, snap.rw210m ?? 0];
-    const ranges = poolRefs
-      ? rwMod.map((mod) => formatRangeCell(mod, basisWert, gutWert, meisterlichWert))
+    const ranges = basisRef
+      ? rwMod.map((mod) => formatRangeCell(mod, basisWert, gutDivisor, meisterlichDivisor))
       : RANGE_HEADERS.map(() => 'x');
 
     const munitionOptionen = feuerwaffenMunitionOptionen(basis['Lademechanik'] ?? '', basis['Munition'] ?? '', snap.kaliber ?? 0);
@@ -407,22 +423,19 @@ export interface ArmbrustBogenRow {
   ini: number;
 }
 
-const ARMBRUST_BOEGEN_POOL_REFS: Record<'boegen' | 'armbrust', { basis: string; gut: string; meisterlich: string }> = {
-  boegen: { basis: 'fk_basis_spez_boegen_boegen', gut: 'fk_gute_spez_boegen_boegen', meisterlich: 'fk_meisterlich_spez_boegen_boegen' },
-  armbrust: {
-    basis: 'fk_basis_spez_schusswaffen_armbrust', gut: 'fk_gute_spez_schusswaffen_armbrust',
-    meisterlich: 'fk_meisterlich_spez_schusswaffen_armbrust',
-  },
+const ARMBRUST_BOEGEN_BASIS_REF: Record<'boegen' | 'armbrust', string> = {
+  boegen: 'fk_basis_spez_boegen_boegen',
+  armbrust: 'fk_basis_spez_schusswaffen_armbrust',
 };
 
 export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen' | 'armbrust'): ArmbrustBogenRow[] {
   const values = makeValueSource(character);
-  const poolRefs = ARMBRUST_BOEGEN_POOL_REFS[typ];
-  let basisWert = 0, gutWert = 0, meisterlichWert = 0;
+  const gutDivisor = fkGuteDivisor(values);
+  const meisterlichDivisor = fkMeisterlichDivisor(values);
+  const basisRef = ARMBRUST_BOEGEN_BASIS_REF[typ];
+  let basisWert = 0;
   try {
-    basisWert = Number(evalReferenz(poolRefs.basis, values));
-    gutWert = Number(evalReferenz(poolRefs.gut, values));
-    meisterlichWert = Number(evalReferenz(poolRefs.meisterlich, values));
+    basisWert = Number(evalReferenz(basisRef, values));
   } catch {
     // nicht auswertbar - Zellen bleiben "x".
   }
@@ -434,7 +447,7 @@ export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen'
     if (e.family !== 'fernkampfwaffe' || e.baseTable !== typ) continue;
     const basis = (typ === 'boegen' ? BOEGEN : ARMBRUST).find((r) => String(r.sourceRow) === e.baseId);
     if (!basis) continue;
-    const ranges = RANGE_HEADERS.map((h) => formatRangeCell(basis[h] ?? 'x', basisWert, gutWert, meisterlichWert));
+    const ranges = RANGE_HEADERS.map((h) => formatRangeCell(basis[h] ?? 'x', basisWert, gutDivisor, meisterlichDivisor));
     const weaponRb = num(basis, 'RB');
     const weaponFix = num(basis, 'Fixschaden');
     const ownedAmmo = character.equipment.filter((a) => a.family === 'ammo' && a.baseTable === ammoFamily);

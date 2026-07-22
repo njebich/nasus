@@ -153,40 +153,37 @@ function renderEditableGroup(node: HierarchyNode): string {
 
 /** Nahkampf-/Fernkampf-Tab (Nutzer-Mockup 2026-07-22, "S05 Nahkampfwaffen", spaeter auf Fernkampf
  *  uebertragen): Hauptfertigkeit + Spezialisierungen als feste Tabelle statt aufklappbarer
- *  <details>-Karte (renderEditableGroup) - eine Tabelle pro Hauptfertigkeit. Jede Spalte (Label/-/
- *  Wert/+) ist eine EIGENE <td> (nicht ein gebuendeltes Steuer-Element), damit alle
- *  Spezialisierungen dieselbe Spalte teilen (Nutzer-Korrektur 2026-07-22: "all spezialisierungen
- *  are meant to be in the same column"); die ersten Spalten (Waffe/-/Wert/+/Basis-Spalten) der
- *  Hauptfertigkeit sind ueber die gesamte Tabellenhoehe gespannt (rowspan), weil es nur EINEN
- *  Hauptfertigkeit-Wert gibt, waehrend die Spezialisierung/-/Wert/+-Spalten sich pro Zeile aendern.
- *  Jede -/Wert/+-Zelle behaelt die Klasse "stat-row" (statt einer Huellen-Div), damit die
- *  bestehende Event-Delegation (closest('.stat-row')) unveraendert weiterfunktioniert - ABER die
- *  Zelle selbst darf NIE `display:flex/grid` bekommen (das ist, wonach `.stat-row` normalerweise
- *  aussieht): mehrere BENACHBARTE <td> mit nicht-table-cell display in derselben <tr> lassen den
- *  Browser die Zellen faelschlich in EINER Spalte stapeln statt sie nebeneinander zu setzen
- *  (browser-verifiziert 2026-07-22 - mit Grid/Flex direkt auf der <td> rutschten alle drei
- *  -/Wert/+-Zellen visuell in dieselbe x-Position). Deshalb bleibt die <td> ein normales
- *  table-cell (siehe .waffen-ctrl-cell in style.css), und ein etwaiges zweites Kind (Wert-Input +
- *  Kosten-Hinweis) wird in einem inneren <div> zentriert, nicht auf Zellenebene. */
-function renderWaffenControlCells(r: ComputedRule, rowspan: number | undefined, maxValue?: number): string {
+ *  <details>-Karte (renderEditableGroup) - eine Tabelle pro Hauptfertigkeit. Alle Spezialisierungen
+ *  teilen dieselbe "TaW"-Spalte (Nutzer-Korrektur 2026-07-22: "all spezialisierungen are meant to
+ *  be in the same column"); die ersten Spalten (Waffe/TaW/Basis-Spalten) der Hauptfertigkeit sind
+ *  ueber die gesamte Tabellenhoehe gespannt (rowspan), weil es nur EINEN Hauptfertigkeit-Wert gibt,
+ *  waehrend die Spezialisierung/TaW-Spalten sich pro Zeile aendern. -/Wert/+/Kosten stehen in EINER
+ *  <td> (Nutzer-Korrektur 2026-07-22: "remove the extra columns next to the TaW containing -/+
+ *  buttons, include them next to the TaW value field") statt drei separaten Spalten. Die Zelle
+ *  behaelt die Klasse "stat-row" (statt einer Huellen-Div), damit die bestehende Event-Delegation
+ *  (closest('.stat-row')) unveraendert weiterfunktioniert - ABER die Zelle selbst darf NIE
+ *  `display:flex/grid` bekommen (das ist, wonach `.stat-row` normalerweise aussieht): mehrere
+ *  BENACHBARTE <td> mit nicht-table-cell display in derselben <tr> lassen den Browser die Zellen
+ *  faelschlich in EINER Spalte stapeln statt sie nebeneinander zu setzen (browser-verifiziert
+ *  2026-07-22). Deshalb bleibt die <td> ein normales table-cell (siehe .waffen-ctrl-cell in
+ *  style.css), und -/Wert/+/Kosten werden in einem inneren <div> (nicht auf Zellenebene) in einer
+ *  Reihe zentriert. */
+function renderWaffenControlCells(r: ComputedRule, rowspan: number | undefined, maxValue?: number, costOverride?: number): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   const value = r.currentValue ?? 0;
-  const costNext = r.kostenNext !== undefined ? `${r.kostenNext} SP` : '';
+  const cost = costOverride !== undefined ? costOverride : r.kostenNext;
+  const costNext = cost !== undefined ? `(${cost} SP)` : '';
   const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
   const atMax = maxValue !== undefined && value >= maxValue;
   const rowspanAttr = rowspan !== undefined ? ` rowspan="${rowspan}"` : '';
   return `
     <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
-      <button type="button" class="stat-dec" aria-label="verringern">-</button>
-    </td>
-    <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
       <div class="waffen-value-inner">
+        <button type="button" class="stat-dec" aria-label="verringern">-</button>
         <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+        <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
         ${costNext ? `<span class="stat-cost">${costNext}</span>` : ''}
       </div>
-    </td>
-    <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
-      <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
     </td>`;
 }
 
@@ -222,6 +219,37 @@ function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number):
   return `<td${rowspanAttr} class="stat-value-readonly"${formulaTooltip(rule.rule.formelRaw)}>${escapeHtml(formatComputedValue(rule.computedValue ?? '–'))}</td>`;
 }
 
+/** SP-Kosten pro TaW-Punkt (Nutzer 2026-07-22, kein kostenRaw in nahkampf.jsonl/fernkampf.jsonl -
+ *  Hauptfertigkeit ist ein fester Satz je Punkt, Spezialisierung gestaffelt nach Rang): Nahkampf-
+ *  Hauptfertigkeit 25/Punkt, Fernkampf-Hauptfertigkeit 18/Punkt. Spezialisierungs-Rang wird ueber
+ *  den aktuellen TaW unter den Geschwistern bestimmt ("highest value is 15, second highest cost 8,
+ *  third and all other spez cost 4" - NK; FK analog 10/5/3), nicht ueber Kaufreihenfolge (die im
+ *  Charakterzustand nicht mitgefuehrt wird). */
+const NK_HAUPT_KOSTEN = 25;
+const NK_SPEZ_KOSTEN_RATES = [15, 8, 4] as const;
+const FK_HAUPT_KOSTEN = 18;
+const FK_SPEZ_KOSTEN_RATES = [10, 5, 3] as const;
+
+/** Rang einer Spezialisierung unter ihren Geschwistern (gleiche Hauptfertigkeit) nach aktuellem
+ *  TaW absteigend - hoechster Wert bekommt rates[0], zweithoechster rates[1], alle weiteren
+ *  rates[2]. Bei Gleichstand entscheidet die Listenreihenfolge (stabiler Sort), da keine
+ *  Kaufreihenfolge im Charakterzustand gespeichert ist. Noch unangetastete Spezialisierungen
+ *  (TaW=0) bekommen IMMER den guenstigsten Satz (rates[2]) statt am Rang teilzunehmen (Nutzer-
+ *  Korrektur 2026-07-22: "only distinguish rates once invested, rest show cheapest") - sonst
+ *  zeigten zwei gleich unangetastete Spezialisierungen faelschlich unterschiedliche Saetze allein
+ *  wegen ihrer Listenposition. */
+function computeSpezCostRates(children: ComputedRule[], rates: readonly [number, number, number]): Map<string, number> {
+  const cheapest = rates[rates.length - 1];
+  const map = new Map<string, number>();
+  for (const c of children) map.set(c.rule.referenz, cheapest);
+  const invested = children
+    .map((c, i) => ({ referenz: c.rule.referenz, value: c.currentValue ?? 0, i }))
+    .filter((c) => c.value > 0)
+    .sort((a, b) => b.value - a.value || a.i - b.i);
+  invested.forEach((r, rank) => map.set(r.referenz, rates[Math.min(rank, rates.length - 1)]));
+  return map;
+}
+
 /** Eine Zeile (bzw. Zeilengruppe) pro Hauptfertigkeit - Nutzer-Korrektur 2026-07-22: "i want all
  *  lines displayed in a single table", d.h. alle Hauptfertigkeiten EINER Tabelle (nicht mehr eine
  *  <table> pro Hauptfertigkeit); der Aufrufer (renderCategoryView) buendelt diese Zeilen unter
@@ -234,16 +262,17 @@ function renderNahkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: Comput
   const paBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'pa_', readOnly);
   const basisCells = (rowspan: number) => `${renderWaffenBasisCell(atBasisRule, rowspan)}${renderWaffenBasisCell(paBasisRule, rowspan)}`;
   if (node.children.length === 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}<td colspan="4">–</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, NK_HAUPT_KOSTEN)}${basisCells(1)}<td colspan="4">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}<td colspan="4" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, NK_HAUPT_KOSTEN)}${basisCells(1)}<td colspan="4" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
+  const spezRates = computeSpezCostRates(node.children, NK_SPEZ_KOSTEN_RATES);
   return node.children.map((child, i) => `
     <tr>
-      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${basisCells(n)}` : ''}
-      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert)}
+      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n, undefined, NK_HAUPT_KOSTEN)}${basisCells(n)}` : ''}
+      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert, spezRates.get(child.rule.referenz))}
     </tr>`).join('');
 }
 
@@ -303,20 +332,21 @@ function renderFernkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: Compu
   const fkGuteRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_gute_', readOnly);
   const fkMeisterlichRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_meisterlich_', readOnly);
   if (node.children.length === 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5">–</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, FK_HAUPT_KOSTEN)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, FK_HAUPT_KOSTEN)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
+  const spezRates = computeSpezCostRates(node.children, FK_SPEZ_KOSTEN_RATES);
   return node.children.map((child, i) => {
     const fksBasisRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_basis_spez_', readOnly);
     const fksGuteRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_gute_spez_', readOnly);
     const fksMeisterlichRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_meisterlich_spez_', readOnly);
     return `
     <tr>
-      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, n)}` : ''}
-      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert)}${renderFernkampfBasisCell(fksBasisRule, fksGuteRule, fksMeisterlichRule, 1)}
+      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n, undefined, FK_HAUPT_KOSTEN)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, n)}` : ''}
+      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert, spezRates.get(child.rule.referenz))}${renderFernkampfBasisCell(fksBasisRule, fksGuteRule, fksMeisterlichRule, 1)}
     </tr>`;
   }).join('');
 }
@@ -423,8 +453,8 @@ export function renderCategoryView(
     ? `
       <table class="bogen-table waffen-basis-table">
         <thead><tr>
-          <th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th><th>PA-Basis</th>
-          <th>Spezialisierung</th><th></th><th>TaW</th><th></th>
+          <th>Waffe</th><th class="waffen-th-center">TaW (25 SP)</th><th class="waffen-th-center">AT-Basis</th><th class="waffen-th-center">PA-Basis</th>
+          <th>Spezialisierung</th><th class="waffen-th-center">TaW (15/8/4)</th>
         </tr></thead>
         <tbody>${editableHierarchy.map((n) => renderNahkampfHauptfertigkeitRows(n, readOnly)).join('')}</tbody>
       </table>`
@@ -432,8 +462,8 @@ export function renderCategoryView(
       ? `
       <table class="bogen-table waffen-basis-table">
         <thead><tr>
-          <th>Waffe</th><th></th><th>TaW</th><th></th><th>FK-Basis</th>
-          <th>Spezialisierung</th><th></th><th>TaW</th><th></th><th>FKS-Basis</th>
+          <th>Waffe</th><th class="waffen-th-center">TaW (18 SP)</th><th class="waffen-th-center">FK-Basis</th>
+          <th>Spezialisierung</th><th class="waffen-th-center">TaW (10/5/3)</th><th class="waffen-th-center">FKS-Basis</th>
         </tr></thead>
         <tbody>${editableHierarchy.map((n) => renderFernkampfHauptfertigkeitRows(n, readOnly)).join('')}</tbody>
       </table>`

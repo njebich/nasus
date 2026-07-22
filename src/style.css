@@ -822,9 +822,14 @@ body {
 
 .waffen-value-inner {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.1rem;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.waffen-basis-table thead th.waffen-th-center {
+  text-align: center;
 }
 
 /* AT-/PA-Basis bzw. FK-/FKS-Basis-Spalten (Nutzer-Korrektur 2026-07-22): live Formelwert, ueber

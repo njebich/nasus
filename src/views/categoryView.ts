@@ -251,24 +251,47 @@ function renderNahkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: Comput
  *  Spezialisierungs-Wert" (FKS-Basis) eine EIGENE Formel PRO Spezialisierung (haengt von Haupt-
  *  UND Spez-TaW ab), waehrend Nahkampfs AT-/PA-Basis nur von der Hauptfertigkeit abhaengen - daher
  *  zwei getrennte Lookup-Funktionen statt einer gemeinsamen mit Praefix-Parameter. */
-function findFernkampfBasisRule(hauptfertigkeitReferenz: string, readOnly: ComputedRule[]): ComputedRule | undefined {
-  const basisReferenz = hauptfertigkeitReferenz.replace(/^fk_/, 'fk_basis_');
-  return readOnly.find((r) => r.rule.referenz === basisReferenz);
+function findFernkampfBasisRule(hauptfertigkeitReferenz: string, prefix: 'fk_basis_' | 'fk_gute_' | 'fk_meisterlich_', readOnly: ComputedRule[]): ComputedRule | undefined {
+  const referenz = hauptfertigkeitReferenz.replace(/^fk_/, prefix);
+  return readOnly.find((r) => r.rule.referenz === referenz);
 }
 
-/** "fk_spez_X_Y" -> "fk_basis_spez_X_Y" ist die Namenskonvention fuer ALLE Fernkampf-
- *  Spezialisierungen bis auf eine Ausnahme: die Wert-Zeile heisst "fk_spez_schusswaffen_armbrueste"
- *  (Plural), ihre Formel-Zeile aber "fk_basis_spez_schusswaffen_armbrust" (Singular) - eine echte
+/** "fk_spez_X_Y" -> "fk_basis_spez_X_Y"/"fk_gute_spez_X_Y"/"fk_meisterlich_spez_X_Y" ist die
+ *  Namenskonvention fuer ALLE Fernkampf-Spezialisierungen bis auf eine Ausnahme: die Wert-Zeile
+ *  heisst "fk_spez_schusswaffen_armbrueste" (Plural), ihre Formel-Zeilen aber "..._schusswaffen_
+ *  armbrust" (Singular, gilt fuer basis/gute/meisterlich gleichermassen) - eine echte
  *  Schreibweisen-Abweichung in der Quelldaten (nahkampf.jsonl las verzeihend das GLEICHE nk_->at_/
  *  pa_-Muster durchgehend; hier verifiziert per grep in fernkampf.jsonl, kein Zufall/Tippfehler
  *  meinerseits). */
-const FERNKAMPF_SPEZ_BASIS_REFERENZ_OVERRIDES: Record<string, string> = {
-  fk_spez_schusswaffen_armbrueste: 'fk_basis_spez_schusswaffen_armbrust',
-};
+const FERNKAMPF_SPEZ_ARMBRUST_REFERENZ = 'fk_spez_schusswaffen_armbrueste';
 
-function findFernkampfSpezBasisRule(spezReferenz: string, readOnly: ComputedRule[]): ComputedRule | undefined {
-  const basisReferenz = FERNKAMPF_SPEZ_BASIS_REFERENZ_OVERRIDES[spezReferenz] ?? spezReferenz.replace(/^fk_spez_/, 'fk_basis_spez_');
-  return readOnly.find((r) => r.rule.referenz === basisReferenz);
+function findFernkampfSpezBasisRule(spezReferenz: string, prefix: 'fk_basis_spez_' | 'fk_gute_spez_' | 'fk_meisterlich_spez_', readOnly: ComputedRule[]): ComputedRule | undefined {
+  const referenz = spezReferenz === FERNKAMPF_SPEZ_ARMBRUST_REFERENZ
+    ? `${prefix}schusswaffen_armbrust`
+    : spezReferenz.replace(/^fk_spez_/, prefix);
+  return readOnly.find((r) => r.rule.referenz === referenz);
+}
+
+/** Fernkampf-Basis-Zelle inkl. gFK/mFK (Nutzer-Korrektur 2026-07-22: "include gFK/mFK in the
+ *  FK-Basis/FKS-Basis fields like on the kampf sheet") - anders als die Reichweitenzelle im
+ *  Kampf-Tab (formatRangeCell in views/kampf.ts) gibt es hier keinen Waffen-/Entfernungs-
+ *  Modifikator, deshalb reicht es, die bereits vom Engine berechneten fk_gute- und fk_meisterlich-
+ *  Formelzeilen direkt zu uebernehmen statt die Divisor-Logik zu duplizieren. Gating wie dort:
+ *  g/m nur anzeigen, wenn ueber dem ungetalenteten Sockelwert (gut>1 / meisterlich>21). */
+function renderFernkampfBasisCell(
+  basisRule: ComputedRule | undefined, guteRule: ComputedRule | undefined, meisterlichRule: ComputedRule | undefined, rowspan: number,
+): string {
+  const rowspanAttr = ` rowspan="${rowspan}"`;
+  if (!basisRule) return `<td${rowspanAttr}>–</td>`;
+  if (basisRule.error) {
+    return `<td${rowspanAttr}><span class="stat-error" title="${escapeHtml(basisRule.error)}">nicht definiert ⚠</span></td>`;
+  }
+  let out = formatComputedValue(basisRule.computedValue ?? '–');
+  const guteValue = guteRule && !guteRule.error ? Number(guteRule.computedValue) : undefined;
+  if (guteValue !== undefined && Number.isFinite(guteValue) && guteValue > 1) out += ` g${formatComputedValue(guteValue)}`;
+  const meisterlichValue = meisterlichRule && !meisterlichRule.error ? Number(meisterlichRule.computedValue) : undefined;
+  if (meisterlichValue !== undefined && Number.isFinite(meisterlichValue) && meisterlichValue > 21) out += ` m${formatComputedValue(meisterlichValue)}`;
+  return `<td${rowspanAttr} class="stat-value-readonly"${formulaTooltip(basisRule.rule.formelRaw)}>${escapeHtml(out)}</td>`;
 }
 
 /** Fernkampf-Pendant zu renderNahkampfHauptfertigkeitRows - eine Zeile(-ngruppe) pro Hauptfertig-
@@ -276,20 +299,24 @@ function findFernkampfSpezBasisRule(spezReferenz: string, readOnly: ComputedRule
  *  TaW/+/FKS-Basis) statt vier, weil Fernkampf zusaetzlich die FKS-Basis-Spalte hat. */
 function renderFernkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: ComputedRule[]): string {
   const hauptwert = node.row.currentValue ?? 0;
-  const fkBasisRule = findFernkampfBasisRule(node.row.rule.referenz, readOnly);
+  const fkBasisRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_basis_', readOnly);
+  const fkGuteRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_gute_', readOnly);
+  const fkMeisterlichRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_meisterlich_', readOnly);
   if (node.children.length === 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderWaffenBasisCell(fkBasisRule, 1)}<td colspan="5">–</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderWaffenBasisCell(fkBasisRule, 1)}<td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
   return node.children.map((child, i) => {
-    const fksBasisRule = findFernkampfSpezBasisRule(child.rule.referenz, readOnly);
+    const fksBasisRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_basis_spez_', readOnly);
+    const fksGuteRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_gute_spez_', readOnly);
+    const fksMeisterlichRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_meisterlich_spez_', readOnly);
     return `
     <tr>
-      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${renderWaffenBasisCell(fkBasisRule, n)}` : ''}
-      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert)}${renderWaffenBasisCell(fksBasisRule, 1)}
+      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, n)}` : ''}
+      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert)}${renderFernkampfBasisCell(fksBasisRule, fksGuteRule, fksMeisterlichRule, 1)}
     </tr>`;
   }).join('');
 }
@@ -378,14 +405,15 @@ export function renderCategoryView(
   const isFernkampf = kategorie === 'Fernkampf';
   // Die "Attacke-/Parade-Basis-Wert"- (Nahkampf) bzw. "Fernkampf-(Spezialisierungs-)Basis-Wert"-
   // Formelzeilen (Fernkampf) stehen jetzt live in den Basis-Spalten der Waffentabelle
-  // (renderWaffenBasisCell) - aus "Berechnete Werte" ausgeblendet, sonst staende derselbe Wert
-  // doppelt auf der Seite. Fuer Fernkampf sind das exakt die "fk_basis_"-praefigierten Zeilen
-  // (Hauptfertigkeit UND Spezialisierung, z.B. fk_basis_boegen/fk_basis_spez_boegen_boegen) -
-  // fk_gute_*/fk_meisterlich_* bleiben unberuehrt, die stehen nirgendwo sonst auf der Seite.
+  // (renderWaffenBasisCell/renderFernkampfBasisCell) - aus "Berechnete Werte" ausgeblendet, sonst
+  // staende derselbe Wert doppelt auf der Seite. Fuer Fernkampf zaehlen dazu seit der gFK/mFK-
+  // Erweiterung (Nutzer 2026-07-22) auch "fk_gute_"/"fk_meisterlich_"-praefigierte Zeilen (Haupt-
+  // fertigkeit UND Spezialisierung), die jetzt als "g"/"m"-Suffix in derselben Zelle stehen statt
+  // als eigene Formelzeile.
   const readOnlyForBerechneteWerte = isNahkampf
     ? readOnly.filter((r) => !r.rule.referenz.startsWith('at_') && !r.rule.referenz.startsWith('pa_'))
     : isFernkampf
-      ? readOnly.filter((r) => !r.rule.referenz.startsWith('fk_basis_'))
+      ? readOnly.filter((r) => !r.rule.referenz.startsWith('fk_basis_') && !r.rule.referenz.startsWith('fk_gute_') && !r.rule.referenz.startsWith('fk_meisterlich_'))
       : readOnly;
   const readOnlyHierarchy = buildHierarchy(readOnlyForBerechneteWerte);
   // "i want all lines displayed in a single table" (Nutzer 2026-07-22) - eine gemeinsame <table>

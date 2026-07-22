@@ -16,12 +16,20 @@ import type { CharacterState } from '../state/characterStore';
 /** Text-Match gegen die Pool-Beschreibung: erst die Spezialisierung ("Pool Aexte"), sonst die
  *  Hauptfertigkeit ("Pool Hiebwaffen") - bestaetigt gegen die reale nahkampf.jsonl-Datenlage
  *  (z.B. "Pool Aexte", "Pool Armklingen"). Wirft, wenn keins von beidem existiert (klarer Fehler
- *  statt eines stillschweigend falschen Budgets). */
+ *  statt eines stillschweigend falschen Budgets).
+ *  Sonderfall seit 2026-07-22: die Spezialisierung "Unbewaffnet" (frueher "Ruestung", Nutzer-
+ *  Umbenennung) ist textgleich mit ihrer eigenen Hauptfertigkeit "Unbewaffnet" - der Hauptfertigkeit-
+ *  Match (`nk_pool_unbewaffnet`) wird deshalb explizit aus der Spezialisierung-Suche ausgeschlossen,
+ *  sonst wuerde die dedizierte Zeile `nk_pool_unbewaffnet_unbewaffnet` (mit ihrem eigenen TaW-Term)
+ *  nie gefunden und die 17 Ruestungs-Faustwaffen/Naturwaffen wuerden stillschweigend auf den
+ *  generischen Fallback zurueckfallen. */
 export function resolveWaffenPoolReferenz(hauptfertigkeit: string, spezialisierung: string): string {
   const pools = RULES.filter((r) => r.art === 'Pool' && r.kategorie === 'Nahkampf');
-  const spezMatch = pools.find((r) => r.beschreibung === `Pool ${spezialisierung}`);
-  if (spezMatch) return spezMatch.referenz;
   const hauptMatch = pools.find((r) => r.beschreibung === `Pool ${hauptfertigkeit}`);
+  const spezMatch = pools.find(
+    (r) => r.beschreibung === `Pool ${spezialisierung}` && r.referenz !== hauptMatch?.referenz,
+  );
+  if (spezMatch) return spezMatch.referenz;
   if (hauptMatch) return hauptMatch.referenz;
   throw new Error(
     `Kein Pool fuer Hauptfertigkeit '${hauptfertigkeit}' / Spezialisierung '${spezialisierung}' gefunden`,
@@ -151,22 +159,29 @@ function numOrZero(raw: string | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** Schluessel sind character.spezies-Werte (VOELKER_NAMEN, siehe engine/voelker.ts) - NICHT die
+/** Schluessel sind character.spezies-Werte (VOELKER_NAMEN, siehe engine/voelker.ts), Werte die
  *  singularen Namen aus NK-Waffen-Basis's "Volk"-Spalte (Gnom/Ork/Troll/Zentaur/Katzenmensch).
  *  Ohne diese Uebersetzung matcht character.spezies ("Orks" etc.) nie einen Map-Key und jede
- *  Spezies faellt staendig auf den "andere Voelker"-Fallback zurueck (Bug, gefunden 2026-07-22). */
-const UNBEWAFFNET_SPEZIES_BASIS_ROW: Record<string, string> = {
-  Gnome: 'Unbewaffnet (Gnom)', Orks: 'Unbewaffnet (Ork)', Trolle: 'Unbewaffnet (Troll)',
-  Zentauren: 'Unbewaffnet (Zentaur)', Katzen: 'Unbewaffnet (Katzenmensch)',
+ *  Spezies faellt staendig auf den "andere Voelker"-Fallback zurueck (Bug, gefunden 2026-07-22).
+ *  Bis 2026-07-22 trug die Basiszeile den Volk-Namen redundant im "Waffe"-Namen ("Unbewaffnet
+ *  (Ork)" etc.) - der Nutzer liess das entfernen, seitdem heissen alle diese Zeilen schlicht
+ *  "Unbewaffnet" und werden ueber die eigentliche "Volk"-Spalte disambiguiert. */
+const UNBEWAFFNET_SPEZIES_VOLK: Record<string, string> = {
+  Gnome: 'Gnom', Orks: 'Ork', Trolle: 'Troll', Zentauren: 'Zentaur', Katzen: 'Katzenmensch',
 };
-const UNBEWAFFNET_FALLBACK_BASIS_ROW = 'Unbewaffnet (andere Voelker)';
+const UNBEWAFFNET_FALLBACK_VOLK = 'andere Voelker';
 
 /** Basiszeile fuer die immer sichtbare "Unbewaffnet"-Reihe (blosse Faeuste, kein Item, keine
  *  Spezialisierung): art-spezifische Ruestungsmodifikator-Zeile je nach `spezies` (Nutzer-
- *  Datenkonvention in NK-Waffen-Basis), sonst der "andere Voelker"-Fallback. */
+ *  Datenkonvention in NK-Waffen-Basis), sonst der "andere Voelker"-Fallback. Name allein reicht
+ *  nicht (mehrere Volk-Zeilen heissen "Unbewaffnet"), Volk allein auch nicht (die "Biss"/
+ *  "Huftritt"-Zeilen teilen sich ein Volk mit ihrer "Unbewaffnet"-Zeile) - beides zusammen ist
+ *  eindeutig. */
 function findUnbewaffnetBasisRow(spezies: string) {
-  const name = UNBEWAFFNET_SPEZIES_BASIS_ROW[spezies] ?? UNBEWAFFNET_FALLBACK_BASIS_ROW;
-  return NK_WAFFEN_BASIS.find((r) => r['Hauptfertigkeit'] === 'Unbewaffnet' && r.name === name);
+  const volk = UNBEWAFFNET_SPEZIES_VOLK[spezies] ?? UNBEWAFFNET_FALLBACK_VOLK;
+  return NK_WAFFEN_BASIS.find(
+    (r) => r['Hauptfertigkeit'] === 'Unbewaffnet' && r.name === 'Unbewaffnet' && r['Volk'] === volk,
+  );
 }
 
 /** Eindeutig (1:1) einer `nk_spez_unbewaffnet_*`-Spezialisierung zuordenbare Kampfstil-Basiszeile

@@ -26,6 +26,10 @@ describe('resolveWaffenPoolReferenz', () => {
   it('wirft, wenn weder Spezialisierungs- noch Hauptfertigkeit-Pool existiert', () => {
     expect(() => resolveWaffenPoolReferenz('Nichtvorhanden', 'Auch nicht')).toThrow();
   });
+
+  it('findet die dedizierte Spezialisierungs-Zeile, auch wenn ihr Name dem der Hauptfertigkeit gleicht (Spezialisierung "Unbewaffnet" unter Hauptfertigkeit "Unbewaffnet", vormals "Ruestung")', () => {
+    expect(resolveWaffenPoolReferenz('Unbewaffnet', 'Unbewaffnet')).toBe('nk_pool_unbewaffnet_unbewaffnet');
+  });
 });
 
 describe('computeWeaponAtPaOverflow', () => {

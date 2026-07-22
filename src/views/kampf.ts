@@ -170,7 +170,7 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
 
 const UNBEWAFFNET_SPEZ_REFERENZEN: readonly string[] = [
   'nk_spez_unbewaffnet_armklingen', 'nk_spez_unbewaffnet_messer', 'nk_spez_unbewaffnet_peitschen',
-  'nk_spez_unbewaffnet_ruestung', 'nk_spez_unbewaffnet_schild', 'nk_spez_unbewaffnet_boxen',
+  'nk_spez_unbewaffnet_unbewaffnet', 'nk_spez_unbewaffnet_schild', 'nk_spez_unbewaffnet_boxen',
   'nk_spez_unbewaffnet_elfische_kunst_der_selbstverteidigung', 'nk_spez_unbewaffnet_goblinische_kampfkunst',
   'nk_spez_unbewaffnet_katzenmenschen_kampfkunst', 'nk_spez_unbewaffnet_orkisch_raufen',
   'nk_spez_unbewaffnet_ringen', 'nk_spez_unbewaffnet_schattenkampf',
@@ -211,20 +211,21 @@ function buildUnbewaffnetRow(ctx: PoolContext, key: string, label: string, basis
   };
 }
 
-// Schluessel sind character.spezies-Werte (VOELKER_NAMEN), nicht NK-Waffen-Basis's singulare
-// "Volk"-Spalte - siehe gleichnamige Konstante + Kommentar in engine/waffenPool.ts.
-const UNBEWAFFNET_SPEZIES_BASIS_ROW: Record<string, string> = {
-  Gnome: 'Unbewaffnet (Gnom)', Orks: 'Unbewaffnet (Ork)', Trolle: 'Unbewaffnet (Troll)',
-  Zentauren: 'Unbewaffnet (Zentaur)', Katzen: 'Unbewaffnet (Katzenmensch)',
+// Schluessel sind character.spezies-Werte (VOELKER_NAMEN), Werte die singularen Namen aus
+// NK-Waffen-Basis's "Volk"-Spalte - siehe gleichnamige Konstante + Kommentar in
+// engine/waffenPool.ts (dort seit 2026-07-22 auf die Volk-Spalte umgestellt, weil die
+// Basiszeilen den Volk-Namen nicht mehr redundant im "Waffe"-Namen tragen).
+const UNBEWAFFNET_SPEZIES_VOLK: Record<string, string> = {
+  Gnome: 'Gnom', Orks: 'Ork', Trolle: 'Troll', Zentauren: 'Zentaur', Katzen: 'Katzenmensch',
 };
 
 export function buildNahkampfRows(character: CharacterState, sheet: ComputedSheet): NahkampfRow[] {
   const ctx: PoolContext = { sheet, character, values: makeValueSource(character) };
   const rows: NahkampfRow[] = [];
 
-  const unbewaffnetBasisName = UNBEWAFFNET_SPEZIES_BASIS_ROW[character.spezies] ?? 'Unbewaffnet (andere Voelker)';
+  const unbewaffnetVolk = UNBEWAFFNET_SPEZIES_VOLK[character.spezies] ?? 'andere Voelker';
   const unbewaffnetBasis = NK_WAFFEN_BASIS.find(
-    (r) => r['Hauptfertigkeit'] === 'Unbewaffnet' && r.name === unbewaffnetBasisName,
+    (r) => r['Hauptfertigkeit'] === 'Unbewaffnet' && r.name === 'Unbewaffnet' && r['Volk'] === unbewaffnetVolk,
   );
   const unbewaffnetRow = buildUnbewaffnetRow(ctx, 'unbewaffnet', 'Unbewaffnet', unbewaffnetBasis);
   if (unbewaffnetRow) rows.push(unbewaffnetRow);

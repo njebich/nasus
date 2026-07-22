@@ -222,42 +222,29 @@ function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number):
   return `<td${rowspanAttr} class="stat-value-readonly"${formulaTooltip(rule.rule.formelRaw)}>${escapeHtml(formatComputedValue(rule.computedValue ?? '–'))}</td>`;
 }
 
-function renderNahkampfWaffenGroup(node: HierarchyNode, readOnly: ComputedRule[]): string {
+/** Eine Zeile (bzw. Zeilengruppe) pro Hauptfertigkeit - Nutzer-Korrektur 2026-07-22: "i want all
+ *  lines displayed in a single table", d.h. alle Hauptfertigkeiten EINER Tabelle (nicht mehr eine
+ *  <table> pro Hauptfertigkeit); der Aufrufer (renderCategoryView) buendelt diese Zeilen unter
+ *  einem gemeinsamen <thead>. Die vier Spezialisierungs-Spalten (Spezialisierung/-/TaW/+) werden
+ *  bei fehlenden/gesperrten Spezialisierungen per colspan="4" durch einen Platzhalter ersetzt,
+ *  damit die Spaltenzahl fuer jede Zeile gleich bleibt. */
+function renderNahkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: ComputedRule[]): string {
   const hauptwert = node.row.currentValue ?? 0;
   const atBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'at_', readOnly);
   const paBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'pa_', readOnly);
   const basisCells = (rowspan: number) => `${renderWaffenBasisCell(atBasisRule, rowspan)}${renderWaffenBasisCell(paBasisRule, rowspan)}`;
   if (node.children.length === 0) {
-    return `
-      <table class="bogen-table waffen-basis-table">
-        <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th><th>PA-Basis</th></tr></thead>
-        <tbody><tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}</tr></tbody>
-      </table>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}<td colspan="4">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `
-      <table class="bogen-table waffen-basis-table">
-        <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th><th>PA-Basis</th></tr></thead>
-        <tbody>
-          <tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}</tr>
-          <tr><td colspan="6" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
-        </tbody>
-      </table>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}<td colspan="4" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
-  const rows = node.children.map((child, i) => `
+  return node.children.map((child, i) => `
     <tr>
       ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${basisCells(n)}` : ''}
       ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert)}
     </tr>`).join('');
-  return `
-    <table class="bogen-table waffen-basis-table">
-      <thead><tr>
-        <th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th><th>PA-Basis</th>
-        <th>Spezialisierung</th><th></th><th>TaW</th><th></th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
 }
 
 /** Fernkampf-Pendant zu findNahkampfBasisRule - ABER anders als Nahkampf ist "Fernkampf-
@@ -284,28 +271,20 @@ function findFernkampfSpezBasisRule(spezReferenz: string, readOnly: ComputedRule
   return readOnly.find((r) => r.rule.referenz === basisReferenz);
 }
 
-function renderFernkampfWaffenGroup(node: HierarchyNode, readOnly: ComputedRule[]): string {
+/** Fernkampf-Pendant zu renderNahkampfHauptfertigkeitRows - eine Zeile(-ngruppe) pro Hauptfertig-
+ *  keit statt einer eigenen <table>, siehe dort. Fuenf Spezialisierungs-Spalten (Spezialisierung/-/
+ *  TaW/+/FKS-Basis) statt vier, weil Fernkampf zusaetzlich die FKS-Basis-Spalte hat. */
+function renderFernkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: ComputedRule[]): string {
   const hauptwert = node.row.currentValue ?? 0;
   const fkBasisRule = findFernkampfBasisRule(node.row.rule.referenz, readOnly);
   if (node.children.length === 0) {
-    return `
-      <table class="bogen-table waffen-basis-table">
-        <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>FK-Basis</th></tr></thead>
-        <tbody><tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderWaffenBasisCell(fkBasisRule, 1)}</tr></tbody>
-      </table>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderWaffenBasisCell(fkBasisRule, 1)}<td colspan="5">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `
-      <table class="bogen-table waffen-basis-table">
-        <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>FK-Basis</th></tr></thead>
-        <tbody>
-          <tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderWaffenBasisCell(fkBasisRule, 1)}</tr>
-          <tr><td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
-        </tbody>
-      </table>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderWaffenBasisCell(fkBasisRule, 1)}<td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
-  const rows = node.children.map((child, i) => {
+  return node.children.map((child, i) => {
     const fksBasisRule = findFernkampfSpezBasisRule(child.rule.referenz, readOnly);
     return `
     <tr>
@@ -313,14 +292,6 @@ function renderFernkampfWaffenGroup(node: HierarchyNode, readOnly: ComputedRule[
       ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert)}${renderWaffenBasisCell(fksBasisRule, 1)}
     </tr>`;
   }).join('');
-  return `
-    <table class="bogen-table waffen-basis-table">
-      <thead><tr>
-        <th>Waffe</th><th></th><th>TaW</th><th></th><th>FK-Basis</th>
-        <th>Spezialisierung</th><th></th><th>TaW</th><th></th><th>FKS-Basis</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
 }
 
 function poolFieldReadOnly(label: string, value: number, max: number | undefined): string {
@@ -417,10 +388,27 @@ export function renderCategoryView(
       ? readOnly.filter((r) => !r.rule.referenz.startsWith('fk_basis_'))
       : readOnly;
   const readOnlyHierarchy = buildHierarchy(readOnlyForBerechneteWerte);
+  // "i want all lines displayed in a single table" (Nutzer 2026-07-22) - eine gemeinsame <table>
+  // mit EINEM <thead> pro Tab statt einer <table> pro Hauptfertigkeit; Nahkampf und Fernkampf
+  // bleiben dabei getrennte Tabs/Tabellen ("do not merge tabs").
   const editableBlock = isNahkampf
-    ? editableHierarchy.map((n) => renderNahkampfWaffenGroup(n, readOnly)).join('')
+    ? `
+      <table class="bogen-table waffen-basis-table">
+        <thead><tr>
+          <th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th><th>PA-Basis</th>
+          <th>Spezialisierung</th><th></th><th>TaW</th><th></th>
+        </tr></thead>
+        <tbody>${editableHierarchy.map((n) => renderNahkampfHauptfertigkeitRows(n, readOnly)).join('')}</tbody>
+      </table>`
     : isFernkampf
-      ? editableHierarchy.map((n) => renderFernkampfWaffenGroup(n, readOnly)).join('')
+      ? `
+      <table class="bogen-table waffen-basis-table">
+        <thead><tr>
+          <th>Waffe</th><th></th><th>TaW</th><th></th><th>FK-Basis</th>
+          <th>Spezialisierung</th><th></th><th>TaW</th><th></th><th>FKS-Basis</th>
+        </tr></thead>
+        <tbody>${editableHierarchy.map((n) => renderFernkampfHauptfertigkeitRows(n, readOnly)).join('')}</tbody>
+      </table>`
       : editableHierarchy.map(renderEditableGroup).join('');
 
   container.innerHTML = `

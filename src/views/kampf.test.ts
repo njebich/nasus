@@ -47,7 +47,7 @@ describe('buildFeuerwaffenRows', () => {
 
   it('Typ="Gewehr" nutzt die Musketen-Pool-Familie, Typ="Pistole" die Pistolen-Familie (unterschiedliche Reichweiten-Basiswerte)', () => {
     const muskete = findFeuerwaffe('Muskete'); // Typ='Gewehr'
-    const pistole = findFeuerwaffe('Langpistole'); // Typ='Pistole'
+    const pistole = findFeuerwaffe('Pistole'); // Typ='Pistole', Verfuegbarkeit-Stufe < 5 (Kaufsperre)
     let character = baseCharacter();
     character = buyFeuerwaffe(character, muskete.sourceRow, feuerwaffenStandardauswahl(muskete));
     character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));

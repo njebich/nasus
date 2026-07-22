@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { createCharacter } from './characterStore';
 import {
-  setValue, addSelection, removeSelection, setWaffenPoolAllocation, buyWeapon, BudgetError, MutationError,
+  setValue, addSelection, removeSelection, setWaffenPoolAllocation, buyWeapon, buyShield,
+  addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite, BudgetError, MutationError,
 } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
+import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 
 function withEpGesamt(epGesamt: number) {
   const character = createCharacter('Test');
@@ -377,5 +379,118 @@ describe('setWaffenPoolAllocation', () => {
       const updated = addSelection(character, 'talente_geweihter_isch_orthodox');
       expect(updated.selections['talente_geweihter_isch_orthodox']).toBe(1);
     });
+  });
+});
+
+describe('Waffen-Loadout-Mutationen', () => {
+  function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
+    const row = rows.find((r) => r.name === name);
+    if (!row) throw new Error(`Testfixtur '${name}' nicht gefunden`);
+    return row;
+  }
+
+  function loadoutBaseCharacter() {
+    let character = withEpGesamt(100000);
+    character.values['dublonen_bank'] = 100000;
+    character.values['eig_k_staerke'] = 30;
+    return character;
+  }
+
+  function buyTestWeapon(character: ReturnType<typeof withEpGesamt>, name: string) {
+    const row = findRow(NK_WAFFEN_BASIS, name);
+    const material = findRow(NK_MATERIAL, 'Eisen');
+    const fertigung = findRow(NK_FERTIGUNG, 'Gesellenarbeit');
+    const anpassung = findRow(NK_ANPASSUNG, 'Von der Stange');
+    const schaftmaterial = findRow(NK_SCHAFTMATERIAL, 'Standard');
+    return buyWeapon(character, row.sourceRow, material.sourceRow, fertigung.sourceRow, anpassung.sourceRow, schaftmaterial.sourceRow);
+  }
+
+  it('legt ein NK 1H+1H-Loadout an, unfavorisiert', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    character = buyTestWeapon(character, 'Dolch');
+    const [axt, dolch] = character.equipment;
+    const updated = addWaffenLoadout(character, 'nk1h_nk1h', axt.id, dolch.id);
+    expect(updated.waffenLoadouts).toHaveLength(1);
+    expect(updated.waffenLoadouts[0]).toMatchObject({ comboType: 'nk1h_nk1h', primaryEquipmentId: axt.id, secondaryEquipmentId: dolch.id, favorite: false });
+  });
+
+  it('lehnt ab, wenn beide Seiten dieselbe Ausruestung referenzieren', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const [axt] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'nk1h_nk1h', axt.id, axt.id)).toThrow(MutationError);
+  });
+
+  it('lehnt eine Stangenwaffe in einem nk1h_nk1h-Slot ab', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const stangenwaffe = NK_WAFFEN_BASIS.find((r) => r['Hauptfertigkeit'] === 'Stangenwaffen' && r['Min-Staerke-1H-Basis']);
+    if (!stangenwaffe) throw new Error('Keine Stangenwaffe mit 1H-Spalte in den Testdaten gefunden');
+    character = buyTestWeapon(character, stangenwaffe.name);
+    const [axt, stange] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'nk1h_nk1h', axt.id, stange.id)).toThrow(MutationError);
+  });
+
+  it('lehnt eine nicht (mehr) besessene Ausruestungs-Id ab', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const [axt] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'nk1h_nk1h', axt.id, 'nicht-vorhanden')).toThrow(MutationError);
+  });
+
+  it('lehnt die falsche Reihenfolge bei nk1h_schild ab (Schild darf nicht primary sein)', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const material = findRow(SCHILD_MATERIAL, 'Holz');
+    const fertigung = findRow(SCHILD_FERTIGUNG, 'Gesellenarbeit');
+    const bespannung = findRow(SCHILD_BESPANNUNG, 'Stoff');
+    const schildRow = findRow(NK_WAFFEN_BASIS, 'Faustschild/Buckler');
+    character = buyShield(character, schildRow.sourceRow, material.sourceRow, fertigung.sourceRow, bespannung.sourceRow);
+    const [axt, schild] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'nk1h_schild', schild.id, axt.id)).toThrow(MutationError);
+    expect(() => addWaffenLoadout(character, 'nk1h_schild', axt.id, schild.id)).not.toThrow();
+  });
+
+  it('lehnt nk1h_pistole mit zwei Nahkampfwaffen ab (keine Pistole beteiligt)', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    character = buyTestWeapon(character, 'Dolch');
+    const [axt, dolch] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'nk1h_pistole', axt.id, dolch.id)).toThrow(MutationError);
+  });
+
+  it('removeWaffenLoadout entfernt ein Loadout, no-op bei unbekannter id', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    character = buyTestWeapon(character, 'Dolch');
+    const [axt, dolch] = character.equipment;
+    character = addWaffenLoadout(character, 'nk1h_nk1h', axt.id, dolch.id);
+    const loadoutId = character.waffenLoadouts[0].id;
+
+    const noop = removeWaffenLoadout(character, 'unbekannt');
+    expect(noop.waffenLoadouts).toHaveLength(1);
+
+    const removed = removeWaffenLoadout(character, loadoutId);
+    expect(removed.waffenLoadouts).toHaveLength(0);
+  });
+
+  it('toggleWaffenLoadoutFavorite erlaubt mehrere gleichzeitig favorisierte Loadouts', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    character = buyTestWeapon(character, 'Dolch');
+    character = buyTestWeapon(character, 'Entermesser');
+    const [axt, dolch, entermesser] = character.equipment;
+    character = addWaffenLoadout(character, 'nk1h_nk1h', axt.id, dolch.id);
+    character = addWaffenLoadout(character, 'nk1h_nk1h', axt.id, entermesser.id);
+    const [loadoutA, loadoutB] = character.waffenLoadouts;
+
+    character = toggleWaffenLoadoutFavorite(character, loadoutA.id);
+    character = toggleWaffenLoadoutFavorite(character, loadoutB.id);
+    expect(character.waffenLoadouts.every((l) => l.favorite)).toBe(true);
+
+    character = toggleWaffenLoadoutFavorite(character, loadoutA.id);
+    expect(character.waffenLoadouts.find((l) => l.id === loadoutA.id)?.favorite).toBe(false);
+    expect(character.waffenLoadouts.find((l) => l.id === loadoutB.id)?.favorite).toBe(true);
   });
 });

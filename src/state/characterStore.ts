@@ -48,6 +48,30 @@ export function ruestungSlotKey(gruppe: RsGruppe, lage: number): string {
   return `${gruppe}:${lage}`;
 }
 
+export type WaffenLoadoutComboType = 'nk1h_nk1h' | 'nk1h_pistole' | 'nk1h_schild';
+
+/**
+ * Ein gespeichertes Waffen-Loadout (Kampf-Tab, "Waffen-Loadout"-Feature, 2026-07-22): referenziert
+ * ausschliesslich bereits BESESSENE Ausruestung ueber EquipmentEntry.id - kein eigenes Kauf-/
+ * Ausrüst-System, reine abgeleitete Sicht (siehe engine/waffenLoadout.ts). Fuer 'nk1h_schild' ist
+ * `primaryEquipmentId` per Konvention IMMER die Waffe und `secondaryEquipmentId` IMMER das Schild
+ * (von addWaffenLoadout erzwungen). Fuer die anderen beiden Typen legt `primaryEquipmentId` fest,
+ * welche Seite die "rechte/Haupthand" ist (Nutzer-Wahl beim Anlegen). Der Anzeigename wird NIE
+ * hier gespeichert, sondern bei jedem Rendern live aus den aktuell verknuepften
+ * EquipmentEntry-Namen abgeleitet (Ausruestung kann sich theoretisch aendern/geloescht werden -
+ * siehe waffenLoadout.ts's describeLoadout).
+ */
+export interface WaffenLoadoutEntry {
+  id: string;
+  comboType: WaffenLoadoutComboType;
+  primaryEquipmentId: string;
+  secondaryEquipmentId: string;
+  /** Mehrere Loadouts duerfen gleichzeitig favorisiert sein - steuert nur, ob das Loadout
+   *  zusaetzlich read-only auf den Charakterbogen-Tab gespiegelt wird, analog zur bestehenden
+   *  Nahkampf-Tabellen-Spiegelung. */
+  favorite: boolean;
+}
+
 /** Werte, die den Charakter AUSMACHEN (reine Identitaet/Flavor, kein Punktekauf-Bezug) -
  *  mit Nutzer 2026-07-17 geklaert. Nur name+spezies sind Pflicht, der Rest darf leer sein. */
 export interface HerkunftSnapshot {
@@ -109,6 +133,10 @@ export interface CharacterState extends CharacterHeader {
    *  fest gewaehlten Grundfertigkeit-Referenzen, ein Array-Index je freigeschaltetem Slot (Slot-
    *  Anzahl skaliert mit dem TaW des Talents selbst, siehe ki.ts's grundfertigkeitSlotCount). */
   grundfertigkeitAuswahl: Record<string, string[]>;
+  /** Waffen-Loadout-Feature (2026-07-22): mehrere gespeicherte Zwei-Item-Kombinationen aus
+   *  bereits besessener Ausruestung (dual-wield NK, NK+Pistole, NK+Schild) - siehe
+   *  engine/waffenLoadout.ts. Reine abgeleitete Anzeige, kein eigenes Pool-Budget. */
+  waffenLoadouts: WaffenLoadoutEntry[];
 }
 
 /**
@@ -201,6 +229,8 @@ export function loadCharacter(id: string): CharacterState | null {
   if (!parsed.ruestungSlots) parsed.ruestungSlots = {};
   // Migrations-Fallback fuer Charaktere von vor dem grundfertigkeitAuswahl-Feld (2026-07-20).
   if (!parsed.grundfertigkeitAuswahl) parsed.grundfertigkeitAuswahl = {};
+  // Migrations-Fallback fuer Charaktere von vor dem waffenLoadouts-Feld (2026-07-22).
+  if (!parsed.waffenLoadouts) parsed.waffenLoadouts = [];
   // Angst-Referenzen wurden von vn_<stufenname>_<thema> auf das numerische, exklusiv
   // auswertbare Schema vn_angst_<thema>_<5|10|15|20|25|30> umgestellt. Bei alten, zuvor noch
   // gleichzeitig moeglichen Mehrfachauswahlen bleibt pro Thema deterministisch die hoechste
@@ -277,6 +307,7 @@ export function createCharacter(
     equipment: [],
     ruestungSlots: {},
     grundfertigkeitAuswahl: {},
+    waffenLoadouts: [],
   };
   if (startbudget) {
     const preset = STARTBUDGET_PRESETS[startbudget];

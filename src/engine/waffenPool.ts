@@ -80,6 +80,18 @@ export function computeWeaponAtPaOverflow(
   };
 }
 
+export const ZWEI_WAFFEN_WK_CAP: Record<number, number> = { 1: 3.5, 2: 4.5, 3: 5.5, 4: 6.5 };
+
+/** Hoechster besessener talente_kampf_mit_zwei_waffen_stufe_1-4 -> WK-Kappungswert
+ *  (unmodifizierter Listenwert), sonst undefined (Talent nicht besessen). Verschoben aus
+ *  views/kampf.ts (2026-07-22), damit engine/waffenLoadout.ts sie mitnutzen kann. */
+export function getZweiWaffenCap(character: CharacterState): number | undefined {
+  for (let stufe = 4; stufe >= 1; stufe--) {
+    if ((character.selections[`talente_kampf_mit_zwei_waffen_stufe_${stufe}`] ?? 0) > 0) return ZWEI_WAFFEN_WK_CAP[stufe];
+  }
+  return undefined;
+}
+
 /** Permanenter Modifikator aus talente_offensiver_kampfstil_stufe_1-3 / talente_verteidiger_
  *  stufe_1-3 (Nutzer 2026-07-21: "permanent flat modifier", nicht Stufen-kumulativ - je Talent-
  *  Familie zaehlt nur die hoechste besessene Stufe, analog zu anderen Stufen-Talenten wie Kampf

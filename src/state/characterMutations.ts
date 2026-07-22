@@ -26,7 +26,11 @@ import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from
 import { ALCHEMIKA } from '../data/equipment/alchemika';
 import { FEUERWAFFEN_MUNITION_PREISE, type FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
 import type { RsGruppe } from '../data/trefferzonen';
-import { ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry } from './characterStore';
+import { listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen } from '../engine/waffenLoadout';
+import {
+  ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry,
+  type WaffenLoadoutEntry, type WaffenLoadoutComboType,
+} from './characterStore';
 
 export class BudgetError extends Error {}
 export class MutationError extends Error {}
@@ -48,6 +52,7 @@ function clone(character: CharacterState): CharacterState {
     grundfertigkeitAuswahl: Object.fromEntries(
       Object.entries(character.grundfertigkeitAuswahl ?? {}).map(([k, v]) => [k, [...v]]),
     ),
+    waffenLoadouts: character.waffenLoadouts.map((l) => ({ ...l })),
   };
 }
 
@@ -704,4 +709,65 @@ export function removeEquipment(character: CharacterState, equipmentId: string):
   const candidate = clone(character);
   candidate.equipment = candidate.equipment.filter((e) => e.id !== equipmentId);
   return candidate; // Entfernen macht das Budget nie schlechter, keine Pruefung noetig
+}
+
+function newLoadoutId(): string {
+  return crypto.randomUUID();
+}
+
+/**
+ * Legt ein neues Waffen-Loadout an (Waffen-Loadout-Feature, 2026-07-22) - referenziert zwei
+ * bereits besessene EquipmentEntry.id (Waffe/Waffe, Waffe/Pistole in beliebiger Reihenfolge, oder
+ * Waffe/Schild). Validiert nur, dass beide IDs zur richtigen Kombination gehoeren - kein
+ * Budget-Bezug (kostet nichts), daher kein assertBudgetOk.
+ */
+export function addWaffenLoadout(
+  character: CharacterState, comboType: WaffenLoadoutComboType, primaryEquipmentId: string, secondaryEquipmentId: string,
+): CharacterState {
+  if (primaryEquipmentId === secondaryEquipmentId) {
+    throw new MutationError('Ein Loadout braucht zwei verschiedene Gegenstände');
+  }
+
+  if (comboType === 'nk1h_nk1h') {
+    const ids = new Set(listEligibleNahkampf1HWaffen(character).map((i) => i.equipmentId));
+    if (!ids.has(primaryEquipmentId) || !ids.has(secondaryEquipmentId)) {
+      throw new MutationError('Benötigt zwei besessene, 1H-fähige Nahkampfwaffen');
+    }
+  } else if (comboType === 'nk1h_pistole') {
+    const meleeIds = new Set(listEligibleNahkampf1HWaffen(character).map((i) => i.equipmentId));
+    const pistoleIds = new Set(listEligiblePistolen(character).map((i) => i.equipmentId));
+    const bothValid = (meleeIds.has(primaryEquipmentId) && pistoleIds.has(secondaryEquipmentId))
+      || (pistoleIds.has(primaryEquipmentId) && meleeIds.has(secondaryEquipmentId));
+    if (!bothValid) throw new MutationError('Benötigt genau eine Nahkampfwaffe (1H) und eine Pistole');
+  } else {
+    // nk1h_schild: primary MUSS die Waffe sein, secondary MUSS das Schild sein (Konvention, siehe
+    // characterStore.ts's WaffenLoadoutEntry-Kommentar).
+    const weaponIds = new Set(listEligibleNahkampf1HWaffen(character).map((i) => i.equipmentId));
+    const schildIds = new Set(listEligibleSchilde(character).map((i) => i.equipmentId));
+    if (!weaponIds.has(primaryEquipmentId) || !schildIds.has(secondaryEquipmentId)) {
+      throw new MutationError('Benötigt eine besessene 1H-Waffe als Primärhand und ein besessenes Schild als Sekundärhand');
+    }
+  }
+
+  const candidate = clone(character);
+  const entry: WaffenLoadoutEntry = { id: newLoadoutId(), comboType, primaryEquipmentId, secondaryEquipmentId, favorite: false };
+  candidate.waffenLoadouts = [...candidate.waffenLoadouts, entry];
+  return candidate;
+}
+
+/** Entfernt ein Loadout - kein Budget-Bezug, no-op wenn die id nicht (mehr) existiert. */
+export function removeWaffenLoadout(character: CharacterState, loadoutId: string): CharacterState {
+  const candidate = clone(character);
+  candidate.waffenLoadouts = candidate.waffenLoadouts.filter((l) => l.id !== loadoutId);
+  return candidate;
+}
+
+/** Mehrere Loadouts duerfen gleichzeitig favorisiert sein (Nutzer 2026-07-22) - reines Toggle,
+ *  kein exklusiver "nur eins"-Zustand. */
+export function toggleWaffenLoadoutFavorite(character: CharacterState, loadoutId: string): CharacterState {
+  const candidate = clone(character);
+  candidate.waffenLoadouts = candidate.waffenLoadouts.map(
+    (l) => (l.id === loadoutId ? { ...l, favorite: !l.favorite } : l),
+  );
+  return candidate;
 }

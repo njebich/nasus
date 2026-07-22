@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createCharacter } from '../state/characterStore';
-import { buyFeuerwaffe, buyFeuerwaffenMunition, buyWeapon, setValue, setWaffenPoolAllocation } from '../state/characterMutations';
-import { buildFeuerwaffenRows, buildNahkampfRows } from './kampf';
+import {
+  buyFeuerwaffe, buyFeuerwaffenMunition, buyWeapon, setValue, setWaffenPoolAllocation, addWaffenLoadout,
+} from '../state/characterMutations';
+import { buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows } from './kampf';
 import { FEUERWAFFEN } from '../data/equipment/fernkampf';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { feuerwaffenStandardauswahl, composeFeuerwaffe } from '../engine/feuerwaffenComposition';
@@ -124,5 +126,48 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
     expect(row1.pp).toBe(30);
     // w2: 0 + 7 - 0 (keine eigene Zuteilung, w1's Zuteilung zaehlt hier nicht mit) = 7.
     expect(row2.pp).toBe(7);
+  });
+});
+
+describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool"-Seite', () => {
+  function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
+    const row = rows.find((r) => r.name === name);
+    if (!row) throw new Error(`Testfixtur '${name}' nicht gefunden`);
+    return row;
+  }
+
+  function buyTestWeapon(character: ReturnType<typeof baseCharacter>, name: string) {
+    const row = findRow(NK_WAFFEN_BASIS, name);
+    const material = findRow(NK_MATERIAL, 'Eisen');
+    const fertigung = findRow(NK_FERTIGUNG, 'Gesellenarbeit');
+    const anpassung = findRow(NK_ANPASSUNG, 'Von der Stange');
+    const schaftmaterial = findRow(NK_SCHAFTMATERIAL, 'Standard');
+    return buyWeapon(character, row.sourceRow, material.sourceRow, fertigung.sourceRow, anpassung.sourceRow, schaftmaterial.sourceRow);
+  }
+
+  it('spiegelt gAT/gPA/mAT/mPA/PP exakt von der gewinnenden Pool-Seite - identisch zu deren eigener Solo-Zeile', () => {
+    let character = baseCharacter();
+    character = setValue(character, 'eig_k_staerke', 30);
+    character = setValue(character, 'nk_hiebwaffen', 10);
+    character = setValue(character, 'nk_stichwaffen', 10);
+    character = buyTestWeapon(character, 'Axt');
+    character = buyTestWeapon(character, 'Dolch');
+    const [axt, dolch] = character.equipment;
+    // Dolche-Pool deutlich hoeher investiert als Aexte-Pool -> Dolch (Sekundaerseite) gewinnt.
+    character.values['nk_spez_stichwaffen_dolche'] = 50;
+    character = addWaffenLoadout(character, 'nk1h_nk1h', axt.id, dolch.id);
+
+    const sheet = computeSheet(character);
+    const soloRows = buildNahkampfRows(character, sheet);
+    const dolchSoloRow = soloRows.find((r) => r.key === dolch.id && r.grip === '1H')!;
+
+    const loadoutRows = buildLoadoutDisplayRows(character, sheet);
+    expect(loadoutRows).toHaveLength(1);
+    const pool = loadoutRows[0].pool!;
+    expect(pool.gat).toBe(dolchSoloRow.gat.value);
+    expect(pool.gpa).toBe(dolchSoloRow.gpa.value);
+    expect(pool.mat).toBe(dolchSoloRow.mat.value);
+    expect(pool.mpa).toBe(dolchSoloRow.mpa.value);
+    expect(pool.pp).toBe(dolchSoloRow.pp);
   });
 });

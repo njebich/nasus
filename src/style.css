@@ -984,6 +984,54 @@ body {
   display: inline-block;
 }
 
+/* Waffen-Loadout (2026-07-22): eigenes kompaktes Anlage-Formular + Tabelle gespeicherter
+   Kombinationen, gleiche horizontal-scrollbare Konvention wie die anderen Kampf-Tab-Tabellen. */
+.loadout-creation-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.loadout-combo-radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.loadout-combo-fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.loadout-combo-fieldset label,
+.loadout-creation-form > label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  gap: 0.2rem;
+}
+
+.kampf-loadout-table th, .kampf-loadout-table td {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.kampf-loadout-table td:first-child, .kampf-loadout-table th:first-child {
+  text-align: left;
+}
+
+.loadout-favorite-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
 /* KI-Tab (Nutzer 2026-07-20): Info-Kasten ist ein Nachbau des Papier-Screenshots
    "KI-Faehigkeitstabelle v2.8" - bewusst dunkel/eigenstaendig gestaltet statt wie eine normale
    Karte, damit er klar als reine Formel-Referenz (kein Charakterwert) erkennbar ist. */

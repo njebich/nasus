@@ -13,7 +13,8 @@ import { RUESTUNG_BASIS } from '../data/equipment/armor';
 import type { RsGruppe } from '../data/trefferzonen';
 import {
   buildNahkampfRows, buildFeuerwaffenRows, buildArmbrustBoegenRows, buildAusweichenRow,
-  type NahkampfRow, type FeuerwaffenRow, type ArmbrustBogenRow,
+  buildLoadoutDisplayRows, formatLoadoutCells,
+  type NahkampfRow, type FeuerwaffenRow, type ArmbrustBogenRow, type LoadoutDisplayRow,
 } from './kampf';
 
 function escapeHtml(s: string): string {
@@ -358,6 +359,50 @@ const FERNKAMPF_TABLE_HEAD = `
     <th>RW</th><th>Ladedauer</th><th>INI</th>
   </tr></thead>`;
 
+/** Read-only Spiegelung NUR der favorisierten Waffen-Loadouts (2026-07-22) - gleiche Zellen wie
+ *  die Kampf-Tab-Tabelle, ohne Favorit-/Entfernen-Steuerelemente. */
+function renderLoadoutMirrorRow(row: LoadoutDisplayRow): string {
+  const cells = formatLoadoutCells(row.result);
+  if ('error' in cells) {
+    return `
+      <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
+        <td>${escapeHtml(row.displayName)}</td><td colspan="10">${escapeHtml(cells.error)}</td>
+      </tr>`;
+  }
+  const pool = row.pool;
+  return `
+    <tr>
+      <td>${escapeHtml(row.displayName)}</td>
+      <td>${escapeHtml(cells.typ)}</td>
+      <td>${escapeHtml(cells.schaden)}</td>
+      <td>${escapeHtml(cells.wk)}</td>
+      <td>${escapeHtml(cells.nat)}</td>
+      <td>${pool ? pool.gat : '–'}</td>
+      <td>${pool ? pool.mat : '–'}</td>
+      <td>${escapeHtml(cells.npa)}</td>
+      <td>${pool ? pool.gpa : '–'}</td>
+      <td>${pool ? pool.mpa : '–'}</td>
+      <td>${escapeHtml(cells.fkReichweiten)}</td>
+    </tr>`;
+}
+
+function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterState): string {
+  const favorites = buildLoadoutDisplayRows(character, sheet).filter((r) => r.entry.favorite);
+  if (favorites.length === 0) return '';
+  return `
+    <h3 class="bogen-section-heading">Waffen-Loadout</h3>
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-loadout-table">
+        <thead><tr>
+          <th>Loadout</th><th>Typ</th><th>Schaden</th><th>WK</th>
+          <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
+          <th>FK-Reichweiten</th>
+        </tr></thead>
+        <tbody>${favorites.map(renderLoadoutMirrorRow).join('')}</tbody>
+      </table>
+    </div>`;
+}
+
 function renderKampfWaffenMirror(sheet: ComputedSheet, character: CharacterState): string {
   const nahkampf = buildNahkampfRows(character, sheet);
   const feuerwaffen = buildFeuerwaffenRows(character);
@@ -434,5 +479,6 @@ export function renderCharakterbogen(container: HTMLElement, sheet: ComputedShee
       </div>
       ${renderKampfLeRs(sheet, character)}
       ${renderKampfWaffenMirror(sheet, character)}
+      ${renderWaffenLoadoutMirror(sheet, character)}
     </div>`;
 }

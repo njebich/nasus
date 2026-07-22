@@ -2,13 +2,14 @@ import './style.css';
 import {
   listCharacters, loadCharacter, createCharacter, saveCharacter, deleteCharacter,
   getLastActiveCharacterId, setLastActiveCharacterId,
-  type CharacterState, type CharacterHeader, type StartbudgetPreset,
+  type CharacterState, type CharacterHeader, type StartbudgetPreset, type WaffenLoadoutComboType,
 } from './state/characterStore';
 import {
   setValue, addSelection, removeSelection, setPoolAllocation, setWaffenPoolAllocation, updateHeader,
   buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
   buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyFeuerwaffenMunition, buyAlchemika, removeEquipment,
-  setGrundfertigkeitPick, BudgetError, MutationError,
+  setGrundfertigkeitPick, addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite,
+  BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet, type ComputedSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
@@ -274,6 +275,34 @@ function handleBuyAlchemika(sourceRow: number, quantity: number): void {
 function handleRemoveEquipment(equipmentId: string): void {
   if (!currentCharacter) return;
   currentCharacter = removeEquipment(currentCharacter, equipmentId);
+  saveCharacter(currentCharacter);
+  errorMessage = '';
+  render();
+}
+
+function handleAddWaffenLoadout(comboType: WaffenLoadoutComboType, primaryEquipmentId: string, secondaryEquipmentId: string): void {
+  if (!currentCharacter) return;
+  try {
+    currentCharacter = addWaffenLoadout(currentCharacter, comboType, primaryEquipmentId, secondaryEquipmentId);
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
+function handleRemoveWaffenLoadout(loadoutId: string): void {
+  if (!currentCharacter) return;
+  currentCharacter = removeWaffenLoadout(currentCharacter, loadoutId);
+  saveCharacter(currentCharacter);
+  errorMessage = '';
+  render();
+}
+
+function handleToggleWaffenLoadoutFavorite(loadoutId: string): void {
+  if (!currentCharacter) return;
+  currentCharacter = toggleWaffenLoadoutFavorite(currentCharacter, loadoutId);
   saveCharacter(currentCharacter);
   errorMessage = '';
   render();
@@ -575,7 +604,10 @@ function render(): void {
     } else if (activeTab in AUSWAHL_TABS) {
       renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle, currentCharacter.religion);
     } else if (activeTab === 'Kampf') {
-      renderKampfView(viewContainer, sheet, currentCharacter, handleWaffenPoolChange);
+      renderKampfView(
+        viewContainer, sheet, currentCharacter, handleWaffenPoolChange,
+        handleAddWaffenLoadout, handleRemoveWaffenLoadout, handleToggleWaffenLoadoutFavorite,
+      );
     } else if (activeTab === 'KI') {
       renderKiView(viewContainer, sheet, handleValueChange, currentCharacter.grundfertigkeitAuswahl, handleGrundfertigkeitPick);
     } else if (activeTab === 'Spruchmagie') {

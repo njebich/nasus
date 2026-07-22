@@ -7,14 +7,21 @@
 import type { ComputedSheet } from '../engine/characterSheet';
 import { makeValueSource } from '../engine/characterSheet';
 import { evalReferenz, type CharacterValueSource } from '../engine/rules';
-import { aufrunden } from '../engine/functions';
-import type { CharacterState, PoolAllocation } from '../state/characterStore';
+import type { CharacterState, PoolAllocation, WaffenLoadoutEntry, WaffenLoadoutComboType } from '../state/characterStore';
 import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
 import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN } from '../data/equipment/fernkampf';
 import { feuerwaffenMunitionOptionen, FEUERWAFFEN_MUNITION_PREISE } from '../data/equipment/feuerwaffenMunition';
-import { resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier } from '../engine/waffenPool';
+import {
+  resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier, getZweiWaffenCap,
+} from '../engine/waffenPool';
 import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget } from '../engine/poolCaps';
 import { getOwnedKampfmodulTalentInfo } from '../engine/talenteKampfmodulInfo';
+import { computeSchaden, formatSigned } from '../engine/waffenSchaden';
+import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from '../engine/fernkampfRange';
+import {
+  listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen, resolveLoadout, describeLoadout,
+  type LoadoutResult, type PoolSideRef,
+} from '../engine/waffenLoadout';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -29,27 +36,6 @@ function num(row: Record<string, string> | undefined, header: string): number {
 
 function hasColumn(row: Record<string, string> | undefined, header: string): boolean {
   return row?.[header] !== undefined;
-}
-
-/** Gleiche AUFRUNDEN-weg-von-Null-Konvention wie engine/rules.ts's applyRoundingRule (dort nicht
- *  exportiert fuer views) - hier bewusst ABRUNDEN (Math.floor), da der Plan fuer die Schaden-
- *  Formel explizit "floor" vorgibt (Rundung war zum Planzeitpunkt nicht abschliessend
- *  spezifiziert, siehe Plan-Kommentar "Rounding is still unspecified"). */
-function floorSigned(x: number): number {
-  return Math.floor(x);
-}
-
-function formatSigned(n: number): string {
-  return n >= 0 ? `+${n}` : `${n}`;
-}
-
-/** "W10+W6" bei zwei Wuerfeln, sonst nur der eine - identische Anzeige-Konvention wie
- *  ausruestung.ts's (dort modul-privates) formatSchadenswuerfel. */
-function formatSchadenswuerfel(row: Record<string, string> | undefined): string {
-  const sw1 = row?.['Schadenswuerfel-1']?.trim();
-  const sw2 = row?.['Schadenswuerfel-2']?.trim();
-  if (sw1 && sw2) return `${sw1}+${sw2}`;
-  return sw1 || sw2 || '–';
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -99,32 +85,10 @@ function findWeaponBasis(baseId: string): WeaponRow | undefined {
   return NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === baseId);
 }
 
-/** Schaden = Wuerfelnotation + Flachbonus (eig_k_staerke/Staerke-Teiler + Stä-Malus, ABGERUNDET -
- *  siehe Plan-Kommentar zur Rundung). Nutzt den KOMPONIERTEN Stä-Malus aus dem Snapshot (Basis +
- *  Material), nicht nur die rohe Basis-Spalte - konsistent mit jeder anderen Zahl in dieser
- *  Tabelle (die kommen alle aus dem Snapshot, nicht aus der rohen Basiszeile). */
-function computeSchaden(basis: WeaponRow | undefined, staerkeMalus: number, eigKStaerke: number): string {
-  const staerkeTeiler = num(basis, 'Staerke-Teiler');
-  const flatBonus = staerkeTeiler !== 0 ? floorSigned(eigKStaerke / staerkeTeiler + staerkeMalus) : floorSigned(staerkeMalus);
-  const dice = formatSchadenswuerfel(basis);
-  return flatBonus !== 0 ? `${dice} ${formatSigned(flatBonus)}` : dice;
-}
-
 interface PoolContext {
   sheet: ComputedSheet;
   character: CharacterState;
   values: CharacterValueSource;
-}
-
-const ZWEI_WAFFEN_WK_CAP: Record<number, number> = { 1: 3.5, 2: 4.5, 3: 5.5, 4: 6.5 };
-
-/** Hoechster besessener talente_kampf_mit_zwei_waffen_stufe_1-4 -> WK-Kappungswert
- *  (unmodifizierter Listenwert), sonst undefined (Talent nicht besessen). */
-function getZweiWaffenCap(character: CharacterState): number | undefined {
-  for (let stufe = 4; stufe >= 1; stufe--) {
-    if ((character.selections[`talente_kampf_mit_zwei_waffen_stufe_${stufe}`] ?? 0) > 0) return ZWEI_WAFFEN_WK_CAP[stufe];
-  }
-  return undefined;
 }
 
 function poolFieldsForRow(
@@ -287,51 +251,15 @@ export function buildNahkampfRows(character: CharacterState, sheet: ComputedShee
 }
 
 // ---------------------------------------------------------------------------------------------
-// Kombinierte n/g/m-Reichweitenzelle (Feuerwaffen + Armbrüste/Bögen)
+// Kombinierte n/g/m-Reichweitenzelle (Feuerwaffen + Armbrüste/Bögen) - fkGuteDivisor/
+// fkMeisterlichDivisor/computeRangeCellValues/formatRangeCellValues leben in
+// engine/fernkampfRange.ts (siehe Import oben), damit engine/waffenLoadout.ts sie mitnutzen kann.
 // ---------------------------------------------------------------------------------------------
 
-/** gFK-Divisor aus den globalen Fernkampfgeschick-Talenten (siehe fernkampf.jsonl:
- *  fk_gute_* = WENN(stufe_2>0;1+AUFRUNDEN(x/3);WENN(stufe_1>0;1+AUFRUNDEN(x/4);1))) - Stufe 2
- *  ersetzt Stufe 1 (kein Stacking), keine Investition -> null (gFK bleibt konstant 1, nie > 1). */
-function fkGuteDivisor(values: CharacterValueSource): number | null {
-  if (values.getWert('talente_fernkampfgeschick_stufe_2') > 0) return 3;
-  if (values.getWert('talente_fernkampfgeschick_stufe_1') > 0) return 4;
-  return null;
-}
-
-/** mFK-Divisor aus Fernkampfgeschick Stufe 3 (fk_meisterlich_* = WENN(stufe_3>0;21+AUFRUNDEN(x/20);21)). */
-function fkMeisterlichDivisor(values: CharacterValueSource): number | null {
-  return values.getWert('talente_fernkampfgeschick_stufe_3') > 0 ? 20 : null;
-}
-
-/** "{normal} g{gut} m{meisterlich}" - g/m nur, wenn ueber den ungetalenteten Sockelwert hinaus
- *  (gut>1 / meisterlich>21). Nutzer-Korrektur 2026-07-22: gFK/mFK sind NICHT talent-fixiert,
- *  sondern haengen selbst vom (durch rw-mod verschobenen) nFK dieser Spalte ab - laut
- *  fernkampf.jsonl-Kommentar geht die AUFRUNDEN-Formel von der "VOLLSTAENDIGEN Probe" (Basiswert +
- *  Waffen-Mod + Entfernungs-Mod) aus, nicht vom unmodifizierten Basiswert. Deshalb wird pro Spalte
- *  neu gerechnet: gut = 1+AUFRUNDEN(nFK/gutDivisor), meisterlich = 21+AUFRUNDEN(nFK/meisterlichDivisor)
- *  - bei starkem Reichweitenabzug kann eine Spalte dadurch ihr g/m sogar wieder verlieren.
- *  rangeModRaw kann bei Bögen/Armbrust der Literalstring "x" sein (ausser Reichweite, Stammdaten-
- *  Konvention) - dann ist die ganze Zelle "x". Fuer Feuerwaffen (immer numerisch) ist die "x"-Zeile
- *  nur ein defensiver Fallback fuer ein nicht-endliches Rechenergebnis (Nutzer 2026-07-20: "formula
- *  will not be false [...] if it somehow is, print X" - erwartet, mit heutigen Daten NIE aktiv). */
 function formatRangeCell(
   rangeModRaw: string | number, basisValue: number, gutDivisor: number | null, meisterlichDivisor: number | null,
 ): string {
-  if (typeof rangeModRaw === 'string' && rangeModRaw.trim().toLowerCase() === 'x') return 'x';
-  const rangeMod = typeof rangeModRaw === 'number' ? rangeModRaw : Number(rangeModRaw.replace(',', '.'));
-  const normal = basisValue + rangeMod;
-  if (!Number.isFinite(normal)) return 'x';
-  let out = `${normal}`;
-  if (gutDivisor !== null) {
-    const gut = 1 + aufrunden(normal / gutDivisor, 0);
-    if (gut > 1) out += ` g${gut}`;
-  }
-  if (meisterlichDivisor !== null) {
-    const meisterlich = 21 + aufrunden(normal / meisterlichDivisor, 0);
-    if (meisterlich > 21) out += ` m${meisterlich}`;
-  }
-  return out;
+  return formatRangeCellValues(computeRangeCellValues(rangeModRaw, basisValue, gutDivisor, meisterlichDivisor));
 }
 
 const RANGE_HEADERS = ['10m', '30m', '60m', '100m', '150m', '210m'] as const;
@@ -510,6 +438,198 @@ export function buildAusweichenRow(character: CharacterState): AusweichenRow {
 }
 
 // ---------------------------------------------------------------------------------------------
+// Waffen-Loadout (2026-07-22): abgeleitete Zwei-Item-Kombinationen aus bereits besessener
+// Ausruestung - siehe engine/waffenLoadout.ts fuer die Regelwerks-Mathematik. Reine Anzeige (keine
+// +/- Pool-Buttons): gAT/gPA/mAT/mPA/PP werden - wo ueberhaupt vorhanden (nicht bei nk1h_pistole,
+// das hat keine Pool-Struktur) - 1:1 von der "hoeheren Pool"-Seite gespiegelt (higherPoolSide),
+// indem hier exakt derselbe poolFieldsForRow-Aufruf wie fuer die Solo-Zeile dieser Waffe oben in
+// der Nahkampf-Tabelle gemacht wird - Spenden von Pool-Punkten passiert weiterhin ausschliesslich
+// dort, nicht in diesem Block.
+// ---------------------------------------------------------------------------------------------
+
+export interface LoadoutDisplayRow {
+  entry: WaffenLoadoutEntry;
+  displayName: string;
+  result: LoadoutResult;
+  pool?: { gat: number; gpa: number; mat: number; mpa: number; pp: number };
+}
+
+function findLoadoutItemInfo(character: CharacterState, equipmentId: string): { hauptfertigkeit: string; atBonus: number; paBonus: number } | undefined {
+  return [...listEligibleNahkampf1HWaffen(character), ...listEligibleSchilde(character)].find((i) => i.equipmentId === equipmentId);
+}
+
+function poolMirrorFields(ctx: PoolContext, higherPoolSide: PoolSideRef): LoadoutDisplayRow['pool'] {
+  if (!higherPoolSide.poolReferenz) return undefined;
+  const info = findLoadoutItemInfo(ctx.character, higherPoolSide.equipmentId);
+  if (!info) return undefined;
+  const fields = poolFieldsForRow(ctx, higherPoolSide.poolReferenz, higherPoolSide.equipmentId, info.hauptfertigkeit, info.atBonus, info.paBonus);
+  return { gat: fields.gat.value, gpa: fields.gpa.value, mat: fields.mat.value, mpa: fields.mpa.value, pp: fields.pp };
+}
+
+export function buildLoadoutDisplayRows(character: CharacterState, sheet: ComputedSheet): LoadoutDisplayRow[] {
+  const ctx: PoolContext = { sheet, character, values: makeValueSource(character) };
+  return character.waffenLoadouts.map((entry) => {
+    const result = resolveLoadout(character, sheet, ctx.values, entry);
+    const pool = result.ok && (result.comboType === 'nk1h_nk1h' || result.comboType === 'nk1h_schild')
+      ? poolMirrorFields(ctx, result.higherPoolSide)
+      : undefined;
+    return { entry, displayName: describeLoadout(character, entry), result, pool };
+  });
+}
+
+export interface LoadoutCells {
+  typ: string;
+  schaden: string;
+  wk: string;
+  nat: string;
+  npa: string;
+  fkReichweiten: string;
+}
+
+export function formatLoadoutCells(result: LoadoutResult): LoadoutCells | { error: string } {
+  if (!result.ok) return { error: result.reason };
+  switch (result.comboType) {
+    case 'nk1h_nk1h':
+      if (result.talentActive) {
+        return {
+          typ: 'NK 1H+1H (Talent)', schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
+          nat: String(result.nat), npa: String(result.npa), fkReichweiten: '–',
+        };
+      }
+      return {
+        typ: 'NK 1H+1H',
+        schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
+        wk: `${result.primary.wk} / ${result.secondary.wk}`,
+        nat: `${result.primary.nat} / ${result.secondary.nat}`,
+        npa: `${result.primary.npa} / ${result.secondary.npa}`,
+        fkReichweiten: '–',
+      };
+    case 'nk1h_pistole':
+      return {
+        typ: 'NK 1H+Pistole', schaden: result.melee.schaden, wk: result.melee.wk,
+        nat: String(result.melee.nat), npa: String(result.melee.npa),
+        fkReichweiten: result.pistole.ranges.join(' / '),
+      };
+    case 'nk1h_schild':
+      return {
+        typ: result.talentActive ? 'NK 1H+Schild (Talent)' : 'NK 1H+Schild',
+        schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
+        nat: String(result.nat), npa: String(result.npa), fkReichweiten: '–',
+      };
+  }
+}
+
+export type OnAddWaffenLoadout = (comboType: WaffenLoadoutComboType, primaryEquipmentId: string, secondaryEquipmentId: string) => void;
+export type OnRemoveWaffenLoadout = (loadoutId: string) => void;
+export type OnToggleWaffenLoadoutFavorite = (loadoutId: string) => void;
+
+function loadoutOptionList(items: ReadonlyArray<{ equipmentId: string; label: string }>): string {
+  return items.map((i) => `<option value="${escapeHtml(i.equipmentId)}">${escapeHtml(i.label)}</option>`).join('');
+}
+
+function renderLoadoutCombo(comboType: WaffenLoadoutComboType, hidden: boolean, primaryOptions: string, secondaryOptions: string, primaryLabel: string, secondaryLabel: string): string {
+  return `
+    <div class="loadout-combo-fieldset" data-combo-type="${comboType}" ${hidden ? 'hidden' : ''}>
+      <label>${primaryLabel}
+        <select data-role="primary"><option value="">–</option>${primaryOptions}</select>
+      </label>
+      <label>${secondaryLabel}
+        <select data-role="secondary"><option value="">–</option>${secondaryOptions}</select>
+      </label>
+    </div>`;
+}
+
+const LOADOUT_COMBO_LABELS: Record<WaffenLoadoutComboType, string> = {
+  nk1h_nk1h: 'NK 1H + NK 1H', nk1h_pistole: 'NK 1H + Pistole', nk1h_schild: 'NK 1H + Schild',
+};
+
+function renderLoadoutCreationForm(character: CharacterState): string {
+  const nk1h = listEligibleNahkampf1HWaffen(character);
+  const schilde = listEligibleSchilde(character);
+  const pistolen = listEligiblePistolen(character);
+  const nk1hOptions = loadoutOptionList(nk1h);
+
+  const available: WaffenLoadoutComboType[] = [];
+  if (nk1h.length >= 2) available.push('nk1h_nk1h');
+  if (nk1h.length >= 1 && pistolen.length >= 1) available.push('nk1h_pistole');
+  if (nk1h.length >= 1 && schilde.length >= 1) available.push('nk1h_schild');
+
+  if (available.length === 0) {
+    return `<p class="kampf-talente-hinweis">Für ein Waffen-Loadout werden mindestens zwei besessene
+      1H-Nahkampfwaffen, oder eine 1H-Nahkampfwaffe plus eine besessene Pistole/ein besessenes
+      Schild benötigt.</p>`;
+  }
+
+  const radios = available.map((comboType, i) => `
+      <label><input type="radio" name="loadout-combo-type" value="${comboType}" ${i === 0 ? 'checked' : ''}> ${LOADOUT_COMBO_LABELS[comboType]}</label>`).join('');
+
+  const fieldsets = available.map((comboType, i) => {
+    const hidden = i !== 0;
+    if (comboType === 'nk1h_nk1h') return renderLoadoutCombo(comboType, hidden, nk1hOptions, nk1hOptions, 'Primärhand (rechte Hand)', 'Sekundärhand');
+    if (comboType === 'nk1h_pistole') return renderLoadoutCombo(comboType, hidden, loadoutOptionList([...nk1h, ...pistolen]), loadoutOptionList([...nk1h, ...pistolen]), 'Primärhand (rechte Hand)', 'Sekundärhand');
+    return renderLoadoutCombo(comboType, hidden, nk1hOptions, loadoutOptionList(schilde), 'Waffe (Primärhand)', 'Schild (Sekundärhand)');
+  }).join('');
+
+  return `
+    <div class="loadout-creation-form">
+      ${available.length > 1 ? `<div class="loadout-combo-radios">${radios}</div>` : ''}
+      ${fieldsets}
+      <button type="button" class="loadout-add-btn">Hinzufügen</button>
+    </div>`;
+}
+
+function renderLoadoutRow(row: LoadoutDisplayRow): string {
+  const cells = formatLoadoutCells(row.result);
+  const favoriteIcon = row.entry.favorite ? '★' : '☆';
+  const favoriteBtn = `<button type="button" class="loadout-favorite-toggle" data-loadout-id="${escapeHtml(row.entry.id)}" aria-label="Favorit umschalten">${favoriteIcon}</button>`;
+  const removeBtn = `<button type="button" class="loadout-remove" data-loadout-id="${escapeHtml(row.entry.id)}">Entfernen</button>`;
+  if ('error' in cells) {
+    return `
+      <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
+        <td>${escapeHtml(row.displayName)}</td>
+        <td colspan="10">${escapeHtml(cells.error)}</td>
+        <td>${favoriteBtn}</td>
+        <td>${removeBtn}</td>
+      </tr>`;
+  }
+  const pool = row.pool;
+  return `
+    <tr>
+      <td>${escapeHtml(row.displayName)}</td>
+      <td>${escapeHtml(cells.typ)}</td>
+      <td>${escapeHtml(cells.schaden)}</td>
+      <td>${escapeHtml(cells.wk)}</td>
+      <td>${escapeHtml(cells.nat)}</td>
+      <td>${pool ? pool.gat : '–'}</td>
+      <td>${pool ? pool.mat : '–'}</td>
+      <td>${escapeHtml(cells.npa)}</td>
+      <td>${pool ? pool.gpa : '–'}</td>
+      <td>${pool ? pool.mpa : '–'}</td>
+      <td>${escapeHtml(cells.fkReichweiten)}</td>
+      <td>${favoriteBtn}</td>
+      <td>${removeBtn}</td>
+    </tr>`;
+}
+
+function renderWaffenLoadoutBlock(character: CharacterState, sheet: ComputedSheet): string {
+  const rows = buildLoadoutDisplayRows(character, sheet);
+  return `
+    <h3 class="bogen-section-heading">Waffen-Loadout</h3>
+    ${renderLoadoutCreationForm(character)}
+    ${rows.length > 0 ? `
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-loadout-table">
+        <thead><tr>
+          <th>Loadout</th><th>Typ</th><th>Schaden</th><th>WK</th>
+          <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
+          <th>FK-Reichweiten</th><th>Favorit</th><th></th>
+        </tr></thead>
+        <tbody>${rows.map(renderLoadoutRow).join('')}</tbody>
+      </table>
+    </div>` : ''}`;
+}
+
+// ---------------------------------------------------------------------------------------------
 // Rendering (interaktiv)
 // ---------------------------------------------------------------------------------------------
 
@@ -679,6 +799,7 @@ function renderAusweichenBlock(row: AusweichenRow): string {
 
 export function renderKampfView(
   container: HTMLElement, sheet: ComputedSheet, character: CharacterState, onWaffenPoolChange: OnWaffenPoolChange,
+  onAddWaffenLoadout: OnAddWaffenLoadout, onRemoveWaffenLoadout: OnRemoveWaffenLoadout, onToggleWaffenLoadoutFavorite: OnToggleWaffenLoadoutFavorite,
 ): void {
   const nahkampfRows = buildNahkampfRows(character, sheet);
   const feuerwaffenRows = buildFeuerwaffenRows(character);
@@ -688,6 +809,7 @@ export function renderKampfView(
 
   container.innerHTML = `
     ${renderNahkampfTable(nahkampfRows)}
+    ${renderWaffenLoadoutBlock(character, sheet)}
     ${renderAusweichenBlock(ausweichen)}
     ${renderFeuerwaffenTable(feuerwaffenRows)}
     ${renderArmbrustBogenTable('Armbrüste', armbrustRows)}
@@ -713,5 +835,32 @@ export function renderKampfView(
       };
       onWaffenPoolChange(poolReferenz, key, allocation);
     });
+  });
+
+  container.querySelectorAll<HTMLInputElement>('input[name="loadout-combo-type"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      container.querySelectorAll<HTMLElement>('.loadout-combo-fieldset').forEach((fieldset) => {
+        fieldset.hidden = fieldset.dataset.comboType !== radio.value;
+      });
+    });
+  });
+
+  container.querySelector<HTMLButtonElement>('.loadout-add-btn')?.addEventListener('click', () => {
+    const checkedRadio = container.querySelector<HTMLInputElement>('input[name="loadout-combo-type"]:checked');
+    const soleFieldset = container.querySelector<HTMLElement>('.loadout-combo-fieldset');
+    const comboType = (checkedRadio?.value ?? soleFieldset?.dataset.comboType) as WaffenLoadoutComboType | undefined;
+    if (!comboType) return;
+    const fieldset = container.querySelector<HTMLElement>(`.loadout-combo-fieldset[data-combo-type="${comboType}"]`);
+    const primaryId = fieldset?.querySelector<HTMLSelectElement>('[data-role="primary"]')?.value;
+    const secondaryId = fieldset?.querySelector<HTMLSelectElement>('[data-role="secondary"]')?.value;
+    if (!primaryId || !secondaryId) return;
+    onAddWaffenLoadout(comboType, primaryId, secondaryId);
+  });
+
+  container.querySelectorAll<HTMLButtonElement>('.loadout-remove').forEach((btn) => {
+    btn.addEventListener('click', () => onRemoveWaffenLoadout(btn.dataset.loadoutId!));
+  });
+  container.querySelectorAll<HTMLButtonElement>('.loadout-favorite-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => onToggleWaffenLoadoutFavorite(btn.dataset.loadoutId!));
   });
 }

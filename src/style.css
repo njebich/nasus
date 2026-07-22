@@ -772,14 +772,12 @@ body {
   gap: 0.1rem;
 }
 
-/* Rein optische Luecke zwischen dem Hauptfertigkeit-Block (Spalten 1-4) und dem
-   Spezialisierungs-Block (Spalten 6-9) - kein eigener Rahmen, sonst sieht es wie eine echte
-   Datenspalte aus statt wie ein Abstand. */
-.nahkampf-spacer-cell {
-  border: none !important;
-  background: none;
-  padding: 0;
-  width: 0.75rem;
+/* Spalte 5 (Nutzer-Korrektur 2026-07-22): live Attacke-Basis-Wert, ueber die Hauptfertigkeit
+   gespannt - reuse .stat-value-readonly (bereits definiert fuer renderReadOnlyRow), nur zentriert
+   statt linksbuendig wie in den Zeilen-Divs. */
+.nahkampf-waffen-table td.stat-value-readonly {
+  text-align: center;
+  vertical-align: middle;
 }
 
 .nahkampf-spez-locked {

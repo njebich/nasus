@@ -196,40 +196,60 @@ function renderNahkampfLabelCell(r: ComputedRule, rowspan: number | undefined): 
   return `<td${rowspanAttr}>${label}${infoIcon(r.rule.info)}${errorNote(r)}</td>`;
 }
 
-function renderNahkampfSpacerCell(rowspan: number): string {
-  return `<td class="nahkampf-spacer-cell" rowspan="${rowspan}"></td>`;
+/** Jede Hauptfertigkeit hat genau eine "Attacke-Basis-Wert"-Formel-Zeile (at_hiebwaffen usw.),
+ *  benannt exakt wie die zugehoerige nk_*-Wert-Zeile mit "nk_" -> "at_" ersetzt (kein Sonderfall,
+ *  gilt fuer alle 5 Hauptfertigkeiten - siehe nahkampf.jsonl). Spezialisierungen haben KEINE eigene
+ *  AT-Basis-Formel, deshalb gibt es nur eine Spalte 5, nicht auch eine fuer den Spez-Block. */
+function findNahkampfAtBasisRule(hauptfertigkeitReferenz: string, readOnly: ComputedRule[]): ComputedRule | undefined {
+  const atReferenz = hauptfertigkeitReferenz.replace(/^nk_/, 'at_');
+  return readOnly.find((r) => r.rule.referenz === atReferenz);
 }
 
-function renderNahkampfWaffenGroup(node: HierarchyNode): string {
+/** Spalte 5 (Nutzer-Korrektur 2026-07-22: "column 5 header AT-Basis, wire at basis value to the
+ *  field below") - der Live-Formelwert, rein lesend wie renderReadOnlyRow, aber als eigene ueber
+ *  die ganze Hauptfertigkeit gespannte Zelle statt einer separaten Zeile im "Berechnete Werte"-
+ *  Block (der die 5 at_*-Zeilen fuer den Nahkampf-Tab deshalb jetzt ausblendet, siehe
+ *  renderCategoryView - sonst stuende derselbe Wert doppelt auf der Seite). */
+function renderNahkampfAtBasisCell(rule: ComputedRule | undefined, rowspan: number): string {
+  const rowspanAttr = ` rowspan="${rowspan}"`;
+  if (!rule) return `<td${rowspanAttr}>–</td>`;
+  if (rule.error) {
+    return `<td${rowspanAttr}><span class="stat-error" title="${escapeHtml(rule.error)}">nicht definiert ⚠</span></td>`;
+  }
+  return `<td${rowspanAttr} class="stat-value-readonly"${formulaTooltip(rule.rule.formelRaw)}>${escapeHtml(formatComputedValue(rule.computedValue ?? '–'))}</td>`;
+}
+
+function renderNahkampfWaffenGroup(node: HierarchyNode, readOnly: ComputedRule[]): string {
   const hauptwert = node.row.currentValue ?? 0;
+  const atBasisRule = findNahkampfAtBasisRule(node.row.rule.referenz, readOnly);
   if (node.children.length === 0) {
     return `
       <table class="bogen-table nahkampf-waffen-table">
-        <thead><tr><th>Waffe</th><th></th><th>AT-Basis</th><th></th></tr></thead>
-        <tbody><tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfControlCells(node.row, undefined)}</tr></tbody>
+        <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th></tr></thead>
+        <tbody><tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfControlCells(node.row, undefined)}${renderNahkampfAtBasisCell(atBasisRule, 1)}</tr></tbody>
       </table>`;
   }
   if (hauptwert <= 0) {
     return `
       <table class="bogen-table nahkampf-waffen-table">
-        <thead><tr><th>Waffe</th><th></th><th>AT-Basis</th><th></th></tr></thead>
+        <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th></tr></thead>
         <tbody>
-          <tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfControlCells(node.row, undefined)}</tr>
-          <tr><td colspan="4" class="nahkampf-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
+          <tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfControlCells(node.row, undefined)}${renderNahkampfAtBasisCell(atBasisRule, 1)}</tr>
+          <tr><td colspan="5" class="nahkampf-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
         </tbody>
       </table>`;
   }
   const n = node.children.length;
   const rows = node.children.map((child, i) => `
     <tr>
-      ${i === 0 ? `${renderNahkampfLabelCell(node.row, n)}${renderNahkampfControlCells(node.row, n)}${renderNahkampfSpacerCell(n)}` : ''}
+      ${i === 0 ? `${renderNahkampfLabelCell(node.row, n)}${renderNahkampfControlCells(node.row, n)}${renderNahkampfAtBasisCell(atBasisRule, n)}` : ''}
       ${renderNahkampfLabelCell(child, undefined)}${renderNahkampfControlCells(child, undefined, hauptwert)}
     </tr>`).join('');
   return `
     <table class="bogen-table nahkampf-waffen-table">
       <thead><tr>
-        <th>Waffe</th><th></th><th>AT-Basis</th><th></th><th></th>
-        <th>Spezialisierung</th><th></th><th>AT-Basis</th><th></th>
+        <th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th>
+        <th>Spezialisierung</th><th></th><th>TaW</th><th></th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
@@ -310,19 +330,26 @@ export function renderCategoryView(
   const ladeschuetzeRows = editable.filter((r) => r.rule.referenz in LADESCHUETZE_SF_FK_GATE);
   const restEditable = editable.filter((r) => !(r.rule.referenz in LADESCHUETZE_SF_FK_GATE));
   const editableHierarchy = buildHierarchy(restEditable);
-  const readOnlyHierarchy = buildHierarchy(readOnly);
   // Nahkampf-Tab (Nutzer-Mockup 2026-07-22): Waffengruppen als feste Tabelle statt aufklappbarer
   // Karte (siehe renderNahkampfWaffenGroup), und die Kampf-Pools-Sektion faellt komplett weg - die
   // AT-Basis-Spalte in der neuen Tabelle deckt das ab, was dort bisher redundant angezeigt wurde.
   // Andere Kategorien (z.B. "Kampf" mit seinem Leberschutz-Pool) behalten das bisherige Verhalten.
   const isNahkampf = kategorie === 'Nahkampf';
+  // Die 5 "Attacke-Basis-Wert"-Formelzeilen (at_hiebwaffen usw.) stehen jetzt live in Spalte 5 der
+  // Waffentabelle (renderNahkampfAtBasisCell) - aus "Berechnete Werte" ausgeblendet, sonst staende
+  // derselbe Wert doppelt auf der Seite. Parade-Basis-Wert (pa_*) bleibt dort, da (noch) nicht in
+  // der Tabelle gewiesen.
+  const readOnlyForBerechneteWerte = isNahkampf
+    ? readOnly.filter((r) => !r.rule.referenz.startsWith('at_'))
+    : readOnly;
+  const readOnlyHierarchy = buildHierarchy(readOnlyForBerechneteWerte);
   const editableBlock = isNahkampf
-    ? editableHierarchy.map(renderNahkampfWaffenGroup).join('')
+    ? editableHierarchy.map((n) => renderNahkampfWaffenGroup(n, readOnly)).join('')
     : editableHierarchy.map(renderEditableGroup).join('');
 
   container.innerHTML = `
     <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet)}</div>
-    ${readOnly.length > 0 ? `
+    ${readOnlyForBerechneteWerte.length > 0 ? `
       <h3 class="stat-section-heading">Berechnete Werte</h3>
       <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>
     ` : ''}

@@ -151,24 +151,24 @@ function renderEditableGroup(node: HierarchyNode): string {
     </div>`;
 }
 
-/** Nahkampf-Tab (Nutzer-Mockup 2026-07-22, "S05 Nahkampfwaffen"): Hauptfertigkeit +
- *  Spezialisierungen als feste Tabelle statt aufklappbarer <details>-Karte (renderEditableGroup) -
- *  eine Tabelle pro Hauptfertigkeit. Jede Spalte (Label/-/Wert/+) ist eine EIGENE <td> (nicht ein
- *  gebuendeltes Steuer-Element), damit alle Spezialisierungen dieselbe Spalte teilen (Nutzer-
- *  Korrektur 2026-07-22: "all spezialisierungen are meant to be in the same column"); die ersten 5
- *  Spalten (Waffe/-/Wert/+/Luecke) der Hauptfertigkeit sind ueber die gesamte Tabellenhoehe gespannt
- *  (rowspan), weil es nur EINEN Hauptfertigkeit-Wert gibt, waehrend Spalte 6-9 (Spezialisierung/-/
- *  Wert/+) sich pro Zeile aendert. Jede -/Wert/+-Zelle behaelt die Klasse "stat-row" (statt einer
- *  Huellen-Div), damit die bestehende Event-Delegation (closest('.stat-row')) unveraendert
- *  weiterfunktioniert - ABER die Zelle selbst darf NIE `display:flex/grid` bekommen (das ist,
- *  wonach `.stat-row` normalerweise aussieht): mehrere BENACHBARTE <td> mit nicht-table-cell
- *  display in derselben <tr> lassen den Browser die Zellen faelschlich in EINER Spalte stapeln
- *  statt sie nebeneinander zu setzen (browser-verifiziert 2026-07-22 - mit Grid/Flex direkt auf
- *  der <td> rutschten alle drei -/Wert/+-Zellen visuell in dieselbe x-Position). Deshalb bleibt
- *  die <td> ein normales table-cell (siehe .nahkampf-ctrl-cell in style.css), und ein etwaiges
- *  zweites Kind (Wert-Input + Kosten-Hinweis) wird in einem inneren <div> zentriert, nicht auf
- *  Zellenebene. */
-function renderNahkampfControlCells(r: ComputedRule, rowspan: number | undefined, maxValue?: number): string {
+/** Nahkampf-/Fernkampf-Tab (Nutzer-Mockup 2026-07-22, "S05 Nahkampfwaffen", spaeter auf Fernkampf
+ *  uebertragen): Hauptfertigkeit + Spezialisierungen als feste Tabelle statt aufklappbarer
+ *  <details>-Karte (renderEditableGroup) - eine Tabelle pro Hauptfertigkeit. Jede Spalte (Label/-/
+ *  Wert/+) ist eine EIGENE <td> (nicht ein gebuendeltes Steuer-Element), damit alle
+ *  Spezialisierungen dieselbe Spalte teilen (Nutzer-Korrektur 2026-07-22: "all spezialisierungen
+ *  are meant to be in the same column"); die ersten Spalten (Waffe/-/Wert/+/Basis-Spalten) der
+ *  Hauptfertigkeit sind ueber die gesamte Tabellenhoehe gespannt (rowspan), weil es nur EINEN
+ *  Hauptfertigkeit-Wert gibt, waehrend die Spezialisierung/-/Wert/+-Spalten sich pro Zeile aendern.
+ *  Jede -/Wert/+-Zelle behaelt die Klasse "stat-row" (statt einer Huellen-Div), damit die
+ *  bestehende Event-Delegation (closest('.stat-row')) unveraendert weiterfunktioniert - ABER die
+ *  Zelle selbst darf NIE `display:flex/grid` bekommen (das ist, wonach `.stat-row` normalerweise
+ *  aussieht): mehrere BENACHBARTE <td> mit nicht-table-cell display in derselben <tr> lassen den
+ *  Browser die Zellen faelschlich in EINER Spalte stapeln statt sie nebeneinander zu setzen
+ *  (browser-verifiziert 2026-07-22 - mit Grid/Flex direkt auf der <td> rutschten alle drei
+ *  -/Wert/+-Zellen visuell in dieselbe x-Position). Deshalb bleibt die <td> ein normales
+ *  table-cell (siehe .waffen-ctrl-cell in style.css), und ein etwaiges zweites Kind (Wert-Input +
+ *  Kosten-Hinweis) wird in einem inneren <div> zentriert, nicht auf Zellenebene. */
+function renderWaffenControlCells(r: ComputedRule, rowspan: number | undefined, maxValue?: number): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   const value = r.currentValue ?? 0;
   const costNext = r.kostenNext !== undefined ? `${r.kostenNext} SP` : '';
@@ -176,43 +176,44 @@ function renderNahkampfControlCells(r: ComputedRule, rowspan: number | undefined
   const atMax = maxValue !== undefined && value >= maxValue;
   const rowspanAttr = rowspan !== undefined ? ` rowspan="${rowspan}"` : '';
   return `
-    <td class="stat-row nahkampf-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
+    <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
       <button type="button" class="stat-dec" aria-label="verringern">-</button>
     </td>
-    <td class="stat-row nahkampf-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
-      <div class="nahkampf-value-inner">
+    <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
+      <div class="waffen-value-inner">
         <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
         ${costNext ? `<span class="stat-cost">${costNext}</span>` : ''}
       </div>
     </td>
-    <td class="stat-row nahkampf-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
+    <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
       <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
     </td>`;
 }
 
-function renderNahkampfLabelCell(r: ComputedRule, rowspan: number | undefined): string {
+function renderWaffenLabelCell(r: ComputedRule, rowspan: number | undefined): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   const rowspanAttr = rowspan !== undefined ? ` rowspan="${rowspan}"` : '';
   return `<td${rowspanAttr}>${label}${infoIcon(r.rule.info)}${errorNote(r)}</td>`;
 }
 
-/** Jede Hauptfertigkeit hat genau eine "Attacke-Basis-Wert"- und eine "Parade-Basis-Wert"-Formel-
- *  Zeile (at_hiebwaffen/pa_hiebwaffen usw.), benannt exakt wie die zugehoerige nk_*-Wert-Zeile mit
- *  "nk_" -> "at_"/"pa_" ersetzt (kein Sonderfall, gilt fuer alle 5 Hauptfertigkeiten - siehe
- *  nahkampf.jsonl). Spezialisierungen haben KEINE eigenen Basis-Formeln, deshalb gibt es nur je
- *  eine AT-/PA-Basis-Spalte, nicht auch welche fuer den Spez-Block. */
+/** Jede Nahkampf-Hauptfertigkeit hat genau eine "Attacke-Basis-Wert"- und eine "Parade-Basis-Wert"-
+ *  Formel-Zeile (at_hiebwaffen/pa_hiebwaffen usw.), benannt exakt wie die zugehoerige nk_*-Wert-
+ *  Zeile mit "nk_" -> "at_"/"pa_" ersetzt (kein Sonderfall, gilt fuer alle 5 Hauptfertigkeiten -
+ *  siehe nahkampf.jsonl). Spezialisierungen haben KEINE eigenen Basis-Formeln, deshalb gibt es nur
+ *  je eine AT-/PA-Basis-Spalte, nicht auch welche fuer den Spez-Block. */
 function findNahkampfBasisRule(hauptfertigkeitReferenz: string, prefix: 'at_' | 'pa_', readOnly: ComputedRule[]): ComputedRule | undefined {
   const basisReferenz = hauptfertigkeitReferenz.replace(/^nk_/, prefix);
   return readOnly.find((r) => r.rule.referenz === basisReferenz);
 }
 
-/** AT-Basis/PA-Basis-Spalten (Nutzer-Korrektur 2026-07-22: "column 5 header AT-Basis, wire at
- *  basis value to the field below", spaeter "add the PA-Basis header and value right to AT-Basis
- *  column") - der Live-Formelwert, rein lesend wie renderReadOnlyRow, aber als eigene ueber die
- *  ganze Hauptfertigkeit gespannte Zelle statt einer separaten Zeile im "Berechnete Werte"-Block
- *  (der die 10 at_- und pa_-Zeilen fuer den Nahkampf-Tab deshalb jetzt ausblendet, siehe
- *  renderCategoryView - sonst stuende derselbe Wert doppelt auf der Seite). */
-function renderNahkampfBasisCell(rule: ComputedRule | undefined, rowspan: number): string {
+/** AT-Basis/PA-Basis- bzw. FK-Basis/FKS-Basis-Spalten (Nutzer-Korrektur 2026-07-22: "column 5
+ *  header AT-Basis, wire at basis value to the field below", spaeter "add the PA-Basis header...",
+ *  spaeter "do the equivalent in Fernkampf with Fernkampf-Basis-Wert and Fernkampf-
+ *  Spezialisierungs-Wert") - der Live-Formelwert, rein lesend wie renderReadOnlyRow, aber als
+ *  eigene Zelle in der Tabelle statt einer separaten Zeile im "Berechnete Werte"-Block (der diese
+ *  Formelzeilen fuer Nahkampf/Fernkampf deshalb jetzt ausblendet, siehe renderCategoryView - sonst
+ *  stuende derselbe Wert doppelt auf der Seite). */
+function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number): string {
   const rowspanAttr = ` rowspan="${rowspan}"`;
   if (!rule) return `<td${rowspanAttr}>–</td>`;
   if (rule.error) {
@@ -225,35 +226,98 @@ function renderNahkampfWaffenGroup(node: HierarchyNode, readOnly: ComputedRule[]
   const hauptwert = node.row.currentValue ?? 0;
   const atBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'at_', readOnly);
   const paBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'pa_', readOnly);
-  const basisCells = (rowspan: number) => `${renderNahkampfBasisCell(atBasisRule, rowspan)}${renderNahkampfBasisCell(paBasisRule, rowspan)}`;
+  const basisCells = (rowspan: number) => `${renderWaffenBasisCell(atBasisRule, rowspan)}${renderWaffenBasisCell(paBasisRule, rowspan)}`;
   if (node.children.length === 0) {
     return `
-      <table class="bogen-table nahkampf-waffen-table">
+      <table class="bogen-table waffen-basis-table">
         <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th><th>PA-Basis</th></tr></thead>
-        <tbody><tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfControlCells(node.row, undefined)}${basisCells(1)}</tr></tbody>
+        <tbody><tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}</tr></tbody>
       </table>`;
   }
   if (hauptwert <= 0) {
     return `
-      <table class="bogen-table nahkampf-waffen-table">
+      <table class="bogen-table waffen-basis-table">
         <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th><th>PA-Basis</th></tr></thead>
         <tbody>
-          <tr>${renderNahkampfLabelCell(node.row, undefined)}${renderNahkampfControlCells(node.row, undefined)}${basisCells(1)}</tr>
-          <tr><td colspan="6" class="nahkampf-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
+          <tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}</tr>
+          <tr><td colspan="6" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
         </tbody>
       </table>`;
   }
   const n = node.children.length;
   const rows = node.children.map((child, i) => `
     <tr>
-      ${i === 0 ? `${renderNahkampfLabelCell(node.row, n)}${renderNahkampfControlCells(node.row, n)}${basisCells(n)}` : ''}
-      ${renderNahkampfLabelCell(child, undefined)}${renderNahkampfControlCells(child, undefined, hauptwert)}
+      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${basisCells(n)}` : ''}
+      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert)}
     </tr>`).join('');
   return `
-    <table class="bogen-table nahkampf-waffen-table">
+    <table class="bogen-table waffen-basis-table">
       <thead><tr>
         <th>Waffe</th><th></th><th>TaW</th><th></th><th>AT-Basis</th><th>PA-Basis</th>
         <th>Spezialisierung</th><th></th><th>TaW</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+/** Fernkampf-Pendant zu findNahkampfBasisRule - ABER anders als Nahkampf ist "Fernkampf-
+ *  Spezialisierungs-Wert" (FKS-Basis) eine EIGENE Formel PRO Spezialisierung (haengt von Haupt-
+ *  UND Spez-TaW ab), waehrend Nahkampfs AT-/PA-Basis nur von der Hauptfertigkeit abhaengen - daher
+ *  zwei getrennte Lookup-Funktionen statt einer gemeinsamen mit Praefix-Parameter. */
+function findFernkampfBasisRule(hauptfertigkeitReferenz: string, readOnly: ComputedRule[]): ComputedRule | undefined {
+  const basisReferenz = hauptfertigkeitReferenz.replace(/^fk_/, 'fk_basis_');
+  return readOnly.find((r) => r.rule.referenz === basisReferenz);
+}
+
+/** "fk_spez_X_Y" -> "fk_basis_spez_X_Y" ist die Namenskonvention fuer ALLE Fernkampf-
+ *  Spezialisierungen bis auf eine Ausnahme: die Wert-Zeile heisst "fk_spez_schusswaffen_armbrueste"
+ *  (Plural), ihre Formel-Zeile aber "fk_basis_spez_schusswaffen_armbrust" (Singular) - eine echte
+ *  Schreibweisen-Abweichung in der Quelldaten (nahkampf.jsonl las verzeihend das GLEICHE nk_->at_/
+ *  pa_-Muster durchgehend; hier verifiziert per grep in fernkampf.jsonl, kein Zufall/Tippfehler
+ *  meinerseits). */
+const FERNKAMPF_SPEZ_BASIS_REFERENZ_OVERRIDES: Record<string, string> = {
+  fk_spez_schusswaffen_armbrueste: 'fk_basis_spez_schusswaffen_armbrust',
+};
+
+function findFernkampfSpezBasisRule(spezReferenz: string, readOnly: ComputedRule[]): ComputedRule | undefined {
+  const basisReferenz = FERNKAMPF_SPEZ_BASIS_REFERENZ_OVERRIDES[spezReferenz] ?? spezReferenz.replace(/^fk_spez_/, 'fk_basis_spez_');
+  return readOnly.find((r) => r.rule.referenz === basisReferenz);
+}
+
+function renderFernkampfWaffenGroup(node: HierarchyNode, readOnly: ComputedRule[]): string {
+  const hauptwert = node.row.currentValue ?? 0;
+  const fkBasisRule = findFernkampfBasisRule(node.row.rule.referenz, readOnly);
+  if (node.children.length === 0) {
+    return `
+      <table class="bogen-table waffen-basis-table">
+        <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>FK-Basis</th></tr></thead>
+        <tbody><tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderWaffenBasisCell(fkBasisRule, 1)}</tr></tbody>
+      </table>`;
+  }
+  if (hauptwert <= 0) {
+    return `
+      <table class="bogen-table waffen-basis-table">
+        <thead><tr><th>Waffe</th><th></th><th>TaW</th><th></th><th>FK-Basis</th></tr></thead>
+        <tbody>
+          <tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderWaffenBasisCell(fkBasisRule, 1)}</tr>
+          <tr><td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>
+        </tbody>
+      </table>`;
+  }
+  const n = node.children.length;
+  const rows = node.children.map((child, i) => {
+    const fksBasisRule = findFernkampfSpezBasisRule(child.rule.referenz, readOnly);
+    return `
+    <tr>
+      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${renderWaffenBasisCell(fkBasisRule, n)}` : ''}
+      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert)}${renderWaffenBasisCell(fksBasisRule, 1)}
+    </tr>`;
+  }).join('');
+  return `
+    <table class="bogen-table waffen-basis-table">
+      <thead><tr>
+        <th>Waffe</th><th></th><th>TaW</th><th></th><th>FK-Basis</th>
+        <th>Spezialisierung</th><th></th><th>TaW</th><th></th><th>FKS-Basis</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
@@ -334,21 +398,30 @@ export function renderCategoryView(
   const ladeschuetzeRows = editable.filter((r) => r.rule.referenz in LADESCHUETZE_SF_FK_GATE);
   const restEditable = editable.filter((r) => !(r.rule.referenz in LADESCHUETZE_SF_FK_GATE));
   const editableHierarchy = buildHierarchy(restEditable);
-  // Nahkampf-Tab (Nutzer-Mockup 2026-07-22): Waffengruppen als feste Tabelle statt aufklappbarer
-  // Karte (siehe renderNahkampfWaffenGroup), und die Kampf-Pools-Sektion faellt komplett weg - die
-  // AT-Basis-Spalte in der neuen Tabelle deckt das ab, was dort bisher redundant angezeigt wurde.
-  // Andere Kategorien (z.B. "Kampf" mit seinem Leberschutz-Pool) behalten das bisherige Verhalten.
+  // Nahkampf-/Fernkampf-Tab (Nutzer-Mockup 2026-07-22): Waffengruppen als feste Tabelle statt
+  // aufklappbarer Karte (siehe renderNahkampfWaffenGroup/renderFernkampfWaffenGroup), und die
+  // Kampf-Pools-Sektion faellt fuer Nahkampf komplett weg - die AT-Basis-Spalte in der neuen
+  // Tabelle deckt das ab, was dort bisher redundant angezeigt wurde. Andere Kategorien (z.B.
+  // "Kampf" mit seinem Leberschutz-Pool) behalten das bisherige Verhalten.
   const isNahkampf = kategorie === 'Nahkampf';
-  // Die 5 "Attacke-Basis-Wert"- UND 5 "Parade-Basis-Wert"-Formelzeilen (at_hiebwaffen/pa_hiebwaffen
-  // usw.) stehen jetzt live in den AT-/PA-Basis-Spalten der Waffentabelle (renderNahkampfBasisCell)
-  // - aus "Berechnete Werte" ausgeblendet, sonst staende derselbe Wert doppelt auf der Seite.
+  const isFernkampf = kategorie === 'Fernkampf';
+  // Die "Attacke-/Parade-Basis-Wert"- (Nahkampf) bzw. "Fernkampf-(Spezialisierungs-)Basis-Wert"-
+  // Formelzeilen (Fernkampf) stehen jetzt live in den Basis-Spalten der Waffentabelle
+  // (renderWaffenBasisCell) - aus "Berechnete Werte" ausgeblendet, sonst staende derselbe Wert
+  // doppelt auf der Seite. Fuer Fernkampf sind das exakt die "fk_basis_"-praefigierten Zeilen
+  // (Hauptfertigkeit UND Spezialisierung, z.B. fk_basis_boegen/fk_basis_spez_boegen_boegen) -
+  // fk_gute_*/fk_meisterlich_* bleiben unberuehrt, die stehen nirgendwo sonst auf der Seite.
   const readOnlyForBerechneteWerte = isNahkampf
     ? readOnly.filter((r) => !r.rule.referenz.startsWith('at_') && !r.rule.referenz.startsWith('pa_'))
-    : readOnly;
+    : isFernkampf
+      ? readOnly.filter((r) => !r.rule.referenz.startsWith('fk_basis_'))
+      : readOnly;
   const readOnlyHierarchy = buildHierarchy(readOnlyForBerechneteWerte);
   const editableBlock = isNahkampf
     ? editableHierarchy.map((n) => renderNahkampfWaffenGroup(n, readOnly)).join('')
-    : editableHierarchy.map(renderEditableGroup).join('');
+    : isFernkampf
+      ? editableHierarchy.map((n) => renderFernkampfWaffenGroup(n, readOnly)).join('')
+      : editableHierarchy.map(renderEditableGroup).join('');
 
   container.innerHTML = `
     <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet)}</div>

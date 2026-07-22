@@ -741,22 +741,23 @@ body {
   opacity: 0.85;
 }
 
-/* Nahkampf-Tab (Nutzer-Mockup 2026-07-22): eine bogen-table je Hauptfertigkeit statt der
-   aufklappbaren stat-card/details-Gruppe - siehe renderNahkampfWaffenGroup in categoryView.ts.
-   Jede -/Wert/+-Zelle behaelt die Klasse "stat-row" fuer die bestehende Event-Delegation, verliert
-   hier aber ihre eigene Karten-Optik (Rahmen/Radius/Hintergrund/Grid), weil die Tabellenzelle
-   selbst schon einen Rahmen hat (.bogen-table td). WICHTIG: `display` bleibt explizit
-   `table-cell` (nicht flex/grid wie die generische .stat-row-Regel) - mehrere BENACHBARTE <td>
-   mit einem nicht-table-cell-Display in derselben <tr> lassen den Browser sie faelschlich in
-   einer Spalte stapeln statt nebeneinander zu setzen (browser-verifizierter Bug 2026-07-22).
-   Zentrierung von Mehrfach-Inhalt (Wert-Input + Kosten-Hinweis) passiert stattdessen in einem
-   inneren <div> (.nahkampf-value-inner), das kein table-cell ist und daher unproblematisch ist. */
-.nahkampf-waffen-table {
+/* Nahkampf-/Fernkampf-Tab (Nutzer-Mockup 2026-07-22, Fernkampf-Uebertragung spaeter am selben
+   Tag): eine bogen-table je Hauptfertigkeit statt der aufklappbaren stat-card/details-Gruppe -
+   siehe renderNahkampfWaffenGroup/renderFernkampfWaffenGroup in categoryView.ts. Jede -/Wert/+-
+   Zelle behaelt die Klasse "stat-row" fuer die bestehende Event-Delegation, verliert hier aber
+   ihre eigene Karten-Optik (Rahmen/Radius/Hintergrund/Grid), weil die Tabellenzelle selbst schon
+   einen Rahmen hat (.bogen-table td). WICHTIG: `display` bleibt explizit `table-cell` (nicht
+   flex/grid wie die generische .stat-row-Regel) - mehrere BENACHBARTE <td> mit einem nicht-
+   table-cell-Display in derselben <tr> lassen den Browser sie faelschlich in einer Spalte
+   stapeln statt nebeneinander zu setzen (browser-verifizierter Bug 2026-07-22). Zentrierung von
+   Mehrfach-Inhalt (Wert-Input + Kosten-Hinweis) passiert stattdessen in einem inneren <div>
+   (.waffen-value-inner), das kein table-cell ist und daher unproblematisch ist. */
+.waffen-basis-table {
   min-width: max-content;
   margin-bottom: 0.6rem;
 }
 
-.nahkampf-waffen-table td.nahkampf-ctrl-cell {
+.waffen-basis-table td.waffen-ctrl-cell {
   display: table-cell;
   text-align: center;
   vertical-align: middle;
@@ -765,22 +766,23 @@ body {
   background: none;
 }
 
-.nahkampf-value-inner {
+.waffen-value-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.1rem;
 }
 
-/* Spalte 5 (Nutzer-Korrektur 2026-07-22): live Attacke-Basis-Wert, ueber die Hauptfertigkeit
-   gespannt - reuse .stat-value-readonly (bereits definiert fuer renderReadOnlyRow), nur zentriert
-   statt linksbuendig wie in den Zeilen-Divs. */
-.nahkampf-waffen-table td.stat-value-readonly {
+/* AT-/PA-Basis bzw. FK-/FKS-Basis-Spalten (Nutzer-Korrektur 2026-07-22): live Formelwert, ueber
+   die Hauptfertigkeit (bzw. bei FKS-Basis nur die eine Spezialisierungs-Zeile) gespannt - reuse
+   .stat-value-readonly (bereits definiert fuer renderReadOnlyRow), nur zentriert statt
+   linksbuendig wie in den Zeilen-Divs. */
+.waffen-basis-table td.stat-value-readonly {
   text-align: center;
   vertical-align: middle;
 }
 
-.nahkampf-spez-locked {
+.waffen-spez-locked {
   opacity: 0.7;
   font-style: italic;
 }

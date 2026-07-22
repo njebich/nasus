@@ -16,6 +16,10 @@ export type OnToggle = (referenz: string, selected: boolean) => void;
  *  spruchmagie.ts/openGroupReferenzen in categoryView.ts. Alle standardmaessig zu. */
 const openParents = new Set<string>();
 
+/** Suchtext pro Kategorie (Talente/Vor- und Nachteile teilen sich dieses Modul, brauchen aber
+ *  unabhaengige Suchfelder) - gleiches Persistenz-Muster wie searchText in ausruestung.ts. */
+const searchTextByKategorie = new Map<string, string>();
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -81,19 +85,39 @@ export function renderAuswahlView(
   onToggle: OnToggle,
   characterReligion?: string,
 ): void {
-  const rows = (sheet.byKategorie[kategorie] ?? []).filter((r) => r.rule.art === 'Auswahl');
+  // VOR dem innerHTML-Ersatz sichern, ob das Suchfeld gerade fokussiert war (und an welcher
+  // Cursor-Position) - sonst wuerde JEDER Re-Render dieser View (auch durch Checkbox-Klicks
+  // ausgeloest) den Fokus stehlen bzw. verlieren.
+  const prevSearchInput = container.querySelector<HTMLInputElement>('#auswahl-search');
+  const searchWasFocused = prevSearchInput !== null && document.activeElement === prevSearchInput;
+  const prevSelectionStart = prevSearchInput?.selectionStart ?? null;
 
-  let html: string;
-  if (groupByParent) {
+  const allRows = (sheet.byKategorie[kategorie] ?? []).filter((r) => r.rule.art === 'Auswahl');
+  const searchText = searchTextByKategorie.get(kategorie) ?? '';
+  const needle = searchText.trim().toLowerCase();
+  const rows = needle ? allRows.filter((r) => geweihterLabel(r, sheet).toLowerCase().includes(needle)) : allRows;
+
+  const filtersHtml = `
+    <div class="ausruestung-filters">
+      <input type="text" id="auswahl-search" placeholder="Suche..." value="${escapeHtml(searchText)}" />
+    </div>`;
+
+  let listHtml: string;
+  if (rows.length === 0 && needle) {
+    listHtml = `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchText)}".</p>`;
+  } else if (groupByParent) {
     const groups = new Map<string, ComputedRule[]>();
     for (const r of rows) {
       const key = r.rule.parent ?? 'Sonstige';
       (groups.get(key) ?? groups.set(key, []).get(key)!).push(r);
     }
-    html = [...groups.entries()]
+    listHtml = [...groups.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([parent, groupRows]) => {
-        const openAttr = openParents.has(parent) ? ' open' : '';
+        // Bei aktiver Suche werden alle Gruppen mit Treffern zwangsweise aufgeklappt, OHNE den
+        // manuellen Aufklapp-Zustand (openParents) zu ueberschreiben - nach Leeren des Suchfelds
+        // erscheinen die Gruppen wieder so, wie der Nutzer sie zuletzt gelassen hat.
+        const openAttr = needle || openParents.has(parent) ? ' open' : '';
         return `
           <div class="stat-card">
             <details class="stat-group" data-parent="${escapeHtml(parent)}"${openAttr}>
@@ -103,10 +127,23 @@ export function renderAuswahlView(
           </div>`;
       }).join('');
   } else {
-    html = `<div class="auswahl-category">${rows.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>`;
+    listHtml = `<div class="auswahl-category">${rows.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>`;
   }
 
-  container.innerHTML = html;
+  container.innerHTML = filtersHtml + listHtml;
+
+  const searchInput = container.querySelector<HTMLInputElement>('#auswahl-search');
+  if (searchInput) {
+    if (searchWasFocused) {
+      searchInput.focus();
+      const pos = prevSelectionStart ?? searchInput.value.length;
+      searchInput.setSelectionRange(pos, pos);
+    }
+    searchInput.addEventListener('input', (e) => {
+      searchTextByKategorie.set(kategorie, (e.target as HTMLInputElement).value);
+      renderAuswahlView(container, sheet, kategorie, groupByParent, onToggle, characterReligion);
+    });
+  }
 
   container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-parent]').forEach((details) => {
     const parent = details.dataset.parent!;

@@ -301,6 +301,12 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.auswahl-empty {
+  opacity: 0.7;
+  font-style: italic;
+  padding: 0.3rem 0;
+}
+
 .ausruestung-category, .inventar-category {
   display: flex;
   flex-direction: column;

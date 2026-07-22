@@ -94,6 +94,10 @@ const RS_GRUPPEN: ReadonlyArray<{ gruppe: RsGruppe; label: string }> = [
   { gruppe: 'beine', label: 'Beine' },
 ];
 const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
+// Sentinel-Wert im Basis-Select: "Keine Ruestung" muss auf jeder Lage waehlbar sein (Nutzer
+// 2026-07-22), damit eine Lage explizit leer bleibt statt implizit die erste Basis-Option
+// vorauszuwaehlen - relevant v.a. fuer "Für alle TZ kaufen" (leere Lage wird dort uebersprungen).
+const RUESTUNG_KEINE = -1;
 
 /** Transiente Picker-Auswahl je unbelegtem Slot (ueberlebt Re-Renders, bis "Ausruesten" geklickt
  *  wird) - analog zum frueheren globalen armorBasisRow/.../-Muster, jetzt aber pro Slot. */
@@ -229,10 +233,25 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
   }
 
   const sel = slotPicker.get(key) ?? {
-    basisSourceRow: optionen[0].sourceRow,
+    basisSourceRow: RUESTUNG_KEINE,
     verarbeitungSourceRow: RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0,
     anpassungSourceRow: RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0,
   };
+  const basisSelectHtml = `
+    <select class="ruestung-basis-select" data-slot="${key}">
+      <option value="${RUESTUNG_KEINE}" ${sel.basisSourceRow === RUESTUNG_KEINE ? 'selected' : ''}>Keine Rüstung</option>
+      ${optionen.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === sel.basisSourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
+    </select>`;
+
+  if (sel.basisSourceRow === RUESTUNG_KEINE) {
+    return `
+      <div class="ruestung-slot-row ausruestung-row" data-slot="${key}" data-gruppe="${gruppe}" data-lage="${lage}">
+        <span class="stat-label">Lage ${lage}</span>
+        ${basisSelectHtml}
+        <span class="stat-cost">RS 0 | RH 0 | 0 D</span>
+      </div>`;
+  }
+
   const basis = optionen.find((r) => r.sourceRow === sel.basisSourceRow) ?? optionen[0];
   const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === sel.verarbeitungSourceRow) ?? RUESTUNG_VERARBEITUNG[0];
   const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === sel.anpassungSourceRow) ?? RUESTUNG_ANPASSUNG[0];
@@ -241,9 +260,7 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
   return `
     <div class="ruestung-slot-row ausruestung-row" data-slot="${key}" data-gruppe="${gruppe}" data-lage="${lage}">
       <span class="stat-label">Lage ${lage}</span>
-      <select class="ruestung-basis-select" data-slot="${key}">
-        ${optionen.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === basis.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
-      </select>
+      ${basisSelectHtml}
       <select class="ruestung-verarbeitung-select" data-slot="${key}">
         ${RUESTUNG_VERARBEITUNG.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === verarbeitung.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
       </select>
@@ -275,10 +292,11 @@ function getGruppenSelections(gruppe: RsGruppe, character: CharacterState): Rues
     const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
     if (optionen.length === 0) continue;
     const sel = slotPicker.get(key) ?? {
-      basisSourceRow: optionen[0].sourceRow,
+      basisSourceRow: RUESTUNG_KEINE,
       verarbeitungSourceRow: RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0,
       anpassungSourceRow: RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0,
     };
+    if (sel.basisSourceRow === RUESTUNG_KEINE) continue;
     selections.push({ lage, ...sel });
   }
   return selections;
@@ -869,11 +887,18 @@ export function renderAusruestungView(
   // ein einzelnes "change" (z.B. nur Verarbeitung) die anderen beiden nicht auf Zeile-0 zuruecksetzt.
   function updateSlotPicker(slotKey: string, patch: Partial<{ basisSourceRow: number; verarbeitungSourceRow: number; anpassungSourceRow: number }>): void {
     const row = container.querySelector<HTMLElement>(`.ruestung-slot-row[data-slot="${slotKey}"]`);
-    const readSelect = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
+    // Verarbeitung/Anpassung-Select existieren im DOM nicht, solange die Basis auf "Keine
+    // Ruestung" steht - Fallback auf die erste echte Option (statt 0), sonst verliert ein
+    // direkter Wechsel "Keine Ruestung" -> echte Basis die Verarbeitung/Anpassung stillschweigend
+    // (0 matcht keine reale Zeile, was z.B. "Für alle TZ kaufen" die Lage unbemerkt ausblenden liess).
+    const readSelect = (cls: string, fallback: number) => {
+      const el = row?.querySelector<HTMLSelectElement>(`.${cls}`);
+      return el ? Number(el.value) : fallback;
+    };
     slotPicker.set(slotKey, {
-      basisSourceRow: readSelect('ruestung-basis-select'),
-      verarbeitungSourceRow: readSelect('ruestung-verarbeitung-select'),
-      anpassungSourceRow: readSelect('ruestung-anpassung-select'),
+      basisSourceRow: readSelect('ruestung-basis-select', RUESTUNG_KEINE),
+      verarbeitungSourceRow: readSelect('ruestung-verarbeitung-select', RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0),
+      anpassungSourceRow: readSelect('ruestung-anpassung-select', RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0),
       ...patch,
     });
     renderAusruestungView(container, sheet, character, callbacks);

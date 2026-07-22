@@ -178,7 +178,7 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number]): string {
     const permanentGesperrt = Number.isFinite(verfuegbarkeitPermanent) && verfuegbarkeitPermanent >= 5;
     return `
       <div class="artefakt-grad-row">
-        <span>Grad ${escapeHtml(k.grad ?? '?')}</span>
+        <span class="artefakt-grad-label">Grad ${escapeHtml(k.grad ?? '?')}</span>
         ${einmalig !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${einmaligGesperrt ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="einmalig" ${einmaligGesperrt ? 'disabled' : ''}>${einmaligGesperrt ? gesperrtLabel(verfuegbarkeitEinmalig) : `Einmalig kaufen (${formatDublonen(einmalig)})`}</button>` : ''}
         ${permanent !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${permanentGesperrt ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="permanent" ${permanentGesperrt ? 'disabled' : ''}>${permanentGesperrt ? gesperrtLabel(verfuegbarkeitPermanent) : `Permanent kaufen (${formatDublonen(permanent)})`}</button>` : ''}
       </div>`;
@@ -203,10 +203,10 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
     const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === equipped.basisSourceRow);
     const stats = equipped.computedStatsSnapshot;
     return `
-      <div class="ruestung-slot-row" data-slot="${key}">
+      <div class="ruestung-slot-row ausruestung-row" data-slot="${key}">
         <span class="stat-label">Lage ${lage}: ${escapeHtml(basis?.name ?? '?')}</span>
         <span class="stat-cost">RS ${stats.rs} | RH ${stats.rh} | ${equipped.computedPriceSnapshot} D</span>
-        <button type="button" class="ruestung-unequip" data-gruppe="${gruppe}" data-lage="${lage}">Ausziehen</button>
+        <button type="button" class="ausruestung-buy-button ruestung-unequip" data-gruppe="${gruppe}" data-lage="${lage}">Ausziehen</button>
       </div>`;
   }
 
@@ -215,7 +215,7 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
     // Lage 5 (Drachenschuppen/Spinnweben) hat noch keine Daten in Ruestung-Basis - Slot ist
     // strukturell vorbereitet, aber ohne Kaufoption bis die Daten+Sonderregeln stehen.
     return `
-      <div class="ruestung-slot-row">
+      <div class="ruestung-slot-row ausruestung-row">
         <span class="stat-label">Lage ${lage}: (noch keine Optionen hinterlegt)</span>
       </div>`;
   }
@@ -231,7 +231,7 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
   const composed = composeArmor(basis, verarbeitung, anpassung);
 
   return `
-    <div class="ruestung-slot-row" data-slot="${key}" data-gruppe="${gruppe}" data-lage="${lage}">
+    <div class="ruestung-slot-row ausruestung-row" data-slot="${key}" data-gruppe="${gruppe}" data-lage="${lage}">
       <span class="stat-label">Lage ${lage}</span>
       <select class="ruestung-basis-select" data-slot="${key}">
         ${optionen.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === basis.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
@@ -243,7 +243,7 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
         ${RUESTUNG_ANPASSUNG.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === anpassung.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
       </select>
       <span class="stat-cost">RS ${composed.rs} | RH ${composed.rh} | ${composed.preis} D</span>
-      <button type="button" class="ruestung-equip" data-gruppe="${gruppe}" data-lage="${lage}">Ausrüsten</button>
+      <button type="button" class="ausruestung-buy-button ruestung-equip" data-gruppe="${gruppe}" data-lage="${lage}">Ausrüsten</button>
     </div>`;
 }
 

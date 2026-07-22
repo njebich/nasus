@@ -100,16 +100,20 @@ function poolFieldsForRow(
   const overflow = computeWeaponAtPaOverflow(hauptfertigkeit, atBonus, paBonus, ctx.values, getKampfstilModifier(ctx.character));
   const caps = poolRule?.poolCaps;
   const rowAllocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa + allocation.nat + allocation.npa;
-  // Poolpunkte (PP) sind PRO ZEILE: dieser Waffe eigener AT/PA-Ueberschuss ueber 20 plus die
-  // Spez-Punkte des Pools (z.B. 7), minus NUR das, was auf DIESE Zeile entfallen ist - NICHT die
-  // Summe ueber Geschwister-Waffen desselben Pools (Nutzer 2026-07-20: "spend is per row, not for
-  // the total pool"), obwohl das Budget selbst pool-weit geteilt ist (siehe setWaffenPoolAllocation).
+  // Poolpunkte (PP) sind PRO WAFFE: jede besessene Waffe hat ihr EIGENES unabhaengiges Budget
+  // (dieser Waffe eigener AT/PA-Ueberschuss ueber 20 plus die Spez-Punkte des Pools, minus NUR
+  // das, was auf DIESE Zeile entfallen ist) - kein gemeinsames Budget mit Geschwister-Waffen
+  // desselben Pools mehr (Nutzer-Entscheidung 2026-07-23, revidiert die 2026-07-20-Annahme eines
+  // pool-weit geteilten Budgets - siehe setWaffenPoolAllocation).
   const pp = overflow.atOverflow + overflow.paOverflow + Number(poolRule?.computedValue ?? 0) - rowAllocatedTotal;
+  // nAT/nPA sind ab 20 hart gedeckelt (jede at_X/pa_X-Formel ist selbst MIN(20;...), siehe
+  // waffenPool.ts's stripMin20) - der Ueberschuss darueber fliesst als Pool-Budget ab (oben), darf
+  // aber nicht als Anzeigewert >20 stehen bleiben (Bug, User-Repro 2026-07-23).
   return {
-    nat: { value: overflow.uncAtWeapon + allocation.nat, allocated: allocation.nat, max: overflow.natMax },
+    nat: { value: Math.min(20, overflow.uncAtWeapon + allocation.nat), allocated: allocation.nat, max: overflow.natMax },
     gat: { value: GUT_BASIS + allocation.gat, allocated: allocation.gat, max: caps ? gutBudget(caps.gatMax) : undefined },
     mat: { value: MEISTERLICH_BASIS + allocation.mat, allocated: allocation.mat, max: caps ? meisterlichBudget(caps.matMax) : undefined },
-    npa: { value: overflow.uncPaWeapon + allocation.npa, allocated: allocation.npa, max: overflow.npaMax },
+    npa: { value: Math.min(20, overflow.uncPaWeapon + allocation.npa), allocated: allocation.npa, max: overflow.npaMax },
     gpa: { value: GUT_BASIS + allocation.gpa, allocated: allocation.gpa, max: caps ? gutBudget(caps.gpaMax) : undefined },
     mpa: { value: MEISTERLICH_BASIS + allocation.mpa, allocated: allocation.mpa, max: caps ? meisterlichBudget(caps.mpaMax) : undefined },
     pp,

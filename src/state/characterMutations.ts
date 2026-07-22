@@ -272,9 +272,15 @@ export function setPoolAllocation(character: CharacterState, referenz: string, a
 /**
  * Verteilt Pool-Punkte auf EINE besessene Nahkampfwaffe (oder eine synthetische Unbewaffnet-Zeile,
  * siehe resolveWaffenRowBasis) - Kampf-Tab (2026-07-20), Gegenstueck zu setPoolAllocation, aber
- * pro Waffe statt pro Skill. gAT/gPA/mAT/mPA teilen sich weiterhin ein Skill-weites Budget (siehe
- * characterSheet.ts's Aggregation ueber `${poolReferenz}::*`); nAT/nPA sind dagegen NICHT ueber
- * Geschwister gedeckelt, sondern jeweils auf das, was DIESE Zeile bis 20 braucht (natMax/npaMax).
+ * pro Waffe statt pro Skill. Bis 2026-07-22 teilten sich alle Waffen einer Spezialisierung ein
+ * gemeinsames Budget (Aggregation ueber `${poolReferenz}::*` in characterSheet.ts) - das erlaubte
+ * einer Waffe mit wenig eigenem AT/PA-Ueberschuss, legitim (jede Einzel-Zuteilung fuer sich
+ * validiert) so viel auszugeben, wie eine Geschwister-Waffe mit grossem Ueberschuss beisteuerte,
+ * waehrend die Pro-Zeile-PP-Anzeige in views/kampf.ts nur mit der EIGENEN Zuteilung rechnete und
+ * dadurch negativ werden konnte (Bug, User-Repro 2026-07-23). Nutzer-Entscheidung: KEIN
+ * gemeinsames Budget mehr - jede Waffe hat ihr EIGENES unabhaengiges Budget (Pool-Formel-Wert +
+ * der eigene AT/PA-Ueberschuss ueber 20 GENAU DIESER Waffe). gAT/gPA/mAT/mPA UND nAT/nPA werden
+ * daher alle gegen die eigene Zuteilung dieser Waffe geprueft, nicht gegen Geschwister-Waffen.
  */
 export function setWaffenPoolAllocation(
   character: CharacterState, poolReferenz: string, equipmentId: string, allocation: PoolAllocation,
@@ -294,26 +300,26 @@ export function setWaffenPoolAllocation(
 
   const sheet = computeSheet(candidate);
   const computed = sheet.byKategorie[rule.kategorie]?.find((r) => r.rule.referenz === rule.referenz);
-  const budget = Number(computed?.computedValue ?? 0) + (computed?.weaponOverflowBudget ?? 0);
-  const aggregate = computed?.poolAllocation ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
-  const allocatedTotal = aggregate.gat + aggregate.gpa + aggregate.mat + aggregate.mpa + aggregate.nat + aggregate.npa;
+
+  const basis = resolveWaffenRowBasis(character, equipmentId);
+  const overflow = basis
+    ? computeWeaponAtPaOverflow(basis.hauptfertigkeit, basis.atBonus, basis.paBonus, makeValueSource(candidate), getKampfstilModifier(candidate))
+    : undefined;
+  const budget = Number(computed?.computedValue ?? 0) + (overflow ? overflow.atOverflow + overflow.paOverflow : 0);
+  const allocatedTotal = allocation.gat + allocation.gpa + allocation.mat + allocation.mpa + allocation.nat + allocation.npa;
   if (allocatedTotal > budget) {
     throw new BudgetError(`Nicht genug Pool-Punkte: benoetigt ${allocatedTotal}, verfuegbar ${budget}`);
   }
   if (computed?.poolCaps) {
     const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
     const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
-    if (aggregate.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
-    if (aggregate.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
-    if (aggregate.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
-    if (aggregate.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
+    if (allocation.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
+    if (allocation.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
+    if (allocation.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
+    if (allocation.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
   }
 
-  const basis = resolveWaffenRowBasis(character, equipmentId);
-  if (basis) {
-    const overflow = computeWeaponAtPaOverflow(
-      basis.hauptfertigkeit, basis.atBonus, basis.paBonus, makeValueSource(candidate), getKampfstilModifier(candidate),
-    );
+  if (overflow) {
     if (allocation.nat > overflow.natMax) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
     if (allocation.npa > overflow.npaMax) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
   }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createCharacter } from '../state/characterStore';
 import {
-  buyFeuerwaffe, buyFeuerwaffenMunition, buyWeapon, setValue, setWaffenPoolAllocation, addWaffenLoadout,
+  buyFeuerwaffe, buyFeuerwaffenMunition, buyWeapon, setValue, setWaffenPoolAllocation, addWaffenLoadout, BudgetError,
 } from '../state/characterMutations';
 import { buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows } from './kampf';
 import { FEUERWAFFEN } from '../data/equipment/fernkampf';
@@ -90,9 +90,9 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
   }
 
   it('zieht nur die eigene Zeilen-Zuteilung vom Pool-Budget ab, nicht die Summe der Geschwister-Waffen', () => {
-    // Budget=7 (reine Pool-Formel bei nk_hiebwaffen=10, siehe characterMutations.test.ts), zwei
-    // Aexte teilen sich das Budget fuer die BUDGET-Pruefung, aber PP zeigt pro Zeile nur "Budget
-    // minus eigene Zuteilung" (Nutzer 2026-07-20: "spend is per row, not for the total pool").
+    // Budget=7 fuer JEDE Axt fuer sich (reine Pool-Formel bei nk_hiebwaffen=10, siehe
+    // characterMutations.test.ts) - seit 2026-07-23 hat jede Waffe ihr eigenes unabhaengiges
+    // Budget, PP zeigt entsprechend pro Zeile "eigenes Budget minus eigene Zuteilung".
     let character = characterWithZweiAexten();
     const [w1, w2] = character.equipment;
 
@@ -126,6 +126,46 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
     expect(row1.pp).toBe(30);
     // w2: 0 + 7 - 0 (keine eigene Zuteilung, w1's Zuteilung zaehlt hier nicht mit) = 7.
     expect(row2.pp).toBe(7);
+  });
+
+  it('nAT/nPA werden bei 20 gekappt angezeigt, auch wenn die ungedeckelte Basis darueber liegt (Bug, User-Repro 2026-07-23)', () => {
+    // nk_hiebwaffen sehr hoch -> unc_at_hiebwaffen weit ueber 20, Axt-Bonus AT=-4/PA=-5 aendert
+    // daran nichts. Jede at_X/pa_X-Formel ist selbst MIN(20;...) (siehe waffenPool.ts's
+    // stripMin20) - der Ueberschuss darueber fliesst als Pool-Budget ab, darf aber nicht als
+    // Anzeigewert >20 im nAT/nPA-Feld stehen bleiben.
+    let character = characterWithZweiAexten();
+    character.values['nk_hiebwaffen'] = 90;
+    const [w1] = character.equipment;
+
+    const sheet = computeSheet(character);
+    const rows = buildNahkampfRows(character, sheet);
+    const row1 = rows.find((r) => r.key === w1.id && r.grip === '1H')!;
+    expect(row1.nat.value).toBeLessThanOrEqual(20);
+    expect(row1.npa.value).toBeLessThanOrEqual(20);
+    expect(row1.nat.max).toBe(0); // schon ohne Zuteilung ueber 20 -> nichts mehr sinnbar
+  });
+
+  it('kein gemeinsames Budget mehr: w2 kann nicht ueber ihr eigenes Budget hinaus zuteilen, selbst wenn eine Geschwister-Waffe im selben Pool einen riesigen eigenen Ueberschuss hat (Bug, User-Repro 2026-07-23: Gladius mit Griffkorb PP=-2)', () => {
+    // w1 bekommt einen riesigen eigenen AT/PA-Bonus (grosser eigener Ueberschuss ueber 20), w2
+    // bleibt der reguläre, kleine Axt-Bonus (0 eigener Ueberschuss, Budget bleibt bei der reinen
+    // Pool-Formel = 7). Vor der 2026-07-23-Korrektur teilten sich beide Waffen EIN gemeinsames
+    // Budget (aufgeblaeht durch w1s Ueberschuss); w2 konnte dadurch - jede Einzel-Zuteilung fuer
+    // sich validiert - mehr zugeteilt bekommen, als ihr EIGENER Anteil hergab, und ihre
+    // Pro-Zeile-PP-Anzeige wurde negativ. Seit der Korrektur hat jede Waffe ihr eigenes
+    // unabhaengiges Budget - w2 bleibt bei 7 gedeckelt, unbeeinflusst von w1s riesigem Ueberschuss.
+    let character = characterWithZweiAexten();
+    const [w1, w2] = character.equipment;
+    w1.computedStatsSnapshot = { ...w1.computedStatsSnapshot, at: 50, pa: 50 };
+
+    expect(() => setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w2.id, { gat: 9, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }))
+      .toThrow(BudgetError); // w2s eigenes Budget bleibt 7, 9 > 7
+
+    // Innerhalb ihres eigenen Budgets (<=7) klappt die Zuteilung weiterhin, und PP bleibt >= 0.
+    const updated = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w2.id, { gat: 7, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+    const sheet = computeSheet(updated);
+    const rows = buildNahkampfRows(updated, sheet);
+    const row2 = rows.find((r) => r.key === w2.id && r.grip === '1H')!;
+    expect(row2.pp).toBe(0);
   });
 });
 

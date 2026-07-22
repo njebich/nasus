@@ -117,42 +117,6 @@ export function getKampfstilModifier(character: CharacterState): { at: number; p
   return { at: offensiv - verteidiger, pa: -offensiv + verteidiger };
 }
 
-interface OwnedWeaponPoolEntry {
-  equipmentId: string;
-  poolReferenz: string;
-  hauptfertigkeit: string;
-  atBonus: number;
-  paBonus: number;
-}
-
-/** Loest fuer jede besessene Nahkampfwaffe/jedes Schild (family='weapon'|'shield') Hauptfertigkeit
- *  + Pool-Referenz auf -
- *  einmal pro Waffe, unabhaengig von 1H/2H-Grip (siehe Grip-Handling-Kommentar im Plan: der
- *  AT-/PA-Bonus einer Waffe variiert nicht mit dem Griff, nur WK/Min-Staerke tun das). Waffen,
- *  deren Basiszeile nicht mehr existiert oder deren Pool sich nicht auflösen laesst (sollte bei
- *  intakten Speicherdaten nie vorkommen), werden defensiv uebersprungen statt die gesamte
- *  Charakterberechnung zu brechen. */
-function ownedWeaponPoolEntries(character: CharacterState): OwnedWeaponPoolEntry[] {
-  const out: OwnedWeaponPoolEntry[] = [];
-  for (const e of character.equipment) {
-    if (e.family !== 'weapon' && e.family !== 'shield') continue;
-    const basis = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
-    const hauptfertigkeit = basis?.['Hauptfertigkeit'];
-    if (!basis || !hauptfertigkeit) continue;
-    let poolReferenz: string;
-    try {
-      poolReferenz = resolveWaffenPoolReferenz(hauptfertigkeit, basis['Spezialisierung'] ?? '');
-    } catch {
-      continue;
-    }
-    out.push({
-      equipmentId: e.id, poolReferenz, hauptfertigkeit,
-      atBonus: e.computedStatsSnapshot?.at ?? 0, paBonus: e.computedStatsSnapshot?.pa ?? 0,
-    });
-  }
-  return out;
-}
-
 function numOrZero(raw: string | undefined): number {
   if (raw === undefined) return 0;
   const n = Number(raw.replace(',', '.'));
@@ -246,23 +210,4 @@ export function resolveWaffenRowBasis(character: CharacterState, equipmentId: st
     hauptfertigkeit: basis['Hauptfertigkeit'], spezialisierung: basis['Spezialisierung'] ?? '',
     atBonus: entry.computedStatsSnapshot?.at ?? 0, paBonus: entry.computedStatsSnapshot?.pa ?? 0,
   };
-}
-
-/** Zusaetzliches Pool-Budget durch Waffen, deren AT/PA-Basis sie OHNE jede Pool-Zuteilung schon
- *  ueber 20 traegt (characterSheet.ts's Pool-Zweig addiert dies auf evalReferenz(poolRaw) drauf -
- *  siehe nAT/nPA-Mechanik im Plan). Nur echte besessene Waffen zaehlen hier mit, NICHT die
- *  synthetischen Unbewaffnet-Spezialisierungszeilen (deren eigene natMax/npaMax werden separat
- *  pro Zeile in kampf.ts berechnet, tragen aber nichts zum gemeinsamen Budget bei - sie sind kein
- *  "besessenes Item" im Sinne des Plans). */
-export function computeNkPoolOverflowBudget(
-  poolReferenz: string, character: CharacterState, values: CharacterValueSource,
-): number {
-  let total = 0;
-  const modifier = getKampfstilModifier(character);
-  for (const entry of ownedWeaponPoolEntries(character)) {
-    if (entry.poolReferenz !== poolReferenz) continue;
-    const overflow = computeWeaponAtPaOverflow(entry.hauptfertigkeit, entry.atBonus, entry.paBonus, values, modifier);
-    total += overflow.atOverflow + overflow.paOverflow;
-  }
-  return total;
 }

@@ -257,9 +257,15 @@ describe('characterMutations', () => {
   });
 });
 
-// Kampf-Tab (2026-07-20): Pool-Verteilung pro besessener Waffe statt einmal pro Skill - zwei
-// Aexte teilen sich dasselbe Spezialisierungs-Budget (nk_pool_hiebwaffen_aexte), waehrend nAT/nPA
-// pro Zeile gedeckelt bleiben.
+// Kampf-Tab (2026-07-20, Budget-Modell REVIDIERT 2026-07-23): Pool-Verteilung pro besessener
+// Waffe statt einmal pro Skill. Bis 2026-07-22 teilten sich alle Waffen einer Spezialisierung
+// (z.B. zwei Aexte im selben nk_pool_hiebwaffen_aexte) ein gemeinsames Budget - das fuehrte dazu,
+// dass die Pro-Zeile-PP-Anzeige (views/kampf.ts) negativ werden konnte, wenn eine Waffe mit
+// grossem eigenem AT/PA-Ueberschuss das gemeinsame Budget aufblaehte, eine andere Waffe im selben
+// Pool aber (fuer sich validiert) mehr davon abrief, als ihr eigener Anteil eigentlich hergab
+// (Bug, User-Repro 2026-07-23). Nutzer-Entscheidung: jede Waffe hat ihr EIGENES unabhaengiges
+// Budget, kein gemeinsamer Topf mehr - nAT/nPA waren schon vorher pro Zeile gedeckelt, jetzt sind
+// es auch gAT/gPA/mAT/mPA sowie das PP-Budget selbst.
 describe('setWaffenPoolAllocation', () => {
   function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
     const row = rows.find((r) => r.name === name);
@@ -293,10 +299,10 @@ describe('setWaffenPoolAllocation', () => {
       .toThrow(MutationError);
   });
 
-  it('zwei Waffen mit derselben Spezialisierung teilen sich ein gemeinsames Budget', () => {
+  it('zwei Waffen mit derselben Spezialisierung haben je ihr eigenes unabhaengiges Budget', () => {
     // Mit nk_hiebwaffen=10 bleibt jede Axt (AT=-4/PA=-5) selbst unter der 20er-Deckung
-    // (uncAtWeapon=20, uncPaWeapon=19 - siehe Test unten), traegt also KEINEN Ueberschuss bei -
-    // das Budget ist rein die Pool-Formel: nk_spez_hiebwaffen_aexte(0)
+    // (uncAtWeapon=20, uncPaWeapon=19 - siehe Test unten), traegt also KEINEN eigenen Ueberschuss
+    // bei - das Budget JEDER Axt fuer sich ist rein die Pool-Formel: nk_spez_hiebwaffen_aexte(0)
     // + MAX(0;(30+30+10)/3-20) + MAX(0;(30+30+10)/3-20) = 0 + 3.33 + 3.33 = 6.67 -> aufgerundet 7.
     const character = characterWithZweiAexten(10);
     const [w1, w2] = character.equipment;
@@ -307,17 +313,25 @@ describe('setWaffenPoolAllocation', () => {
     const pool = computeSheet(updated).byKategorie['Nahkampf']!
       .find((r) => r.rule.referenz === 'nk_pool_hiebwaffen_aexte')!;
     expect(pool.computedValue).toBe(7);
-    expect(pool.weaponOverflowBudget).toBe(0);
-    expect(pool.poolAllocation).toEqual({ gat: 4, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
-    expect(pool.poolRemaining).toBe(3); // 7 - 4
+    // beide Waffen haben unabhaengig voneinander gat=2 zugeteilt bekommen, je aus ihrem EIGENEN
+    // Budget von 7 - kein sheet-weiter Aggregatwert mehr (siehe characterSheet.ts).
+    expect(updated.poolAllocations['nk_pool_hiebwaffen_aexte::' + w1.id]).toEqual(allocation);
+    expect(updated.poolAllocations['nk_pool_hiebwaffen_aexte::' + w2.id]).toEqual(allocation);
   });
 
-  it('lehnt eine Zuteilung ab, wenn beide Waffen zusammen das gemeinsame Budget ueberschreiten', () => {
-    const character = characterWithZweiAexten(10); // Budget = 7 (siehe oben)
+  it('zwei Waffen im selben Pool koennen unabhaengig voneinander bis zum vollen Budget zuteilen (kein gemeinsamer Deckel mehr)', () => {
+    // Budget = 7 fuer JEDE Axt fuer sich (siehe Test oben) - beide duerfen gat=4 zuteilen (4<=7),
+    // obwohl das zusammen 8 waere, wenn es (wie bis 2026-07-22) ein gemeinsames Budget von 7 gaebe.
+    const character = characterWithZweiAexten(10);
     const [w1, w2] = character.equipment;
     const erste = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 4, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
-    expect(() => setWaffenPoolAllocation(erste, 'nk_pool_hiebwaffen_aexte', w2.id, { gat: 4, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }))
-      .toThrow(BudgetError); // 4+4=8 > 7
+    const beide = setWaffenPoolAllocation(erste, 'nk_pool_hiebwaffen_aexte', w2.id, { gat: 4, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+    expect(beide.poolAllocations['nk_pool_hiebwaffen_aexte::' + w1.id]).toEqual({ gat: 4, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+    expect(beide.poolAllocations['nk_pool_hiebwaffen_aexte::' + w2.id]).toEqual({ gat: 4, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+
+    // aber JEDE Waffe fuer sich bleibt an ihr eigenes Budget von 7 gebunden - gat=8 (>7) schlaegt fehl.
+    expect(() => setWaffenPoolAllocation(beide, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 8, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }))
+      .toThrow(BudgetError);
   });
 
   it('nAT-Obergrenze ist pro Waffenzeile gedeckelt, nicht ueber Geschwister-Waffen summiert', () => {
@@ -329,26 +343,29 @@ describe('setWaffenPoolAllocation', () => {
       .toThrow(BudgetError);
   });
 
-  it('Budget beruecksichtigt den Waffen-Ueberschuss ueber 20 unbefoerderter AT/PA-Basis', () => {
+  it('Budget beruecksichtigt den eigenen Waffen-Ueberschuss ueber 20 unbefoerderter AT/PA-Basis - und NUR den eigenen, nicht den einer Geschwister-Waffe', () => {
     // w1 wird kuenstlich auf AT/PA=+10 gesetzt (simuliert eine seltene Waffe mit positivem
     // AT/PA-Bonus, siehe Plan-Kommentar "gelegentlich positiv") - uncAtWeapon/uncPaWeapon =
-    // 24+10 = 34 -> je 14 Ueberschuss, zusammen +28 Budget von w1. w2 bleibt der reguläre,
-    // unveraenderte Axt-Bonus (AT=-4/PA=-5), der bei nk_hiebwaffen=10 selbst 0 Ueberschuss
-    // beitraegt (siehe Test oben) - Gesamt-Ueberschuss also ausschliesslich von w1.
+    // 24+10 = 34 -> je 14 Ueberschuss, zusammen +28 zusaetzliches Budget NUR fuer w1
+    // (7 Formel-Budget + 28 eigener Ueberschuss = 35). w2 bleibt der reguläre, unveraenderte
+    // Axt-Bonus (AT=-4/PA=-5), der bei nk_hiebwaffen=10 selbst 0 Ueberschuss beitraegt (siehe Test
+    // oben) - w2s Budget bleibt unveraendert bei 7, unbeeinflusst von w1s Bonus (kein gemeinsamer
+    // Topf mehr, siehe Kommentar oben describe-Block).
     const character = characterWithZweiAexten(10);
-    const [w1] = character.equipment;
+    const [w1, w2] = character.equipment;
     w1.computedStatsSnapshot = { ...w1.computedStatsSnapshot, at: 10, pa: 10 };
 
-    const pool = computeSheet(character).byKategorie['Nahkampf']!
-      .find((r) => r.rule.referenz === 'nk_pool_hiebwaffen_aexte')!;
-    expect(pool.weaponOverflowBudget).toBe(28);
-
-    // Das aufgestockte Budget (7+28=35) erlaubt jetzt eine gAT-Zuteilung von 9 rohen Pool-Punkten
+    // w1s aufgestocktes Budget (7+28=35) erlaubt eine gAT-Zuteilung von 9 rohen Pool-Punkten
     // (gAT-Gesamtziel ist unveraendert 10, siehe poolCaps.ts, davon 1 kostenlose Basis + 9 aus dem
     // Pool zahlbar - unbeeinflusst vom Ueberschuss-Budget), waehrend das reine Formel-Budget (7)
     // dafuer bei weitem nicht gereicht haette.
     const updated = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 9, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
     expect(updated.poolAllocations['nk_pool_hiebwaffen_aexte::' + w1.id]).toEqual({ gat: 9, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+
+    // w2 bleibt dagegen an ihr eigenes (unveraendertes) Budget von 7 gebunden, obwohl w1 im selben
+    // Pool gerade 9 Punkte zugeteilt bekommen hat - gat=8 (>7) schlaegt fuer w2 fehl.
+    expect(() => setWaffenPoolAllocation(updated, 'nk_pool_hiebwaffen_aexte', w2.id, { gat: 8, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }))
+      .toThrow(BudgetError);
   });
 
   describe('Geweihte-Gate (Nutzer 2026-07-22): att_karma bleibt auf 0 gedeckelt ohne Gate-Talent', () => {

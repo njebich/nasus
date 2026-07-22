@@ -40,6 +40,13 @@ export function findParentRule(rule: RuleEntry): RuleEntry | undefined {
   ));
 }
 
+/** Kehrt findParentRule um: alle Spezialisierungen einer Hauptfertigkeit (fuer den umgekehrten
+ *  TaW-Deckel-Check in characterMutations.ts - Hauptfertigkeit darf nicht unter eine bereits
+ *  gesetzte Spezialisierung gesenkt werden). */
+export function findChildRules(rule: RuleEntry): RuleEntry[] {
+  return RULES.filter((r) => r !== rule && findParentRule(r) === rule);
+}
+
 const astCache = new Map<string, AstNode | null>();
 
 /** "FEHLT" ist ein bewusster Platzhalter fuer "Formel noch nicht definiert", keine Formel. */

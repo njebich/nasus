@@ -3,7 +3,7 @@
 // CharacterState zurueck (der Aufrufer speichert ihn danach via characterStore.saveCharacter) -
 // bei Ablehnung wird geworfen und der ursprüngliche State bleibt unangetastet.
 
-import { getRule, findParentRule, evalReferenz } from '../engine/rules';
+import { getRule, findParentRule, findChildRules, evalReferenz } from '../engine/rules';
 import { computeSheet, makeValueSource } from '../engine/characterSheet';
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
@@ -86,6 +86,19 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
     if (wert > parentWert) {
       throw new MutationError(
         `'${rule.referenz}' darf nicht hoeher sein als die Hauptfertigkeit '${parentRule.referenz}' (TaW ${parentWert})`,
+      );
+    }
+  }
+
+  // Regel (Nutzer 2026-07-22): umgekehrter Fall zum Deckel oben - eine Hauptfertigkeit darf nicht
+  // unter den TaW einer ihrer bereits gesetzten Spezialisierungen gesenkt werden (sonst waere die
+  // Spezialisierung im Widerspruch zur obigen Regel, ohne dass hier eine Fehlermeldung erscheint).
+  const childRules = findChildRules(rule);
+  for (const child of childRules) {
+    const childWert = character.values[child.referenz.toLowerCase()] ?? 0;
+    if (childWert > wert) {
+      throw new MutationError(
+        `'${rule.referenz}' darf nicht unter den TaW der Spezialisierung '${child.referenz}' (${childWert}) gesenkt werden`,
       );
     }
   }

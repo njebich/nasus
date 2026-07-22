@@ -133,6 +133,21 @@ describe('characterMutations', () => {
       const updated = setValue(character, 'nk_hiebwaffen', 20);
       expect(updated.values['nk_hiebwaffen']).toBe(20);
     });
+
+    it('lehnt es ab, die Hauptfertigkeit unter den TaW einer bereits gesetzten Spezialisierung zu senken', () => {
+      const character = withEpGesamt(1000);
+      const withHaupt = setValue(character, 'nk_hiebwaffen', 5);
+      const withSpez = setValue(withHaupt, 'nk_spez_hiebwaffen_aexte', 5);
+      expect(() => setValue(withSpez, 'nk_hiebwaffen', 4)).toThrow(MutationError);
+    });
+
+    it('erlaubt das Senken der Hauptfertigkeit bis genau auf den TaW der Spezialisierung', () => {
+      const character = withEpGesamt(1000);
+      const withHaupt = setValue(character, 'nk_hiebwaffen', 5);
+      const withSpez = setValue(withHaupt, 'nk_spez_hiebwaffen_aexte', 3);
+      const gesenkt = setValue(withSpez, 'nk_hiebwaffen', 3);
+      expect(gesenkt.values['nk_hiebwaffen']).toBe(3);
+    });
   });
 
   describe('Eigenschaften-Min/Max je Spezies (Regel Nutzer 2026-07-17, werte 0.8 / "Voelker-Maxima")', () => {

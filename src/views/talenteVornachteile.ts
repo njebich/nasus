@@ -16,6 +16,11 @@ export type OnToggle = (referenz: string, selected: boolean) => void;
  *  spruchmagie.ts/openGroupReferenzen in categoryView.ts. Alle standardmaessig zu. */
 const openParents = new Set<string>();
 
+/** Aufgeklappte Vor-/Nachteile-Gruppen ("Nachteile"/"Vorteile"/"Ängste") - eigenes Set statt
+ *  openParents, damit ein gleichnamiger Talente-Parent nicht kollidiert. Gleiches Persistenz-
+ *  Muster, alle standardmaessig zu. */
+const openVnGroups = new Set<string>();
+
 /** Suchtext pro Kategorie (Talente/Vor- und Nachteile teilen sich dieses Modul, brauchen aber
  *  unabhaengige Suchfelder) - gleiches Persistenz-Muster wie searchText in ausruestung.ts. */
 const searchTextByKategorie = new Map<string, string>();
@@ -83,6 +88,53 @@ function renderRow(r: ComputedRule, sheet: ComputedSheet, characterReligion: str
     </label>`;
 }
 
+/** Vor-/Nachteile werden statt nach Parent (siehe groupByParent) nach Kostenvorzeichen sortiert:
+ *  ein Eintrag mit kostenSelect < 0 zahlt SP aus (Nachteil), >= 0 kostet SP (Vorteil) - siehe
+ *  waehrung/cost in renderRow. Alle Angst:*-Parents (siehe vor-und-nachteile.jsonl) werden
+ *  zusaetzlich in einer eigenen "Ängste"-Unterguppe innerhalb Nachteile gebuendelt, statt wie bei
+ *  Talente-groupByParent je Angstart eine eigene Top-Level-Gruppe zu bilden. */
+function renderVnGroups(
+  rows: ComputedRule[],
+  sheet: ComputedSheet,
+  characterReligion: string | undefined,
+  needle: string,
+): string {
+  const nachteile = rows.filter((r) => (r.kostenSelect ?? 0) < 0);
+  const vorteile = rows.filter((r) => (r.kostenSelect ?? 0) >= 0);
+  const isAngst = (r: ComputedRule) => (r.rule.parent ?? '').startsWith('Angst:');
+  const angste = nachteile.filter(isAngst);
+  const nachteileRest = nachteile.filter((r) => !isAngst(r));
+
+  const openNachteile = needle || openVnGroups.has('Nachteile');
+  const openVorteile = needle || openVnGroups.has('Vorteile');
+  const openAngste = needle || openVnGroups.has('Ängste');
+
+  const angsteHtml = angste.length ? `
+    <details class="stat-group" data-vn-group="Ängste"${openAngste ? ' open' : ''}>
+      <summary>Ängste <span class="stat-group-count">(${angste.length})</span></summary>
+      <div class="auswahl-category">${angste.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+    </details>` : '';
+
+  const nachteileHtml = `
+    <div class="stat-card">
+      <details class="stat-group" data-vn-group="Nachteile"${openNachteile ? ' open' : ''}>
+        <summary>Nachteile <span class="stat-group-count">(${nachteile.length})</span></summary>
+        <div class="auswahl-category">${nachteileRest.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+        ${angsteHtml}
+      </details>
+    </div>`;
+
+  const vorteileHtml = `
+    <div class="stat-card">
+      <details class="stat-group" data-vn-group="Vorteile"${openVorteile ? ' open' : ''}>
+        <summary>Vorteile <span class="stat-group-count">(${vorteile.length})</span></summary>
+        <div class="auswahl-category">${vorteile.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+      </details>
+    </div>`;
+
+  return nachteileHtml + vorteileHtml;
+}
+
 export function renderAuswahlView(
   container: HTMLElement,
   sheet: ComputedSheet,
@@ -123,6 +175,8 @@ export function renderAuswahlView(
   let listHtml: string;
   if (rows.length === 0 && needle) {
     listHtml = `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchText)}".</p>`;
+  } else if (kategorie === 'Vor- und Nachteile') {
+    listHtml = renderVnGroups(rows, sheet, characterReligion, needle);
   } else if (groupByParent) {
     const groups = new Map<string, ComputedRule[]>();
     for (const r of rows) {
@@ -177,6 +231,14 @@ export function renderAuswahlView(
     });
   });
 
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-vn-group]').forEach((details) => {
+    const group = details.dataset.vnGroup!;
+    details.addEventListener('toggle', () => {
+      if (details.open) openVnGroups.add(group);
+      else openVnGroups.delete(group);
+    });
+  });
+
   // Aufklapp-Zustand SYNCHRON vor jeder Aenderung sichern - selbes Muster wie syncOpenGroups in
   // categoryView.ts (das native 'toggle'-Event feuert laut Spec asynchron/queued, ein Checkbox-
   // Klick direkt nach dem Aufklappen koennte sonst vor dem Toggle-Handler re-rendern und die
@@ -186,6 +248,11 @@ export function renderAuswahlView(
       const parent = details.dataset.parent!;
       if (details.open) openParents.add(parent);
       else openParents.delete(parent);
+    });
+    container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-vn-group]').forEach((details) => {
+      const group = details.dataset.vnGroup!;
+      if (details.open) openVnGroups.add(group);
+      else openVnGroups.delete(group);
     });
   }
 

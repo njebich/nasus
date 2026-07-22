@@ -42,20 +42,20 @@ sf_mentaler_fokus|Mentaler Fokus zählt in die Mentaler-Fokus-Formel (KI). Deren
 gr_werfen|Körperliche Grundfertigkeiten: Werfen beschreibt die Fähigkeit, Dinge nicht nur wegzuschleudern, sondern gezielt durch die Luft an den gewünschten Ort zu befördern. Werfen zählt zusätzlich als Bonus auf Stärke (bzw. Schnelligkeit beim Wurfspeer) in die Wurfweiten-Formeln ein.
 gr_schaetzen|Geistige Grundfertigkeiten: Schätzen beschreibt die Fähigkeit, Distanzen, Gewichte, Höhen etc. ohne Hilfsmittel einzuschätzen. Für den Geldwert von Waren benötigt man außerdem die passende WHK.
 gr_ueberzeugen|Geistige Grundfertigkeiten: Überzeugen steht für die Fähigkeit, jemand andere überzeugend klar zu machen, dass die vertretene Position die richtige ist.
-eig_g_intelligenz|Intelligenz beschreibt die geistige Auffassungsgabe und Leistungsfähigkeit. Philosophen, Staatsmänner, Rechtsgelehrte und auch Magier profitieren sind auf schnelles und präzises Denken angewiesen. Intelligenz fließt u.a. in die Initiative, die Mana-Formel (über den Intelligenz-Bonus) und bestimmt maßgeblich, welche Spruchzauber erlernt werden können.
+eig_g_intelligenz|Intelligenz beschreibt die geistige Auffassungsgabe und Leistungsfähigkeit. Philosophen, Staatsmänner, Rechtsgelehrte und auch Magier sind auf schnelles und präzises Denken angewiesen. Intelligenz fließt u.a. in Initiative- & Mana-Formel ein. Sie bestimmt maßgeblich, welche Spruchzauber erlernt werden können.
 eig_g_mut|Mut beschreibt die Entschlossenheit und Angriffslust eines Charakters und ist die zentrale Eigenschaft für die Nahkampf-Attacke-Werte sowie die Initiative.
 eig_g_sinneschaerfe|Sinnesschärfe beschreibt die Wahrnehmungsfähigkeit eines Charakters und fließt in die meisten Fernkampf-Formeln sowie in den Gefahreninstinkt ein.
 eig_g_willenskraft|Willenskraft beschreibt die geistige Widerstandskraft eines Charakters und fließt in Mana, Mentale Kapazität (KI) und Gesundheit ein.
 eig_k_athletik|Athletik beschreibt die allgemeine körperliche Leistungsfähigkeit und fließt u.a. in Ausdauer, Ausweichen, Bewegungs-Formeln (Sprinten, Dauerlauf, Klettern) und Werfen ein.
 eig_k_ausstrahlung|Ausstrahlung beschreibt die Wirkung eines Charakters auf andere und dient als Eigenschafts-Basis für soziale Grundfertigkeiten wie Betören, Einschüchtern und Überzeugen.
-eig_k_geschicklichkeit|Geschicklichkeit beschreibt die Feinmotorik eines Charakters und fließt in alle Fernkampf-Formeln, die Initiative sowie den Geschicklichkeits-Bonus ein.
+eig_k_geschicklichkeit|Geschicklichkeit beschreibt die Feinmotorik eines Charakters und fließt in alle Fernkampf-Formeln, viele Handwerksfähigkeiten und die Initiative ein.
 eig_k_konstitution|Konstitution beschreibt die körperliche Widerstandskraft eines Charakters und fließt in Ausdauer, Gesundheit und die Lebensenergie-Formeln ein.
 eig_k_schnelligkeit|Schnelligkeit beschreibt die Reaktions- und Bewegungsgeschwindigkeit eines Charakters und fließt in Ausweichen, Initiative, Sprinten und einige Nahkampf-Attacke-Formeln ein.
 eig_k_staerke|Stärke beschreibt die körperliche Kraft eines Charakters und fließt in Ausdauer, Lebensenergie Brust und die Werfen-Formeln ein.
-att_aura|Aura beschreibt die magische Ausstrahlung eines Charakters und fließt in Formeln wie Mana, Macht und (bei KI-Fähigkeiten) Mentale Kapazität ein.
-#att_essenz|ÜBERARBEITEN: Essenz beschreibt vermutlich eine grundlegende magische oder seelische Substanz des Charakters; aktuell in keiner Formel verwendet.
+att_aura|Aura beschreibt die magische Ausstrahlung eines Charakters und fließt in Formeln wie Mana, Macht und Mentale Kapazität ein.
+#att_essenz|NR: Essenz
 att_glueck|Glück ist die häufig entscheidende, göttliche Fügung, die allen Helden gemein ist. Glück hilft nicht nur auf dem Schlachtfeld, sondern auch in den Saloons, Kasinos und bei der Suche nach just dem richtigen Ausrüstungsgegenstand. Außerdem fließt Glück als Bonus in die Ausweichen-Formeln (offensiv und defensiv) ein und beschreibt den Zufallsfaktor, der einem Charakter zugutekommt.
-att_karma|Karma beschreibt die spirituelle Verbindung eines Charakters zu seiner Gottheit. Nur Paladine oder Geweihte haben einen Karma-Wert.
+att_karma|Karma beschreibt die spirituelle Verbindung eines Charakters zu seiner Gottheit. Nur Geweihte haben einen Karma-Wert.
 att_magie|Magie beschreibt die grundsätzliche magische Begabung eines Charakters, sich in den Astralraum zu tauchen und aus ihm Kräfte zu bündeln. 
 att_vitalitaet|Vitalität beschreibt die körperliche Lebenskraft eines Charakters und fließt in zahlreiche Formeln ein (Ausdauer, Gesundheit, Lebensenergie Kopf/Brust/Unterleib, Trefferschwelle).
 att_weisheit|Weisheit gibt Auskunft über die Lebenserfahrung eines Charakters. Manche Dinge kann nur verstehen, wer schon genügend Dunkelheit erfahren hat. 

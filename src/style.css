@@ -301,6 +301,15 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.auswahl-filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
 .auswahl-empty {
   opacity: 0.7;
   font-style: italic;

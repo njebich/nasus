@@ -20,6 +20,12 @@ const openParents = new Set<string>();
  *  unabhaengige Suchfelder) - gleiches Persistenz-Muster wie searchText in ausruestung.ts. */
 const searchTextByKategorie = new Map<string, string>();
 
+/** "Nur kaufbare zeigen"-Filter (Nutzer 2026-07-22, auf Vor-/Nachteile erweitert) - blendet
+ *  Eintraege aus, deren kostenSelect den aktuell verfuegbaren Pool (TaP bei Talente, SP bei
+ *  Vor-/Nachteile) uebersteigt. Bereits gewaehlte Eintraege bleiben immer sichtbar (sonst liesse
+ *  sich ein zu teurer, aber schon gekaufter Eintrag nicht abwaehlen). */
+const nurKaufbareByKategorie = new Map<string, boolean>();
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -92,14 +98,26 @@ export function renderAuswahlView(
   const searchWasFocused = prevSearchInput !== null && document.activeElement === prevSearchInput;
   const prevSelectionStart = prevSearchInput?.selectionStart ?? null;
 
+  // Talente kosten TaP, Vor-/Nachteile kosten SP (siehe waehrung in renderRow) - der Filter
+  // vergleicht kostenSelect jeweils gegen den passenden verbleibenden Pool.
+  const budgetRemaining = kategorie === 'Talente' ? sheet.tapRemaining : sheet.spRemaining;
+  const nurKaufbare = nurKaufbareByKategorie.get(kategorie) ?? false;
+
   const allRows = (sheet.byKategorie[kategorie] ?? []).filter((r) => r.rule.art === 'Auswahl');
   const searchText = searchTextByKategorie.get(kategorie) ?? '';
   const needle = searchText.trim().toLowerCase();
-  const rows = needle ? allRows.filter((r) => geweihterLabel(r, sheet).toLowerCase().includes(needle)) : allRows;
+  let rows = needle ? allRows.filter((r) => geweihterLabel(r, sheet).toLowerCase().includes(needle)) : allRows;
+  if (nurKaufbare) {
+    rows = rows.filter((r) => r.selected || r.kostenSelect === undefined || r.kostenSelect <= budgetRemaining);
+  }
 
   const filtersHtml = `
     <div class="ausruestung-filters">
       <input type="text" id="auswahl-search" placeholder="Suche..." value="${escapeHtml(searchText)}" />
+      <label class="auswahl-filter-checkbox">
+        <input type="checkbox" id="auswahl-nur-kaufbare" ${nurKaufbare ? 'checked' : ''} />
+        Nur kaufbare zeigen
+      </label>
     </div>`;
 
   let listHtml: string;
@@ -144,6 +162,12 @@ export function renderAuswahlView(
       renderAuswahlView(container, sheet, kategorie, groupByParent, onToggle, characterReligion);
     });
   }
+
+  const nurKaufbareCheckbox = container.querySelector<HTMLInputElement>('#auswahl-nur-kaufbare');
+  nurKaufbareCheckbox?.addEventListener('change', (e) => {
+    nurKaufbareByKategorie.set(kategorie, (e.target as HTMLInputElement).checked);
+    renderAuswahlView(container, sheet, kategorie, groupByParent, onToggle, characterReligion);
+  });
 
   container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-parent]').forEach((details) => {
     const parent = details.dataset.parent!;

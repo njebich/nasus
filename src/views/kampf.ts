@@ -211,9 +211,11 @@ function buildUnbewaffnetRow(ctx: PoolContext, key: string, label: string, basis
   };
 }
 
+// Schluessel sind character.spezies-Werte (VOELKER_NAMEN), nicht NK-Waffen-Basis's singulare
+// "Volk"-Spalte - siehe gleichnamige Konstante + Kommentar in engine/waffenPool.ts.
 const UNBEWAFFNET_SPEZIES_BASIS_ROW: Record<string, string> = {
-  Gnom: 'Unbewaffnet (Gnom)', Ork: 'Unbewaffnet (Ork)', Troll: 'Unbewaffnet (Troll)',
-  Zentaur: 'Unbewaffnet (Zentaur)', Katzenmensch: 'Unbewaffnet (Katzenmensch)',
+  Gnome: 'Unbewaffnet (Gnom)', Orks: 'Unbewaffnet (Ork)', Trolle: 'Unbewaffnet (Troll)',
+  Zentauren: 'Unbewaffnet (Zentaur)', Katzen: 'Unbewaffnet (Katzenmensch)',
 };
 
 export function buildNahkampfRows(character: CharacterState, sheet: ComputedSheet): NahkampfRow[] {

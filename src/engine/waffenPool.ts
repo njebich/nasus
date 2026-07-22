@@ -151,9 +151,13 @@ function numOrZero(raw: string | undefined): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Schluessel sind character.spezies-Werte (VOELKER_NAMEN, siehe engine/voelker.ts) - NICHT die
+ *  singularen Namen aus NK-Waffen-Basis's "Volk"-Spalte (Gnom/Ork/Troll/Zentaur/Katzenmensch).
+ *  Ohne diese Uebersetzung matcht character.spezies ("Orks" etc.) nie einen Map-Key und jede
+ *  Spezies faellt staendig auf den "andere Voelker"-Fallback zurueck (Bug, gefunden 2026-07-22). */
 const UNBEWAFFNET_SPEZIES_BASIS_ROW: Record<string, string> = {
-  Gnom: 'Unbewaffnet (Gnom)', Ork: 'Unbewaffnet (Ork)', Troll: 'Unbewaffnet (Troll)',
-  Zentaur: 'Unbewaffnet (Zentaur)', Katzenmensch: 'Unbewaffnet (Katzenmensch)',
+  Gnome: 'Unbewaffnet (Gnom)', Orks: 'Unbewaffnet (Ork)', Trolle: 'Unbewaffnet (Troll)',
+  Zentauren: 'Unbewaffnet (Zentaur)', Katzen: 'Unbewaffnet (Katzenmensch)',
 };
 const UNBEWAFFNET_FALLBACK_BASIS_ROW = 'Unbewaffnet (andere Voelker)';
 

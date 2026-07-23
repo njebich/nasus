@@ -119,7 +119,7 @@ describe('canIncreaseSpell (Regel 1: Aura>0+Magie>0 + Mindestintelligenz + Vorst
     const sheet = computeSheet(character);
     const result = canIncreaseSpell(sheet, grad2);
     expect(result.allowed).toBe(false);
-    expect(result.reason).toMatch(/Vorstufe|gradniedrigeren/);
+    expect(result.reason).toMatch(/Grad-1/);
   });
 
   it('Grad 2: mit Vorstufe derselben Schule auf TaW>=10 erlaubt', () => {
@@ -136,6 +136,16 @@ describe('canIncreaseSpell (Regel 1: Aura>0+Magie>0 + Mindestintelligenz + Vorst
     character.values[grad1.referenz] = 9;
     const sheet = computeSheet(character);
     expect(canIncreaseSpell(sheet, grad2).allowed).toBe(false);
+  });
+
+  it('Grad 3: Vorstufe MUSS Grad 2 sein - ein Grad-1-Zauber auf TaW>=10 reicht nicht aus (Regel-Kette, kein Ueberspringen)', () => {
+    const grad3 = RULES.find((r) => r.kategorie === 'Spruchmagie' && r.grad === '3' && r.parent === grad1.parent)!;
+    const character = withAuraMagie();
+    character.values['eig_g_intelligenz'] = 20;
+    character.values[grad1.referenz] = 10; // nur Grad 1, nicht Grad 2
+    const sheet = computeSheet(character);
+    const result = canIncreaseSpell(sheet, grad3);
+    expect(result.allowed).toBe(false);
   });
 
   it('Grad 2: Vorstufe aus einer ANDEREN Schule zaehlt nicht', () => {
@@ -186,5 +196,16 @@ describe('canIncreaseSpell (Regel 1: Aura>0+Magie>0 + Mindestintelligenz + Vorst
     const character = withAuraMagie();
     character.values['eig_g_intelligenz'] = 12;
     expect(canIncreaseSpell(computeSheet(character), grad1).allowed).toBe(true);
+  });
+
+  it('mehrere gleichzeitig unerfuellte Bedingungen (Aura=0 UND Mindestintelligenz UND fehlende Vorstufe) werden ALLE im reason genannt, nicht nur die erste (Nutzer 2026-07-24: Tooltip soll alle Sperrgruende zeigen)', () => {
+    const character = createCharacter('Test'); // att_aura=0, att_magie=0
+    character.values['eig_g_intelligenz'] = 1; // unter Grad2-Min.Int
+    const sheet = computeSheet(character);
+    const result = canIncreaseSpell(sheet, grad2);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/Aura/);
+    expect(result.reason).toMatch(/Intelligenz/);
+    expect(result.reason).toMatch(/Grad-1/);
   });
 });

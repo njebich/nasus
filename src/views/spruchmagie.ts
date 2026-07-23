@@ -173,9 +173,16 @@ function renderVzCell(sheet: ComputedSheet, detail: SpruchmagieDetail | undefine
   return escapeHtml(werte.join(' / '));
 }
 
+/** Zeigt ALLE aktuell nicht erfuellten Sperrgruende gleichzeitig (Nutzer 2026-07-24), nicht nur
+ *  den zuerst gefundenen - learnGate und increaseGate sind unabhaengig, beide koennen parallel
+ *  fehlschlagen (z.B. Hauszauber-Slot belegt UND Mindestintelligenz nicht erreicht). */
 function gateTitle(row: Row): string {
   if (row.currentValue > 0) return '';
-  return !row.learnGate.allowed ? (row.learnGate.reason ?? '') : (row.increaseGate.reason ?? '');
+  const gruende = [
+    !row.learnGate.allowed ? row.learnGate.reason : undefined,
+    !row.increaseGate.allowed ? row.increaseGate.reason : undefined,
+  ].filter((r): r is string => !!r);
+  return gruende.join(' | ');
 }
 
 function renderRow(sheet: ComputedSheet, row: Row): string {

@@ -14,7 +14,9 @@
 // 2. canIncreaseSpell: Aura>0 UND Magie>0 (Nutzer 2026-07-21, analog KI/PSI-Wurzel-Gate, gilt
 //    hier aber fuer JEDEN Zauber jeder Schule/jedes Grades, da Spruchmagie keinen einzelnen
 //    Baum-Wurzelknoten hat) UND Mindestintelligenz (aus spruchmagieDetails.minInt) UND
-//    (Grad===1 ODER ein gelernter Zauber derselben Schule mit niedrigerem Grad auf TaW>=10).
+//    (Grad===1 ODER ein gelernter Zauber derselben Schule mit Grad-1 (direkter Vorgaenger, nicht
+//    irgendein niedrigerer Grad) auf TaW>=10 - Regel-Kette, Nutzer 2026-07-24: "single Grad 1
+//    TaW>=10 allows all Grad 2 [...] single Grad 2 TaW>=10 allows all grad 3").
 
 import type { ComputedSheet } from './characterSheet';
 import type { RuleEntry } from '../data/rules';
@@ -96,30 +98,35 @@ function attributCurrentValue(sheet: ComputedSheet, referenz: string): number {
  *  Mindestintelligenz UND (Grad 1 ODER gradniedrigerer Zauber derselben Schule auf TaW>=10).
  *  Gilt fuer jede Steigerung, nicht nur den ersten Lernpunkt - anders als KI/PSI (nur die
  *  Wurzeln) gibt es in Spruchmagie keinen einzelnen Baum-Wurzelknoten, daher gilt das Aura/
- *  Magie-Gate hier direkt fuer jeden einzelnen Zauber jeder Schule/jedes Grades. */
+ *  Magie-Gate hier direkt fuer jeden einzelnen Zauber jeder Schule/jedes Grades.
+ *  Prueft alle drei Teilbedingungen unabhaengig (kein frueher return) und sammelt JEDE nicht
+ *  erfuellte in `reason`, statt nur die erste gefundene zu melden (Nutzer 2026-07-24: Tooltip
+ *  auf dem "+"-Button soll alle Sperrgruende gleichzeitig zeigen). */
 export function canIncreaseSpell(sheet: ComputedSheet, rule: RuleEntry): GateResult {
   const aura = attributCurrentValue(sheet, 'att_aura');
   const magie = attributCurrentValue(sheet, 'att_magie');
-  if (aura <= 0 || magie <= 0) {
-    return { allowed: false, reason: `Benötigt: Aura > 0 (aktuell ${aura}) UND Magie > 0 (aktuell ${magie})` };
-  }
-
   const grad = Number(rule.grad ?? 0);
   const minInt = Number(SPRUCHMAGIE_DETAILS[rule.referenz]?.minInt ?? 0);
   const intelligenz = (sheet.byKategorie['Eigenschaft'] ?? []).find(
     (r) => r.rule.referenz === 'eig_g_intelligenz',
   )?.currentValue ?? 0;
+
+  const gruende: string[] = [];
+  if (aura <= 0 || magie <= 0) {
+    gruende.push(`Aura > 0 (aktuell ${aura}) UND Magie > 0 (aktuell ${magie})`);
+  }
   if (intelligenz < minInt) {
-    return { allowed: false, reason: `Erfordert Intelligenz ${minInt} (aktuell ${intelligenz})` };
+    gruende.push(`Intelligenz ${minInt} (aktuell ${intelligenz})`);
+  }
+  if (grad > 1) {
+    const hatVorstufe = spruchmagieRows(sheet).some(
+      (r) => r.rule.parent === rule.parent && Number(r.rule.grad) === grad - 1 && (r.currentValue ?? 0) >= 10,
+    );
+    if (!hatVorstufe) {
+      gruende.push(`einen Grad-${grad - 1}-${rule.parent}-Zauber auf TaW 10`);
+    }
   }
 
-  if (grad <= 1) return { allowed: true };
-
-  const hatVorstufe = spruchmagieRows(sheet).some(
-    (r) => r.rule.parent === rule.parent && Number(r.rule.grad) < grad && (r.currentValue ?? 0) >= 10,
-  );
-  if (!hatVorstufe) {
-    return { allowed: false, reason: `Erfordert einen gradniedrigeren ${rule.parent}-Zauber auf TaW 10` };
-  }
-  return { allowed: true };
+  if (gruende.length === 0) return { allowed: true };
+  return { allowed: false, reason: `Benötigt: ${gruende.join(' UND ')}` };
 }

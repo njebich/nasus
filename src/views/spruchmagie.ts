@@ -78,6 +78,7 @@ interface Row {
   rule: ComputedRule['rule'];
   currentValue: number;
   kostenNext?: number;
+  kostenCurrent?: number;
   detail: SpruchmagieDetail | undefined;
   learnGate: ReturnType<typeof canLearnSpell>;
   increaseGate: ReturnType<typeof canIncreaseSpell>;
@@ -96,6 +97,7 @@ function buildSchulRows(sheet: ComputedSheet, schule: string): Row[] {
         rule: r.rule,
         currentValue: r.currentValue ?? 0,
         kostenNext: r.kostenNext,
+        kostenCurrent: r.kostenCurrent,
         detail: SPRUCHMAGIE_DETAILS[r.rule.referenz],
         learnGate,
         increaseGate,
@@ -193,7 +195,13 @@ function renderRow(sheet: ComputedSheet, row: Row): string {
   const rowClass = row.unlocked ? '' : currentValue > 0 ? 'spruchmagie-row-invalid' : 'spruchmagie-row-locked';
   const disabled = !row.unlocked;
   const plusTitle = gateTitle(row);
-  const costLabel = row.kostenNext !== undefined ? `${row.kostenNext} TaW` : '';
+  // Gleiches Format wie categoryView.ts (Nutzer 2026-07-24, "same currency" wie Eigenschaft/
+  // Attribute usw.) - Label war faelschlich "TaW" statt "SP" (kostenNext ist derselbe kumulative
+  // SP-Kosten-Wert wie ueberall sonst, siehe characterSheet.ts spSpent, das Spruchmagie mit
+  // einrechnet - die WENN(wert=0;0;10+(wert-1)*grad)-Formel ist ein SP-Kosten-Wert, kein TaW).
+  const costLabel = row.kostenNext !== undefined && row.kostenCurrent !== undefined
+    ? `${row.kostenNext - row.kostenCurrent}SP/total ${row.kostenNext}`
+    : '';
   const probe = renderZauberprobeCell(sheet, row, stufen);
 
   return `
@@ -202,7 +210,7 @@ function renderRow(sheet: ComputedSheet, row: Row): string {
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
         <span class="kampf-pool-value">${currentValue}</span>
         <button type="button" class="stat-inc" aria-label="erhöhen" ${disabled ? 'disabled' : ''}${tooltipAttr(plusTitle)}>+</button>
-        <span class="stat-cost">${costLabel}</span>
+        <span class="stat-cost stat-cost-click">${costLabel}</span>
       </td>
       <td class="spruchmagie-name-cell">${escapeHtml(name)}${probe ? `<div class="spruchmagie-probe">Probe: ${probe}</div>` : ''}</td>
       <td>${escapeHtml(rule.grad ?? '–')}</td>

@@ -157,7 +157,7 @@ function renderGrundfertigkeitPicksRow(currentValue: number, gewaehlt: string[])
 }
 
 function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet, gewaehlt: string[]): string {
-  const { referenz, name, currentValue, kostenNext, wirkung, unlocked } = r;
+  const { referenz, name, currentValue, kostenNext, kostenCurrent, wirkung, unlocked } = r;
   const eigBon = getEigBonusValue(sheet, r.eigBonusReferenz);
   // Probe ist nur sinnvoll, sobald die Faehigkeit ueberhaupt gelernt ist (Nutzer 2026-07-20).
   const normaleProbe = currentValue + (eigBon?.value ?? 0) + 2 * getAttMagie(sheet);
@@ -166,7 +166,11 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   const dauer = KI_DAUER[referenz];
   const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
-  const costLabel = kostenNext !== undefined ? `${kostenNext} SP` : '';
+  // Gleiches Format wie categoryView.ts (Nutzer 2026-07-24, "same currency" wie Eigenschaft/
+  // Attribute usw.): kostenRaw ist kumulativ, Klickpreis = kostenNext-kostenCurrent.
+  const costLabel = kostenNext !== undefined && kostenCurrent !== undefined
+    ? `${kostenNext - kostenCurrent}SP/total ${kostenNext}`
+    : '';
   const picksRow = referenz === MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ ? renderGrundfertigkeitPicksRow(currentValue, gewaehlt) : '';
 
   return `
@@ -181,7 +185,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
         <span class="kampf-pool-value">${currentValue}</span>
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
-        <span class="stat-cost">${costLabel}</span>
+        <span class="stat-cost stat-cost-click">${costLabel}</span>
       </td>
     </tr>${picksRow}`;
 }
@@ -202,6 +206,7 @@ function buildRows(sheet: ComputedSheet) {
       eigBonusReferenz: r.rule.eigBonus,
       currentValue: r.currentValue ?? 0,
       kostenNext: r.kostenNext,
+      kostenCurrent: r.kostenCurrent,
       wirkung: r.rule.wirkung,
       unlocked: isKiFaehigkeitUnlocked(sheet, r.rule.referenz),
       depth: depths.get(r.rule.referenz) ?? Number.POSITIVE_INFINITY,

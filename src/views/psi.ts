@@ -107,6 +107,7 @@ interface Row {
   eigBonusReferenz: string | undefined;
   currentValue: number;
   kostenNext?: number;
+  kostenCurrent?: number;
   unlocked: boolean;
   depth: number;
 }
@@ -122,6 +123,7 @@ function buildRows(sheet: ComputedSheet): Row[] {
       eigBonusReferenz: r.rule.eigBonus,
       currentValue: r.currentValue ?? 0,
       kostenNext: r.kostenNext,
+      kostenCurrent: r.kostenCurrent,
       unlocked: isPsiWertUnlocked(sheet, r.rule.referenz),
       depth: depths.get(r.rule.referenz) ?? Number.POSITIVE_INFINITY,
     }))
@@ -146,7 +148,12 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
   const detail = PSI_ZAUBERTABELLE[referenz];
   const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
-  const costLabel = r.kostenNext !== undefined ? `${r.kostenNext} EP` : '';
+  // Gleiches Format wie categoryView.ts (Nutzer 2026-07-24, "same currency" wie Eigenschaft/
+  // Attribute usw.) - Label war faelschlich "EP" statt "SP" (kostenNext ist derselbe kumulative
+  // SP-Kosten-Wert wie ueberall sonst, siehe characterSheet.ts spSpent, das PSI mit einrechnet).
+  const costLabel = r.kostenNext !== undefined && r.kostenCurrent !== undefined
+    ? `${r.kostenNext - r.kostenCurrent}SP/total ${r.kostenNext}`
+    : '';
 
   return `
     <tr class="${rowClass}" data-referenz="${referenz}">
@@ -154,7 +161,7 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
         <span class="kampf-pool-value">${currentValue}</span>
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
-        <span class="stat-cost">${costLabel}</span>
+        <span class="stat-cost stat-cost-click">${costLabel}</span>
       </td>
       <td>${probe}</td>
       <td class="ki-name-cell"${tooltipAttr(detail?.wirkung)}>${escapeHtml(name)}</td>

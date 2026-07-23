@@ -13,9 +13,10 @@
 // Magie+Eig-Bonus+TaW-StufeX berechnet, alle Werte durch "/" getrennt (nicht nur die hoechste).
 
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
-import { canLearnSpell, canIncreaseSpell } from '../engine/spruchmagieGating';
+import { canLearnSpell, canIncreaseSpell, getMaxLernbarerGrad } from '../engine/spruchmagieGating';
 import { SPRUCHMAGIE_DETAILS, type SpruchmagieDetail } from '../data/spruchmagieDetails';
 import { aufrunden } from '../engine/functions';
+import { tooltipAttr } from './tooltip';
 import type { OnValueChange } from './categoryView';
 
 const STUFE_2_TALENT_REFERENZ = 'talente_spruchmagie_stufe_2_zaubern';
@@ -84,7 +85,7 @@ interface Row {
 
 function buildSchulRows(sheet: ComputedSheet, schule: string): Row[] {
   const alle = sheet.byKategorie['Spruchmagie'] ?? [];
-  const weisheit = getAttWert(sheet, 'att_weisheit');
+  const weisheit = getMaxLernbarerGrad(sheet);
   return alle
     .filter((r) => r.rule.art === 'Wert' && r.rule.parent === schule)
     .map((r) => {
@@ -143,7 +144,7 @@ function getGuteProbe(sheet: ComputedSheet, normaleProbe: number, eigBonWert: nu
   const stufe2 = isTalentSelected(sheet, 'talente_spruchgute_stufe_2');
   const stufe1 = stufe2 || isTalentSelected(sheet, 'talente_spruchgute_stufe_1');
   if (!stufe1) return undefined;
-  const weisheit = getAttWert(sheet, 'att_weisheit');
+  const weisheit = getMaxLernbarerGrad(sheet);
   const gute = stufe2 ? weisheit + eigBonWert : weisheit;
   return Math.min(gute, Math.floor(normaleProbe / 2));
 }
@@ -192,7 +193,7 @@ function renderRow(sheet: ComputedSheet, row: Row): string {
       <td class="spruchmagie-taw-cell">
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
         <span class="kampf-pool-value">${currentValue}</span>
-        <button type="button" class="stat-inc" aria-label="erhöhen" ${disabled ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
+        <button type="button" class="stat-inc" aria-label="erhöhen" ${disabled ? 'disabled' : ''}${tooltipAttr(plusTitle)}>+</button>
         <span class="stat-cost">${costLabel}</span>
       </td>
       <td class="spruchmagie-name-cell">${escapeHtml(name)}${probe ? `<div class="spruchmagie-probe">Probe: ${probe}</div>` : ''}</td>

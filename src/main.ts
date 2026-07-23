@@ -11,7 +11,7 @@ import {
   setGrundfertigkeitPick, addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite,
   BudgetError, MutationError,
 } from './state/characterMutations';
-import { computeSheet, type ComputedSheet } from './engine/characterSheet';
+import { computeSheet, makeValueSource, type ComputedSheet } from './engine/characterSheet';
 import { renderCategoryView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
@@ -405,6 +405,9 @@ function renderNewCharacterForm(): string {
 function render(): void {
   const characters = listCharacters();
   const sheet = currentCharacter ? computeSheet(currentCharacter) : null;
+  // Fuer die Formel-Impact-Liste (Plan-Phase 3, nur Eigenschaft/Attribute-Tab) - billig zu bauen
+  // (reine Closures ueber currentCharacter, keine Berechnung), siehe categoryView.ts.
+  const characterValues = currentCharacter ? makeValueSource(currentCharacter) : undefined;
   // Geweihte-Tab kann durch Ab-/Umwaehlen des Gate-Talents nachtraeglich unsichtbar werden -
   // dann auf einen immer sichtbaren Tab zurueckfallen statt eine leere Ansicht zu zeigen.
   if (sheet && !isTabVisible(activeTab, sheet)) activeTab = 'Eigenschaft';
@@ -640,7 +643,7 @@ function render(): void {
     } else if (activeTab === 'Geweihte') {
       renderGeweihteView(viewContainer, sheet, currentCharacter);
     } else {
-      renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange);
+      renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange, characterValues);
     }
   }
 }

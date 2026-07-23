@@ -11,6 +11,8 @@ import { describeSkillStufe } from '../engine/skillStufen';
 import { LADESCHUETZE_SF_FK_GATE, isLadeschuetzeSfVisible } from '../engine/ladeschuetzeGating';
 import { GUT_BASIS, MEISTERLICH_BASIS } from '../engine/poolCaps';
 import { isGeweihterTalentSelectedInSheet } from '../engine/geweihte';
+import { computeFormulaImpact } from '../engine/formulaImpact';
+import type { CharacterValueSource } from '../engine/rules';
 import { tooltipAttr } from './tooltip';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
@@ -38,9 +40,21 @@ function infoIcon(info: string | undefined): string {
   return `<span class="stat-info-icon"${tooltipAttr(info)}>ⓘ</span>`;
 }
 
+/** Formel-Impact-Liste (Plan-Phase 3, nur Eigenschaften/Attribute): baut den Tooltip-Text fuer
+ *  einen +/- Button - nur die Formeln, die sich durch den Klick tatsaechlich aendern wuerden,
+ *  als "<Formelname>: <neuer Wert>"-Zeilen. Leer (kein Tooltip), wenn nichts sich aendert. */
+function impactTooltip(referenz: string, newWert: number, impactValues: CharacterValueSource | undefined): string {
+  if (!impactValues) return '';
+  const rows = computeFormulaImpact(referenz, newWert, impactValues);
+  if (rows.length === 0) return '';
+  return tooltipAttr(rows.map((row) => `${row.label}: ${row.newValue}`).join('\n'));
+}
+
 /** maxValue: nur bei Spezialisierungen gesetzt (Regel Nutzer 2026-07-17: Spezialisierung
- *  darf nie hoeher als der TaW der Hauptfertigkeit sein) - deckelt Input und "+"-Button. */
-function renderEditableRow(r: ComputedRule, maxValue?: number): string {
+ *  darf nie hoeher als der TaW der Hauptfertigkeit sein) - deckelt Input und "+"-Button.
+ *  impactValues: nur fuer Eigenschaften/Attribute gesetzt (siehe renderCategoryView) - liefert
+ *  die Formel-Impact-Tooltips an den +/- Buttons (Plan-Phase 3). */
+function renderEditableRow(r: ComputedRule, maxValue?: number, impactValues?: CharacterValueSource): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   const value = r.currentValue ?? 0;
   const costNext = r.kostenNext !== undefined ? `${r.kostenNext} SP` : '';
@@ -53,15 +67,20 @@ function renderEditableRow(r: ComputedRule, maxValue?: number): string {
   const alteredHint = r.alteredValue !== undefined
     ? ` <span class="stat-altered" title="Durch Artefakt veraendert">(${r.alteredValue})</span>`
     : '';
+  // Eigener Tooltip-Trigger je Button (statt am ganzen Row-Label) - faellt auf den Formel-
+  // Tooltip der Zeile zurueck (closest('[data-tooltip]') in tooltip.ts), wenn hier nichts sich
+  // aendern wuerde oder impactValues fehlt (alle anderen Kategorien).
+  const minusTooltip = impactTooltip(r.rule.referenz, Math.max(0, value - 1), impactValues);
+  const plusTooltip = impactTooltip(r.rule.referenz, value + 1, impactValues);
   // Formel-Tooltip auf der ganzen Zeile (nicht nur dem Label), damit er auch beim Hover ueber
   // den Wert/die Buttons erscheint - Elemente ohne eigenes title-Attribut fallen auf das des
   // naechsten Vorfahren zurueck.
   return `
     <div class="stat-row" data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
       <span class="stat-label">${label}${infoIcon(r.rule.info)}${errorNote(r)}</span>
-      <button type="button" class="stat-dec" aria-label="verringern">-</button>
+      <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
       <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
-      <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
+      <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>
       <span class="stat-cost">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext ? `nächster Punkt: ${costNext}` : ''}</span>
     </div>`;
 }
@@ -133,8 +152,8 @@ function renderGroup(node: HierarchyNode, renderRow: (r: ComputedRule) => string
  *  (Regel Nutzer 2026-07-17) - solange die Hauptfertigkeit 0 ist, zeigt die Gruppe nur einen
  *  Hinweis statt der Steuerelemente. Danach ist jede Spezialisierung durch den TaW gedeckelt
  *  (siehe renderEditableRow maxValue + characterMutations.ts setValue). */
-function renderEditableGroup(node: HierarchyNode): string {
-  if (node.children.length === 0) return renderEditableRow(node.row);
+function renderEditableGroup(node: HierarchyNode, impactValues?: CharacterValueSource): string {
+  if (node.children.length === 0) return renderEditableRow(node.row, undefined, impactValues);
   const label = escapeHtml(node.row.rule.beschreibung ?? node.row.rule.referenz);
   const openAttr = openGroupReferenzen.has(node.row.rule.referenz) ? ' open' : '';
   const hauptwert = node.row.currentValue ?? 0;
@@ -145,7 +164,7 @@ function renderEditableGroup(node: HierarchyNode): string {
     <div class="stat-card">
       <details class="stat-group" data-referenz="${node.row.rule.referenz}"${openAttr}>
         <summary>${label} <span class="stat-group-count">(${node.children.length} Spezialisierungen)</span></summary>
-        ${renderEditableRow(node.row)}
+        ${renderEditableRow(node.row, undefined, impactValues)}
         <div class="stat-subgroup">${kinder}</div>
       </details>
     </div>`;
@@ -410,6 +429,10 @@ export function renderCategoryView(
   // Pool-Zeilen sind hier seit dem Kampf-Tab (2026-07-20) reine Anzeige (siehe renderPoolRow) -
   // Parameter bleibt aus Signatur-/Aufrufer-Kompatibilitaet erhalten, wird aber nicht mehr genutzt.
   _onPoolChange: OnPoolChange,
+  // Formel-Impact-Liste (Plan-Phase 3): nur fuer Eigenschaft/Attribute genutzt (siehe unten),
+  // deshalb hier optional statt bei jedem Aufruf Pflicht - main.ts uebergibt sie trotzdem immer
+  // mit (billig zu bauen, siehe makeValueSource), die Kategorie-Gate entscheidet hier.
+  impactValues?: CharacterValueSource,
 ): void {
   // att_karma bleibt aus dem Attribute-Tab ausgeblendet, solange kein Geweihte-Gate-Talent
   // gewaehlt ist (Nutzer 2026-07-22, "rang 0" = "hiding of att_karma from the app").
@@ -443,6 +466,9 @@ export function renderCategoryView(
       ? readOnly.filter((r) => !r.rule.referenz.startsWith('fk_basis_') && !r.rule.referenz.startsWith('fk_gute_') && !r.rule.referenz.startsWith('fk_meisterlich_'))
       : readOnly;
   const readOnlyHierarchy = buildHierarchy(readOnlyForBerechneteWerte);
+  // Formel-Impact-Liste (Plan-Phase 3) ist explizit auf Eigenschaften/Attribute begrenzt (Nutzer-
+  // Entscheidung 2026-07-20) - andere Kategorien bekommen nie einen impactValues-Wert durchgereicht.
+  const formulaImpactValues = (kategorie === 'Eigenschaft' || kategorie === 'Attribute') ? impactValues : undefined;
   // "i want all lines displayed in a single table" (Nutzer 2026-07-22) - eine gemeinsame <table>
   // mit EINEM <thead> pro Tab statt einer <table> pro Hauptfertigkeit; Nahkampf und Fernkampf
   // bleiben dabei getrennte Tabs/Tabellen ("do not merge tabs").
@@ -464,7 +490,7 @@ export function renderCategoryView(
         </tr></thead>
         <tbody>${editableHierarchy.map((n) => renderFernkampfHauptfertigkeitRows(n, readOnly)).join('')}</tbody>
       </table>`
-      : editableHierarchy.map(renderEditableGroup).join('');
+      : editableHierarchy.map((n) => renderEditableGroup(n, formulaImpactValues)).join('');
 
   container.innerHTML = `
     <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet)}</div>

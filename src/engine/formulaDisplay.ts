@@ -9,7 +9,9 @@ import { getRule } from './rules';
 const FUNCTION_NAMES = new Set(['MIN', 'MAX', 'WENN', 'AUFRUNDEN', 'ABRUNDEN', 'SVERWEIS', 'SUMME']);
 const PSEUDO_VARS: Record<string, string> = { wert: 'Wert', grad: 'Grad' };
 
-function displayNameFor(referenz: string): string {
+/** Menschenlesbarer Name einer Referenz (Abkuerzung, sonst Beschreibung, sonst die Referenz
+ *  selbst) - auch fuer die Formel-Impact-Liste (Phase 3) genutzt, siehe engine/formulaImpact.ts. */
+export function displayNameFor(referenz: string): string {
   const rule = getRule(referenz);
   if (!rule) return referenz;
   return rule.abkuerzung || rule.beschreibung || rule.referenz;

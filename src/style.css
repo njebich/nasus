@@ -201,8 +201,16 @@ body {
   position: fixed;
   z-index: 1000;
   max-width: 320px;
-  white-space: normal;
+  /* pre-line statt normal (Plan-Phase 3): die Formel-Impact-Liste (categoryView.ts) trennt ihre
+     Zeilen mit "\n" - pre-line bricht dort zusaetzlich zum normalen Wortumbruch um, ohne
+     bestehende einzeiligen Tooltip-Texte zu veraendern (die enthalten kein "\n"). */
+  white-space: pre-line;
   overflow-wrap: break-word;
+  /* Sicherheitsnetz gegen sehr lange Impact-Listen (z.B. Athletik haengt an ~50 Formeln) -
+     "dynamic height" aus Phase 0/1 bleibt fuer den Normalfall erhalten, nur der Extremfall
+     scrollt statt den Viewport zu sprengen. */
+  max-height: 60vh;
+  overflow-y: auto;
   background: Canvas;
   color: CanvasText;
   border: 1px solid #8888;

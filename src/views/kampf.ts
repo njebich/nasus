@@ -9,7 +9,7 @@ import { makeValueSource } from '../engine/characterSheet';
 import { evalReferenz, type CharacterValueSource } from '../engine/rules';
 import type { CharacterState, PoolAllocation, WaffenLoadoutEntry, WaffenLoadoutComboType } from '../state/characterStore';
 import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
-import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN } from '../data/equipment/fernkampf';
+import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { feuerwaffenMunitionOptionen, FEUERWAFFEN_MUNITION_PREISE } from '../data/equipment/feuerwaffenMunition';
 import {
   resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier, getZweiWaffenCap,
@@ -18,6 +18,9 @@ import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget, isPoolBalan
 import { getOwnedKampfmodulTalentInfo } from '../engine/talenteKampfmodulInfo';
 import { computeSchaden, formatSigned } from '../engine/waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from '../engine/fernkampfRange';
+import {
+  gesBonWert, ladezeitKr, feuerwaffenLadeschuetzeReferenz, computeArmbrustLadezeitLabel,
+} from '../engine/fernkampfLadezeit';
 import {
   listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen, resolveLoadout, describeLoadout,
   type LoadoutResult, type PoolSideRef,
@@ -286,6 +289,59 @@ function formatRangeCell(
 const RANGE_HEADERS = ['10m', '30m', '60m', '100m', '150m', '210m'] as const;
 
 // ---------------------------------------------------------------------------------------------
+// FK-Waffen als Nahkampfwaffen (Nutzer 2026-07-23): jede Feuerwaffe/jeder Bogen/jede Armbrust
+// traegt in ihrer eigenen Basiszeile einen fixen NK-Statblock (Hauptfertigkeit/Spezialisierung/
+// WK-Basis/Schadenswuerfel/Staerke-Teiler/-Malus-Basis/AT-Basis/PA-Basis/Min-Staerke-1H/2H-Basis/
+// Klingenbrecher/-schutz-Basis), identisch pro Waffenklassifikation (Pistole -> Hiebwaffen/
+// Improvisierte Hiebwaffen, alles andere -> Stangenwaffen/Improvisierte Stangenwaffen). Die
+// Spezialisierung selbst ist bewusst NICHT skillbar/sichtbar (kein eigener Talente-Tab-Eintrag,
+// keine Pool-Investition/-Zellen hier) - nur das Ergebnis zaehlt, auf Basis der Werte, die der
+// Charakter fuer die zugrundeliegende Hauptfertigkeit (Stangenwaffen/Hiebwaffen) bereits
+// tatsaechlich investiert hat, analog zu computeWeaponAtPaOverflow ohne Ueberlauf-Pool.
+// ---------------------------------------------------------------------------------------------
+
+function numOrUndefined(row: FernkampfRow | undefined, header: string): number | undefined {
+  const raw = row?.[header];
+  if (raw === undefined) return undefined;
+  const n = Number(raw.replace(',', '.'));
+  return Number.isFinite(n) ? n : undefined;
+}
+
+export interface FkNkWerte {
+  usable: boolean;
+  unusableReason?: string;
+  schaden: string;
+  wk: string;
+  nat: number | null;
+  npa: number | null;
+  kb: number;
+  ks: number;
+}
+
+function computeFkNkWerte(
+  basis: FernkampfRow | undefined, character: CharacterState, values: CharacterValueSource,
+): FkNkWerte | null {
+  if (!basis || !hasColumn(basis, 'Hauptfertigkeit')) return null;
+  const hauptfertigkeit = basis['Hauptfertigkeit'];
+  const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
+  const minStaerke = numOrUndefined(basis, 'Min-Staerke-1H-Basis') ?? numOrUndefined(basis, 'Min-Staerke-2H-Basis') ?? 0;
+  const usable = eigKStaerke >= minStaerke;
+  const overflow = computeWeaponAtPaOverflow(
+    hauptfertigkeit, num(basis, 'AT-Basis'), num(basis, 'PA-Basis'), values, getKampfstilModifier(character),
+  );
+  return {
+    usable,
+    unusableReason: usable ? undefined : 'nicht tragbar (Stärke zu niedrig)',
+    schaden: usable ? computeSchaden(basis, num(basis, 'Staerke-Malus-Basis'), eigKStaerke) : '–',
+    wk: usable ? String(num(basis, 'WK-Basis')) : '–',
+    nat: usable ? Math.min(20, overflow.uncAtWeapon) : null,
+    npa: usable ? Math.min(20, overflow.uncPaWeapon) : null,
+    kb: num(basis, 'Klingenbrecher-Basis'),
+    ks: num(basis, 'Klingenschutz-Basis'),
+  };
+}
+
+// ---------------------------------------------------------------------------------------------
 // FEUERWAFFEN
 // ---------------------------------------------------------------------------------------------
 
@@ -297,8 +353,9 @@ export interface FeuerwaffenRow {
   munition: string;
   ranges: string[];
   rw: number;
-  ladedauer: number;
+  ladedauer: string;
   ini: number;
+  nk: FkNkWerte | null;
 }
 
 const FEUERWAFFEN_TYP_BASIS_REF: Record<string, string> = {
@@ -310,6 +367,7 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
   const values = makeValueSource(character);
   const gutDivisor = fkGuteDivisor(values);
   const meisterlichDivisor = fkMeisterlichDivisor(values);
+  const gesBon = gesBonWert(values);
   const rows: FeuerwaffenRow[] = [];
 
   for (const e of character.equipment) {
@@ -341,6 +399,10 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
     const ammoRow = ammo ? FEUERWAFFEN_MUNITION_PREISE.find((m) => m.art === ammo.baseId && m.kaliber === snap.kaliber) : undefined;
     const munition = ammoRow ? `${ammoRow.label} (${ammo!.quantity} Stück)` : '–';
 
+    const ladeschuetzeReferenz = feuerwaffenLadeschuetzeReferenz(basis['Lademechanik'] ?? '');
+    const ladeschuetzeWert = character.values[ladeschuetzeReferenz] ?? 0;
+    const ladedauer = `${ladezeitKr(snap.nachladezeit ?? 0, snap.nachladenTawTeiler ?? 0, gesBon, ladeschuetzeWert)} KR`;
+
     rows.push({
       key: e.id,
       label: basis.name,
@@ -349,8 +411,9 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
       munition,
       ranges,
       rw: snap.rw ?? 0,
-      ladedauer: snap.nachladezeit ?? 0,
+      ladedauer,
       ini: Math.round(Number(evalReferenz('ini', values))) + (snap.ini ?? 0),
+      nk: computeFkNkWerte(basis, character, values),
     });
   }
   return rows;
@@ -370,11 +433,17 @@ export interface ArmbrustBogenRow {
   rw: string;
   ladedauer: string;
   ini: number;
+  nk: FkNkWerte | null;
 }
 
 const ARMBRUST_BOEGEN_BASIS_REF: Record<'boegen' | 'armbrust', string> = {
   boegen: 'fk_basis_spez_boegen_boegen',
   armbrust: 'fk_basis_spez_schusswaffen_armbrust',
+};
+
+const ARMBRUST_BOEGEN_LADESCHUETZE_REF: Record<'boegen' | 'armbrust', string> = {
+  boegen: 'sf_ladeschuetze_bogen',
+  armbrust: 'sf_ladeschuetze_armbrust',
 };
 
 export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen' | 'armbrust'): ArmbrustBogenRow[] {
@@ -388,6 +457,9 @@ export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen'
   } catch {
     // nicht auswertbar - Zellen bleiben "x".
   }
+  const gesBon = gesBonWert(values);
+  const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
+  const ladeschuetzeWert = character.values[ARMBRUST_BOEGEN_LADESCHUETZE_REF[typ]] ?? 0;
   const ammoFamily = typ === 'boegen' ? 'pfeile' : 'bolzen';
   const ammoTable = typ === 'boegen' ? PFEILE : BOLZEN;
   const rows: ArmbrustBogenRow[] = [];
@@ -399,6 +471,10 @@ export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen'
     const ranges = RANGE_HEADERS.map((h) => formatRangeCell(basis[h] ?? 'x', basisWert, gutDivisor, meisterlichDivisor));
     const weaponRb = num(basis, 'RB');
     const weaponFix = num(basis, 'Fixschaden');
+    const ladedauer = typ === 'boegen'
+      ? `${ladezeitKr(num(basis, 'Nachladezeit'), num(basis, 'Nachladen TaW-Teiler'), gesBon, ladeschuetzeWert)} KR`
+      : computeArmbrustLadezeitLabel(basis, eigKStaerke, gesBon, ladeschuetzeWert);
+    const nk = computeFkNkWerte(basis, character, values);
     const ownedAmmo = character.equipment.filter((a) => a.family === 'ammo' && a.baseTable === ammoFamily);
     const ammoRows = ownedAmmo.length > 0 ? ownedAmmo : [undefined];
     for (const ammo of ammoRows) {
@@ -416,8 +492,9 @@ export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen'
         munition: ammoName ? `${ammoName} (${ammo!.quantity} Stück)` : '–',
         ranges,
         rw: basis['RW'] ?? '–',
-        ladedauer: basis['Nachladezeit'] ?? '–',
+        ladedauer,
         ini: Math.round(Number(evalReferenz('ini', values))) + num(basis, 'Ini'),
+        nk,
       });
     }
   }
@@ -745,6 +822,22 @@ function renderNahkampfTable(rows: NahkampfRow[]): string {
     </div>`;
 }
 
+/** Gemeinsame 6 NK-Zellen (Schaden/WK/nAT/nPA/KB/KS) fuer die Feuerwaffen/Armbrust/Boegen-
+ *  Tabellen - siehe computeFkNkWerte-Kommentar. Kein eigener Pool: nur Anzeige, kein +/-. */
+function renderFkNkCells(nk: FkNkWerte | null): string {
+  if (!nk) return '<td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td>';
+  const title = nk.unusableReason ? ` title="${escapeHtml(nk.unusableReason)}"` : '';
+  return `
+      <td${title}>${escapeHtml(nk.schaden)}</td>
+      <td${title}>${escapeHtml(nk.wk)}</td>
+      <td${title}>${nk.nat ?? '–'}</td>
+      <td${title}>${nk.npa ?? '–'}</td>
+      <td>${nk.kb}</td>
+      <td>${nk.ks}</td>`;
+}
+
+const FK_NK_TABLE_HEAD_CELLS = '<th>NK-Schaden</th><th>NK-WK</th><th>NK-nAT</th><th>NK-nPA</th><th>NK-KB</th><th>NK-KS</th>';
+
 function renderFeuerwaffenRow(row: FeuerwaffenRow): string {
   return `
     <tr>
@@ -754,8 +847,9 @@ function renderFeuerwaffenRow(row: FeuerwaffenRow): string {
       <td>${escapeHtml(row.munition)}</td>
       ${row.ranges.map((r) => `<td>${escapeHtml(r)}</td>`).join('')}
       <td>${row.rw}</td>
-      <td>${row.ladedauer}</td>
+      <td>${escapeHtml(row.ladedauer)}</td>
       <td>${row.ini}</td>
+      ${renderFkNkCells(row.nk)}
     </tr>`;
 }
 
@@ -769,6 +863,7 @@ function renderFeuerwaffenTable(rows: FeuerwaffenRow[]): string {
           <th>Waffe</th><th>Schaden</th><th>RB</th><th>Munition</th>
           <th>10m</th><th>30m</th><th>60m</th><th>100m</th><th>150m</th><th>210m</th>
           <th>RW</th><th>Ladedauer</th><th>INI</th>
+          ${FK_NK_TABLE_HEAD_CELLS}
         </tr></thead>
         <tbody>${rows.map(renderFeuerwaffenRow).join('')}</tbody>
       </table>
@@ -786,6 +881,7 @@ function renderArmbrustBogenRow(row: ArmbrustBogenRow): string {
       <td>${escapeHtml(row.rw)}</td>
       <td>${escapeHtml(row.ladedauer)}</td>
       <td>${row.ini}</td>
+      ${renderFkNkCells(row.nk)}
     </tr>`;
 }
 
@@ -799,6 +895,7 @@ function renderArmbrustBogenTable(heading: string, rows: ArmbrustBogenRow[]): st
           <th>Waffe</th><th>Schaden</th><th>RB</th><th>Munition</th>
           <th>10m</th><th>30m</th><th>60m</th><th>100m</th><th>150m</th><th>210m</th>
           <th>RW</th><th>Ladedauer</th><th>INI</th>
+          ${FK_NK_TABLE_HEAD_CELLS}
         </tr></thead>
         <tbody>${rows.map(renderArmbrustBogenRow).join('')}</tbody>
       </table>

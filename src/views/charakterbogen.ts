@@ -14,7 +14,7 @@ import type { RsGruppe } from '../data/trefferzonen';
 import {
   buildNahkampfRows, buildFeuerwaffenRows, buildArmbrustBoegenRows, buildAusweichenRow,
   buildLoadoutDisplayRows, formatLoadoutCells,
-  type NahkampfRow, type FeuerwaffenRow, type ArmbrustBogenRow, type LoadoutDisplayRow,
+  type NahkampfRow, type FeuerwaffenRow, type ArmbrustBogenRow, type LoadoutDisplayRow, type FkNkWerte,
 } from './kampf';
 
 function escapeHtml(s: string): string {
@@ -332,13 +332,29 @@ function renderKampfWaffenNahkampfRowReadOnly(row: NahkampfRow): string {
     </tr>`;
 }
 
+/** Read-only Spiegelung von kampf.ts's renderFkNkCells (gleiche 6 Zellen: Schaden/WK/nAT/nPA/
+ *  KB/KS) - hier lokal dupliziert statt importiert, gleiche Konvention wie die anderen read-only
+ *  Mirror-Renderer in dieser Datei (kein Zugriff auf kampf.ts's private Render-Helfer). */
+function renderFkNkCellsReadOnly(nk: FkNkWerte | null): string {
+  if (!nk) return '<td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td>';
+  const title = nk.unusableReason ? ` title="${escapeHtml(nk.unusableReason)}"` : '';
+  return `
+      <td${title}>${escapeHtml(nk.schaden)}</td>
+      <td${title}>${escapeHtml(nk.wk)}</td>
+      <td${title}>${nk.nat ?? '–'}</td>
+      <td${title}>${nk.npa ?? '–'}</td>
+      <td>${nk.kb}</td>
+      <td>${nk.ks}</td>`;
+}
+
 function renderKampfWaffenFeuerwaffeRowReadOnly(row: FeuerwaffenRow): string {
   return `
     <tr>
       <td>${escapeHtml(row.label)}</td><td>${escapeHtml(row.schaden)}</td><td>${row.rb}</td>
       <td>${escapeHtml(row.munition)}</td>
       ${row.ranges.map((r) => `<td>${escapeHtml(r)}</td>`).join('')}
-      <td>${row.rw}</td><td>${row.ladedauer}</td><td>${row.ini}</td>
+      <td>${row.rw}</td><td>${escapeHtml(row.ladedauer)}</td><td>${row.ini}</td>
+      ${renderFkNkCellsReadOnly(row.nk)}
     </tr>`;
 }
 
@@ -349,6 +365,7 @@ function renderKampfWaffenArmbrustBogenRowReadOnly(row: ArmbrustBogenRow): strin
       <td>${escapeHtml(row.munition)}</td>
       ${row.ranges.map((r) => `<td>${escapeHtml(r)}</td>`).join('')}
       <td>${escapeHtml(row.rw)}</td><td>${escapeHtml(row.ladedauer)}</td><td>${row.ini}</td>
+      ${renderFkNkCellsReadOnly(row.nk)}
     </tr>`;
 }
 
@@ -357,6 +374,7 @@ const FERNKAMPF_TABLE_HEAD = `
     <th>Waffe</th><th>Schaden</th><th>RB</th><th>Munition</th>
     <th>10m</th><th>30m</th><th>60m</th><th>100m</th><th>150m</th><th>210m</th>
     <th>RW</th><th>Ladedauer</th><th>INI</th>
+    <th>NK-Schaden</th><th>NK-WK</th><th>NK-nAT</th><th>NK-nPA</th><th>NK-KB</th><th>NK-KS</th>
   </tr></thead>`;
 
 /** Read-only Spiegelung NUR der favorisierten Waffen-Loadouts (2026-07-22) - gleiche Zellen wie

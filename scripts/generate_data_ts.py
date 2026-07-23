@@ -757,6 +757,35 @@ def read_feuerwaffen(feuerwaffen_values):
     return waffen, ressourcen, wuerfel, verfuegbarkeit
 
 
+FERNKAMPF_NK_COLUMNS = [
+    "Hauptfertigkeit", "Spezialisierung", "WK-Basis", "Schadenswuerfel-1", "Schadenswuerfel-2",
+    "Staerke-Teiler", "Staerke-Malus-Basis", "AT-Basis", "PA-Basis", "Min-Staerke-1H-Basis",
+    "Min-Staerke-2H-Basis", "Klingenbrecher-Basis", "Klingenschutz-Basis",
+]
+
+
+def enrich_feuerwaffen_nk_werte(feuerwaffen_rows, wb):
+    """Reichert die (aus der externen NN_Feuerwaffen_1.1.xlsx komponierten) Feuerwaffen-Zeilen um
+    die NK-Basis-Spalten (Nutzer 2026-07-23: "NK-Werte, identisch pro Waffenklassifikation Pistole
+    vs. alle anderen, koennen nicht veraendert werden") an, die der Nutzer direkt in
+    werte-*.xlsx's eigenem "Feuerwaffen"-Sheet ergaenzt hat (nicht in der externen Quelle - das
+    Sheet ist sonst ein werte-stabiler Values-Spiegel derselben 86 Waffen, siehe Zeilenvergleich
+    bei der Einfuehrung dieser Funktion). Join ueber (Name, Volk) - eindeutig, keine Duplikate
+    (geprueft). Rein additiv: fehlt eine Zeile im Feuerwaffen-Sheet (z.B. Zeilenzahl weicht spaeter
+    ab), bleiben deren NK-Spalten schlicht unbesetzt statt einen Build-Fehler auszuloesen."""
+    nk_rows = read_generic_rows(wb, "Feuerwaffen", "Name")
+    nk_by_name_volk = {(row.get("Name"), row.get("Volk")): row for row in nk_rows}
+    for row in feuerwaffen_rows:
+        nk_row = nk_by_name_volk.get((row.get("Name"), row.get("Volk")))
+        if not nk_row:
+            continue
+        for col in FERNKAMPF_NK_COLUMNS:
+            val = nk_row.get(col)
+            if val is not None:
+                row[col] = val
+    return feuerwaffen_rows
+
+
 def write_fernkampf_ts(wb, wb_values, feuerwaffen_values):
     # Boegen/Armbrust/Pfeile/Bolzen sind normalisierte, reine Wertetabellen ohne Formeln (per
     # one-off Build-Skripten aus den jeweiligen docx-Quellen erzeugt) - data_only spielt fuer
@@ -789,6 +818,7 @@ def write_fernkampf_ts(wb, wb_values, feuerwaffen_values):
     bolzen = enrich_fernkampf_rows(read_generic_rows(wb, "Bolzen", "Name"))
     feuerwaffen_munition = read_generic_rows(wb_values, "Feuerwaffen-Munition", "Name")
     feuerwaffen, feuerwaffen_ressourcen, feuerwaffen_wuerfel, feuerwaffen_verfuegbarkeit = read_feuerwaffen(feuerwaffen_values)
+    feuerwaffen = enrich_feuerwaffen_nk_werte(feuerwaffen, wb)
     data = {
         "boegen": boegen, "armbrust": armbrust, "pfeile": pfeile,
         "bolzen": bolzen, "feuerwaffenMunition": feuerwaffen_munition,

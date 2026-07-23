@@ -1043,6 +1043,14 @@ body {
   display: inline-block;
 }
 
+.kampf-pp-invalid {
+  color: #b45309;
+}
+
+.kampf-pp-warn {
+  cursor: help;
+}
+
 /* Waffen-Loadout (2026-07-22): eigenes kompaktes Anlage-Formular + Tabelle gespeicherter
    Kombinationen, gleiche horizontal-scrollbare Konvention wie die anderen Kampf-Tab-Tabellen. */
 .loadout-creation-form {

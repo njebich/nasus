@@ -404,7 +404,11 @@ function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterSta
 }
 
 function renderKampfWaffenMirror(sheet: ComputedSheet, character: CharacterState): string {
-  const nahkampf = buildNahkampfRows(character, sheet);
+  // AT/PA-Balance-Regel (Nutzer-Diktat 2026-07-23, siehe poolFieldsForRow/isPoolBalanceValid):
+  // solange die PP-Verteilung einer Waffenzeile ungueltig ist, ist die komplette Zeile ungueltig
+  // und wird nicht auf den Charakterbogen exportiert (nur im interaktiven Kampf-Tab sichtbar, dort
+  // per Warn-Icon markiert - siehe kampf.ts's ppCell).
+  const nahkampf = buildNahkampfRows(character, sheet).filter((r) => r.poolValid);
   const feuerwaffen = buildFeuerwaffenRows(character);
   const boegen = buildArmbrustBoegenRows(character, 'boegen');
   const armbrust = buildArmbrustBoegenRows(character, 'armbrust');

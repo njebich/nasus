@@ -51,3 +51,17 @@ export function gutBudget(gutMax: number): number {
 export function meisterlichBudget(meisterlichMax: number): number {
   return Math.max(0, meisterlichMax - MEISTERLICH_BASIS);
 }
+
+/** AT/PA-Balance-Regel pro Waffenzeile (Nutzer-Diktat 2026-07-23): auf die drei AT-Werte (nAT/gAT/
+ *  mAT) darf max. 1 Pool-Punkt mehr verteilt werden als auf die drei PA-Werte (nPA/gPA/mPA) und
+ *  umgekehrt. Die Regel ist aufgehoben, sobald EINE Seite ihr absolutes Maximum (n=20, g/m=ihr
+ *  jeweiliger Gesamt-Ziel-Wert, typischerweise 20/10/26) erreicht hat - sonst koennte diese Seite
+ *  gar keine weiteren Punkte mehr aufnehmen und die andere Seite waere fuer den Rest des Pools
+ *  blockiert. Nutzer-bestaetigt: "eine Seite reicht", nicht enforced (kein Throw) - nur eine
+ *  Anzeige-Warnung (siehe views/kampf.ts) und Ausschluss der Zeile aus dem Charakterbogen-Export. */
+export function isPoolBalanceValid(
+  atSpent: number, paSpent: number, atMaxed: boolean, paMaxed: boolean,
+): boolean {
+  if (atMaxed || paMaxed) return true;
+  return Math.abs(atSpent - paSpent) <= 1;
+}

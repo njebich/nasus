@@ -14,7 +14,7 @@ import { feuerwaffenMunitionOptionen, FEUERWAFFEN_MUNITION_PREISE } from '../dat
 import {
   resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier, getZweiWaffenCap,
 } from '../engine/waffenPool';
-import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget } from '../engine/poolCaps';
+import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget, isPoolBalanceValid } from '../engine/poolCaps';
 import { getOwnedKampfmodulTalentInfo } from '../engine/talenteKampfmodulInfo';
 import { computeSchaden, formatSigned } from '../engine/waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from '../engine/fernkampfRange';
@@ -69,6 +69,14 @@ export interface NahkampfRow {
   /** Poolpunkte (PP) - verbleibendes Budget des geteilten Waffen-Pools (Spez-Punkte + AT/PA-
    *  Ueberschuss ueber 20 minus bereits verteilter Punkte), siehe poolFieldsForRow. */
   pp: number;
+  /** AT/PA-Balance-Regel (Nutzer-Diktat 2026-07-23, siehe isPoolBalanceValid): Summe der auf
+   *  nAT+gAT+mAT bzw. nPA+gPA+mPA tatsaechlich verteilten Pool-Punkte dieser Zeile, plus ob die
+   *  Balance-Regel eingehalten ist. Wird NICHT enforced (kein Throw in setWaffenPoolAllocation) -
+   *  nur als Warn-Icon angezeigt (poolCell/renderNahkampfRow) und zum Ausschluss ungueltiger
+   *  Zeilen aus dem Charakterbogen-Export (charakterbogen.ts) genutzt. */
+  atSpent: number;
+  paSpent: number;
+  poolValid: boolean;
   kb: number;
   ks: number;
   ini: number;
@@ -93,7 +101,7 @@ interface PoolContext {
 
 function poolFieldsForRow(
   ctx: PoolContext, poolReferenz: string, key: string, hauptfertigkeit: string, atBonus: number, paBonus: number,
-): Pick<NahkampfRow, 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa' | 'pp'> {
+): Pick<NahkampfRow, 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa' | 'pp' | 'atSpent' | 'paSpent' | 'poolValid'> {
   const poolRule = ctx.sheet.byKategorie['Nahkampf']?.find((r) => r.rule.referenz === poolReferenz);
   const allocation = ctx.character.poolAllocations[`${poolReferenz}::${key}`]
     ?? { gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 };
@@ -109,15 +117,21 @@ function poolFieldsForRow(
   // nAT/nPA sind ab 20 hart gedeckelt (jede at_X/pa_X-Formel ist selbst MIN(20;...), siehe
   // waffenPool.ts's stripMin20) - der Ueberschuss darueber fliesst als Pool-Budget ab (oben), darf
   // aber nicht als Anzeigewert >20 stehen bleiben (Bug, User-Repro 2026-07-23).
-  return {
-    nat: { value: Math.min(20, overflow.uncAtWeapon + allocation.nat), allocated: allocation.nat, max: overflow.natMax },
-    gat: { value: GUT_BASIS + allocation.gat, allocated: allocation.gat, max: caps ? gutBudget(caps.gatMax) : undefined },
-    mat: { value: MEISTERLICH_BASIS + allocation.mat, allocated: allocation.mat, max: caps ? meisterlichBudget(caps.matMax) : undefined },
-    npa: { value: Math.min(20, overflow.uncPaWeapon + allocation.npa), allocated: allocation.npa, max: overflow.npaMax },
-    gpa: { value: GUT_BASIS + allocation.gpa, allocated: allocation.gpa, max: caps ? gutBudget(caps.gpaMax) : undefined },
-    mpa: { value: MEISTERLICH_BASIS + allocation.mpa, allocated: allocation.mpa, max: caps ? meisterlichBudget(caps.mpaMax) : undefined },
-    pp,
-  };
+  const nat: PoolFieldState = { value: Math.min(20, overflow.uncAtWeapon + allocation.nat), allocated: allocation.nat, max: overflow.natMax };
+  const gat: PoolFieldState = { value: GUT_BASIS + allocation.gat, allocated: allocation.gat, max: caps ? gutBudget(caps.gatMax) : undefined };
+  const mat: PoolFieldState = { value: MEISTERLICH_BASIS + allocation.mat, allocated: allocation.mat, max: caps ? meisterlichBudget(caps.matMax) : undefined };
+  const npa: PoolFieldState = { value: Math.min(20, overflow.uncPaWeapon + allocation.npa), allocated: allocation.npa, max: overflow.npaMax };
+  const gpa: PoolFieldState = { value: GUT_BASIS + allocation.gpa, allocated: allocation.gpa, max: caps ? gutBudget(caps.gpaMax) : undefined };
+  const mpa: PoolFieldState = { value: MEISTERLICH_BASIS + allocation.mpa, allocated: allocation.mpa, max: caps ? meisterlichBudget(caps.mpaMax) : undefined };
+
+  // AT/PA-Balance-Regel (Nutzer-Diktat 2026-07-23, siehe isPoolBalanceValid in poolCaps.ts).
+  const atSpent = allocation.nat + allocation.gat + allocation.mat;
+  const paSpent = allocation.npa + allocation.gpa + allocation.mpa;
+  const atMaxed = nat.value === 20 && !!caps && gat.value === caps.gatMax && mat.value === caps.matMax;
+  const paMaxed = npa.value === 20 && !!caps && gpa.value === caps.gpaMax && mpa.value === caps.mpaMax;
+  const poolValid = isPoolBalanceValid(atSpent, paSpent, atMaxed, paMaxed);
+
+  return { nat, gat, mat, npa, gpa, mpa, pp, atSpent, paSpent, poolValid };
 }
 
 function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][number], zweiWaffenCap: number | undefined): NahkampfRow[] {
@@ -151,7 +165,7 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       : {
         nat: { value: 0, allocated: 0 }, gat: { value: 0, allocated: 0 }, mat: { value: 0, allocated: 0 },
         npa: { value: 0, allocated: 0 }, gpa: { value: 0, allocated: 0 }, mpa: { value: 0, allocated: 0 },
-        pp: 0,
+        pp: 0, atSpent: 0, paSpent: 0, poolValid: true,
       };
     return {
       key: e.id,
@@ -197,7 +211,7 @@ function buildUnbewaffnetRow(ctx: PoolContext, key: string, label: string, basis
     : {
       nat: { value: 0, allocated: 0 }, gat: { value: 0, allocated: 0 }, mat: { value: 0, allocated: 0 },
       npa: { value: 0, allocated: 0 }, gpa: { value: 0, allocated: 0 }, mpa: { value: 0, allocated: 0 },
-      pp: 0,
+      pp: 0, atSpent: 0, paSpent: 0, poolValid: true,
     };
   return {
     key,
@@ -686,6 +700,12 @@ function poolCell(field: 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa', row: Nah
     </td>`;
 }
 
+function ppCell(row: NahkampfRow): string {
+  if (row.poolValid) return `<td>${row.pp}</td>`;
+  const tooltip = `Summe auf AT verteilt: ${row.atSpent}\nSumme auf PA verteilt: ${row.paSpent}`;
+  return `<td class="kampf-pp-invalid">${row.pp} <span class="kampf-pp-warn" title="${escapeHtml(tooltip)}">⚠</span></td>`;
+}
+
 function renderNahkampfRow(row: NahkampfRow, showZweiWaffen: boolean): string {
   const unusable = !row.usable;
   const zweiWaffenCell = row.zweiWaffenFaehig === undefined ? '–' : row.zweiWaffenFaehig ? '✓' : '✗';
@@ -696,7 +716,7 @@ function renderNahkampfRow(row: NahkampfRow, showZweiWaffen: boolean): string {
       <td>${row.grip}</td>
       <td>${escapeHtml(row.wk)}</td>
       <td>${row.rb}</td>
-      <td>${row.pp}</td>
+      ${ppCell(row)}
       ${poolCell('nat', row)}${poolCell('gat', row)}${poolCell('mat', row)}
       ${poolCell('npa', row)}${poolCell('gpa', row)}${poolCell('mpa', row)}
       <td>${row.kb}</td>

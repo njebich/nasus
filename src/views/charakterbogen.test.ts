@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createCharacter } from '../state/characterStore';
-import { setValue, buyWeapon, addWaffenLoadout, toggleWaffenLoadoutFavorite } from '../state/characterMutations';
+import { setValue, buyWeapon, addWaffenLoadout, toggleWaffenLoadoutFavorite, setWaffenPoolAllocation } from '../state/characterMutations';
 import { computeSheet } from '../engine/characterSheet';
 import { renderCharakterbogen } from './charakterbogen';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
@@ -61,6 +61,38 @@ describe('Kampf-Tab-Spiegelung auf dem Charakterbogen', () => {
     expect(axtRows).toHaveLength(2);
     expect(axtRows[0].textContent).toContain('1H');
     expect(axtRows[1].textContent).toContain('2H');
+  });
+
+  // AT/PA-Balance-Regel (Nutzer-Diktat 2026-07-23, siehe kampf.test.ts fuer die Regel selbst):
+  // eine Waffenzeile mit ungueltiger PP-Balance wird NICHT auf den Charakterbogen exportiert -
+  // nur im interaktiven Kampf-Tab sichtbar (dort per Warn-Icon markiert).
+  it('blendet eine Waffenzeile mit ungueltiger AT/PA-Pool-Balance aus dem Charakterbogen-Export aus', () => {
+    let character = createCharacter('Test');
+    character.values['ep_gesamt'] = 100000;
+    character.values['dublonen_bank'] = 100000;
+    character = setValue(character, 'eig_g_mut', 30);
+    character = setValue(character, 'eig_k_athletik', 30);
+    character = setValue(character, 'eig_k_schnelligkeit', 30);
+    character = setValue(character, 'eig_k_staerke', 30);
+    character = setValue(character, 'nk_hiebwaffen', 10);
+    const axt = find(NK_WAFFEN_BASIS, 'Axt');
+    const material = find(NK_MATERIAL, 'Eisen');
+    const fertigung = find(NK_FERTIGUNG, 'Gesellenarbeit');
+    const anpassung = find(NK_ANPASSUNG, 'Von der Stange');
+    const schaftmaterial = find(NK_SCHAFTMATERIAL, 'Standard');
+    character = buyWeapon(character, axt.sourceRow, material.sourceRow, fertigung.sourceRow, anpassung.sourceRow, schaftmaterial.sourceRow);
+    const [w1] = character.equipment;
+    // gat=5 alleine (Budget erlaubt bis 9) -> AT-Summe=5, PA-Summe=0, Diskrepanz > 1, ungueltig.
+    character = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 5, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+
+    const container = document.createElement('div');
+    renderCharakterbogen(container, computeSheet(character), character);
+
+    const heading = [...container.querySelectorAll('h3')].find((h) => h.textContent === 'Nahkampf (Kampf-Tab)');
+    const rows = [...heading!.nextElementSibling!.querySelectorAll('tbody tr')];
+    expect(rows.some((r) => r.textContent?.includes('Axt'))).toBe(false);
+    // Andere, gueltige Zeilen (z.B. Unbewaffnet) bleiben unbeeinflusst sichtbar.
+    expect(rows.some((r) => r.textContent?.includes('Unbewaffnet'))).toBe(true);
   });
 });
 

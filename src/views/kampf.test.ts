@@ -169,6 +169,73 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
   });
 });
 
+describe('buildNahkampfRows: AT/PA-Balance-Regel (Nutzer-Diktat 2026-07-23)', () => {
+  function characterWithEineAxt() {
+    let character = baseCharacter();
+    character = setValue(character, 'eig_g_mut', 30);
+    character = setValue(character, 'eig_k_athletik', 30);
+    character = setValue(character, 'eig_k_schnelligkeit', 30);
+    character = setValue(character, 'eig_k_staerke', 30);
+    character = setValue(character, 'nk_hiebwaffen', 10);
+    const axt = NK_WAFFEN_BASIS.find((r) => r.name === 'Axt')!;
+    const material = NK_MATERIAL.find((r) => r.name === 'Eisen')!;
+    const fertigung = NK_FERTIGUNG.find((r) => r.name === 'Gesellenarbeit')!;
+    const anpassung = NK_ANPASSUNG.find((r) => r.name === 'Von der Stange')!;
+    const schaftmaterial = NK_SCHAFTMATERIAL.find((r) => r.name === 'Standard')!;
+    character = buyWeapon(character, axt.sourceRow, material.sourceRow, fertigung.sourceRow, anpassung.sourceRow, schaftmaterial.sourceRow);
+    return character;
+  }
+
+  // Fixture-Kennwerte (per Probe bestaetigt): nat startet bereits bei 20/max 0, npa bei 19/max 1,
+  // gat/gpa-Budget je 9 (Gesamt-Ziel 10), mat/mpa-Budget je 5 (Gesamt-Ziel 26) - also exakt die
+  // vom Nutzer genannte "20/10/26"-Obergrenze fuer beide Seiten.
+
+  it('erlaubt bis zu 1 PP Diskrepanz zwischen AT- und PA-Summe (poolValid bleibt true)', () => {
+    let character = characterWithEineAxt();
+    const [w1] = character.equipment;
+    character = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 3, gpa: 2, mat: 0, mpa: 0, nat: 0, npa: 0 });
+
+    const sheet = computeSheet(character);
+    const row1 = buildNahkampfRows(character, sheet).find((r) => r.key === w1.id && r.grip === '1H')!;
+    expect(row1.atSpent).toBe(3);
+    expect(row1.paSpent).toBe(2);
+    expect(row1.poolValid).toBe(true);
+  });
+
+  it('markiert eine Waffenzeile mit groesserer AT/PA-Diskrepanz als ungueltig, OHNE die Zuteilung zu blockieren (Warn-Icon statt Fehler, Nutzer-Direktive)', () => {
+    let character = characterWithEineAxt();
+    const [w1] = character.equipment;
+    // gat=5 alleine (Budget erlaubt bis 9) - die Zuteilung selbst darf trotz Diskrepanz gelingen.
+    expect(() => setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 5, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 }))
+      .not.toThrow();
+    character = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 5, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0 });
+
+    const sheet = computeSheet(character);
+    const row1 = buildNahkampfRows(character, sheet).find((r) => r.key === w1.id && r.grip === '1H')!;
+    expect(row1.atSpent).toBe(5);
+    expect(row1.paSpent).toBe(0);
+    expect(row1.poolValid).toBe(false);
+  });
+
+  it('hebt die Balance-Regel auf, sobald eine Seite ihr absolutes Maximum (n=20/g=10/m=26) erreicht hat', () => {
+    let character = characterWithEineAxt();
+    const [w1] = character.equipment;
+    // Reine Pool-Formel (7) reicht nicht fuer gat=9+mat=5=14 - eigener AT/PA-Ueberschuss ueber 20
+    // (wie in den Budget-Tests oben) hebt das Gesamtbudget an, OHNE gatMax/matMax zu veraendern
+    // (die kommen aus der geteilten Kategorie-Referenz, nicht aus dem Waffen-Bonus).
+    w1.computedStatsSnapshot = { ...w1.computedStatsSnapshot, at: 10, pa: 10 };
+    // Volles AT-Budget (gat=9, mat=5) -> AT erreicht 20/10/26, obwohl PA (npa/gpa/mpa) bei 0 bleibt.
+    character = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, { gat: 9, gpa: 0, mat: 5, mpa: 0, nat: 0, npa: 0 });
+
+    const sheet = computeSheet(character);
+    const row1 = buildNahkampfRows(character, sheet).find((r) => r.key === w1.id && r.grip === '1H')!;
+    expect(row1.gat.value).toBe(10);
+    expect(row1.mat.value).toBe(26);
+    expect(row1.paSpent).toBe(0);
+    expect(row1.poolValid).toBe(true);
+  });
+});
+
 describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool"-Seite', () => {
   function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
     const row = rows.find((r) => r.name === name);

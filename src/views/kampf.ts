@@ -609,10 +609,30 @@ export function formatLoadoutCells(result: LoadoutResult): LoadoutCells | { erro
         fkReichweiten: result.pistole.ranges.join(' / '),
       };
     case 'nk1h_schild':
+      if (result.talentActive) {
+        return {
+          typ: 'NK 1H+Schild (Talent)', schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
+          nat: String(result.nat), npa: String(result.npa), fkReichweiten: '–',
+        };
+      }
       return {
-        typ: result.talentActive ? 'NK 1H+Schild (Talent)' : 'NK 1H+Schild',
-        schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
-        nat: String(result.nat), npa: String(result.npa), fkReichweiten: '–',
+        typ: 'NK 1H+Schild',
+        schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
+        wk: `${result.primary.wk} / ${result.secondary.wk}`,
+        nat: `${result.primary.nat} / ${result.secondary.nat}`,
+        npa: `${result.primary.npa} / ${result.secondary.npa}`,
+        fkReichweiten: '–',
+      };
+    case 'schild_pistole':
+      return {
+        typ: 'Schild+Pistole', schaden: result.schild.schaden, wk: result.schild.wk,
+        nat: String(result.schild.nat), npa: String(result.schild.npa),
+        fkReichweiten: result.pistole.ranges.join(' / '),
+      };
+    case 'pistole_pistole':
+      return {
+        typ: 'Pistole+Pistole', schaden: '–', wk: '–', nat: '–', npa: '–',
+        fkReichweiten: `${result.primary.ranges.join(' / ')} — ${result.secondary.ranges.join(' / ')}`,
       };
   }
 }
@@ -639,6 +659,7 @@ function renderLoadoutCombo(comboType: WaffenLoadoutComboType, hidden: boolean, 
 
 const LOADOUT_COMBO_LABELS: Record<WaffenLoadoutComboType, string> = {
   nk1h_nk1h: 'NK 1H + NK 1H', nk1h_pistole: 'NK 1H + Pistole', nk1h_schild: 'NK 1H + Schild',
+  schild_pistole: 'Schild + Pistole', pistole_pistole: 'Pistole + Pistole',
 };
 
 function renderLoadoutCreationForm(character: CharacterState): string {
@@ -646,16 +667,20 @@ function renderLoadoutCreationForm(character: CharacterState): string {
   const schilde = listEligibleSchilde(character);
   const pistolen = listEligiblePistolen(character);
   const nk1hOptions = loadoutOptionList(nk1h);
+  const schildOptions = loadoutOptionList(schilde);
+  const pistoleOptions = loadoutOptionList(pistolen);
 
   const available: WaffenLoadoutComboType[] = [];
   if (nk1h.length >= 2) available.push('nk1h_nk1h');
   if (nk1h.length >= 1 && pistolen.length >= 1) available.push('nk1h_pistole');
   if (nk1h.length >= 1 && schilde.length >= 1) available.push('nk1h_schild');
+  if (schilde.length >= 1 && pistolen.length >= 1) available.push('schild_pistole');
+  if (pistolen.length >= 2) available.push('pistole_pistole');
 
   if (available.length === 0) {
     return `<p class="kampf-talente-hinweis">Für ein Waffen-Loadout werden mindestens zwei besessene
-      1H-Nahkampfwaffen, oder eine 1H-Nahkampfwaffe plus eine besessene Pistole/ein besessenes
-      Schild benötigt.</p>`;
+      1H-Nahkampfwaffen/Pistolen, oder eine Kombination aus 1H-Nahkampfwaffe/Schild/Pistole
+      benötigt.</p>`;
   }
 
   const radios = available.map((comboType, i) => `
@@ -663,9 +688,20 @@ function renderLoadoutCreationForm(character: CharacterState): string {
 
   const fieldsets = available.map((comboType, i) => {
     const hidden = i !== 0;
-    if (comboType === 'nk1h_nk1h') return renderLoadoutCombo(comboType, hidden, nk1hOptions, nk1hOptions, 'Primärhand (rechte Hand)', 'Sekundärhand');
-    if (comboType === 'nk1h_pistole') return renderLoadoutCombo(comboType, hidden, loadoutOptionList([...nk1h, ...pistolen]), loadoutOptionList([...nk1h, ...pistolen]), 'Primärhand (rechte Hand)', 'Sekundärhand');
-    return renderLoadoutCombo(comboType, hidden, nk1hOptions, loadoutOptionList(schilde), 'Waffe (Primärhand)', 'Schild (Sekundärhand)');
+    switch (comboType) {
+      case 'nk1h_nk1h':
+        return renderLoadoutCombo(comboType, hidden, nk1hOptions, nk1hOptions, 'Primärhand (rechte Hand)', 'Sekundärhand');
+      case 'nk1h_pistole':
+        return renderLoadoutCombo(comboType, hidden, nk1hOptions, pistoleOptions, 'Nahkampfwaffe (Primärhand)', 'Pistole (Sekundärhand)');
+      case 'nk1h_schild': {
+        const combinedOptions = loadoutOptionList([...nk1h, ...schilde]);
+        return renderLoadoutCombo(comboType, hidden, combinedOptions, combinedOptions, 'Primärhand (rechte Hand)', 'Sekundärhand');
+      }
+      case 'schild_pistole':
+        return renderLoadoutCombo(comboType, hidden, schildOptions, pistoleOptions, 'Schild (Primärhand)', 'Pistole (Sekundärhand)');
+      case 'pistole_pistole':
+        return renderLoadoutCombo(comboType, hidden, pistoleOptions, pistoleOptions, 'Primärhand (rechte Hand)', 'Sekundärhand');
+    }
   }).join('');
 
   return `

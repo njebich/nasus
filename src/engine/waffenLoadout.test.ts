@@ -13,8 +13,16 @@ import { computeSchaden, averageSchadenValue, parseDiceAverage } from './waffenS
 import { computeRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from './fernkampfRange';
 import {
   listEligibleNahkampf1HWaffen,
-  resolveNk1hNk1h, resolveNk1hPistole, resolveNk1hSchild, resolveLoadout, describeLoadout, pickHigherPoolSide,
+  resolveNk1hNk1h, resolveNk1hPistole, resolveNk1hSchild, resolveSchildPistole, resolvePistolePistole,
+  resolveLoadout, describeLoadout, pickHigherPoolSide,
 } from './waffenLoadout';
+
+function fkNum(row: Record<string, string>, header: string): number {
+  const raw = row[header];
+  if (raw === undefined) return 0;
+  const n = Number(raw.replace(',', '.'));
+  return Number.isFinite(n) ? n : 0;
+}
 
 function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
   const row = rows.find((r) => r.name === name);
@@ -192,22 +200,69 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
   });
 });
 
-describe('resolveNk1hSchild', () => {
-  it('summiert das n-Mod OHNE Talent, aber NICHT die Mindeststaerke, und laesst WK unskaliert (kein x1,5, kein Summieren)', () => {
+describe('resolveNk1hSchild (REWORKED 2026-07-23: unabhaengige Haende wie nk1h_nk1h, keine Amalgamation ohne Talent)', () => {
+  it('summiert das n-Mod beider Seiten in JEDE Hand, mit eigener Hauptfertigkeit pro Hand, und halbiert die Nebenhand (abgerundet) - Waffe ist hier die Spieler-gewaehlte Primaerhand', () => {
     let character = baseCharacter();
     character = buyTestWeapon(character, 'Axt');
     character = buyTestSchild(character, 'Faustschild/Buckler');
     const [axt, schild] = character.equipment;
-    const result = resolveNk1hSchild(character, computeSheet(character), makeValueSource(character), axt.id, schild.id);
-    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
-    expect(result.talentActive).toBe(false);
-    expect(result.atWk).toBe(String(axt.computedStatsSnapshot!.wk));
-    expect(result.paWk).toBe(String(schild.computedStatsSnapshot!.wk));
-    expect(result.minStaerke).toBe(axt.computedStatsSnapshot!.minStaerke1H);
-    expect(result.minStaerke).not.toBe(axt.computedStatsSnapshot!.minStaerke1H + schild.computedStatsSnapshot!.minStaerke);
+    const sheet = computeSheet(character);
+    const values = makeValueSource(character);
+    const kampfstil = getKampfstilModifier(character);
+    const axtSnap = axt.computedStatsSnapshot!;
+    const schildSnap = schild.computedStatsSnapshot!;
+    const atSum = axtSnap.at + schildSnap.at;
+    const paSum = axtSnap.pa + schildSnap.pa;
+    const expectedWeapon = computeWeaponAtPaOverflow('Hiebwaffen', atSum, paSum, values, kampfstil);
+
+    const result = resolveNk1hSchild(character, sheet, values, axt.id, schild.id);
+    if (!result.ok || result.talentActive) throw new Error('Erwartete no-talent Ergebnis');
+    expect(result.primary.equipmentId).toBe(axt.id);
+    expect(result.primary.halved).toBe(false);
+    expect(result.primary.nat).toBe(Math.min(20, expectedWeapon.uncAtWeapon));
+    expect(result.primary.npa).toBe(Math.min(20, expectedWeapon.uncPaWeapon));
+    expect(result.secondary.equipmentId).toBe(schild.id);
+    expect(result.secondary.halved).toBe(true);
   });
 
-  it('prueft das Talent-Gate gegen die ROHE (nicht halbierte) Schild-WK - ein Schild, dessen halbierte WK die Kappung erfuellen wuerde, aktiviert das Talent trotzdem NICHT', () => {
+  it('erlaubt dem Spieler, stattdessen das Schild als Primaerhand zu waehlen - dann ist die Waffe die (halbierte) Nebenhand', () => {
+    let character = baseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    character = buyTestSchild(character, 'Faustschild/Buckler');
+    const [axt, schild] = character.equipment;
+    const result = resolveNk1hSchild(character, computeSheet(character), makeValueSource(character), schild.id, axt.id);
+    if (!result.ok || result.talentActive) throw new Error('Erwartete no-talent Ergebnis');
+    expect(result.primary.equipmentId).toBe(schild.id);
+    expect(result.primary.halved).toBe(false);
+    expect(result.secondary.equipmentId).toBe(axt.id);
+    expect(result.secondary.halved).toBe(true); // kein Talent deckt "Waffe in der Nebenhand" ab
+  });
+
+  it('Talent "Schildkampf" hebt die Halbierung auf, wenn das SCHILD in der Nebenhand ist', () => {
+    let character = baseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    character = buyTestSchild(character, 'Faustschild/Buckler');
+    character = addSelection(character, 'talente_schildkampf');
+    const [axt, schild] = character.equipment;
+    const result = resolveNk1hSchild(character, computeSheet(character), makeValueSource(character), axt.id, schild.id);
+    if (!result.ok || result.talentActive) throw new Error('Erwartete no-talent Ergebnis');
+    expect(result.secondary.equipmentId).toBe(schild.id);
+    expect(result.secondary.halved).toBe(false);
+  });
+
+  it('Talent "Schildkampf" hilft NICHT, wenn stattdessen die WAFFE in der Nebenhand ist (kein passendes Talent dafuer)', () => {
+    let character = baseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    character = buyTestSchild(character, 'Faustschild/Buckler');
+    character = addSelection(character, 'talente_schildkampf');
+    const [axt, schild] = character.equipment;
+    const result = resolveNk1hSchild(character, computeSheet(character), makeValueSource(character), schild.id, axt.id);
+    if (!result.ok || result.talentActive) throw new Error('Erwartete no-talent Ergebnis');
+    expect(result.secondary.equipmentId).toBe(axt.id);
+    expect(result.secondary.halved).toBe(true);
+  });
+
+  it('prueft das Talent-Gate ("Kampf mit zwei Waffen") gegen die ROHE (nicht halbierte) Schild-WK - ein Schild, dessen halbierte WK die Kappung erfuellen wuerde, aktiviert das Talent trotzdem NICHT', () => {
     // Rundschild hat eine komponierte WK von 6,5 (> Stufe-1-Cap 3,5); halbiert waere sie 3,5
     // (<= Cap) - das Gate MUSS trotzdem ablehnen, weil es die rohe WK prueft.
     let character = baseCharacter();
@@ -222,7 +277,7 @@ describe('resolveNk1hSchild', () => {
     expect(result.talentActive).toBe(false);
   });
 
-  it('halbiert die Schild-WK (aufgerundet auf 0,5) VOR den AT-WK/PA-WK-Formeln, wenn das Talent aktiv ist', () => {
+  it('halbiert die Schild-WK (aufgerundet auf 0,5) VOR den AT-WK/PA-WK-Formeln, wenn das Talent aktiv ist (Amalgamation unveraendert gegenueber der Vorversion)', () => {
     let character = baseCharacter();
     character = buyTestWeapon(character, 'Krummdolch schwer'); // WK 3,5
     character = buyTestSchild(character, 'Faustschild/Buckler'); // komponierte WK 2,5
@@ -232,15 +287,14 @@ describe('resolveNk1hSchild', () => {
     const halvedSchildWk = 1.5; // aufrunden(2.5/2, auf 0.5) = 1.5
 
     const result = resolveNk1hSchild(character, computeSheet(character), makeValueSource(character), weapon.id, schild.id);
-    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
-    expect(result.talentActive).toBe(true);
+    if (!result.ok || !result.talentActive) throw new Error('Erwartete Talent-Ergebnis');
     expect(result.atWk).toBe(String(Math.max(3.5, halvedSchildWk) * 1.5));
     expect(result.paWk).toBe(String(3.5 + halvedSchildWk));
     expect(result.minStaerke).toBe(weapon.computedStatsSnapshot!.minStaerke1H + schild.computedStatsSnapshot!.minStaerke);
   });
 });
 
-describe('resolveNk1hPistole', () => {
+describe('resolveNk1hPistole (REWORKED 2026-07-23: NK-Waffe immer primaer, n-Mod jetzt summiert ueber die NK-Statblock-Werte der Pistole)', () => {
   function meleeAndPistoleCharacter() {
     let character = baseCharacter();
     character = buyTestWeapon(character, 'Axt');
@@ -248,35 +302,29 @@ describe('resolveNk1hPistole', () => {
     return character;
   }
 
-  it('summiert NICHTS - beide Seiten nutzen ihre eigene solo-Basis, unveraendert', () => {
+  it('summiert das Axt-n-Mod mit dem NK-Statblock-n-Mod (AT-Basis/PA-Basis) der Pistole, und halbiert die Pistole standardmaessig', () => {
     let character = meleeAndPistoleCharacter();
     const [axt, pistole] = character.equipment;
     const values = makeValueSource(character);
     const kampfstil = getKampfstilModifier(character);
-    const soloAxt = computeWeaponAtPaOverflow('Hiebwaffen', axt.computedStatsSnapshot!.at, axt.computedStatsSnapshot!.pa, values, kampfstil);
+    const pistoleBasis = findRow(FEUERWAFFEN, 'Pistole');
+    const atSum = axt.computedStatsSnapshot!.at + fkNum(pistoleBasis, 'AT-Basis');
+    const paSum = axt.computedStatsSnapshot!.pa + fkNum(pistoleBasis, 'PA-Basis');
+    const expectedMelee = computeWeaponAtPaOverflow('Hiebwaffen', atSum, paSum, values, kampfstil);
 
     const result = resolveNk1hPistole(character, values, axt.id, pistole.id);
     if (!result.ok) throw new Error('Erwartete ein Ergebnis');
-    expect(result.primaryIsMelee).toBe(true);
-    expect(result.melee.halved).toBe(false); // Axt ist primary
-    expect(result.melee.nat).toBe(Math.min(20, soloAxt.uncAtWeapon));
-    expect(result.melee.npa).toBe(Math.min(20, soloAxt.uncPaWeapon));
-    expect(result.pistole.halved).toBe(true); // Pistole ist Nebenhand
+    expect(result.melee.halved).toBe(false); // die NK-Waffe ist immer primaer
+    expect(result.melee.nat).toBe(Math.min(20, expectedMelee.uncAtWeapon));
+    expect(result.melee.npa).toBe(Math.min(20, expectedMelee.uncPaWeapon));
+    expect(result.pistole.halved).toBe(true);
   });
 
-  it('halbiert (abgerundet) die Nebenhand pro Zelle - Melee als Nebenhand, wenn die Pistole primary ist', () => {
+  it('meldet einen Fehler, wenn primary NICHT die Nahkampfwaffe ist (kein Rollentausch mehr moeglich)', () => {
     let character = meleeAndPistoleCharacter();
     const [axt, pistole] = character.equipment;
-    const values = makeValueSource(character);
-    const kampfstil = getKampfstilModifier(character);
-    const soloAxt = computeWeaponAtPaOverflow('Hiebwaffen', axt.computedStatsSnapshot!.at, axt.computedStatsSnapshot!.pa, values, kampfstil);
-
-    const result = resolveNk1hPistole(character, values, pistole.id, axt.id); // Pistole zuerst = primary
-    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
-    expect(result.primaryIsMelee).toBe(false);
-    expect(result.melee.halved).toBe(true);
-    expect(result.melee.nat).toBe(Math.floor(Math.min(20, soloAxt.uncAtWeapon) / 2));
-    expect(result.pistole.halved).toBe(false);
+    const result = resolveNk1hPistole(character, makeValueSource(character), pistole.id, axt.id);
+    expect(result.ok).toBe(false);
   });
 
   it('halbiert normal/gut/meisterlich unabhaengig voneinander, und laesst eine "x"-Zelle unveraendert', () => {
@@ -299,21 +347,112 @@ describe('resolveNk1hPistole', () => {
     }
   });
 
-  it('Linkshaendig Pistolenschiessen hebt die Halbierung NUR auf, wenn die Pistole die Nebenhand ist', () => {
+  it('Linkshaendig Pistolenschiessen hebt die Halbierung auf (die Pistole ist hier immer die Nebenhand)', () => {
     let character = meleeAndPistoleCharacter();
     character = addSelection(character, 'talente_linkshaendig_pistolenschiessen');
     const [axt, pistole] = character.equipment;
+    const result = resolveNk1hPistole(character, makeValueSource(character), axt.id, pistole.id);
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.pistole.halved).toBe(false);
+  });
+
+  it('Beidhaendig Pistolenschiessen hebt die Halbierung ebenfalls auf', () => {
+    let character = meleeAndPistoleCharacter();
+    character = addSelection(character, 'talente_beidhaendig_pistolenschiessen');
+    const [axt, pistole] = character.equipment;
+    const result = resolveNk1hPistole(character, makeValueSource(character), axt.id, pistole.id);
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.pistole.halved).toBe(false);
+  });
+});
+
+describe('resolveSchildPistole (NEU 2026-07-23: Schild immer primaer, n-Mod summiert, Pistole halbiert)', () => {
+  function schildAndPistoleCharacter() {
+    let character = baseCharacter();
+    character = buyTestSchild(character, 'Faustschild/Buckler');
+    character = buyTestPistole(character);
+    return character;
+  }
+
+  it('summiert das Schild-n-Mod mit dem NK-Statblock-n-Mod der Pistole, und halbiert die Pistole standardmaessig', () => {
+    let character = schildAndPistoleCharacter();
+    const [schild, pistole] = character.equipment;
     const values = makeValueSource(character);
+    const kampfstil = getKampfstilModifier(character);
+    const pistoleBasis = findRow(FEUERWAFFEN, 'Pistole');
+    const schildHauptfertigkeit = findRow(NK_WAFFEN_BASIS, 'Faustschild/Buckler')['Hauptfertigkeit'] ?? '';
+    const atSum = schild.computedStatsSnapshot!.at + fkNum(pistoleBasis, 'AT-Basis');
+    const paSum = schild.computedStatsSnapshot!.pa + fkNum(pistoleBasis, 'PA-Basis');
+    const expectedSchild = computeWeaponAtPaOverflow(schildHauptfertigkeit, atSum, paSum, values, kampfstil);
 
-    const pistoleAlsNebenhand = resolveNk1hPistole(character, values, axt.id, pistole.id);
-    if (!pistoleAlsNebenhand.ok) throw new Error('Erwartete ein Ergebnis');
-    expect(pistoleAlsNebenhand.pistole.halved).toBe(false);
-    expect(pistoleAlsNebenhand.linkshaendigPistolenschiessenActive).toBe(true);
+    const result = resolveSchildPistole(character, values, schild.id, pistole.id);
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.schild.halved).toBe(false);
+    expect(result.schild.nat).toBe(Math.min(20, expectedSchild.uncAtWeapon));
+    expect(result.schild.npa).toBe(Math.min(20, expectedSchild.uncPaWeapon));
+    expect(result.pistole.halved).toBe(true);
+  });
 
-    const pistoleAlsPrimary = resolveNk1hPistole(character, values, pistole.id, axt.id);
-    if (!pistoleAlsPrimary.ok) throw new Error('Erwartete ein Ergebnis');
-    expect(pistoleAlsPrimary.melee.halved).toBe(true); // Talent betrifft die Melee-Nebenhand nicht
-    expect(pistoleAlsPrimary.linkshaendigPistolenschiessenActive).toBe(false);
+  it('meldet einen Fehler, wenn primary NICHT das Schild ist', () => {
+    let character = schildAndPistoleCharacter();
+    const [schild, pistole] = character.equipment;
+    const result = resolveSchildPistole(character, makeValueSource(character), pistole.id, schild.id);
+    expect(result.ok).toBe(false);
+  });
+
+  it('Linkshaendig/Beidhaendig Pistolenschiessen heben die Pistolen-Halbierung auf', () => {
+    let character = schildAndPistoleCharacter();
+    character = addSelection(character, 'talente_beidhaendig_pistolenschiessen');
+    const [schild, pistole] = character.equipment;
+    const result = resolveSchildPistole(character, makeValueSource(character), schild.id, pistole.id);
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.pistole.halved).toBe(false);
+  });
+});
+
+describe('resolvePistolePistole (NEU 2026-07-23: beide Haende standardmaessig halbiert, keine "volle" Primaerhand)', () => {
+  function zweiPistolenCharacter() {
+    let character = baseCharacter();
+    character = buyTestPistole(character);
+    character = buyTestPistole(character);
+    return character;
+  }
+
+  it('halbiert BEIDE Haende standardmaessig - auch die Primaerhand', () => {
+    let character = zweiPistolenCharacter();
+    const [p1, p2] = character.equipment;
+    const result = resolvePistolePistole(character, makeValueSource(character), p1.id, p2.id);
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.primary.halved).toBe(true);
+    expect(result.secondary.halved).toBe(true);
+  });
+
+  it('Linkshaendig Pistolenschiessen hebt NUR die Sekundaerhand (links) auf', () => {
+    let character = zweiPistolenCharacter();
+    character = addSelection(character, 'talente_linkshaendig_pistolenschiessen');
+    const [p1, p2] = character.equipment;
+    const result = resolvePistolePistole(character, makeValueSource(character), p1.id, p2.id);
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.primary.halved).toBe(true);
+    expect(result.secondary.halved).toBe(false);
+  });
+
+  it('Beidhaendig Pistolenschiessen hebt BEIDE Haende auf', () => {
+    let character = zweiPistolenCharacter();
+    character = addSelection(character, 'talente_beidhaendig_pistolenschiessen');
+    const [p1, p2] = character.equipment;
+    const result = resolvePistolePistole(character, makeValueSource(character), p1.id, p2.id);
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.primary.halved).toBe(false);
+    expect(result.secondary.halved).toBe(false);
+  });
+
+  it('meldet einen Fehler, wenn eine der beiden IDs keine besessene Pistole ist', () => {
+    let character = zweiPistolenCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const [p1, , axt] = character.equipment;
+    const result = resolvePistolePistole(character, makeValueSource(character), p1.id, axt.id);
+    expect(result.ok).toBe(false);
   });
 });
 

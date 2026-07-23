@@ -1,11 +1,13 @@
-// Waffen-Loadout-Feature (Kampf-Tab, 2026-07-22): reine abgeleitete Sicht ueber bereits besessene
-// Ausruestung (kein neues Kauf-/Ausrüst-System) fuer die drei dictierten Zwei-Item-Kombinationen -
-// NK 1H + NK 1H (dual wield), NK 1H + FK Pistole, NK 1H + Schild - jeweils mit/ohne das Talent
-// "Kampf mit zwei Waffen Stufe 1-4" (amalgamiert beide Seiten zu EINER Kampf-Entitaet) bzw.
-// "Linkshaendig Pistolenschiessen" (hebt die Nebenhand-Halbierung fuer eine linkshaendige Pistole
-// auf). Regelwerk siehe Projekt-Memory project_waffen_loadout.md, mit dem Nutzer 2026-07-22
-// verifiziert (siehe Plan "vectorized-herding-pike"). Alle Funktionen hier sind reine Funktionen
-// ueber CharacterState/ComputedSheet - keine Mutation, kein Seiteneffekt.
+// Waffen-Loadout-Feature (Kampf-Tab, urspruenglich 2026-07-22, REWORKED 2026-07-23): reine
+// abgeleitete Sicht ueber bereits besessene Ausruestung (kein neues Kauf-/Ausrüst-System) fuer
+// fuenf dictierte Zwei-Item-Kombinationen - NK 1H + NK 1H, NK 1H + FK Pistole, NK 1H + Schild,
+// Pistole + Pistole, Schild + Pistole - jeweils mit/ohne die Talente "Kampf mit zwei Waffen Stufe
+// 1-4" (amalgamiert 1H+1H bzw. 1H+Schild zu EINER Kampf-Entitaet, WK-gated), "Linkshaendig
+// Pistolenschiessen"/"Beidhaendig Pistolenschiessen" (heben die Nebenhand-Halbierung fuer eine
+// bzw. beide Pistolenhaende auf) und "Schildkampf" (hebt die Nebenhand-Halbierung fuer ein Schild
+// in der linken Hand auf). Regelwerk siehe Projekt-Memory project_waffen_loadout.md, mit dem
+// Nutzer 2026-07-23 als komplettes Rework der 2026-07-22-Version dictiert. Alle Funktionen hier
+// sind reine Funktionen ueber CharacterState/ComputedSheet - keine Mutation, kein Seiteneffekt.
 
 import type { CharacterState, WaffenLoadoutEntry } from '../state/characterStore';
 import type { ComputedSheet } from './characterSheet';
@@ -46,7 +48,7 @@ export interface LoadoutItemInfo {
 }
 
 /** Alle besessenen 1H-faehigen Nahkampfwaffen (family='weapon'). Stangenwaffen sind bewusst fuer
- *  ALLE drei Loadout-Combo-Typen ausgeschlossen (nicht nur fuer das Zwei-Waffen-Talent-Gate) - ein
+ *  ALLE fuenf Loadout-Combo-Typen ausgeschlossen (nicht nur fuer das Zwei-Waffen-Talent-Gate) - ein
  *  zweihaendiger Stangenwaffentyp passt zu keiner der dictierten Hand-Kombinationen, siehe
  *  Plan-Judgment-Call 6a und die analoge bestehende Ausschluss-Logik fuer den Anzeige-Flag
  *  `NahkampfRow.zweiWaffenFaehig` in views/kampf.ts. */
@@ -109,8 +111,8 @@ export interface LoadoutPistoleInfo {
 }
 
 /** Alle besessenen Feuerwaffen mit Typ='Pistole' (family='feuerwaffe') - Musketen/Gewehre sind
- *  fuer dieses Combo (NK 1H + FK Pistole) nicht vorgesehen (die Regel spricht explizit von
- *  "Pistole", nicht "Feuerwaffe" allgemein). */
+ *  fuer diese Loadout-Combos (jede mit "Pistole" im Namen) nicht vorgesehen (die Regel spricht
+ *  explizit von "Pistole", nicht "Feuerwaffe" allgemein). */
 export function listEligiblePistolen(character: CharacterState): LoadoutPistoleInfo[] {
   const out: LoadoutPistoleInfo[] = [];
   for (const e of character.equipment) {
@@ -135,7 +137,8 @@ export function isZweiWaffenTalentEligiblePair(character: CharacterState, wkA: n
 // 2026-07-22 nachtraeglich praezisiert: die Seite mit den meisten bereits investierten
 // Spezialisierungspunkten in ihrem eigenen Pool "gewinnt" und bestimmt gAT/gPA/mAT/mPA/PP fuer den
 // GANZEN Combo (nie gesplittet, nie gemittelt/summiert). Nur fuer nk1h_nk1h/nk1h_schild relevant -
-// nk1h_pistole hat keine solche Pool-Struktur (siehe engine.md-Kommentar in views/kampf.ts).
+// die drei Pistolen-Combos (nk1h_pistole/schild_pistole/pistole_pistole) haben keine solche
+// Pool-Struktur (siehe engine.md-Kommentar in views/kampf.ts).
 // ---------------------------------------------------------------------------------------------
 
 export interface PoolSideRef {
@@ -174,6 +177,72 @@ function cappedNat(
 ): { nat: number; npa: number } {
   const overflow = computeWeaponAtPaOverflow(hauptfertigkeit, atBonus, paBonus, values, kampfstil);
   return { nat: Math.min(20, overflow.uncAtWeapon), npa: Math.min(20, overflow.uncPaWeapon) };
+}
+
+/** Liest den n-Mod (AT-Basis/PA-Basis) und die Hauptfertigkeit aus dem fixen NK-Statblock einer
+ *  Feuerwaffe (siehe project_fk_nk_ladezeit.md/computeFkNkWerte in views/kampf.ts, dort fuer die
+ *  reine Anzeige der Feuerwaffen-Tabelle - hier fuer die NEUE "n-Mod beider Waffen addiert"-Regel
+ *  von NK1H+Pistole/Schild+Pistole wiederverwendet, wie vom Nutzer beim Commissionen jenes
+ *  Features bereits als Backlog-Punkt angekuendigt: "das wird im Loadout-System nachgezogen").
+ *  Gibt null zurueck, falls die Pistole (defensiv) keinen NK-Statblock traegt - der Aufrufer
+ *  behandelt das dann als Null-Beitrag, ohne die restliche Combo-Berechnung zu blockieren. */
+interface PistoleNkMod {
+  atBonus: number;
+  paBonus: number;
+}
+
+function fkNum(row: FernkampfRow | undefined, header: string): number {
+  const raw = row?.[header];
+  if (raw === undefined) return 0;
+  const n = Number(raw.replace(',', '.'));
+  return Number.isFinite(n) ? n : 0;
+}
+
+function pistoleNkMod(basis: FernkampfRow): PistoleNkMod | null {
+  if (basis['Hauptfertigkeit'] === undefined) return null;
+  return { atBonus: fkNum(basis, 'AT-Basis'), paBonus: fkNum(basis, 'PA-Basis') };
+}
+
+const FEUERWAFFEN_TYP_BASIS_REF: Record<string, string> = {
+  Gewehr: 'fk_basis_spez_schusswaffen_musketen',
+  Pistole: 'fk_basis_spez_schusswaffen_pistolen',
+};
+const RANGE_KEYS = ['rw10m', 'rw30m', 'rw60m', 'rw100m', 'rw150m', 'rw210m'] as const;
+
+function halveRangeCellValues(v: RangeCellValues | 'x'): RangeCellValues | 'x' {
+  if (v === 'x') return 'x';
+  const halved: RangeCellValues = { normal: floorSigned(v.normal / 2) };
+  if (v.gut !== undefined) halved.gut = floorSigned(v.gut / 2);
+  if (v.meisterlich !== undefined) halved.meisterlich = floorSigned(v.meisterlich / 2);
+  return halved;
+}
+
+/** Reichweitenzellen einer Pistole fuer eine Loadout-Zeile - gemeinsam genutzt von nk1h_pistole,
+ *  schild_pistole und pistole_pistole (vorher pro Resolver dupliziert, seit dem 2026-07-23-Rework
+ *  mit drei statt einer Pistolen-Combo extrahiert). */
+function computePistoleRanges(pistole: LoadoutPistoleInfo, values: CharacterValueSource, halved: boolean): string[] {
+  const gutDivisor = fkGuteDivisor(values);
+  const meisterlichDivisor = fkMeisterlichDivisor(values);
+  const basisRef = FEUERWAFFEN_TYP_BASIS_REF[pistole.basis['Typ'] ?? ''];
+  let basisWert = 0;
+  if (basisRef) {
+    try {
+      basisWert = Number(evalReferenz(basisRef, values));
+    } catch {
+      // nicht auswertbar - Zellen bleiben "x" (siehe computeRangeCellValues's Number.isFinite-Fallback).
+    }
+  }
+  const rangesRaw: Array<RangeCellValues | 'x'> = basisRef
+    ? RANGE_KEYS.map((key) => computeRangeCellValues(pistole.snap[key] ?? 0, basisWert, gutDivisor, meisterlichDivisor))
+    : RANGE_KEYS.map(() => 'x');
+  return (halved ? rangesRaw.map(halveRangeCellValues) : rangesRaw).map(formatRangeCellValues);
+}
+
+function pistolenschiessenTalente(character: CharacterState): { linkshaendig: boolean; beidhaendig: boolean } {
+  return {
+    linkshaendig: (character.selections['talente_linkshaendig_pistolenschiessen'] ?? 0) > 0,
+    beidhaendig: (character.selections['talente_beidhaendig_pistolenschiessen'] ?? 0) > 0,
+  };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -274,7 +343,9 @@ export function resolveNk1hNk1h(
 }
 
 // ---------------------------------------------------------------------------------------------
-// nk1h_pistole - NK 1H + FK Pistole
+// nk1h_pistole - NK 1H + FK Pistole (REWORKED 2026-07-23: die NK-Waffe ist jetzt IMMER primaer,
+// keine Spielerwahl mehr; n-Mod beider Waffen wird jetzt addiert statt unabhaengig zu bleiben -
+// die Pistole steuert dazu ihren fixen NK-Statblock-n-Mod bei, siehe pistoleNkMod).
 // ---------------------------------------------------------------------------------------------
 
 export interface MeleeSideResult {
@@ -299,93 +370,157 @@ export interface Nk1hPistoleResult {
   comboType: 'nk1h_pistole';
   melee: MeleeSideResult;
   pistole: PistoleSideResult;
-  primaryIsMelee: boolean;
-  linkshaendigPistolenschiessenActive: boolean;
-}
-
-const FEUERWAFFEN_TYP_BASIS_REF: Record<string, string> = {
-  Gewehr: 'fk_basis_spez_schusswaffen_musketen',
-  Pistole: 'fk_basis_spez_schusswaffen_pistolen',
-};
-const RANGE_KEYS = ['rw10m', 'rw30m', 'rw60m', 'rw100m', 'rw150m', 'rw210m'] as const;
-
-function halveRangeCellValues(v: RangeCellValues | 'x'): RangeCellValues | 'x' {
-  if (v === 'x') return 'x';
-  const halved: RangeCellValues = { normal: floorSigned(v.normal / 2) };
-  if (v.gut !== undefined) halved.gut = floorSigned(v.gut / 2);
-  if (v.meisterlich !== undefined) halved.meisterlich = floorSigned(v.meisterlich / 2);
-  return halved;
 }
 
 export function resolveNk1hPistole(
   character: CharacterState, values: CharacterValueSource,
   primaryEquipmentId: string, secondaryEquipmentId: string,
 ): LoadoutResolutionError | Nk1hPistoleResult {
-  const meleeItems = listEligibleNahkampf1HWaffen(character);
-  const pistoleItems = listEligiblePistolen(character);
-
-  const primaryMelee = meleeItems.find((i) => i.equipmentId === primaryEquipmentId);
-  const primaryPistole = pistoleItems.find((i) => i.equipmentId === primaryEquipmentId);
-  const secondaryMelee = meleeItems.find((i) => i.equipmentId === secondaryEquipmentId);
-  const secondaryPistole = pistoleItems.find((i) => i.equipmentId === secondaryEquipmentId);
-
-  const melee = primaryMelee ?? secondaryMelee;
-  const pistole = primaryPistole ?? secondaryPistole;
+  const melee = listEligibleNahkampf1HWaffen(character).find((i) => i.equipmentId === primaryEquipmentId);
+  const pistole = listEligiblePistolen(character).find((i) => i.equipmentId === secondaryEquipmentId);
   if (!melee || !pistole) {
-    return { ok: false, reason: 'Benötigt genau eine Nahkampfwaffe (1H) und eine Pistole' };
+    return { ok: false, reason: 'Benötigt eine besessene Nahkampfwaffe (1H) als Primärhand und eine besessene Pistole als Sekundärhand' };
   }
-  const primaryIsMelee = primaryMelee !== undefined;
-  const pistoleIsOffhand = primaryPistole === undefined;
 
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
   const kampfstil = getKampfstilModifier(character);
-  const meleeNat = cappedNat(melee.hauptfertigkeit, melee.atBonus, melee.paBonus, values, kampfstil);
+  const nkMod = pistoleNkMod(pistole.basis);
+  const meleeNat = cappedNat(
+    melee.hauptfertigkeit, melee.atBonus + (nkMod?.atBonus ?? 0), melee.paBonus + (nkMod?.paBonus ?? 0), values, kampfstil,
+  );
 
-  const gutDivisor = fkGuteDivisor(values);
-  const meisterlichDivisor = fkMeisterlichDivisor(values);
-  const basisRef = FEUERWAFFEN_TYP_BASIS_REF[pistole.basis['Typ'] ?? ''];
-  let basisWert = 0;
-  if (basisRef) {
-    try {
-      basisWert = Number(evalReferenz(basisRef, values));
-    } catch {
-      // nicht auswertbar - Zellen bleiben "x" (siehe computeRangeCellValues's Number.isFinite-Fallback).
-    }
-  }
-  const rangesRaw: Array<RangeCellValues | 'x'> = basisRef
-    ? RANGE_KEYS.map((key) => computeRangeCellValues(pistole.snap[key] ?? 0, basisWert, gutDivisor, meisterlichDivisor))
-    : RANGE_KEYS.map(() => 'x');
-
-  const linkshaendigOwned = (character.selections['talente_linkshaendig_pistolenschiessen'] ?? 0) > 0;
-  const linkshaendigActive = pistoleIsOffhand && linkshaendigOwned;
-  const pistoleHalved = pistoleIsOffhand && !linkshaendigActive;
-  const meleeHalved = !primaryIsMelee;
+  const { linkshaendig, beidhaendig } = pistolenschiessenTalente(character);
+  const pistoleHalved = !(linkshaendig || beidhaendig);
 
   return {
     ok: true, comboType: 'nk1h_pistole',
     melee: {
-      equipmentId: melee.equipmentId, label: melee.label, halved: meleeHalved,
-      nat: meleeHalved ? floorSigned(meleeNat.nat / 2) : meleeNat.nat,
-      npa: meleeHalved ? floorSigned(meleeNat.npa / 2) : meleeNat.npa,
+      equipmentId: melee.equipmentId, label: melee.label, halved: false,
+      nat: meleeNat.nat, npa: meleeNat.npa,
       schaden: computeSchaden(melee.basis, melee.staerkeMalus, eigKStaerke), wk: String(melee.wk),
     },
     pistole: {
       equipmentId: pistole.equipmentId, label: pistole.label, halved: pistoleHalved,
-      ranges: (pistoleHalved ? rangesRaw.map(halveRangeCellValues) : rangesRaw).map(formatRangeCellValues),
+      ranges: computePistoleRanges(pistole, values, pistoleHalved),
     },
-    primaryIsMelee,
-    linkshaendigPistolenschiessenActive: linkshaendigActive,
   };
 }
 
 // ---------------------------------------------------------------------------------------------
-// nk1h_schild - NK 1H + Schild (immer EIN amalgamierter Combo, primary ist per Konvention die Waffe)
+// schild_pistole - Schild + FK Pistole (NEU 2026-07-23): Schild ist immer primaer (analog zur
+// NK-Waffe in nk1h_pistole), n-Mod beider Waffen addiert, Pistole halbiert (vorbehaltlich
+// Linkshaendig/Beidhaendig Pistolenschiessen).
 // ---------------------------------------------------------------------------------------------
 
-export interface Nk1hSchildResult {
+export interface SchildPistoleResult {
+  ok: true;
+  comboType: 'schild_pistole';
+  schild: MeleeSideResult;
+  pistole: PistoleSideResult;
+}
+
+export function resolveSchildPistole(
+  character: CharacterState, values: CharacterValueSource,
+  primaryEquipmentId: string, secondaryEquipmentId: string,
+): LoadoutResolutionError | SchildPistoleResult {
+  const schild = listEligibleSchilde(character).find((i) => i.equipmentId === primaryEquipmentId);
+  const pistole = listEligiblePistolen(character).find((i) => i.equipmentId === secondaryEquipmentId);
+  if (!schild || !pistole) {
+    return { ok: false, reason: 'Benötigt ein besessenes Schild als Primärhand und eine besessene Pistole als Sekundärhand' };
+  }
+
+  const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
+  const kampfstil = getKampfstilModifier(character);
+  const nkMod = pistoleNkMod(pistole.basis);
+  const schildNat = cappedNat(
+    schild.hauptfertigkeit, schild.atBonus + (nkMod?.atBonus ?? 0), schild.paBonus + (nkMod?.paBonus ?? 0), values, kampfstil,
+  );
+
+  const { linkshaendig, beidhaendig } = pistolenschiessenTalente(character);
+  const pistoleHalved = !(linkshaendig || beidhaendig);
+
+  return {
+    ok: true, comboType: 'schild_pistole',
+    schild: {
+      equipmentId: schild.equipmentId, label: schild.label, halved: false,
+      nat: schildNat.nat, npa: schildNat.npa,
+      schaden: computeSchaden(schild.basis, schild.staerkeMalus, eigKStaerke), wk: String(schild.wk),
+    },
+    pistole: {
+      equipmentId: pistole.equipmentId, label: pistole.label, halved: pistoleHalved,
+      ranges: computePistoleRanges(pistole, values, pistoleHalved),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------------------------
+// pistole_pistole - Pistole + Pistole (NEU 2026-07-23): beide Haende sind standardmaessig
+// halbiert (weder Seite gilt als "volle" Primaerhand) - Linkshaendig Pistolenschiessen hebt nur
+// die linke/Sekundaerhand auf, Beidhaendig Pistolenschiessen beide.
+// ---------------------------------------------------------------------------------------------
+
+export interface PistolePistoleSide {
+  equipmentId: string;
+  label: string;
+  isPrimary: boolean;
+  halved: boolean;
+  ranges: string[];
+}
+
+export interface PistolePistoleResult {
+  ok: true;
+  comboType: 'pistole_pistole';
+  primary: PistolePistoleSide;
+  secondary: PistolePistoleSide;
+}
+
+export function resolvePistolePistole(
+  character: CharacterState, values: CharacterValueSource,
+  primaryEquipmentId: string, secondaryEquipmentId: string,
+): LoadoutResolutionError | PistolePistoleResult {
+  const items = listEligiblePistolen(character);
+  const primary = items.find((i) => i.equipmentId === primaryEquipmentId);
+  const secondary = items.find((i) => i.equipmentId === secondaryEquipmentId);
+  if (!primary || !secondary) return { ok: false, reason: 'Benötigt zwei besessene Pistolen' };
+
+  const { linkshaendig, beidhaendig } = pistolenschiessenTalente(character);
+  const primaryHalved = !beidhaendig;
+  const secondaryHalved = !(beidhaendig || linkshaendig);
+
+  return {
+    ok: true, comboType: 'pistole_pistole',
+    primary: {
+      equipmentId: primary.equipmentId, label: primary.label, isPrimary: true, halved: primaryHalved,
+      ranges: computePistoleRanges(primary, values, primaryHalved),
+    },
+    secondary: {
+      equipmentId: secondary.equipmentId, label: secondary.label, isPrimary: false, halved: secondaryHalved,
+      ranges: computePistoleRanges(secondary, values, secondaryHalved),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------------------------
+// nk1h_schild - NK 1H + Schild (REWORKED 2026-07-23: die No-Talent-Baseline ist jetzt wie
+// nk1h_nk1h eine unabhaengige Zwei-Haende-Behandlung mit Spielerwahl der Primaerhand, statt der
+// alten festen Amalgamierung - die Amalgamierung lebt jetzt AUSSCHLIESSLICH im talentActive-Zweig
+// unten, unveraendert gegenueber der Vorversion. Das neue Talent "Schildkampf" hebt die
+// Nebenhand-Halbierung auf, wenn das Schild in der Sekundaerhand landet).
+// ---------------------------------------------------------------------------------------------
+
+export interface SchildNoTalentResult {
   ok: true;
   comboType: 'nk1h_schild';
-  talentActive: boolean;
+  talentActive: false;
+  primary: DualWaffenSide;
+  secondary: DualWaffenSide;
+  higherPoolSide: PoolSideRef;
+}
+
+export interface SchildTalentResult {
+  ok: true;
+  comboType: 'nk1h_schild';
+  talentActive: true;
   weaponEquipmentId: string;
   schildEquipmentId: string;
   nat: number;
@@ -397,13 +532,23 @@ export interface Nk1hSchildResult {
   higherPoolSide: PoolSideRef;
 }
 
+export type Nk1hSchildResult = LoadoutResolutionError | SchildNoTalentResult | SchildTalentResult;
+
 export function resolveNk1hSchild(
   character: CharacterState, sheet: ComputedSheet, values: CharacterValueSource,
-  weaponEquipmentId: string, schildEquipmentId: string,
-): LoadoutResolutionError | Nk1hSchildResult {
-  const weapon = listEligibleNahkampf1HWaffen(character).find((i) => i.equipmentId === weaponEquipmentId);
-  const schild = listEligibleSchilde(character).find((i) => i.equipmentId === schildEquipmentId);
+  primaryEquipmentId: string, secondaryEquipmentId: string,
+): Nk1hSchildResult {
+  const weapons = listEligibleNahkampf1HWaffen(character);
+  const schilde = listEligibleSchilde(character);
+  const primaryWeapon = weapons.find((i) => i.equipmentId === primaryEquipmentId);
+  const primarySchild = schilde.find((i) => i.equipmentId === primaryEquipmentId);
+  const secondaryWeapon = weapons.find((i) => i.equipmentId === secondaryEquipmentId);
+  const secondarySchild = schilde.find((i) => i.equipmentId === secondaryEquipmentId);
+
+  const weapon = primaryWeapon ?? secondaryWeapon;
+  const schild = primarySchild ?? secondarySchild;
   if (!weapon || !schild) return { ok: false, reason: 'Waffe oder Schild sind nicht (mehr) besessen' };
+  const weaponIsPrimary = primaryWeapon !== undefined;
 
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
   const kampfstil = getKampfstilModifier(character);
@@ -412,7 +557,6 @@ export function resolveNk1hSchild(
     { equipmentId: weapon.equipmentId, poolReferenz: weapon.poolReferenz },
     { equipmentId: schild.equipmentId, poolReferenz: schild.poolReferenz },
   );
-  const schaden = computeSchaden(weapon.basis, weapon.staerkeMalus, eigKStaerke);
   const atBonusSum = weapon.atBonus + schild.atBonus;
   const paBonusSum = weapon.paBonus + schild.paBonus;
 
@@ -421,10 +565,11 @@ export function resolveNk1hSchild(
     // wie die bestehende 2H-WK-Anzeige in views/kampf.ts) - das Talent-GATE oben prueft aber
     // bewusst die RAW (nicht halbierte) Schild-WK, siehe isZweiWaffenTalentEligiblePair-Aufruf.
     const halvedSchildWk = Math.ceil((schild.wk / 2) * 2) / 2;
+    const schaden = computeSchaden(weapon.basis, weapon.staerkeMalus, eigKStaerke);
     const { nat, npa } = cappedNat(weapon.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
     return {
       ok: true, comboType: 'nk1h_schild', talentActive: true,
-      weaponEquipmentId, schildEquipmentId, nat, npa,
+      weaponEquipmentId: weapon.equipmentId, schildEquipmentId: schild.equipmentId, nat, npa,
       atWk: String(Math.max(weapon.wk, halvedSchildWk) * 1.5),
       paWk: String(weapon.wk + halvedSchildWk),
       minStaerke: weapon.minStaerke + schild.minStaerke,
@@ -432,12 +577,30 @@ export function resolveNk1hSchild(
     };
   }
 
-  const { nat, npa } = cappedNat(weapon.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
+  const schildkampfOwned = (character.selections['talente_schildkampf'] ?? 0) > 0;
+  const primaryItem = weaponIsPrimary ? weapon : schild;
+  const secondaryItem = weaponIsPrimary ? schild : weapon;
+  // Die Halbierungs-Ausnahme durch "Schildkampf" greift nur, wenn das SCHILD tatsaechlich in der
+  // Sekundaerhand ist - landet stattdessen die Waffe in der Sekundaerhand, gibt es dafuer kein
+  // eigenes Talent (nicht dictiert), sie bleibt halbiert.
+  const secondaryHalved = weaponIsPrimary ? !schildkampfOwned : true;
+
+  const primaryNat = cappedNat(primaryItem.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
+  const secondaryNat = cappedNat(secondaryItem.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
   return {
     ok: true, comboType: 'nk1h_schild', talentActive: false,
-    weaponEquipmentId, schildEquipmentId, nat, npa,
-    atWk: String(weapon.wk), paWk: String(schild.wk),
-    minStaerke: weapon.minStaerke, schaden, higherPoolSide,
+    primary: {
+      equipmentId: primaryItem.equipmentId, label: primaryItem.label, isPrimary: true, halved: false,
+      nat: primaryNat.nat, npa: primaryNat.npa,
+      schaden: computeSchaden(primaryItem.basis, primaryItem.staerkeMalus, eigKStaerke), wk: String(primaryItem.wk),
+    },
+    secondary: {
+      equipmentId: secondaryItem.equipmentId, label: secondaryItem.label, isPrimary: false, halved: secondaryHalved,
+      nat: secondaryHalved ? floorSigned(secondaryNat.nat / 2) : secondaryNat.nat,
+      npa: secondaryHalved ? floorSigned(secondaryNat.npa / 2) : secondaryNat.npa,
+      schaden: computeSchaden(secondaryItem.basis, secondaryItem.staerkeMalus, eigKStaerke), wk: String(secondaryItem.wk),
+    },
+    higherPoolSide,
   };
 }
 
@@ -445,7 +608,7 @@ export function resolveNk1hSchild(
 // Dispatch + Anzeigename
 // ---------------------------------------------------------------------------------------------
 
-export type LoadoutResult = Nk1hNk1hResult | LoadoutResolutionError | Nk1hPistoleResult | Nk1hSchildResult;
+export type LoadoutResult = Nk1hNk1hResult | LoadoutResolutionError | Nk1hPistoleResult | Nk1hSchildResult | SchildPistoleResult | PistolePistoleResult;
 
 export function resolveLoadout(
   character: CharacterState, sheet: ComputedSheet, values: CharacterValueSource, entry: WaffenLoadoutEntry,
@@ -457,6 +620,10 @@ export function resolveLoadout(
       return resolveNk1hPistole(character, values, entry.primaryEquipmentId, entry.secondaryEquipmentId);
     case 'nk1h_schild':
       return resolveNk1hSchild(character, sheet, values, entry.primaryEquipmentId, entry.secondaryEquipmentId);
+    case 'schild_pistole':
+      return resolveSchildPistole(character, values, entry.primaryEquipmentId, entry.secondaryEquipmentId);
+    case 'pistole_pistole':
+      return resolvePistolePistole(character, values, entry.primaryEquipmentId, entry.secondaryEquipmentId);
   }
 }
 

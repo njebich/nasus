@@ -757,9 +757,9 @@ function newLoadoutId(): string {
 }
 
 /**
- * Legt ein neues Waffen-Loadout an (Waffen-Loadout-Feature, 2026-07-22) - referenziert zwei
- * bereits besessene EquipmentEntry.id (Waffe/Waffe, Waffe/Pistole in beliebiger Reihenfolge, oder
- * Waffe/Schild). Validiert nur, dass beide IDs zur richtigen Kombination gehoeren - kein
+ * Legt ein neues Waffen-Loadout an (Waffen-Loadout-Feature, 2026-07-22, REWORKED 2026-07-23) -
+ * referenziert zwei bereits besessene EquipmentEntry.id. Validiert nur, dass beide IDs zur
+ * richtigen Kombination (und ggf. richtigen Primaer-/Sekundaerhand-Zuordnung) gehoeren - kein
  * Budget-Bezug (kostet nichts), daher kein assertBudgetOk.
  */
 export function addWaffenLoadout(
@@ -775,19 +775,33 @@ export function addWaffenLoadout(
       throw new MutationError('Benötigt zwei besessene, 1H-fähige Nahkampfwaffen');
     }
   } else if (comboType === 'nk1h_pistole') {
+    // Die NK-Waffe ist seit dem 2026-07-23-Rework IMMER primaer, die Pistole IMMER sekundaer
+    // (kein Rollentausch mehr moeglich, siehe characterStore.ts's WaffenLoadoutEntry-Kommentar).
     const meleeIds = new Set(listEligibleNahkampf1HWaffen(character).map((i) => i.equipmentId));
     const pistoleIds = new Set(listEligiblePistolen(character).map((i) => i.equipmentId));
-    const bothValid = (meleeIds.has(primaryEquipmentId) && pistoleIds.has(secondaryEquipmentId))
-      || (pistoleIds.has(primaryEquipmentId) && meleeIds.has(secondaryEquipmentId));
-    if (!bothValid) throw new MutationError('Benötigt genau eine Nahkampfwaffe (1H) und eine Pistole');
+    if (!meleeIds.has(primaryEquipmentId) || !pistoleIds.has(secondaryEquipmentId)) {
+      throw new MutationError('Benötigt eine besessene Nahkampfwaffe (1H) als Primärhand und eine besessene Pistole als Sekundärhand');
+    }
+  } else if (comboType === 'schild_pistole') {
+    // Das Schild ist immer primaer, die Pistole immer sekundaer (analog zu nk1h_pistole).
+    const schildIds = new Set(listEligibleSchilde(character).map((i) => i.equipmentId));
+    const pistoleIds = new Set(listEligiblePistolen(character).map((i) => i.equipmentId));
+    if (!schildIds.has(primaryEquipmentId) || !pistoleIds.has(secondaryEquipmentId)) {
+      throw new MutationError('Benötigt ein besessenes Schild als Primärhand und eine besessene Pistole als Sekundärhand');
+    }
+  } else if (comboType === 'pistole_pistole') {
+    const pistoleIds = new Set(listEligiblePistolen(character).map((i) => i.equipmentId));
+    if (!pistoleIds.has(primaryEquipmentId) || !pistoleIds.has(secondaryEquipmentId)) {
+      throw new MutationError('Benötigt zwei besessene Pistolen');
+    }
   } else {
-    // nk1h_schild: primary MUSS die Waffe sein, secondary MUSS das Schild sein (Konvention, siehe
-    // characterStore.ts's WaffenLoadoutEntry-Kommentar).
+    // nk1h_schild: seit dem 2026-07-23-Rework darf der Spieler frei waehlen, ob Waffe oder Schild
+    // primaer ist (vorher war die Waffe zwingend primaer) - beide Reihenfolgen sind gueltig.
     const weaponIds = new Set(listEligibleNahkampf1HWaffen(character).map((i) => i.equipmentId));
     const schildIds = new Set(listEligibleSchilde(character).map((i) => i.equipmentId));
-    if (!weaponIds.has(primaryEquipmentId) || !schildIds.has(secondaryEquipmentId)) {
-      throw new MutationError('Benötigt eine besessene 1H-Waffe als Primärhand und ein besessenes Schild als Sekundärhand');
-    }
+    const bothValid = (weaponIds.has(primaryEquipmentId) && schildIds.has(secondaryEquipmentId))
+      || (schildIds.has(primaryEquipmentId) && weaponIds.has(secondaryEquipmentId));
+    if (!bothValid) throw new MutationError('Benötigt eine besessene 1H-Waffe und ein besessenes Schild');
   }
 
   const candidate = clone(character);

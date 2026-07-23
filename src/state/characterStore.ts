@@ -48,18 +48,21 @@ export function ruestungSlotKey(gruppe: RsGruppe, lage: number): string {
   return `${gruppe}:${lage}`;
 }
 
-export type WaffenLoadoutComboType = 'nk1h_nk1h' | 'nk1h_pistole' | 'nk1h_schild';
+export type WaffenLoadoutComboType = 'nk1h_nk1h' | 'nk1h_pistole' | 'nk1h_schild' | 'schild_pistole' | 'pistole_pistole';
 
 /**
- * Ein gespeichertes Waffen-Loadout (Kampf-Tab, "Waffen-Loadout"-Feature, 2026-07-22): referenziert
- * ausschliesslich bereits BESESSENE Ausruestung ueber EquipmentEntry.id - kein eigenes Kauf-/
- * Ausrüst-System, reine abgeleitete Sicht (siehe engine/waffenLoadout.ts). Fuer 'nk1h_schild' ist
- * `primaryEquipmentId` per Konvention IMMER die Waffe und `secondaryEquipmentId` IMMER das Schild
- * (von addWaffenLoadout erzwungen). Fuer die anderen beiden Typen legt `primaryEquipmentId` fest,
- * welche Seite die "rechte/Haupthand" ist (Nutzer-Wahl beim Anlegen). Der Anzeigename wird NIE
- * hier gespeichert, sondern bei jedem Rendern live aus den aktuell verknuepften
- * EquipmentEntry-Namen abgeleitet (Ausruestung kann sich theoretisch aendern/geloescht werden -
- * siehe waffenLoadout.ts's describeLoadout).
+ * Ein gespeichertes Waffen-Loadout (Kampf-Tab, "Waffen-Loadout"-Feature, 2026-07-22, REWORKED
+ * 2026-07-23): referenziert ausschliesslich bereits BESESSENE Ausruestung ueber
+ * EquipmentEntry.id - kein eigenes Kauf-/Ausrüst-System, reine abgeleitete Sicht (siehe
+ * engine/waffenLoadout.ts). Fuer 'nk1h_pistole'/'schild_pistole' ist `primaryEquipmentId` per
+ * Konvention IMMER die Nahkampfwaffe bzw. das Schild und `secondaryEquipmentId` IMMER die Pistole
+ * (von addWaffenLoadout erzwungen - die Pistole kann in diesen beiden Combos nie primaer sein).
+ * Fuer die anderen drei Typen ('nk1h_nk1h', 'nk1h_schild', 'pistole_pistole') legt
+ * `primaryEquipmentId` fest, welche Seite die "rechte/Haupthand" ist (freie Nutzer-Wahl beim
+ * Anlegen, seit dem Rework auch fuer 'nk1h_schild' - vorher war dort die Waffe zwingend primaer).
+ * Der Anzeigename wird NIE hier gespeichert, sondern bei jedem Rendern live aus den aktuell
+ * verknuepften EquipmentEntry-Namen abgeleitet (Ausruestung kann sich theoretisch aendern/geloescht
+ * werden - siehe waffenLoadout.ts's describeLoadout).
  */
 export interface WaffenLoadoutEntry {
   id: string;

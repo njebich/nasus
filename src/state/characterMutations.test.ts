@@ -1,12 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { createCharacter } from './characterStore';
 import {
-  setValue, addSelection, removeSelection, setWaffenPoolAllocation, buyWeapon, buyShield,
+  setValue, addSelection, removeSelection, setWaffenPoolAllocation, buyWeapon, buyShield, buyFeuerwaffe,
   addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite, BudgetError, MutationError,
 } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
+import { FEUERWAFFEN } from '../data/equipment/fernkampf';
+import { feuerwaffenStandardauswahl } from '../engine/feuerwaffenComposition';
 
 function withEpGesamt(epGesamt: number) {
   const character = createCharacter('Test');
@@ -493,7 +495,7 @@ describe('Waffen-Loadout-Mutationen', () => {
     expect(() => addWaffenLoadout(character, 'nk1h_nk1h', axt.id, 'nicht-vorhanden')).toThrow(MutationError);
   });
 
-  it('lehnt die falsche Reihenfolge bei nk1h_schild ab (Schild darf nicht primary sein)', () => {
+  it('erlaubt bei nk1h_schild BEIDE Reihenfolgen (seit dem 2026-07-23-Rework darf der Spieler frei waehlen, wer primary ist)', () => {
     let character = loadoutBaseCharacter();
     character = buyTestWeapon(character, 'Axt');
     const material = findRow(SCHILD_MATERIAL, 'Holz');
@@ -502,8 +504,43 @@ describe('Waffen-Loadout-Mutationen', () => {
     const schildRow = findRow(NK_WAFFEN_BASIS, 'Faustschild/Buckler');
     character = buyShield(character, schildRow.sourceRow, material.sourceRow, fertigung.sourceRow, bespannung.sourceRow);
     const [axt, schild] = character.equipment;
-    expect(() => addWaffenLoadout(character, 'nk1h_schild', schild.id, axt.id)).toThrow(MutationError);
+    expect(() => addWaffenLoadout(character, 'nk1h_schild', schild.id, axt.id)).not.toThrow();
     expect(() => addWaffenLoadout(character, 'nk1h_schild', axt.id, schild.id)).not.toThrow();
+  });
+
+  it('lehnt nk1h_pistole ab, wenn die Pistole primary ist (die NK-Waffe muss primary sein, kein Rollentausch mehr)', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const pistoleRow = findRow(FEUERWAFFEN, 'Pistole');
+    character = buyFeuerwaffe(character, pistoleRow.sourceRow, feuerwaffenStandardauswahl(pistoleRow));
+    const [axt, pistole] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'nk1h_pistole', pistole.id, axt.id)).toThrow(MutationError);
+    expect(() => addWaffenLoadout(character, 'nk1h_pistole', axt.id, pistole.id)).not.toThrow();
+  });
+
+  it('lehnt schild_pistole ab, wenn die Pistole primary ist (das Schild muss primary sein)', () => {
+    let character = loadoutBaseCharacter();
+    const material = findRow(SCHILD_MATERIAL, 'Holz');
+    const fertigung = findRow(SCHILD_FERTIGUNG, 'Gesellenarbeit');
+    const bespannung = findRow(SCHILD_BESPANNUNG, 'Stoff');
+    const schildRow = findRow(NK_WAFFEN_BASIS, 'Faustschild/Buckler');
+    character = buyShield(character, schildRow.sourceRow, material.sourceRow, fertigung.sourceRow, bespannung.sourceRow);
+    const pistoleRow = findRow(FEUERWAFFEN, 'Pistole');
+    character = buyFeuerwaffe(character, pistoleRow.sourceRow, feuerwaffenStandardauswahl(pistoleRow));
+    const [schild, pistole] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'schild_pistole', pistole.id, schild.id)).toThrow(MutationError);
+    expect(() => addWaffenLoadout(character, 'schild_pistole', schild.id, pistole.id)).not.toThrow();
+  });
+
+  it('erlaubt pistole_pistole nur mit zwei besessenen Pistolen', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const pistoleRow = findRow(FEUERWAFFEN, 'Pistole');
+    character = buyFeuerwaffe(character, pistoleRow.sourceRow, feuerwaffenStandardauswahl(pistoleRow));
+    character = buyFeuerwaffe(character, pistoleRow.sourceRow, feuerwaffenStandardauswahl(pistoleRow));
+    const [axt, p1, p2] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'pistole_pistole', axt.id, p1.id)).toThrow(MutationError);
+    expect(() => addWaffenLoadout(character, 'pistole_pistole', p1.id, p2.id)).not.toThrow();
   });
 
   it('lehnt nk1h_pistole mit zwei Nahkampfwaffen ab (keine Pistole beteiligt)', () => {

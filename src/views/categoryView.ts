@@ -58,7 +58,13 @@ function impactTooltip(referenz: string, newWert: number, impactValues: Characte
 function renderEditableRow(r: ComputedRule, maxValue?: number, impactValues?: CharacterValueSource): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   const value = r.currentValue ?? 0;
-  const costNext = r.kostenNext !== undefined ? `${r.kostenNext} SP` : '';
+  // kostenRaw liefert kumulierte Gesamtkosten bei "wert" (siehe characterSheet.ts kostenCurrent/
+  // spSpent), nicht die Kosten des einzelnen Punkts - der Klick-Preis ist daher die Differenz
+  // kostenNext-kostenCurrent. Format Nutzer 2026-07-24 ("debugging"): kompakt "<Klickpreis>SP/
+  // total <Gesamt nach Klick>", keine Wortphrase mehr (war "naechster Punkt: X SP").
+  const costNext = r.kostenNext !== undefined && r.kostenCurrent !== undefined
+    ? `${r.kostenNext - r.kostenCurrent}SP/total ${r.kostenNext}`
+    : '';
   const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
   const atMax = maxValue !== undefined && value >= maxValue;
   const stufe = describeSkillStufe(r.rule.referenz, value);
@@ -82,7 +88,7 @@ function renderEditableRow(r: ComputedRule, maxValue?: number, impactValues?: Ch
       <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
       <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
       <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>
-      <span class="stat-cost">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext ? `nächster Punkt: ${costNext}` : ''}</span>
+      <span class="stat-cost stat-cost-click">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext}</span>
     </div>`;
 }
 

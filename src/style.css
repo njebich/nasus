@@ -175,6 +175,20 @@ body {
   min-width: 10ch;
 }
 
+/* Eigenschaft/Attribute/GF/SF/WHK usw. (categoryView.ts renderEditableRow, ueberall ausser NK/FK
+   - deren eigene Waffentabelle nutzt .stat-cost ohne diesen Modifier): feste statt minimale
+   Breite, damit die Spalten-Breite des umgebenden .stat-row-Grids sich NICHT mit der Ziffernzahl
+   von "<Klickpreis>SP/total <Gesamt>" aendert - eine variable Breite hier verschiebt sonst die
+   davor liegenden +/- Buttons, weil .stat-label (1fr) den Rest des verfuegbaren Platzes je nach
+   Cost-Text-Laenge unterschiedlich stark ausfuellt (Nutzer 2026-07-24, "debugging"). */
+.stat-cost-click {
+  display: inline-block;
+  width: 15ch;
+  min-width: 15ch;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .stat-altered {
   font-variant-numeric: tabular-nums;
   font-weight: 600;

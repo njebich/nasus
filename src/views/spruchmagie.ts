@@ -17,6 +17,7 @@ import { canLearnSpell, canIncreaseSpell, getMaxLernbarerGrad } from '../engine/
 import { SPRUCHMAGIE_DETAILS, type SpruchmagieDetail } from '../data/spruchmagieDetails';
 import { aufrunden } from '../engine/functions';
 import { tooltipAttr } from './tooltip';
+import { withScrollAnchor } from './scrollAnchor';
 import type { OnValueChange } from './categoryView';
 
 const STUFE_2_TALENT_REFERENZ = 'talente_spruchmagie_stufe_2_zaubern';
@@ -268,13 +269,14 @@ export function renderSpruchmagieView(container: HTMLElement, sheet: ComputedShe
     const incBtn = tr.querySelector<HTMLButtonElement>('.stat-inc');
     const valueSpan = tr.querySelector<HTMLSpanElement>('.kampf-pool-value');
     const currentValue = Number(valueSpan?.textContent ?? 0);
+    const rowSelector = `tr[data-referenz="${CSS.escape(referenz)}"]`;
     decBtn?.addEventListener('click', () => {
       if (decBtn.disabled) return;
-      onChange(referenz, Math.max(0, currentValue - 1));
+      withScrollAnchor(rowSelector, () => onChange(referenz, Math.max(0, currentValue - 1)));
     });
     incBtn?.addEventListener('click', () => {
       if (incBtn.disabled) return;
-      onChange(referenz, currentValue + 1);
+      withScrollAnchor(rowSelector, () => onChange(referenz, currentValue + 1));
     });
   });
 }

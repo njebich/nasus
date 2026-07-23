@@ -21,6 +21,7 @@ import {
   MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ, grundfertigkeitSlotCount, getGrundfertigkeitOptionen,
 } from '../engine/grundfertigkeitAuswahl';
 import { KI_DAUER } from '../data/kiFaehigkeiten';
+import { withScrollAnchor } from './scrollAnchor';
 import type { OnValueChange } from './categoryView';
 
 export type OnGrundfertigkeitPick = (talentReferenz: string, slotIndex: number, grundfertigkeitReferenz: string) => void;
@@ -249,13 +250,14 @@ export function renderKiView(
     const referenz = tr.dataset.referenz!;
     const row = rows.find((r) => r.referenz === referenz);
     if (!row) return;
+    const rowSelector = `tr[data-referenz="${CSS.escape(referenz)}"]`;
     tr.querySelector('.stat-inc')?.addEventListener('click', () => {
       if (!row.unlocked) return;
-      onChange(referenz, row.currentValue + 1);
+      withScrollAnchor(rowSelector, () => onChange(referenz, row.currentValue + 1));
     });
     tr.querySelector('.stat-dec')?.addEventListener('click', () => {
       if (row.currentValue <= 0) return;
-      onChange(referenz, Math.max(0, row.currentValue - 1));
+      withScrollAnchor(rowSelector, () => onChange(referenz, Math.max(0, row.currentValue - 1)));
     });
   });
 

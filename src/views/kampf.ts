@@ -18,6 +18,7 @@ import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget, isPoolBalan
 import { getOwnedKampfmodulTalentInfo } from '../engine/talenteKampfmodulInfo';
 import { computeSchaden, formatSigned } from '../engine/waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from '../engine/fernkampfRange';
+import { withScrollAnchor } from './scrollAnchor';
 import {
   gesBonWert, ladezeitKr, feuerwaffenLadeschuetzeReferenz, computeArmbrustLadezeitLabel,
 } from '../engine/fernkampfLadezeit';
@@ -993,7 +994,8 @@ export function renderKampfView(
         nat: row.nat.allocated, npa: row.npa.allocated,
         [field]: next,
       };
-      onWaffenPoolChange(poolReferenz, key, allocation);
+      const cellSelector = `.kampf-pool-cell[data-key="${CSS.escape(key)}"][data-pool-referenz="${CSS.escape(poolReferenz)}"][data-field="${field}"]`;
+      withScrollAnchor(cellSelector, () => onWaffenPoolChange(poolReferenz, key, allocation));
     });
   });
 

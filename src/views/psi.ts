@@ -20,6 +20,7 @@ import {
 } from '../engine/psiBaumGating';
 import { PSI_ZAUBERTABELLE } from '../data/psiZaubertabelle';
 import { tooltipAttr } from './tooltip';
+import { withScrollAnchor } from './scrollAnchor';
 import type { OnValueChange } from './categoryView';
 
 function escapeHtml(s: string): string {
@@ -192,13 +193,14 @@ export function renderPsiView(container: HTMLElement, sheet: ComputedSheet, onCh
     const referenz = tr.dataset.referenz!;
     const row = rows.find((r) => r.referenz === referenz);
     if (!row) return;
+    const rowSelector = `tr[data-referenz="${CSS.escape(referenz)}"]`;
     tr.querySelector('.stat-inc')?.addEventListener('click', () => {
       if (!row.unlocked) return;
-      onChange(referenz, row.currentValue + 1);
+      withScrollAnchor(rowSelector, () => onChange(referenz, row.currentValue + 1));
     });
     tr.querySelector('.stat-dec')?.addEventListener('click', () => {
       if (row.currentValue <= 0) return;
-      onChange(referenz, Math.max(0, row.currentValue - 1));
+      withScrollAnchor(rowSelector, () => onChange(referenz, Math.max(0, row.currentValue - 1)));
     });
   });
 }

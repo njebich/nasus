@@ -14,6 +14,7 @@ import { isGeweihterTalentSelectedInSheet } from '../engine/geweihte';
 import { computeFormulaImpact } from '../engine/formulaImpact';
 import type { CharacterValueSource } from '../engine/rules';
 import { tooltipAttr } from './tooltip';
+import { withScrollAnchor } from './scrollAnchor';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
@@ -523,7 +524,7 @@ export function renderCategoryView(
       const row = btn.closest<HTMLElement>('.stat-row')!;
       const referenz = row.dataset.referenz!;
       syncOpenGroups();
-      onChange(referenz, findCurrent(referenz) + 1);
+      withScrollAnchor(`.stat-row[data-referenz="${CSS.escape(referenz)}"]`, () => onChange(referenz, findCurrent(referenz) + 1));
     });
   });
   container.querySelectorAll<HTMLButtonElement>('.stat-dec').forEach((btn) => {
@@ -531,7 +532,7 @@ export function renderCategoryView(
       const row = btn.closest<HTMLElement>('.stat-row')!;
       const referenz = row.dataset.referenz!;
       syncOpenGroups();
-      onChange(referenz, Math.max(0, findCurrent(referenz) - 1));
+      withScrollAnchor(`.stat-row[data-referenz="${CSS.escape(referenz)}"]`, () => onChange(referenz, Math.max(0, findCurrent(referenz) - 1)));
     });
   });
   container.querySelectorAll<HTMLInputElement>('.stat-value').forEach((input) => {
@@ -541,7 +542,8 @@ export function renderCategoryView(
       let parsed = Math.max(0, Math.floor(Number(input.value)));
       if (input.max) parsed = Math.min(parsed, Number(input.max));
       syncOpenGroups();
-      onChange(referenz, Number.isFinite(parsed) ? parsed : findCurrent(referenz));
+      const rowSelector = `.stat-row[data-referenz="${CSS.escape(referenz)}"]`;
+      withScrollAnchor(rowSelector, () => onChange(referenz, Number.isFinite(parsed) ? parsed : findCurrent(referenz)));
     });
   });
 

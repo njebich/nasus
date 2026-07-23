@@ -708,6 +708,18 @@ body {
   font-size: 0.85em;
 }
 
+/* Gekauft-Sektion (talenteVornachteile.ts) bleibt immer offen - kein <details>, daher eigener
+   Header statt <summary>, optisch aber gleich (siehe .stat-group summary) plus Akzentrahmen, um
+   sie von den collapsible Gruppen darunter abzuheben. */
+.gekauft-group {
+  border-color: #8886;
+}
+
+.gekauft-header {
+  padding: 0.1rem 0;
+  font-weight: 600;
+}
+
 .stat-group > .stat-row {
   border: none;
   padding: 0.3rem 0 0;

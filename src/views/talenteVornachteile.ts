@@ -93,6 +93,26 @@ function renderRow(r: ComputedRule, sheet: ComputedSheet, characterReligion: str
  *  waehrung/cost in renderRow. Alle Angst:*-Parents (siehe vor-und-nachteile.jsonl) werden
  *  zusaetzlich in einer eigenen "Ängste"-Unterguppe innerhalb Nachteile gebuendelt, statt wie bei
  *  Talente-groupByParent je Angstart eine eigene Top-Level-Gruppe zu bilden. */
+/** Immer sichtbare "Gekauft"-Sektion oben in der Liste (Nutzer 2026-07-23: "uncouple all bought
+ *  talente, always display on top even if all categories are collapsed") - zusaetzlich zur
+ *  gewohnten Parent-/Vor-Nachteile-Gruppierung, nicht ersetzend (Eintraege bleiben dort auch
+ *  weiterhin sichtbar). Bewusst KEIN <details>, damit die Sektion sich nicht zuklappen laesst. */
+function renderGekauftSection(
+  rows: ComputedRule[],
+  sheet: ComputedSheet,
+  characterReligion: string | undefined,
+): string {
+  const gekauft = rows.filter((r) => r.selected);
+  if (gekauft.length === 0) return '';
+  return `
+    <div class="stat-card">
+      <div class="stat-group gekauft-group">
+        <div class="gekauft-header">Gekauft <span class="stat-group-count">(${gekauft.length})</span></div>
+        <div class="auswahl-category">${gekauft.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+      </div>
+    </div>`;
+}
+
 function renderVnGroups(
   rows: ComputedRule[],
   sheet: ComputedSheet,
@@ -176,14 +196,14 @@ export function renderAuswahlView(
   if (rows.length === 0 && needle) {
     listHtml = `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchText)}".</p>`;
   } else if (kategorie === 'Vor- und Nachteile') {
-    listHtml = renderVnGroups(rows, sheet, characterReligion, needle);
+    listHtml = renderGekauftSection(rows, sheet, characterReligion) + renderVnGroups(rows, sheet, characterReligion, needle);
   } else if (groupByParent) {
     const groups = new Map<string, ComputedRule[]>();
     for (const r of rows) {
       const key = r.rule.parent ?? 'Sonstige';
       (groups.get(key) ?? groups.set(key, []).get(key)!).push(r);
     }
-    listHtml = [...groups.entries()]
+    listHtml = renderGekauftSection(rows, sheet, characterReligion) + [...groups.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([parent, groupRows]) => {
         // Bei aktiver Suche werden alle Gruppen mit Treffern zwangsweise aufgeklappt, OHNE den

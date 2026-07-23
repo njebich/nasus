@@ -80,26 +80,36 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
   // Regel (Nutzer 2026-07-17): eine Spezialisierung darf hoechstens so hoch sein wie der TaW
   // ihrer Hauptfertigkeit - deckt implizit auch "Spezialisierung erst ab TaW>0 verfuegbar" ab,
   // da bei Hauptfertigkeit=0 bereits jeder Wert>0 den Deckel 0 ueberschreitet.
-  const parentRule = findParentRule(rule);
-  if (parentRule) {
-    const parentWert = character.values[parentRule.referenz.toLowerCase()] ?? 0;
-    if (wert > parentWert) {
-      throw new MutationError(
-        `'${rule.referenz}' darf nicht hoeher sein als die Hauptfertigkeit '${parentRule.referenz}' (TaW ${parentWert})`,
-      );
+  // Nur fuer Nahkampf/Fernkampf/WHK, wo 'parent' tatsaechlich "Spezialisierung ihrer
+  // Hauptfertigkeit" bedeutet (Bugfix 2026-07-23): PSI nutzt dasselbe 'parent'-Feld fuer sein
+  // Zauberbaum-Gate (mindestTaw, siehe psiBaumGating.ts) - dort ist z.B. Kryokinese.parent =
+  // Telekinese, OHNE dass Kryokinese <= Telekinese gedeckelt sein soll (nur das Gate muss
+  // erfuellt sein, kein Werte-Deckel). Reproduziert per Nutzer-Report: Telekinese=10 verhinderte
+  // faelschlich Kryokinese>10 mit "darf nicht hoeher sein als die Hauptfertigkeit".
+  const HAUPTFERTIGKEIT_SPEZIALISIERUNG_KATEGORIEN = new Set(['Nahkampf', 'Fernkampf', 'WHK']);
+  if (HAUPTFERTIGKEIT_SPEZIALISIERUNG_KATEGORIEN.has(rule.kategorie)) {
+    const parentRule = findParentRule(rule);
+    if (parentRule) {
+      const parentWert = character.values[parentRule.referenz.toLowerCase()] ?? 0;
+      if (wert > parentWert) {
+        throw new MutationError(
+          `'${rule.referenz}' darf nicht hoeher sein als die Hauptfertigkeit '${parentRule.referenz}' (TaW ${parentWert})`,
+        );
+      }
     }
-  }
 
-  // Regel (Nutzer 2026-07-22): umgekehrter Fall zum Deckel oben - eine Hauptfertigkeit darf nicht
-  // unter den TaW einer ihrer bereits gesetzten Spezialisierungen gesenkt werden (sonst waere die
-  // Spezialisierung im Widerspruch zur obigen Regel, ohne dass hier eine Fehlermeldung erscheint).
-  const childRules = findChildRules(rule);
-  for (const child of childRules) {
-    const childWert = character.values[child.referenz.toLowerCase()] ?? 0;
-    if (childWert > wert) {
-      throw new MutationError(
-        `'${rule.referenz}' darf nicht unter den TaW der Spezialisierung '${child.referenz}' (${childWert}) gesenkt werden`,
-      );
+    // Regel (Nutzer 2026-07-22): umgekehrter Fall zum Deckel oben - eine Hauptfertigkeit darf
+    // nicht unter den TaW einer ihrer bereits gesetzten Spezialisierungen gesenkt werden (sonst
+    // waere die Spezialisierung im Widerspruch zur obigen Regel, ohne dass hier eine
+    // Fehlermeldung erscheint).
+    const childRules = findChildRules(rule);
+    for (const child of childRules) {
+      const childWert = character.values[child.referenz.toLowerCase()] ?? 0;
+      if (childWert > wert) {
+        throw new MutationError(
+          `'${rule.referenz}' darf nicht unter den TaW der Spezialisierung '${child.referenz}' (${childWert}) gesenkt werden`,
+        );
+      }
     }
   }
 

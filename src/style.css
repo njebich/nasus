@@ -1305,11 +1305,15 @@ body {
 }
 
 .spruchmagie-taw-cell {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.spruchmagie-taw-inner {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
-  white-space: nowrap;
 }
 
 .spruchmagie-row-locked {

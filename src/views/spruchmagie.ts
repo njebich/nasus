@@ -50,6 +50,18 @@ const openGrade = new Set<string>();
  *  Default OFFEN, weil sie nur die bereits gewaehlten (also wenigen) Zauber zeigt. */
 let openGesamtliste = true;
 
+/** Suchtext (Nutzer 2026-07-24, "add a search field" auf Tab-Top-Level) - filtert Zauber nach
+ *  Name, wirkt auf Gesamtliste UND Schul-Gruppen gleichermassen. Analog searchTextByKategorie
+ *  in talenteVornachteile.ts, hier aber nur ein einzelnes Feld (kein Per-Kategorie-Map noetig,
+ *  da der Spruchmagie-Tab nur eine Such-Domaene hat). */
+let spruchmagieSearchText = '';
+
+/** "Nur verfuegbare zeigen"-Toggle (Nutzer 2026-07-24): AN (Default) = bisheriges Verhalten,
+ *  Grad>Weisheit+1 bleibt komplett ausgeblendet (siehe buildSchulRows). AUS = alle Zauber jeder
+ *  Schule unabhaengig von Gates anzeigen (auch nie erreichbare Grade), weiterhin optisch
+ *  gesperrt/opacity ueber row.unlocked. */
+let showNurVerfuegbare = true;
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -108,11 +120,12 @@ interface Row {
   unlocked: boolean;
 }
 
-function buildSchulRows(sheet: ComputedSheet, schule: string): Row[] {
+function buildSchulRows(sheet: ComputedSheet, schule: string, needle = ''): Row[] {
   const alle = sheet.byKategorie['Spruchmagie'] ?? [];
   const weisheit = getMaxLernbarerGrad(sheet);
   return alle
     .filter((r) => r.rule.art === 'Wert' && r.rule.parent === schule)
+    .filter((r) => !needle || (r.rule.beschreibung ?? '').toLowerCase().includes(needle))
     .map((r) => {
       const learnGate = canLearnSpell(sheet, r.rule);
       const increaseGate = canIncreaseSpell(sheet, r.rule);
@@ -127,9 +140,11 @@ function buildSchulRows(sheet: ComputedSheet, schule: string): Row[] {
         unlocked: learnGate.allowed && increaseGate.allowed,
       };
     })
-    // Grad > Weisheit+1 ist mit keinem Hauszauber jemals erreichbar - komplett ausblenden
-    // statt nur zu sperren (Nutzer 2026-07-21: "only show zauber available with wei+1").
-    .filter((r) => Number(r.rule.grad ?? 0) <= weisheit + 1);
+    // Grad > Weisheit+1 ist mit keinem Hauszauber jemals erreichbar - per Default komplett
+    // ausblenden statt nur zu sperren (Nutzer 2026-07-21: "only show zauber available with
+    // wei+1"). Der "Nur verfuegbare"-Toggle (Nutzer 2026-07-24) kann diesen Filter aufheben, um
+    // wirklich ALLE Zauber der Schule zu sehen (weiterhin optisch gesperrt via row.unlocked).
+    .filter((r) => !showNurVerfuegbare || Number(r.rule.grad ?? 0) <= weisheit + 1);
 }
 
 interface GradGruppe {
@@ -162,9 +177,9 @@ function groupRowsByGrad(rows: Row[]): GradGruppe[] {
 
 /** Alle gewaehlten Zauber (TaW>0) ueber alle Schulen hinweg, fuer die Gesamtliste (Nutzer
  *  2026-07-24) - sortiert nach Schule, dann Grad, dann Name. */
-function buildAllGewaehlteRows(sheet: ComputedSheet, schulen: string[]): Row[] {
+function buildAllGewaehlteRows(sheet: ComputedSheet, schulen: string[], needle = ''): Row[] {
   return schulen
-    .flatMap((s) => buildSchulRows(sheet, s))
+    .flatMap((s) => buildSchulRows(sheet, s, needle))
     .filter((r) => r.currentValue > 0)
     .sort((a, b) => {
       const schuleA = a.rule.parent ?? '';
@@ -271,12 +286,12 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
     <tr class="${rowClass}" data-referenz="${rule.referenz}" data-row-key="${escapeHtml(rowKey)}">
       ${schuleCell}
       <td>${escapeHtml(rule.grad ?? '–')}</td>
-      <td class="spruchmagie-taw-cell">
+      <td class="spruchmagie-taw-cell"><div class="spruchmagie-taw-inner">
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
         <span class="kampf-pool-value">${currentValue}</span>
         <button type="button" class="stat-inc" aria-label="erhöhen" ${disabled ? 'disabled' : ''}${tooltipAttr(plusTitle)}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>
-      </td>
+      </div></td>
       <td class="spruchmagie-name-cell">${escapeHtml(name)}${probe ? `<div class="spruchmagie-probe">Probe: ${probe}</div>` : ''}</td>
       <td>${escapeHtml(detail?.minInt ?? '–')}</td>
       <td>${escapeHtml(getEigBonusValue(sheet, rule.eigBonus)?.label ?? '–')}</td>
@@ -308,9 +323,11 @@ function renderGradToggleRow(gradKey: string, count: number, colspan: number, is
     </tr>`;
 }
 
-function renderGradGruppe(sheet: ComputedSheet, schule: string, gruppe: GradGruppe, colspan: number): string {
+function renderGradGruppe(sheet: ComputedSheet, schule: string, gruppe: GradGruppe, colspan: number, needle = ''): string {
   const gradKey = `${schule}::${gruppe.grad}`;
-  const isOpen = openGrade.has(gradKey);
+  // Bei aktiver Suche zwangsweise aufklappen, damit Treffer im "Rest"-Bucket nicht hinter dem
+  // Grad-Toggle verschwinden (analog renderSchulGruppe).
+  const isOpen = !!needle || openGrade.has(gradKey);
   const kopfUndGewaehlt = `
     <tbody>
       <tr class="spruchmagie-grad-header"><td colspan="${colspan}">Grad ${gruppe.grad}</td></tr>
@@ -323,10 +340,13 @@ function renderGradGruppe(sheet: ComputedSheet, schule: string, gruppe: GradGrup
   return kopfUndGewaehlt + restKoerper;
 }
 
-function renderSchulGruppe(sheet: ComputedSheet, schule: string): string {
-  const rows = buildSchulRows(sheet, schule);
+function renderSchulGruppe(sheet: ComputedSheet, schule: string, needle = ''): string {
+  const rows = buildSchulRows(sheet, schule, needle);
   if (rows.length === 0) return '';
-  const openAttr = openSchulen.has(schule) ? ' open' : '';
+  // Bei aktiver Suche zwangsweise aufklappen (Treffer sollen nicht hinter einem zugeklappten
+  // Details-Element verschwinden), ohne den manuellen Aufklapp-Zustand zu ueberschreiben -
+  // analog openParents-Handling in talenteVornachteile.ts.
+  const openAttr = needle || openSchulen.has(schule) ? ' open' : '';
   const gruppen = groupRowsByGrad(rows);
   const colspan = SPRUCHMAGIE_COLUMNS.length;
   return `
@@ -336,15 +356,15 @@ function renderSchulGruppe(sheet: ComputedSheet, schule: string): string {
         <div class="kampf-table-scroll">
           <table class="bogen-table spruchmagie-table">
             <thead><tr>${SPRUCHMAGIE_COLUMNS.map((c) => `<th>${escapeHtml(c)}</th>`).join('')}</tr></thead>
-            ${gruppen.map((g) => renderGradGruppe(sheet, schule, g, colspan)).join('')}
+            ${gruppen.map((g) => renderGradGruppe(sheet, schule, g, colspan, needle)).join('')}
           </table>
         </div>
       </details>
     </div>`;
 }
 
-function renderGesamtliste(sheet: ComputedSheet, schulen: string[]): string {
-  const rows = buildAllGewaehlteRows(sheet, schulen);
+function renderGesamtliste(sheet: ComputedSheet, schulen: string[], needle = ''): string {
+  const rows = buildAllGewaehlteRows(sheet, schulen, needle);
   const openAttr = openGesamtliste ? ' open' : '';
   const colspan = SPRUCHMAGIE_COLUMNS_MIT_SCHULE.length;
   const body = rows.length > 0
@@ -368,12 +388,50 @@ export function renderSpruchmagieView(container: HTMLElement, sheet: ComputedShe
   const schulen = [...new Set((sheet.byKategorie['Spruchmagie'] ?? []).map((r) => r.rule.parent).filter((p): p is string => !!p))]
     .sort((a, b) => a.localeCompare(b, 'de'));
 
+  // VOR dem innerHTML-Ersatz sichern, ob das Suchfeld gerade fokussiert war (und an welcher
+  // Cursor-Position) - sonst wuerde JEDER Re-Render (auch durch Wert-Klicks ausgeloest) den
+  // Fokus stehlen bzw. verlieren. Analog renderAuswahlView in talenteVornachteile.ts.
+  const prevSearchInput = container.querySelector<HTMLInputElement>('#spruchmagie-search');
+  const searchWasFocused = prevSearchInput !== null && document.activeElement === prevSearchInput;
+  const prevSelectionStart = prevSearchInput?.selectionStart ?? null;
+
+  const needle = spruchmagieSearchText.trim().toLowerCase();
+
+  const filtersHtml = `
+    <div class="ausruestung-filters">
+      <input type="text" id="spruchmagie-search" placeholder="Suche..." value="${escapeHtml(spruchmagieSearchText)}" />
+      <label class="auswahl-filter-checkbox">
+        <input type="checkbox" id="spruchmagie-nur-verfuegbare" ${showNurVerfuegbare ? 'checked' : ''} />
+        Nur verfügbare zeigen
+      </label>
+    </div>`;
+
   container.innerHTML = `
+    ${filtersHtml}
     <div class="spruchmagie-info">
       <b>Zauberprobe</b> = Magie + Eig-Bonus + TaW − Stufe-Erschwerung (St. 1/2/3, je nachdem welche Stufe gesprochen wird)
     </div>
-    ${renderGesamtliste(sheet, schulen)}
-    ${schulen.map((s) => renderSchulGruppe(sheet, s)).join('')}`;
+    ${renderGesamtliste(sheet, schulen, needle)}
+    ${schulen.map((s) => renderSchulGruppe(sheet, s, needle)).join('')}`;
+
+  const searchInput = container.querySelector<HTMLInputElement>('#spruchmagie-search');
+  if (searchInput) {
+    if (searchWasFocused) {
+      searchInput.focus();
+      const pos = prevSelectionStart ?? searchInput.value.length;
+      searchInput.setSelectionRange(pos, pos);
+    }
+    searchInput.addEventListener('input', (e) => {
+      spruchmagieSearchText = (e.target as HTMLInputElement).value;
+      renderSpruchmagieView(container, sheet, onChange);
+    });
+  }
+
+  const nurVerfuegbareCheckbox = container.querySelector<HTMLInputElement>('#spruchmagie-nur-verfuegbare');
+  nurVerfuegbareCheckbox?.addEventListener('change', (e) => {
+    showNurVerfuegbare = (e.target as HTMLInputElement).checked;
+    renderSpruchmagieView(container, sheet, onChange);
+  });
 
   container.querySelectorAll<HTMLDetailsElement>('details[data-spruchmagie-schule]').forEach((details) => {
     const schule = details.dataset.spruchmagieSchule!;

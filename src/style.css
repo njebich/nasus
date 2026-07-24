@@ -1117,6 +1117,23 @@ body {
   display: inline-block;
 }
 
+.kampf-row-allocation-dirty {
+  box-shadow: inset 3px 0 0 #b7791f;
+}
+
+.kampf-allocation-actions {
+  white-space: nowrap;
+}
+
+.kampf-allocation-actions button + button {
+  margin-left: 0.25rem;
+}
+
+.kampf-allocation-saved {
+  color: #6b7280;
+  font-size: 0.85em;
+}
+
 .kampf-pp-invalid {
   color: #b45309;
 }

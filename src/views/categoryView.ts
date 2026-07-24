@@ -27,6 +27,24 @@ function errorNote(r: ComputedRule): string {
   return r.error ? `<span class="stat-error" title="${escapeHtml(r.error)}">⚠</span>` : '';
 }
 
+/** Klickpreis-Label "<Preis>SP/total <Gesamt>" fuer Wert-Regeln mit kumulativem kostenRaw.
+ *  kostenCurrent/kostenNext sind Gesamtkosten bei currentValue/currentValue+1 (siehe
+ *  characterSheet.ts) - der Klickpreis ist die Differenz. ABER: manche Kosten-Formeln
+ *  (z.B. Attribute "80+wert*20") sind bei wert=0 nicht 0 - characterSheet.ts's spSpent
+ *  rechnet diesen Sockelbetrag daher erst mit ein, sobald currentValue>0 ist (sonst wuerde ein
+ *  ungekaufter Basiswert bereits SP kosten). Ohne denselben Guard hier wuerde der erste Klick
+ *  (0->1) zu wenig anzeigen (Bug gefunden 2026-07-24, "debugging": zeigte 20 SP statt echter 100
+ *  SP fuer den ersten Attribut-Punkt, weil kostenCurrent bei wert=0 bereits 80 war). */
+export function formatKlickpreis(
+  currentValue: number | undefined,
+  kostenCurrent: number | undefined,
+  kostenNext: number | undefined,
+): string {
+  if (kostenNext === undefined || kostenCurrent === undefined) return '';
+  const vorherigeKosten = (currentValue ?? 0) > 0 ? kostenCurrent : 0;
+  return `${kostenNext - vorherigeKosten}SP/total ${kostenNext}`;
+}
+
 /** Formel-Tooltip fuers Label: zeigt die Formel (formelRaw/poolRaw/kostenRaw) mit Abkuerzungen. */
 function formulaTooltip(raw: string | undefined): string {
   if (!raw) return '';
@@ -60,11 +78,8 @@ function renderEditableRow(r: ComputedRule, maxValue?: number, impactValues?: Ch
   const value = r.currentValue ?? 0;
   // kostenRaw liefert kumulierte Gesamtkosten bei "wert" (siehe characterSheet.ts kostenCurrent/
   // spSpent), nicht die Kosten des einzelnen Punkts - der Klick-Preis ist daher die Differenz
-  // kostenNext-kostenCurrent. Format Nutzer 2026-07-24 ("debugging"): kompakt "<Klickpreis>SP/
-  // total <Gesamt nach Klick>", keine Wortphrase mehr (war "naechster Punkt: X SP").
-  const costNext = r.kostenNext !== undefined && r.kostenCurrent !== undefined
-    ? `${r.kostenNext - r.kostenCurrent}SP/total ${r.kostenNext}`
-    : '';
+  // kostenNext-kostenCurrent (siehe formatKlickpreis fuer den wert=0-Sockelbetrag-Guard).
+  const costNext = formatKlickpreis(r.currentValue, r.kostenCurrent, r.kostenNext);
   const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
   const atMax = maxValue !== undefined && value >= maxValue;
   const stufe = describeSkillStufe(r.rule.referenz, value);

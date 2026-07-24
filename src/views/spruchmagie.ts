@@ -27,7 +27,7 @@ import { SPRUCHMAGIE_DETAILS, type SpruchmagieDetail } from '../data/spruchmagie
 import { aufrunden } from '../engine/functions';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
-import type { OnValueChange } from './categoryView';
+import { formatKlickpreis, type OnValueChange } from './categoryView';
 
 const STUFE_2_TALENT_REFERENZ = 'talente_spruchmagie_stufe_2_zaubern';
 const STUFE_3_TALENT_REFERENZ = 'talente_spruchmagie_stufe_3_zaubern';
@@ -261,9 +261,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
   // Attribute usw.) - Label war faelschlich "TaW" statt "SP" (kostenNext ist derselbe kumulative
   // SP-Kosten-Wert wie ueberall sonst, siehe characterSheet.ts spSpent, das Spruchmagie mit
   // einrechnet - die WENN(wert=0;0;10+(wert-1)*grad)-Formel ist ein SP-Kosten-Wert, kein TaW).
-  const costLabel = row.kostenNext !== undefined && row.kostenCurrent !== undefined
-    ? `${row.kostenNext - row.kostenCurrent}SP/total ${row.kostenNext}`
-    : '';
+  const costLabel = formatKlickpreis(row.currentValue, row.kostenCurrent, row.kostenNext);
   const probe = renderZauberprobeCell(sheet, row, stufen);
   const showSchule = opts?.showSchule ?? false;
   const rowKey = showSchule ? `gesamt::${rule.referenz}` : `schule::${rule.parent}::${rule.referenz}`;

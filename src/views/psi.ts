@@ -21,7 +21,7 @@ import {
 import { PSI_ZAUBERTABELLE } from '../data/psiZaubertabelle';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
-import type { OnValueChange } from './categoryView';
+import { formatKlickpreis, type OnValueChange } from './categoryView';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -151,9 +151,7 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
   // Gleiches Format wie categoryView.ts (Nutzer 2026-07-24, "same currency" wie Eigenschaft/
   // Attribute usw.) - Label war faelschlich "EP" statt "SP" (kostenNext ist derselbe kumulative
   // SP-Kosten-Wert wie ueberall sonst, siehe characterSheet.ts spSpent, das PSI mit einrechnet).
-  const costLabel = r.kostenNext !== undefined && r.kostenCurrent !== undefined
-    ? `${r.kostenNext - r.kostenCurrent}SP/total ${r.kostenNext}`
-    : '';
+  const costLabel = formatKlickpreis(r.currentValue, r.kostenCurrent, r.kostenNext);
 
   return `
     <tr class="${rowClass}" data-referenz="${referenz}">

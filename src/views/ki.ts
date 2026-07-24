@@ -22,7 +22,7 @@ import {
 } from '../engine/grundfertigkeitAuswahl';
 import { KI_DAUER } from '../data/kiFaehigkeiten';
 import { withScrollAnchor } from './scrollAnchor';
-import type { OnValueChange } from './categoryView';
+import { formatKlickpreis, type OnValueChange } from './categoryView';
 
 export type OnGrundfertigkeitPick = (talentReferenz: string, slotIndex: number, grundfertigkeitReferenz: string) => void;
 
@@ -168,9 +168,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
   // Gleiches Format wie categoryView.ts (Nutzer 2026-07-24, "same currency" wie Eigenschaft/
   // Attribute usw.): kostenRaw ist kumulativ, Klickpreis = kostenNext-kostenCurrent.
-  const costLabel = kostenNext !== undefined && kostenCurrent !== undefined
-    ? `${kostenNext - kostenCurrent}SP/total ${kostenNext}`
-    : '';
+  const costLabel = formatKlickpreis(currentValue, kostenCurrent, kostenNext);
   const picksRow = referenz === MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ ? renderGrundfertigkeitPicksRow(currentValue, gewaehlt) : '';
 
   return `

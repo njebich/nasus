@@ -3,7 +3,9 @@ import { createCharacter } from '../state/characterStore';
 import {
   buyFeuerwaffe, buyFeuerwaffenMunition, buyWeapon, setValue, setWaffenPoolAllocation, addWaffenLoadout, BudgetError,
 } from '../state/characterMutations';
-import { buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows } from './kampf';
+import {
+  buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows, previewWaffenPoolAllocation,
+} from './kampf';
 import { FEUERWAFFEN } from '../data/equipment/fernkampf';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { feuerwaffenStandardauswahl, composeFeuerwaffe } from '../engine/feuerwaffenComposition';
@@ -106,6 +108,25 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
     // 7 - 2 (nur die eigene Zuteilung) = 5 fuer JEDE Zeile, nicht 7 - 4 (Summe beider Waffen) = 3.
     expect(row1.pp).toBe(5);
     expect(row2.pp).toBe(5);
+  });
+
+  it('berechnet eine lokale Zuteilungsvorschau, ohne den persistierten Charakter zu verändern', () => {
+    const character = characterWithZweiAexten();
+    const [w1] = character.equipment;
+    const sheet = computeSheet(character);
+    const row = buildNahkampfRows(character, sheet).find((candidate) => candidate.key === w1.id && candidate.grip === '1H')!;
+    const originalPp = row.pp;
+
+    const preview = previewWaffenPoolAllocation(row, {
+      gat: 2, gpa: 1, mat: 0, mpa: 0, nat: 0, npa: 0,
+    });
+
+    expect(preview.gat.allocated).toBe(2);
+    expect(preview.gat.value).toBe(row.gat.value + 2);
+    expect(preview.gpa.value).toBe(row.gpa.value + 1);
+    expect(preview.pp).toBe(originalPp - 3);
+    expect(row.gat.allocated).toBe(0);
+    expect(character.poolAllocations).toEqual({});
   });
 
   it('addiert den eigenen AT/PA-Ueberschuss ueber 20 dieser Zeile zum Budget, bevor die eigene Zuteilung abgezogen wird', () => {

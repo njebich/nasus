@@ -276,6 +276,9 @@ def read_artefakt_basis(wb):
         ("Vorbereitungszeit-sec", "vorbereitungszeitSec"), ("Effektdauer-sec", "effektdauerSec"),
         ("Wirkungsdauer-Basis", "wirkungsdauerBasis"), ("Wirkungsdauer-Einheit", "wirkungsdauerEinheit"),
         ("Wirkung-Basis", "wirkungBasis"), ("Wirkung-Einheit", "wirkungEinheit"), ("Eigenschaft", "eigenschaft"),
+        ("Element", "element"), ("Wirkungsstufe-Offset", "wirkungsstufeOffset"),
+        ("Zusatzwert-Art", "zusatzwertArt"), ("Schadenselement", "schadenselement"),
+        ("Namenspraefix", "namenspraefix"),
     ]
     headers = {}
     for c in range(1, ws.max_column + 1):
@@ -322,6 +325,22 @@ def read_artefakt_kosten(wb):
         # Leere Zellen komplett weglassen statt "null" zu schreiben (konsistent mit den
         # anderen read_*-Funktionen) - TS-Seite kann sonst leicht null mit undefined verwechseln.
         rows.append({k: v for k, v in entry.items() if v is not None})
+    return rows
+
+
+def read_artefakt_wirkungsstufen(wb):
+    ws = wb["Artefakt-Wirkungsstufen"]
+    rows = []
+    for r in range(2, ws.max_row + 1):
+        stufe = cell_to_str(ws.cell(row=r, column=1).value)
+        if not stufe:
+            continue
+        rows.append({
+            "wirkungsstufe": stufe,
+            "schadenswuerfel": cell_to_str(ws.cell(row=r, column=2).value),
+            "rb": cell_to_str(ws.cell(row=r, column=3).value),
+            "sb": cell_to_str(ws.cell(row=r, column=4).value),
+        })
     return rows
 
 
@@ -523,6 +542,7 @@ def write_preisliste_ts(wb):
 def write_artefakte_ts(wb):
     basis = read_artefakt_basis(wb)
     kosten = read_artefakt_kosten(wb)
+    wirkungsstufen = read_artefakt_wirkungsstufen(wb)
     type_lines = [
         "export interface ArtefaktBasis {",
         "  sourceRow: number;",
@@ -538,6 +558,11 @@ def write_artefakte_ts(wb):
         "  wirkungBasis?: string;",
         "  wirkungEinheit?: string;",
         "  eigenschaft?: string;",
+        "  element?: string;",
+        "  wirkungsstufeOffset?: string;",
+        "  zusatzwertArt?: string;",
+        "  schadenselement?: string;",
+        "  namenspraefix?: string;",
         "}",
         "export interface ArtefaktKosten {",
         "  sourceRow: number;",
@@ -549,17 +574,27 @@ def write_artefakte_ts(wb):
         "  kostenPermanent?: string;",
         "  verfuegbarkeitPermanent?: string;",
         "}",
+        "export interface ArtefaktWirkungsstufe {",
+        "  wirkungsstufe: string;",
+        "  schadenswuerfel?: string;",
+        "  rb?: string;",
+        "  sb?: string;",
+        "}",
     ]
-    data = {"basis": basis, "kosten": kosten}
+    data = {"basis": basis, "kosten": kosten, "wirkungsstufen": wirkungsstufen}
     path = write_json_backed_module(
         OUT_EQUIPMENT_DIR, "artefakte", "ARTEFAKTE_RAW", type_lines,
-        "{ basis: ArtefaktBasis[]; kosten: ArtefaktKosten[] }", data,
+        "{ basis: ArtefaktBasis[]; kosten: ArtefaktKosten[]; wirkungsstufen: ArtefaktWirkungsstufe[] }", data,
     )
     # Re-export as two flat consts for convenient importing (same underlying data/module).
     with open(OUT_EQUIPMENT_DIR / "artefakte.ts", "a", encoding="utf-8") as f:
         f.write("export const ARTEFAKT_BASIS = ARTEFAKTE_RAW.basis;\n")
         f.write("export const ARTEFAKT_KOSTEN = ARTEFAKTE_RAW.kosten;\n")
-    print(f"{path}: {len(basis)} Artefakt-Basis, {len(kosten)} Artefakt-Kosten-Eintraege geschrieben.")
+        f.write("export const ARTEFAKT_WIRKUNGSSTUFEN = ARTEFAKTE_RAW.wirkungsstufen;\n")
+    print(
+        f"{path}: {len(basis)} Artefakt-Basis, {len(kosten)} Artefakt-Kosten-Eintraege, "
+        f"{len(wirkungsstufen)} Wirkungsstufen geschrieben."
+    )
 
 
 def write_verfuegbarkeit_ts(wb):

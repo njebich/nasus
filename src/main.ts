@@ -158,10 +158,10 @@ function handleBuyPreisliste(sourceRow: number, quantity: number): void {
   render();
 }
 
-function handleBuyArtefakt(referenz: string, grad: string, variant: ArtefaktVariant): void {
+function handleBuyArtefakt(referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string): void {
   if (!currentCharacter) return;
   try {
-    currentCharacter = buyArtefakt(currentCharacter, referenz, grad, variant);
+    currentCharacter = buyArtefakt(currentCharacter, referenz, grad, variant, targetWeaponId);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {

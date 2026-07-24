@@ -39,10 +39,14 @@ export function formatSchadenswuerfel(row: Record<string, string> | undefined): 
  *  siehe Plan-Kommentar zur Rundung). Nutzt den KOMPONIERTEN Stä-Malus aus dem Snapshot (Basis +
  *  Material), nicht nur die rohe Basis-Spalte - konsistent mit jeder anderen Zahl in dieser
  *  Tabelle (die kommen alle aus dem Snapshot, nicht aus der rohen Basiszeile). */
-export function computeSchaden(basis: WeaponRow | undefined, staerkeMalus: number, eigKStaerke: number): string {
+export function computeSchaden(
+  basis: WeaponRow | undefined, staerkeMalus: number, eigKStaerke: number,
+  element?: { schadenswuerfel: string; schadenselement: string },
+): string {
   const staerkeTeiler = num(basis, 'Staerke-Teiler');
   const flatBonus = staerkeTeiler !== 0 ? floorSigned(eigKStaerke / staerkeTeiler + staerkeMalus) : floorSigned(staerkeMalus);
-  const dice = formatSchadenswuerfel(basis);
+  const basisDice = formatSchadenswuerfel(basis);
+  const dice = element ? `${basisDice}+(${element.schadenswuerfel} ${element.schadenselement})` : basisDice;
   return flatBonus !== 0 ? `${dice} ${formatSigned(flatBonus)}` : dice;
 }
 

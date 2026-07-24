@@ -4,6 +4,13 @@
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Welt } from '../data/orte';
+import { ALCHEMIKA } from '../data/equipment/alchemika';
+
+export interface XKlingeVerzauberung {
+  artefaktReferenz: string;
+  grad: string;
+  variant: 'einmalig' | 'permanent';
+}
 
 export interface PoolAllocation {
   gat: number;
@@ -26,6 +33,10 @@ export interface EquipmentEntry {
   quantity: number;
   computedPriceSnapshot?: number;
   computedStatsSnapshot?: Record<string, number>;
+  /** Unsichtbares Inventar-Flag. Fehlend = profan; nur nicht-profane Gegenstaende tragen true. */
+  magisch?: true;
+  /** Nur bei einer aus profaner NK-Waffe + X-Klinge amalgamierten Artefakt-Waffe. */
+  xKlinge?: XKlingeVerzauberung;
 }
 
 /**
@@ -240,6 +251,18 @@ export function loadCharacter(id: string): CharacterState | null {
   if (!parsed.grundfertigkeitAuswahl) parsed.grundfertigkeitAuswahl = {};
   // Migrations-Fallback fuer Charaktere von vor dem waffenLoadouts-Feld (2026-07-22).
   if (!parsed.waffenLoadouts) parsed.waffenLoadouts = [];
+  // Magisch/profan ist ein unsichtbares Positiv-Flag: fehlend bedeutet profan. Artefakte sind
+  // immer magisch; bei Alchemika ist Spalte B des SPOT-Sheets die alleinige Quelle.
+  parsed.equipment = (parsed.equipment ?? []).map((entry) => {
+    const alchemika = entry.family === 'alchemika'
+      ? ALCHEMIKA.find((row) => String(row.sourceRow) === entry.baseId)
+      : undefined;
+    const magisch = entry.family === 'artefakt' || !!entry.xKlinge || alchemika?.magisch;
+    const migrated = { ...entry, selections: { ...(entry.selections ?? {}) } };
+    if (magisch) migrated.magisch = true;
+    else delete migrated.magisch;
+    return migrated;
+  });
   // Angst-Referenzen wurden von vn_<stufenname>_<thema> auf das numerische, exklusiv
   // auswertbare Schema vn_angst_<thema>_<5|10|15|20|25|30> umgestellt. Bei alten, zuvor noch
   // gleichzeitig moeglichen Mehrfachauswahlen bleibt pro Thema deterministisch die hoechste

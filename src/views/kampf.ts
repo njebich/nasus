@@ -26,6 +26,8 @@ import {
   listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen, resolveLoadout, describeLoadout,
   type LoadoutResult, type PoolSideRef,
 } from '../engine/waffenLoadout';
+import { xKlingeTooltip, xKlingeWeaponName, xKlingeWirkungForEntry } from '../engine/xKlinge';
+import { tooltipAttr } from './tooltip';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -69,6 +71,9 @@ export interface NahkampfRow {
   schaden: string;
   wk: string;
   rb: number;
+  /** Nur die zweite, aktive Zeile einer amalgamierten X-Klinge-Waffe. */
+  activeEnchant?: boolean;
+  wirkungTooltip?: string;
   poolReferenz: string | null;
   nat: PoolFieldState;
   gat: PoolFieldState;
@@ -161,7 +166,10 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
   const zweihaenderMoeglich = hasColumn(basis, 'Min-Staerke-1H-Basis') && hasColumn(basis, 'Min-Staerke-2H-Basis');
   const grips: Array<'1H' | '2H'> = zweihaenderMoeglich ? ['1H', '2H'] : ['1H'];
 
-  return grips.map((grip): NahkampfRow => {
+  const wirkung = xKlingeWirkungForEntry(e);
+  const weaponName = xKlingeWeaponName(e) ?? basis.name;
+
+  return grips.flatMap((grip): NahkampfRow[] => {
     // Schilde (family='shield') speichern ihre Mindeststaerke unter 'minStaerke' statt
     // 'minStaerke1H' (siehe buyShield) - Schilde haben ohnehin nur den 1H-Griff (grips oben).
     const minStaerke = grip === '1H' ? (snap.minStaerke1H ?? snap.minStaerke ?? 0) : (snap.minStaerke2H ?? 0);
@@ -177,9 +185,9 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
         npa: { value: 0, allocated: 0 }, gpa: { value: 0, allocated: 0 }, mpa: { value: 0, allocated: 0 },
         pp: 0, atSpent: 0, paSpent: 0, poolValid: true,
       };
-    return {
+    const standardRow: NahkampfRow = {
       key: e.id,
-      label: basis.name,
+      label: weaponName,
       spezialisierung,
       grip,
       minStaerke,
@@ -195,6 +203,20 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       ini: Math.round(Number(evalReferenz('ini', ctx.values))) + num(basis, 'Ini'),
       zweiWaffenFaehig,
     };
+    if (!wirkung) return [standardRow];
+    return [
+      standardRow,
+      {
+        ...standardRow,
+        label: `${weaponName} (aktiv)`,
+        activeEnchant: true,
+        wirkungTooltip: xKlingeTooltip(wirkung),
+        schaden: usable
+          ? computeSchaden(basis, snap.staerkeMalus ?? 0, eigKStaerke, wirkung)
+          : '–',
+        rb: (snap.rb ?? 0) + (wirkung.rb ?? 0),
+      },
+    ];
   });
 }
 
@@ -810,16 +832,68 @@ function renderTalenteKampfmodulBlock(character: CharacterState): string {
 
 export type OnWaffenPoolChange = (poolReferenz: string, equipmentId: string, allocation: PoolAllocation) => void;
 
-function poolCell(field: 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa', row: NahkampfRow): string {
+const POOL_FIELDS = ['nat', 'gat', 'mat', 'npa', 'gpa', 'mpa'] as const;
+type PoolField = typeof POOL_FIELDS[number];
+
+function allocationForRow(row: NahkampfRow): PoolAllocation {
+  return {
+    gat: row.gat.allocated, gpa: row.gpa.allocated, mat: row.mat.allocated, mpa: row.mpa.allocated,
+    nat: row.nat.allocated, npa: row.npa.allocated,
+  };
+}
+
+function allocationsEqual(left: PoolAllocation, right: PoolAllocation): boolean {
+  return POOL_FIELDS.every((field) => left[field] === right[field]);
+}
+
+/** Projects an uncommitted allocation onto a persisted row without mutating CharacterState. */
+export function previewWaffenPoolAllocation(row: NahkampfRow, allocation: PoolAllocation): NahkampfRow {
+  const oldAllocation = allocationForRow(row);
+  const oldTotal = POOL_FIELDS.reduce((sum, field) => sum + oldAllocation[field], 0);
+  const newTotal = POOL_FIELDS.reduce((sum, field) => sum + allocation[field], 0);
+  const nextState = (field: PoolField): PoolFieldState => {
+    const previous = row[field];
+    const baseValue = previous.value - previous.allocated;
+    return {
+      ...previous,
+      allocated: allocation[field],
+      value: Math.min(
+        baseValue + allocation[field],
+        field === 'nat' || field === 'npa' ? 20 : Number.POSITIVE_INFINITY,
+      ),
+    };
+  };
+  const nat = nextState('nat');
+  const gat = nextState('gat');
+  const mat = nextState('mat');
+  const npa = nextState('npa');
+  const gpa = nextState('gpa');
+  const mpa = nextState('mpa');
+  const atSpent = allocation.nat + allocation.gat + allocation.mat;
+  const paSpent = allocation.npa + allocation.gpa + allocation.mpa;
+  const sideMaxed = (...states: PoolFieldState[]) => states.every(
+    (state) => state.max !== undefined && state.allocated >= state.max,
+  );
+  return {
+    ...row,
+    nat, gat, mat, npa, gpa, mpa,
+    pp: row.pp + oldTotal - newTotal,
+    atSpent,
+    paSpent,
+    poolValid: isPoolBalanceValid(atSpent, paSpent, sideMaxed(nat, gat, mat), sideMaxed(npa, gpa, mpa)),
+  };
+}
+
+function poolCell(field: PoolField, row: NahkampfRow): string {
   const state = row[field];
   if (!row.usable || !row.poolReferenz) return `<td class="kampf-pool-cell">–</td>`;
-  const atMax = state.max !== undefined && state.allocated >= state.max;
+  const incrementDisabled = row.pp <= 0 || (state.max !== undefined && state.allocated >= state.max);
   return `
     <td class="kampf-pool-cell" data-key="${escapeHtml(row.key)}" data-pool-referenz="${escapeHtml(row.poolReferenz)}" data-field="${field}">
       <div class="kampf-pool-cell-inner">
         <button type="button" class="stat-dec" aria-label="${field} verringern" ${state.allocated <= 0 ? 'disabled' : ''}>-</button>
         <span class="kampf-pool-value">${state.value}</span>
-        <button type="button" class="stat-inc" aria-label="${field} erhöhen" ${atMax ? 'disabled' : ''}>+</button>
+        <button type="button" class="stat-inc" aria-label="${field} erhöhen" ${incrementDisabled ? 'disabled' : ''}>+</button>
       </div>
     </td>`;
 }
@@ -830,12 +904,20 @@ function ppCell(row: NahkampfRow): string {
   return `<td class="kampf-pp-invalid">${row.pp} <span class="kampf-pp-warn" title="${escapeHtml(tooltip)}">⚠</span></td>`;
 }
 
-function renderNahkampfRow(row: NahkampfRow, showZweiWaffen: boolean): string {
+function renderNahkampfRow(row: NahkampfRow, showZweiWaffen: boolean, rowIndex: number, dirty = false): string {
   const unusable = !row.usable;
   const zweiWaffenCell = row.zweiWaffenFaehig === undefined ? '–' : row.zweiWaffenFaehig ? '✓' : '✗';
   const spezTitle = row.spezialisierung ? ` title="Spezialisierung: ${escapeHtml(row.spezialisierung)}"` : '';
+  const allocationActions = !row.poolReferenz
+    ? '<td>–</td>'
+    : dirty
+      ? `<td class="kampf-allocation-actions">
+          <button type="button" class="kampf-allocation-apply">Übernehmen</button>
+          <button type="button" class="kampf-allocation-discard">Verwerfen</button>
+        </td>`
+      : '<td class="kampf-allocation-actions"><span class="kampf-allocation-saved">Gespeichert</span></td>';
   return `
-    <tr class="${unusable ? 'kampf-row-unusable' : ''}" title="${unusable ? escapeHtml(row.unusableReason ?? '') : ''}">
+    <tr data-kampf-row-index="${rowIndex}" class="${unusable ? 'kampf-row-unusable ' : ''}${row.activeEnchant ? 'kampf-row-xklinge-active ' : ''}${dirty ? 'kampf-row-allocation-dirty' : ''}"${tooltipAttr(row.wirkungTooltip)}${!row.wirkungTooltip && unusable ? ` title="${escapeHtml(row.unusableReason ?? '')}"` : ''}>
       <td${spezTitle}>${escapeHtml(row.label)}</td>
       <td>${escapeHtml(row.schaden)}</td>
       <td title="Mindest-Stärke: ${row.minStaerke}">${row.grip}</td>
@@ -848,6 +930,7 @@ function renderNahkampfRow(row: NahkampfRow, showZweiWaffen: boolean): string {
       <td>${row.ks}</td>
       <td>${row.ini}</td>
       ${showZweiWaffen ? `<td title="Kampf mit zwei Waffen: WK-faehig fuer die hoechste besessene Stufe">${zweiWaffenCell}</td>` : ''}
+      ${allocationActions}
     </tr>`;
 }
 
@@ -864,8 +947,9 @@ function renderNahkampfTable(rows: NahkampfRow[]): string {
           <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
           <th>KB</th><th>KS</th><th>INI</th>
           ${showZweiWaffen ? '<th>2-Waffen</th>' : ''}
+          <th>Zuteilung</th>
         </tr></thead>
-        <tbody>${rows.map((r) => renderNahkampfRow(r, showZweiWaffen)).join('')}</tbody>
+        <tbody>${rows.map((r, index) => renderNahkampfRow(r, showZweiWaffen, index)).join('')}</tbody>
       </table>
     </div>`;
 }
@@ -989,25 +1073,70 @@ export function renderKampfView(
     ${renderTalenteKampfmodulBlock(character)}
   `;
 
-  container.querySelectorAll<HTMLButtonElement>('.kampf-pool-cell .stat-inc, .kampf-pool-cell .stat-dec').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const cell = btn.closest<HTMLElement>('.kampf-pool-cell')!;
-      const key = cell.dataset.key!;
-      const poolReferenz = cell.dataset.poolReferenz!;
-      const field = cell.dataset.field as 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa';
-      const row = nahkampfRows.find((r) => r.key === key && r.poolReferenz === poolReferenz);
-      if (!row) return;
-      const current = row[field].allocated;
-      const delta = btn.classList.contains('stat-inc') ? 1 : -1;
-      const next = Math.max(0, current + delta);
-      const allocation: PoolAllocation = {
-        gat: row.gat.allocated, gpa: row.gpa.allocated, mat: row.mat.allocated, mpa: row.mpa.allocated,
-        nat: row.nat.allocated, npa: row.npa.allocated,
-        [field]: next,
-      };
-      const cellSelector = `.kampf-pool-cell[data-key="${CSS.escape(key)}"][data-pool-referenz="${CSS.escape(poolReferenz)}"][data-field="${field}"]`;
-      withScrollAnchor(cellSelector, () => onWaffenPoolChange(poolReferenz, key, allocation));
+  // Pool buttons edit a row-local draft. Mutation, persistence and the expensive full render only
+  // happen after explicit confirmation.
+  const draftAllocations = new Map<string, PoolAllocation>();
+  const showZweiWaffen = nahkampfRows.some((row) => row.zweiWaffenFaehig !== undefined);
+  const draftKey = (row: NahkampfRow) => `${row.poolReferenz}::${row.key}`;
+  const repaintDraftRows = (changedRow: NahkampfRow, allocation?: PoolAllocation): void => {
+    const changedKey = draftKey(changedRow);
+    container.querySelectorAll<HTMLTableRowElement>('tr[data-kampf-row-index]').forEach((tr) => {
+      const index = Number(tr.dataset.kampfRowIndex);
+      const persistedRow = nahkampfRows[index];
+      if (!persistedRow || draftKey(persistedRow) !== changedKey) return;
+      const displayRow = allocation ? previewWaffenPoolAllocation(persistedRow, allocation) : persistedRow;
+      const stagingBody = document.createElement('tbody');
+      stagingBody.innerHTML = renderNahkampfRow(displayRow, showZweiWaffen, index, allocation !== undefined);
+      const replacement = stagingBody.firstElementChild;
+      if (replacement) tr.replaceWith(replacement);
     });
+  };
+
+  container.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    const tableRow = target.closest<HTMLTableRowElement>('tr[data-kampf-row-index]');
+    if (!tableRow) return;
+    const row = nahkampfRows[Number(tableRow.dataset.kampfRowIndex)];
+    if (!row?.poolReferenz) return;
+    const key = draftKey(row);
+
+    const poolButton = target.closest<HTMLButtonElement>('.kampf-pool-cell .stat-inc, .kampf-pool-cell .stat-dec');
+    if (poolButton) {
+      const cell = poolButton.closest<HTMLElement>('.kampf-pool-cell')!;
+      const field = cell.dataset.field as PoolField;
+      const allocation = { ...(draftAllocations.get(key) ?? allocationForRow(row)) };
+      const current = allocation[field];
+      const delta = poolButton.classList.contains('stat-inc') ? 1 : -1;
+      const next = Math.max(0, current + delta);
+      if (next === current) return;
+      if (delta > 0) {
+        const fieldMax = row[field].max;
+        const preview = previewWaffenPoolAllocation(row, { ...allocation, [field]: next });
+        if ((fieldMax !== undefined && next > fieldMax) || preview.pp < 0) return;
+      }
+      allocation[field] = next;
+      if (allocationsEqual(allocation, allocationForRow(row))) {
+        draftAllocations.delete(key);
+        repaintDraftRows(row);
+      } else {
+        draftAllocations.set(key, allocation);
+        repaintDraftRows(row, allocation);
+      }
+      return;
+    }
+
+    if (target.closest('.kampf-allocation-discard')) {
+      draftAllocations.delete(key);
+      repaintDraftRows(row);
+      return;
+    }
+
+    if (target.closest('.kampf-allocation-apply')) {
+      const allocation = draftAllocations.get(key);
+      if (!allocation) return;
+      const cellSelector = `.kampf-pool-cell[data-key="${CSS.escape(row.key)}"][data-pool-referenz="${CSS.escape(row.poolReferenz)}"]`;
+      withScrollAnchor(cellSelector, () => onWaffenPoolChange(row.poolReferenz!, row.key, allocation));
+    }
   });
 
   container.querySelectorAll<HTMLInputElement>('input[name="loadout-combo-type"]').forEach((radio) => {

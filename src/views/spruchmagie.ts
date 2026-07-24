@@ -261,7 +261,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
   // Attribute usw.) - Label war faelschlich "TaW" statt "SP" (kostenNext ist derselbe kumulative
   // SP-Kosten-Wert wie ueberall sonst, siehe characterSheet.ts spSpent, das Spruchmagie mit
   // einrechnet - die WENN(wert=0;0;10+(wert-1)*grad)-Formel ist ein SP-Kosten-Wert, kein TaW).
-  const costLabel = formatKlickpreis(row.currentValue, row.kostenCurrent, row.kostenNext);
+  const costLabel = formatKlickpreis(row.kostenCurrent, row.kostenNext);
   const probe = renderZauberprobeCell(sheet, row, stufen);
   const showSchule = opts?.showSchule ?? false;
   const rowKey = showSchule ? `gesamt::${rule.referenz}` : `schule::${rule.parent}::${rule.referenz}`;

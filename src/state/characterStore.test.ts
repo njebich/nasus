@@ -53,11 +53,12 @@ describe('createCharacter mit Charakterheader + Startbudget', () => {
       expect(character.values[ref]).toBe(10);
     }
     expect(character.values['att_glueck']).toBe(1);
-    // 10 Eigenschaften a 300 SP (Wert 10 in der Kosten-Tabelle) + Glueck=1 (100 SP seit werte
-    // 0.8: Attribut-Kosten-Formel von 10*wert^2+70*wert auf 80+wert*20 geaendert) = 3100 SP.
+    // 10 Eigenschaften a 300 SP (Wert 10 in der Kosten-Tabelle) + Glueck=1 (80 SP, Attribut-
+    // Kosten-Formel 10*wert*wert+70*wert - kumulierte Gesamtkosten, per-Klick-Preis 0->1 = 80,
+    // 1->2 = 100 usw., Nutzer-Bestaetigung 2026-07-24) = 3080 SP.
     const sheet = computeSheet(character);
-    expect(sheet.spSpent).toBe(3100);
-    expect(sheet.spRemaining).toBe(6490 - 3100);
+    expect(sheet.spSpent).toBe(3080);
+    expect(sheet.spRemaining).toBe(6490 - 3080);
   });
 
   it('ohne Startbudget bleibt der Durchschnittscharakter-Ausgangswert aus (reine Test-Fixtures bleiben leer)', () => {

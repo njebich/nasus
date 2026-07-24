@@ -151,7 +151,7 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
   // Gleiches Format wie categoryView.ts (Nutzer 2026-07-24, "same currency" wie Eigenschaft/
   // Attribute usw.) - Label war faelschlich "EP" statt "SP" (kostenNext ist derselbe kumulative
   // SP-Kosten-Wert wie ueberall sonst, siehe characterSheet.ts spSpent, das PSI mit einrechnet).
-  const costLabel = formatKlickpreis(r.currentValue, r.kostenCurrent, r.kostenNext);
+  const costLabel = formatKlickpreis(r.kostenCurrent, r.kostenNext);
 
   return `
     <tr class="${rowClass}" data-referenz="${referenz}">

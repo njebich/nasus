@@ -168,7 +168,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
   // Gleiches Format wie categoryView.ts (Nutzer 2026-07-24, "same currency" wie Eigenschaft/
   // Attribute usw.): kostenRaw ist kumulativ, Klickpreis = kostenNext-kostenCurrent.
-  const costLabel = formatKlickpreis(currentValue, kostenCurrent, kostenNext);
+  const costLabel = formatKlickpreis(kostenCurrent, kostenNext);
   const picksRow = referenz === MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ ? renderGrundfertigkeitPicksRow(currentValue, gewaehlt) : '';
 
   return `

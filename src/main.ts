@@ -72,6 +72,7 @@ let errorMessage = '';
 let activeTab: Tab = 'Eigenschaft';
 let showNewCharacterForm = false;
 let confirmingDelete = false;
+let headerSectionOpen = true;
 
 function handleValueChange(referenz: string, newValue: number): void {
   if (!currentCharacter) return;
@@ -430,7 +431,11 @@ function render(): void {
           <button type="button" id="delete-confirm">Ja, löschen</button>
           <button type="button" id="delete-cancel">Abbrechen</button>
         </div>` : ''}
-      ${currentCharacter ? '<div id="charakterheader"></div>' : ''}
+      ${currentCharacter ? `
+        <details class="stat-group" id="charakterheader-details" ${headerSectionOpen ? 'open' : ''}>
+          <summary>Grunddaten (Name, Spezies, Beruf, ...)</summary>
+          <div id="charakterheader"></div>
+        </details>` : ''}
       ${sheet ? `
         <div class="budget-bar">
           <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: ${sheet.epGesamt}</span>
@@ -573,6 +578,7 @@ function render(): void {
     currentCharacter = createCharacter(name, header, startbudget);
     setLastActiveCharacterId(currentCharacter.id);
     showNewCharacterForm = false;
+    headerSectionOpen = false;
     render();
   });
 
@@ -605,6 +611,9 @@ function render(): void {
   if (currentCharacter) {
     const headerContainer = document.querySelector<HTMLDivElement>('#charakterheader')!;
     renderCharakterheader(headerContainer, currentCharacter, handleHeaderChange);
+    document.querySelector<HTMLDetailsElement>('#charakterheader-details')?.addEventListener('toggle', (e) => {
+      headerSectionOpen = (e.target as HTMLDetailsElement).open;
+    });
   }
 
   if (sheet && currentCharacter) {

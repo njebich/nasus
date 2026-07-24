@@ -8,6 +8,7 @@ import { computeSheet, makeValueSource } from '../engine/characterSheet';
 import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
 import { getTalentMaximumBonus } from '../engine/talenteMaximum';
+import { getSchlechteEigenschaftZielReferenz, hasSchlechteEigenschaft, getSchlechteEigenschaftMax } from '../engine/schlechteEigenschaft';
 import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent, isGeweihterReferenzErlaubt } from '../engine/geweihte';
 import { getVorstufeReferenz, getHoehereStufenReferenzen } from '../engine/talenteStufenKette';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
@@ -124,13 +125,28 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
     } catch {
       // ep_gesamt noch nicht auswertbar (z.B. ganz frischer Charakter) -> Kreis 0 annehmen.
     }
-    const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
-    if (grenzen) {
-      const effectiveMax = grenzen.max + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
-      if (wert < grenzen.min || wert > effectiveMax) {
+    // Regel (Nutzer 2026-07-24, Nachteil "Schlechte Eigenschaft: X"): ersetzt die Voelker-Maxima-
+    // Tabelle fuer die betroffene Eigenschaft komplett durch ein festes, "grundsaetzlich nicht
+    // uebersteigerbares" Maximum - bewusst OHNE getTalentMaximumBonus obendrauf (siehe
+    // schlechteEigenschaft.ts), im Unterschied zum Normalfall unten.
+    if (hasSchlechteEigenschaft(character, rule.referenz)) {
+      const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
+      const min = grenzen?.min ?? 0;
+      const max = getSchlechteEigenschaftMax(Number.isFinite(kreis) ? kreis : 0);
+      if (wert < min || wert > max) {
         throw new MutationError(
-          `'${rule.referenz}' muss für ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`,
+          `'${rule.referenz}' ist durch den Nachteil "Schlechte Eigenschaft" auf ${max} gedeckelt (nicht übersteigerbar)`,
         );
+      }
+    } else {
+      const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
+      if (grenzen) {
+        const effectiveMax = grenzen.max + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
+        if (wert < grenzen.min || wert > effectiveMax) {
+          throw new MutationError(
+            `'${rule.referenz}' muss für ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`,
+          );
+        }
       }
     }
   }
@@ -224,6 +240,28 @@ export function addSelection(character: CharacterState, referenz: string): Chara
     }
   }
   candidate.selections[rule.referenz.toLowerCase()] = 1;
+
+  // Nachteil "Schlechte Eigenschaft: X" (Nutzer 2026-07-24): sobald gewaehlt, wird die betroffene
+  // Eigenschaft sofort auf ihr neues, festes Maximum gekappt, falls sie zuvor hoeher gesteigert
+  // war - die dafuer bezahlten SP werden dadurch automatisch frei, da spSpent (characterSheet.ts)
+  // ausschliesslich aus dem aktuell gespeicherten Wert neu berechnet wird (kein separates Ledger).
+  // Ein Kappen darf, analog zu setPoolAllocation, nie am Budget scheitern - assertBudgetOk laeuft
+  // erst NACH dem Kappen.
+  const schlechteEigenschaftZiel = getSchlechteEigenschaftZielReferenz(rule.referenz);
+  if (schlechteEigenschaftZiel) {
+    let kreis = 0;
+    try {
+      kreis = Number(evalReferenz('kreis', makeValueSource(candidate)));
+    } catch {
+      // ep_gesamt noch nicht auswertbar -> Kreis 0 annehmen (siehe setValue oben).
+    }
+    const cap = getSchlechteEigenschaftMax(Number.isFinite(kreis) ? kreis : 0);
+    const current = candidate.values[schlechteEigenschaftZiel.toLowerCase()] ?? 0;
+    if (current > cap) {
+      candidate.values[schlechteEigenschaftZiel.toLowerCase()] = cap;
+    }
+  }
+
   assertBudgetOk(candidate);
   return candidate;
 }

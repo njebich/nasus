@@ -624,4 +624,55 @@ describe('Waffen-Loadout-Mutationen', () => {
     expect(character.waffenLoadouts.find((l) => l.id === loadoutA.id)?.favorite).toBe(false);
     expect(character.waffenLoadouts.find((l) => l.id === loadoutB.id)?.favorite).toBe(true);
   });
+
+  describe('Nachteil "Schlechte Eigenschaft: X" (Nutzer 2026-07-24)', () => {
+    it('deckelt die betroffene Eigenschaft auf 7 vor Kreis 3, unabhaengig von der Spezies', () => {
+      const character = withEpGesamt(0); // Spezies '' -> normalerweise KEINE Voelker-Maxima-Grenze
+      const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
+      const at7 = setValue(withNachteil, 'eig_k_ausstrahlung', 7);
+      expect(at7.values['eig_k_ausstrahlung']).toBe(7);
+      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 8)).toThrow(MutationError);
+    });
+
+    it('erlaubt bis 9 ab Kreis 3', () => {
+      const character = withEpGesamt(1600); // ep_gesamt=1600 -> Kreis 3
+      const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
+      const at9 = setValue(withNachteil, 'eig_k_ausstrahlung', 9);
+      expect(at9.values['eig_k_ausstrahlung']).toBe(9);
+      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 10)).toThrow(MutationError);
+    });
+
+    it('andere Eigenschaften bleiben von der Deckelung unberuehrt', () => {
+      const character = withEpGesamt(0);
+      const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
+      const updated = setValue(withNachteil, 'eig_g_mut', 20);
+      expect(updated.values['eig_g_mut']).toBe(20);
+    });
+
+    it('waehlt man den Nachteil NACH einer hoeheren Steigerung, wird die Eigenschaft sofort auf das neue Maximum gekappt und die dafuer bezahlten SP werden frei', () => {
+      const character = withEpGesamt(0);
+      const withHighValue = setValue(character, 'eig_k_ausstrahlung', 20);
+      const beforeSheet = computeSheet(withHighValue);
+      const spSpentBefore = beforeSheet.spSpent;
+
+      const withNachteil = addSelection(withHighValue, 'vn_schlechte_eigenschaft_ausstrahlung');
+      expect(withNachteil.values['eig_k_ausstrahlung']).toBe(7); // sofort auf Erstellungs-Max gekappt
+
+      const afterSheet = computeSheet(withNachteil);
+      // Die Kosten fuer eig_k_ausstrahlung=20 wurden frei, der Nachteil selbst gibt zusaetzlich 200 SP:
+      // die neuen Gesamt-SP-Ausgaben muessen also deutlich unter denen vorher liegen.
+      expect(afterSheet.spSpent).toBeLessThan(spSpentBefore);
+    });
+
+    it('nicht uebersteigerbar: das Maximum-Talent "Eigenschaften erhoehen: Ausstrahlung" (+5) hebt den Deckel NICHT an', () => {
+      // talente_eigenschaften_erhoehen_ausstrahlung erhoeht eig_k_ausstrahlung's Maximum normalerweise
+      // um 5 (siehe talenteMaximum.ts) - mit "Schlechte Eigenschaft" darf das nicht mehr greifen.
+      const character = withEpGesamt(1600); // ep_gesamt=1600 -> Kreis 3 (siehe rules.test.ts)
+      const withTalent = addSelection(character, 'talente_eigenschaften_erhoehen_ausstrahlung');
+      const withNachteil = addSelection(withTalent, 'vn_schlechte_eigenschaft_ausstrahlung');
+      const at9 = setValue(withNachteil, 'eig_k_ausstrahlung', 9);
+      expect(at9.values['eig_k_ausstrahlung']).toBe(9);
+      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 10)).toThrow(MutationError);
+    });
+  });
 });

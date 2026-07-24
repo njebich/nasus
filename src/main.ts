@@ -12,6 +12,7 @@ import {
   BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet, makeValueSource, type ComputedSheet } from './engine/characterSheet';
+import { formatDublonenNumber } from './utils/format';
 import { renderCategoryView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
@@ -433,7 +434,7 @@ function render(): void {
         </div>` : ''}
       ${currentCharacter ? `
         <details class="stat-group" id="charakterheader-details" ${headerSectionOpen ? 'open' : ''}>
-          <summary>Grunddaten (Name, Spezies, Beruf, ...)</summary>
+          <summary>Grunddaten</summary>
           <div id="charakterheader"></div>
         </details>` : ''}
       ${sheet ? `
@@ -441,7 +442,7 @@ function render(): void {
           <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: ${sheet.epGesamt}</span>
           <span title="Steigerungspunkte (übrig): bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK – verbraucht ${sheet.spSpent} von ${sheet.spTotal}">SP: ${sheet.spRemaining}</span>
           <span title="Talentpunkte (übrig): bezahlt ausschließlich Talente, eigener Pool = 20+Stufe×5 – verbraucht ${sheet.tapSpent} von ${sheet.tapTotal}">TaP: ${sheet.tapRemaining}</span>
-          <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${sheet.dublonenSpent} von ${sheet.dublonenTotal}">Dublonen: ${sheet.dublonenBarRemaining} bar / ${sheet.dublonenBankRemaining} Bank</span>
+          <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: ${formatDublonenNumber(sheet.dublonenBarRemaining)} bar / ${formatDublonenNumber(sheet.dublonenBankRemaining)} Bank</span>
         </div>` : ''}
       ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
       ${currentCharacter ? `

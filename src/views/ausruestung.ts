@@ -4,6 +4,7 @@
 // angewendet (siehe equipmentPricing.ts).
 
 import type { ComputedSheet } from '../engine/characterSheet';
+import { formatDublonen } from '../utils/format';
 import { ruestungSlotKey, type CharacterState } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import { PREISLISTE } from '../data/equipment/preisliste';
@@ -466,10 +467,6 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
     <div class="waffe-details">
       Schaden ${formatSchadenswuerfel(row)} | Stä-Mod ${composed.staerkeMalus} | RB ${composed.rb}${row['Art-Specials'] ? ` | ${escapeHtml(row['Art-Specials'])}` : ''}
     </div>`;
-}
-
-function formatDublonen(value: number): string {
-  return `${Math.round(value * 100) / 100} D`;
 }
 
 /** Boegen/Armbrust sind fertige Objekte mit festem Preis (keine Material/Fertigung/Anpassung-

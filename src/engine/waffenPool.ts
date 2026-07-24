@@ -46,8 +46,13 @@ function stripMin20(formelRaw: string, referenz: string): string {
   return match[1];
 }
 
-function uncappedBasis(prefix: 'at' | 'pa', hauptfertigkeit: string, values: CharacterValueSource): number {
-  const referenz = `${prefix}_${hauptfertigkeit.toLowerCase()}`;
+/** Wie uncappedBasis, aber per fertigem Referenznamen (z.B. "at_hiebwaffen") statt Hauptfertigkeit-
+ *  Namen - fuer Aufrufer, die die Referenz schon haben (siehe views/categoryView.ts's Nahkampf-Tab:
+ *  die dort gezeigte AT-/PA-Basis-Spalte muss dieselbe ungedeckelte Basis zeigen wie die Kampf-Tab-
+ *  Waffenzeile, sonst weicht "AT-Basis" auf dem Nahkampf-Tab vom tatsaechlich verrechneten Wert ab -
+ *  das Deckeln bei 20 passiert erst pro Waffe NACH Anwendung ihres eigenen AT-/PA-Mods, nicht schon
+ *  auf Fertigkeits-Ebene, siehe computeWeaponAtPaOverflow). */
+export function uncappedBasisByReferenz(referenz: string, values: CharacterValueSource): number {
   const rule = getRule(referenz);
   if (!rule?.formelRaw) throw new Error(`Referenz '${referenz}' existiert nicht oder hat keine Formel`);
   const raw = Number(evalExpression(stripMin20(rule.formelRaw, referenz), values));
@@ -55,6 +60,10 @@ function uncappedBasis(prefix: 'at' | 'pa', hauptfertigkeit: string, values: Cha
   // rules.ts: "alle berechneten Werte werden IMMER auf ganze Zahlen aufgerundet") - fuer Werte
   // <=20 aendert das Kappen bei 20 nichts an dieser Rundung, daher bleibt die Anzeige konsistent.
   return aufrunden(raw, 0);
+}
+
+function uncappedBasis(prefix: 'at' | 'pa', hauptfertigkeit: string, values: CharacterValueSource): number {
+  return uncappedBasisByReferenz(`${prefix}_${hauptfertigkeit.toLowerCase()}`, values);
 }
 
 export interface WeaponAtPaOverflow {

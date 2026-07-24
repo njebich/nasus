@@ -10,6 +10,7 @@ import { buildHierarchy, type HierarchyNode } from '../engine/hierarchy';
 import { describeSkillStufe } from '../engine/skillStufen';
 import { LADESCHUETZE_SF_FK_GATE, isLadeschuetzeSfVisible } from '../engine/ladeschuetzeGating';
 import { GUT_BASIS, MEISTERLICH_BASIS } from '../engine/poolCaps';
+import { uncappedBasisByReferenz } from '../engine/waffenPool';
 import { isGeweihterTalentSelectedInSheet } from '../engine/geweihte';
 import { computeFormulaImpact } from '../engine/formulaImpact';
 import type { CharacterValueSource } from '../engine/rules';
@@ -245,14 +246,20 @@ function findNahkampfBasisRule(hauptfertigkeitReferenz: string, prefix: 'at_' | 
  *  Spezialisierungs-Wert") - der Live-Formelwert, rein lesend wie renderReadOnlyRow, aber als
  *  eigene Zelle in der Tabelle statt einer separaten Zeile im "Berechnete Werte"-Block (der diese
  *  Formelzeilen fuer Nahkampf/Fernkampf deshalb jetzt ausblendet, siehe renderCategoryView - sonst
- *  stuende derselbe Wert doppelt auf der Seite). */
-function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number): string {
+ *  stuende derselbe Wert doppelt auf der Seite).
+ *  Nutzer-Korrektur 2026-07-24: die Zelle zeigt die UNGEDECKELTE Basis (via uncappedBasisByReferenz),
+ *  nicht rule.computedValue - dessen Formel traegt selbst ein "MIN(20;...)". Das Deckeln bei 20
+ *  passiert erst pro Waffe im Kampf-Tab, NACH Anwendung des waffeneigenen AT-/PA-Mods (siehe
+ *  waffenPool.ts's computeWeaponAtPaOverflow) - eine hier schon gedeckelte Basis wuerde von diesem
+ *  tatsaechlich verrechneten Wert abweichen, sobald die Fertigkeit allein schon ueber 20 traegt. */
+function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number, values: CharacterValueSource | undefined): string {
   const rowspanAttr = ` rowspan="${rowspan}"`;
   if (!rule) return `<td${rowspanAttr}>–</td>`;
   if (rule.error) {
     return `<td${rowspanAttr}><span class="stat-error" title="${escapeHtml(rule.error)}">nicht definiert ⚠</span></td>`;
   }
-  return `<td${rowspanAttr} class="stat-value-readonly"${formulaTooltip(rule.rule.formelRaw)}>${escapeHtml(formatComputedValue(rule.computedValue ?? '–'))}</td>`;
+  const displayValue = values ? uncappedBasisByReferenz(rule.rule.referenz, values) : (rule.computedValue ?? '–');
+  return `<td${rowspanAttr} class="stat-value-readonly"${formulaTooltip(rule.rule.formelRaw)}>${escapeHtml(formatComputedValue(displayValue))}</td>`;
 }
 
 /** SP-Kosten pro TaW-Punkt fuer Spezialisierungen (Nutzer 2026-07-22, kein kostenRaw in
@@ -289,11 +296,11 @@ function computeSpezCostRates(children: ComputedRule[], rates: readonly [number,
  *  einem gemeinsamen <thead>. Die vier Spezialisierungs-Spalten (Spezialisierung/-/TaW/+) werden
  *  bei fehlenden/gesperrten Spezialisierungen per colspan="4" durch einen Platzhalter ersetzt,
  *  damit die Spaltenzahl fuer jede Zeile gleich bleibt. */
-function renderNahkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: ComputedRule[]): string {
+function renderNahkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: ComputedRule[], values: CharacterValueSource | undefined): string {
   const hauptwert = node.row.currentValue ?? 0;
   const atBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'at_', readOnly);
   const paBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'pa_', readOnly);
-  const basisCells = (rowspan: number) => `${renderWaffenBasisCell(atBasisRule, rowspan)}${renderWaffenBasisCell(paBasisRule, rowspan)}`;
+  const basisCells = (rowspan: number) => `${renderWaffenBasisCell(atBasisRule, rowspan, values)}${renderWaffenBasisCell(paBasisRule, rowspan, values)}`;
   if (node.children.length === 0) {
     return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}<td colspan="4">–</td></tr>`;
   }
@@ -538,7 +545,7 @@ export function renderCategoryView(
           <th>Waffe</th><th class="waffen-th-center">TaW (25 SP)</th><th class="waffen-th-center">AT-Basis</th><th class="waffen-th-center">PA-Basis</th>
           <th>Spezialisierung</th><th class="waffen-th-center">TaW (15/8/4)</th>
         </tr></thead>
-        <tbody>${editableHierarchy.map((n) => renderNahkampfHauptfertigkeitRows(n, readOnly)).join('')}</tbody>
+        <tbody>${editableHierarchy.map((n) => renderNahkampfHauptfertigkeitRows(n, readOnly, impactValues)).join('')}</tbody>
       </table>`
     : isFernkampf
       ? `

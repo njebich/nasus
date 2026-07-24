@@ -163,6 +163,7 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
 
   it('aktiviert das Talent, wenn beide WK genau auf der Kappungsgrenze liegen oder darunter (Stufe 2, Cap 4,5 == Kriegsbeil-WK)', () => {
     let character = characterWithKrummdolchUndKriegsbeil();
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_1');
     character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_2');
     const [krummdolch, kriegsbeil] = character.equipment;
     const result = resolveNk1hNk1h(character, computeSheet(character), makeValueSource(character), krummdolch.id, kriegsbeil.id);
@@ -172,6 +173,9 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
 
   it('berechnet AT-WK = hoehere WK * 1,5, PA-WK = Summe der WK, Mindeststaerke summiert', () => {
     let character = characterWithKrummdolchUndKriegsbeil();
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_1');
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_2');
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_3');
     character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_4');
     const [krummdolch, kriegsbeil] = character.equipment;
     const result = resolveNk1hNk1h(character, computeSheet(character), makeValueSource(character), krummdolch.id, kriegsbeil.id);
@@ -186,6 +190,9 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
     // computeSchaden), aber durch [2W12]+W12 den deutlich hoeheren Wuerfeldurchschnitt - ein
     // reiner Flachbonus-Vergleich wuerde faelschlich Krummdolch schwer waehlen.
     let character = characterWithKrummdolchUndKriegsbeil();
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_1');
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_2');
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_3');
     character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_4');
     const [krummdolch, kriegsbeil] = character.equipment;
     const krummdolchBasis = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === krummdolch.baseId);

@@ -9,6 +9,7 @@ import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
 import { getTalentMaximumBonus } from '../engine/talenteMaximum';
 import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent, isGeweihterReferenzErlaubt } from '../engine/geweihte';
+import { getVorstufeReferenz, getHoehereStufenReferenzen } from '../engine/talenteStufenKette';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
@@ -189,6 +190,29 @@ export function addSelection(character: CharacterState, referenz: string): Chara
       if (sameFearGroup.test(selectedReference)) delete candidate.selections[selectedReference];
     }
   }
+  // Anfaelligkeits-Vor-/Nachteile (Nutzer 2026-07-24): Stufe 1/2 DESSELBEN Typs (Beherrschung/
+  // Erdbeschwoerung/Feuerbeschwoerung/Luftbeschwoerung/Magiebeschwoerung/Wasserbeschwoerung) sind
+  // exklusiv, analog zu den Angststufen oben - eine neue Auswahl ersetzt die bisherige Stufe des
+  // gleichen Typs. "Anfaelligkeit gegen profane Waffen" hat nur eine Stufe und braucht daher keine
+  // Sonderbehandlung; "Anfaelligkeit gegen Verzauberung" wurde auf Nutzerwunsch aus der xlsx
+  // entfernt (siehe rules-jsonl).
+  const anfaelligkeitMatch = /^vn_anfaelligkeit_gegen_(beherrschung|erdbeschwoerung|feuerbeschwoerung|luftbeschwoerung|magiebeschwoerung|wasserbeschwoerung)_(1|2)$/i.exec(rule.referenz);
+  if (anfaelligkeitMatch) {
+    const anfaelligkeitTyp = anfaelligkeitMatch[1].toLowerCase();
+    const sameAnfaelligkeitTyp = new RegExp(`^vn_anfaelligkeit_gegen_${anfaelligkeitTyp}_(1|2)$`, 'i');
+    for (const selectedReference of Object.keys(candidate.selections)) {
+      if (sameAnfaelligkeitTyp.test(selectedReference)) delete candidate.selections[selectedReference];
+    }
+  }
+  // Talente-Stufenketten (Nutzer 2026-07-24): "Stufe N" darf erst gewaehlt werden, wenn "Stufe
+  // N-1" derselben Familie bereits gewaehlt ist - siehe engine/talenteStufenKette.ts.
+  const vorstufeReferenz = getVorstufeReferenz(rule.referenz);
+  if (vorstufeReferenz && (candidate.selections[vorstufeReferenz] ?? 0) <= 0) {
+    const vorstufeRule = getRule(vorstufeReferenz);
+    throw new MutationError(
+      `'${rule.referenz}' erfordert zuerst '${vorstufeRule?.beschreibung ?? vorstufeReferenz}'`,
+    );
+  }
   // Geweihte-Gate-Talente sind gegenseitig exklusiv (Nutzer 2026-07-22: ein Charakter kann nicht
   // gleichzeitig Geweihter mehrerer Religionen sein - sonst waere Geweihtengrad/Wundertabellen-
   // Filterung mehrdeutig) - gleiche Struktur wie die Angststufen-Regel oben.
@@ -210,6 +234,12 @@ export function removeSelection(character: CharacterState, referenz: string): Ch
 
   const candidate = clone(character);
   delete candidate.selections[rule.referenz.toLowerCase()];
+  // Talente-Stufenketten (siehe addSelection): faellt eine Stufe weg, sind alle hoeheren Stufen
+  // derselben Familie nicht mehr durch eine gueltige Kette gedeckt - werden automatisch mit
+  // entfernt statt eine luecke-in-der-Kette-Situation stehen zu lassen.
+  for (const hoehereReferenz of getHoehereStufenReferenzen(rule.referenz)) {
+    delete candidate.selections[hoehereReferenz];
+  }
   return candidate; // Entfernen macht das Budget nie schlechter, keine Pruefung noetig
 }
 

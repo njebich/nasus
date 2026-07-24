@@ -85,6 +85,46 @@ describe('characterMutations', () => {
     expect(withTwoFears.selections['vn_angst_wasser_15']).toBe(1);
   });
 
+  it('Anfaelligkeitsstufen desselben Typs sind exklusiv und eine neue Stufe ersetzt die alte', () => {
+    const character = withEpGesamt(0);
+    const withStufe1 = addSelection(character, 'vn_anfaelligkeit_gegen_beherrschung_1');
+    expect(withStufe1.selections['vn_anfaelligkeit_gegen_beherrschung_1']).toBe(1);
+
+    const withStufe2 = addSelection(withStufe1, 'vn_anfaelligkeit_gegen_beherrschung_2');
+    expect(withStufe2.selections['vn_anfaelligkeit_gegen_beherrschung_1']).toBeUndefined();
+    expect(withStufe2.selections['vn_anfaelligkeit_gegen_beherrschung_2']).toBe(1);
+  });
+
+  it('Anfaelligkeitsstufen unterschiedlicher Typen koennen gleichzeitig gewaehlt werden', () => {
+    const character = withEpGesamt(0);
+    const withBeherrschung = addSelection(character, 'vn_anfaelligkeit_gegen_beherrschung_1');
+    const withTwoTypes = addSelection(withBeherrschung, 'vn_anfaelligkeit_gegen_erdbeschwoerung_1');
+    expect(withTwoTypes.selections['vn_anfaelligkeit_gegen_beherrschung_1']).toBe(1);
+    expect(withTwoTypes.selections['vn_anfaelligkeit_gegen_erdbeschwoerung_1']).toBe(1);
+  });
+
+  it('Talente-Stufenkette: eine hoehere Stufe ohne die Vorstufe wird abgelehnt', () => {
+    const character = withEpGesamt(0);
+    expect(() => addSelection(character, 'talente_grundfertigkeiten_stufe_2')).toThrow(MutationError);
+  });
+
+  it('Talente-Stufenkette: nach dem Kauf der Vorstufe ist die naechste Stufe kaufbar', () => {
+    const character = withEpGesamt(0);
+    const withStufe1 = addSelection(character, 'talente_grundfertigkeiten_stufe_1');
+    const withStufe2 = addSelection(withStufe1, 'talente_grundfertigkeiten_stufe_2');
+    expect(withStufe2.selections['talente_grundfertigkeiten_stufe_1']).toBe(1);
+    expect(withStufe2.selections['talente_grundfertigkeiten_stufe_2']).toBe(1);
+  });
+
+  it('Talente-Stufenkette: Entfernen einer Vorstufe entfernt automatisch alle hoeheren Stufen', () => {
+    const character = withEpGesamt(0);
+    const withStufe1 = addSelection(character, 'talente_grundfertigkeiten_stufe_1');
+    const withStufe2 = addSelection(withStufe1, 'talente_grundfertigkeiten_stufe_2');
+    const withoutStufe1 = removeSelection(withStufe2, 'talente_grundfertigkeiten_stufe_1');
+    expect(withoutStufe1.selections['talente_grundfertigkeiten_stufe_1']).toBeUndefined();
+    expect(withoutStufe1.selections['talente_grundfertigkeiten_stufe_2']).toBeUndefined();
+  });
+
   describe('ssk_sprache_*/ssk_kultur_* (Regel Nutzer 2026-07-17: keine Freibetrag-Ausnahme mehr, SP-Basis stattdessen erhoeht)', () => {
     it('Muttersprache (Stufe 3) kostet ganz normal 50 SP, keine Ausnahme', () => {
       const character = withEpGesamt(0);

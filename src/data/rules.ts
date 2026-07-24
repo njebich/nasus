@@ -471,4 +471,6 @@ export const RULES = rulesJson as unknown as RuleEntry[];
 // - Zeile 1074: Referenz '#spruchmagie_z_beherrschung_entwicklung_7_neues_leben' mit '#' auskommentiert - uebersprungen
 // - Zeile 1075: Referenz '#spruchmagie_z_beherrschung_entwicklung_7_totale_kontrolle2' mit '#' auskommentiert - uebersprungen
 // - Zeile 1150: Referenz '#talente_ladeschuetze_schleuder' mit '#' auskommentiert - uebersprungen
+// - Zeile 1225: Referenz '#vn_anfaelligkeit_gegen_verzauberung_1' mit '#' auskommentiert - uebersprungen
+// - Zeile 1226: Referenz '#vn_anfaelligkeit_gegen_verzauberung_2' mit '#' auskommentiert - uebersprungen
 // - Zeile 1369: Referenz '#vn_unempfindlichkeit_gegen_alchemie' mit '#' auskommentiert - uebersprungen

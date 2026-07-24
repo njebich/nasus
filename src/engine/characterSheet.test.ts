@@ -36,6 +36,52 @@ describe('computeSheet', () => {
     expect(sheet.spRemaining).toBe(7340); // spTotal(6490+1000=7490) - 150
   });
 
+  describe('Nahkampf-/Fernkampf-TaW-Kosten (Nutzer-Bugreport 2026-07-24: Hauptfertigkeit und Spezialisierung zogen kein SP ab)', () => {
+    it('Nahkampf-Hauptfertigkeit kostet 25 SP/Punkt (xlsx-Formel "wert*25")', () => {
+      const character = createCharacter('Test');
+      character.values['ep_gesamt'] = 1000;
+      character.values['nk_hiebwaffen'] = 3;
+      const sheet = computeSheet(character);
+      const rule = sheet.byKategorie['Nahkampf']?.find((r) => r.rule.referenz === 'nk_hiebwaffen');
+      expect(rule?.kostenCurrent).toBe(75);
+      expect(sheet.spSpent).toBe(75);
+    });
+
+    it('Fernkampf-Hauptfertigkeit kostet 18 SP/Punkt (xlsx-Formel "wert*18")', () => {
+      const character = createCharacter('Test');
+      character.values['ep_gesamt'] = 1000;
+      character.values['fk_boegen'] = 2;
+      const sheet = computeSheet(character);
+      const rule = sheet.byKategorie['Fernkampf']?.find((r) => r.rule.referenz === 'fk_boegen');
+      expect(rule?.kostenCurrent).toBe(36);
+      expect(sheet.spSpent).toBe(36);
+    });
+
+    it('Nahkampf-Spezialisierung: die erste investierte Geschwister-Spezialisierung kostet 15 SP/Punkt, die zweite 8, alle weiteren 4 (engine/waffenSpezKosten.ts)', () => {
+      const character = createCharacter('Test');
+      character.values['ep_gesamt'] = 1000;
+      character.values['nk_hiebwaffen'] = 5;
+      character.values['nk_spez_hiebwaffen_aexte'] = 2; // hoechster Wert -> Rang 0 -> 15/Punkt
+      character.values['nk_spez_hiebwaffen_kettenwaffen'] = 1; // Rang 1 -> 8/Punkt
+      character.values['nk_spez_hiebwaffen_stumpfe_hiebwaffen'] = 1; // Rang 2+ -> 4/Punkt
+      const sheet = computeSheet(character);
+      const byRef = (ref: string) => sheet.byKategorie['Nahkampf']?.find((r) => r.rule.referenz === ref);
+      expect(byRef('nk_spez_hiebwaffen_aexte')?.kostenCurrent).toBe(2 * 15);
+      expect(byRef('nk_spez_hiebwaffen_kettenwaffen')?.kostenCurrent).toBe(1 * 8);
+      expect(byRef('nk_spez_hiebwaffen_stumpfe_hiebwaffen')?.kostenCurrent).toBe(1 * 4);
+    });
+
+    it('Fernkampf-Spezialisierung kostet 10/5/3 SP/Punkt je Investitions-Rang', () => {
+      const character = createCharacter('Test');
+      character.values['ep_gesamt'] = 1000;
+      character.values['fk_schusswaffen'] = 5;
+      character.values['fk_spez_schusswaffen_pistolen'] = 3; // Rang 0 -> 10/Punkt
+      const sheet = computeSheet(character);
+      const rule = sheet.byKategorie['Fernkampf']?.find((r) => r.rule.referenz === 'fk_spez_schusswaffen_pistolen');
+      expect(rule?.kostenCurrent).toBe(3 * 10);
+    });
+  });
+
   it('Talente kosten TaP, NICHT SP - komplett getrennter Pool (mit Nutzer 2026-07-17 geklaert)', () => {
     const character = createCharacter('Test');
     character.values['ep_gesamt'] = 1000; // SP-Budget, sollte von Talente-Kauf unberuehrt bleiben

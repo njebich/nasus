@@ -15,6 +15,7 @@ import { getPoolCapBasis, computeGutMax, computeMeisterlichMax } from './poolCap
 import { getTalentModifikatorBonus as talentModifikatorBonus } from './talenteModifikator';
 import { getTalentFaktorBonus as talentFaktorBonus } from './talenteFaktor';
 import { getArtefaktBonus as artefaktBonus } from './artefaktBonus';
+import { getWaffenSpezKostenRate } from './waffenSpezKosten';
 import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
@@ -151,6 +152,16 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
     const result: ComputedRule = { rule, currentValue };
     const artefaktBonusValue = values.getArtefaktBonus?.(rule.referenz) ?? 0;
     if (artefaktBonusValue > 0) result.alteredValue = currentValue + artefaktBonusValue;
+    // Nahkampf-/Fernkampf-Spezialisierungen tragen keine eigene Kosten-Formel in der xlsx (siehe
+    // waffenSpezKosten.ts-Kommentar) - ihr SP-Preis ist ein flacher, vom Investitions-Rang unter
+    // den Geschwister-Spezialisierungen abhaengiger Satz statt einer SVERWEIS-Formel.
+    const spezRate = getWaffenSpezKostenRate(character, rule.referenz);
+    if (spezRate !== undefined) {
+      result.kostenCurrent = currentValue * spezRate;
+      result.kostenNext = (currentValue + 1) * spezRate;
+      if (currentValue > 0) result.kostenPrev = (currentValue - 1) * spezRate;
+      return result;
+    }
     if (rule.kostenRaw) {
       try {
         // WICHTIG: kostenCurrent als eigene Anweisung VOR kostenNext zuweisen - kostenNext kann

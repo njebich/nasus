@@ -24,13 +24,13 @@
 {"art": "Formel", "beschreibung": "Fernkampf-Spezialisierungs-Wert Bögen", "formelRaw": "(eig_g_sinneschaerfe+eig_k_geschicklichkeit+fk_boegen+fk_spez_boegen_boegen)/4", "kategorie": "Fernkampf", "referenz": "fk_basis_spez_boegen_boegen", "sourceRow": 687}
 {"art": "Formel", "beschreibung": "Fernkampf-Basis-Wert Bögen", "formelRaw": "(eig_g_sinneschaerfe+eig_k_geschicklichkeit+fk_boegen)/4", "kategorie": "Fernkampf", "referenz": "fk_basis_boegen", "sourceRow": 688}
 {"art": "Formel", "beschreibung": "Fernkampf-Basis-Wert Schusswaffen", "formelRaw": "(eig_g_sinneschaerfe+eig_k_geschicklichkeit+fk_schusswaffen)/4", "kategorie": "Fernkampf", "referenz": "fk_basis_schusswaffen", "sourceRow": 689}
-{"art": "Wert", "beschreibung": "Blasrohre", "kategorie": "Fernkampf", "referenz": "fk_blasrohre", "sourceRow": 690}
-{"art": "Wert", "beschreibung": "Bögen", "kategorie": "Fernkampf", "referenz": "fk_boegen", "sourceRow": 691}
-{"art": "Wert", "beschreibung": "Schusswaffen", "kategorie": "Fernkampf", "referenz": "fk_schusswaffen", "sourceRow": 692}
+{"art": "Wert", "beschreibung": "Blasrohre", "kategorie": "Fernkampf", "kostenRaw": "wert*18", "referenz": "fk_blasrohre", "sourceRow": 690}
+{"art": "Wert", "beschreibung": "Bögen", "kategorie": "Fernkampf", "kostenRaw": "wert*18", "referenz": "fk_boegen", "sourceRow": 691}
+{"art": "Wert", "beschreibung": "Schusswaffen", "kategorie": "Fernkampf", "kostenRaw": "wert*18", "referenz": "fk_schusswaffen", "sourceRow": 692}
 {"art": "Wert", "beschreibung": "-> Blasrohre", "kategorie": "Fernkampf", "parent": "fk_blasrohre", "referenz": "fk_spez_blasrohre_blasrohre", "sourceRow": 693}
 {"art": "Wert", "beschreibung": "-> Bögen", "kategorie": "Fernkampf", "parent": "fk_boegen", "referenz": "fk_spez_boegen_boegen", "sourceRow": 694}
 {"art": "Wert", "beschreibung": "-> Armbrüste", "kategorie": "Fernkampf", "parent": "fk_schusswaffen", "referenz": "fk_spez_schusswaffen_armbrueste", "sourceRow": 695}
 {"art": "Wert", "beschreibung": "-> Musketen", "kategorie": "Fernkampf", "parent": "fk_schusswaffen", "referenz": "fk_spez_schusswaffen_musketen", "sourceRow": 696}
 {"art": "Wert", "beschreibung": "-> Pistole", "kategorie": "Fernkampf", "parent": "fk_schusswaffen", "referenz": "fk_spez_schusswaffen_pistolen", "sourceRow": 697}
-{"art": "Wert", "beschreibung": "Wurfwaffen", "kategorie": "Fernkampf", "referenz": "fk_wurfwaffen", "sourceRow": 698}
+{"art": "Wert", "beschreibung": "Wurfwaffen", "kategorie": "Fernkampf", "kostenRaw": "wert*18", "referenz": "fk_wurfwaffen", "sourceRow": 698}
 {"art": "Formel", "beschreibung": "Fernkampf-Basis-Wert Wurfwaffen", "formelRaw": "(eig_g_sinneschaerfe+eig_k_geschicklichkeit+fk_wurfwaffen)/4", "kategorie": "Fernkampf", "referenz": "fk_basis_wurfwaffen", "sourceRow": 699}

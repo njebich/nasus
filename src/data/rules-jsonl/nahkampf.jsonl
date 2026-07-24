@@ -6,11 +6,11 @@
 {"art": "Formel", "beschreibung": "Attacke-Basis-Wert Stangenwaffen", "formelRaw": "MIN(20;(eig_g_mut+eig_k_athletik+nk_stangenwaffen)/3)", "info": "S.2", "kategorie": "Nahkampf", "referenz": "at_stangenwaffen", "sourceRow": 703}
 {"art": "Formel", "beschreibung": "Attacke-Basis-Wert Stichwaffen", "formelRaw": "MIN(20;(eig_g_mut+eig_k_schnelligkeit+nk_stichwaffen)/3)", "info": "S.2", "kategorie": "Nahkampf", "referenz": "at_stichwaffen", "sourceRow": 704}
 {"art": "Formel", "beschreibung": "Attacke-Basis-Wert Unbewaffnet", "formelRaw": "MIN(20;(eig_g_mut+eig_k_schnelligkeit+nk_unbewaffnet)/3)", "info": "S.2", "kategorie": "Nahkampf", "referenz": "at_unbewaffnet", "sourceRow": 705}
-{"art": "Wert", "beschreibung": "Hiebwaffen", "kategorie": "Nahkampf", "referenz": "nk_hiebwaffen", "sourceRow": 706}
-{"art": "Wert", "beschreibung": "Klingenwaffen", "kategorie": "Nahkampf", "referenz": "nk_klingenwaffen", "sourceRow": 707}
-{"art": "Wert", "beschreibung": "Stangenwaffen", "kategorie": "Nahkampf", "referenz": "nk_stangenwaffen", "sourceRow": 708}
-{"art": "Wert", "beschreibung": "Stichwaffen", "kategorie": "Nahkampf", "referenz": "nk_stichwaffen", "sourceRow": 709}
-{"art": "Wert", "beschreibung": "Unbewaffnet", "kategorie": "Nahkampf", "referenz": "nk_unbewaffnet", "sourceRow": 710}
+{"art": "Wert", "beschreibung": "Hiebwaffen", "kategorie": "Nahkampf", "kostenRaw": "wert*25", "referenz": "nk_hiebwaffen", "sourceRow": 706}
+{"art": "Wert", "beschreibung": "Klingenwaffen", "kategorie": "Nahkampf", "kostenRaw": "wert*25", "referenz": "nk_klingenwaffen", "sourceRow": 707}
+{"art": "Wert", "beschreibung": "Stangenwaffen", "kategorie": "Nahkampf", "kostenRaw": "wert*25", "referenz": "nk_stangenwaffen", "sourceRow": 708}
+{"art": "Wert", "beschreibung": "Stichwaffen", "kategorie": "Nahkampf", "kostenRaw": "wert*25", "referenz": "nk_stichwaffen", "sourceRow": 709}
+{"art": "Wert", "beschreibung": "Unbewaffnet", "kategorie": "Nahkampf", "kostenRaw": "wert*25", "referenz": "nk_unbewaffnet", "sourceRow": 710}
 {"art": "Wert", "beschreibung": "-> Äxte", "kategorie": "Nahkampf", "parent": "nk_hiebwaffen", "referenz": "nk_spez_hiebwaffen_aexte", "sourceRow": 711}
 {"art": "Wert", "beschreibung": "-> Kettenwaffen", "kategorie": "Nahkampf", "parent": "nk_hiebwaffen", "referenz": "nk_spez_hiebwaffen_kettenwaffen", "sourceRow": 712}
 {"art": "Wert", "beschreibung": "-> Stumpfe Hiebwaffen", "kategorie": "Nahkampf", "parent": "nk_hiebwaffen", "referenz": "nk_spez_hiebwaffen_stumpfe_hiebwaffen", "sourceRow": 713}

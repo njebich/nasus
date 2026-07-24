@@ -278,11 +278,10 @@ function renderWaffenControlCells(r: ComputedRule, rowspan: number | undefined, 
   const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
   const atMax = maxValue !== undefined && value >= maxValue;
   const rowspanAttr = rowspan !== undefined ? ` rowspan="${rowspan}"` : '';
-  // Spezialisierungen haben einen flachen Satz pro Punkt (costOverride, siehe
-  // computeSpezCostRates) - "+" und "-" kosten/erstatten daher exakt denselben Betrag, anders als
-  // die kumulative SVERWEIS-Kostentabelle in renderEditableRow (kein kostenPrev noetig). Die
-  // Hauptfertigkeit selbst zeigt weiterhin keinen Kosten-Tooltip (kein costOverride, kein
-  // rule.kostenNext - "no need to show cost in main taw", Nutzer 2026-07-22).
+  // Sowohl Hauptfertigkeit als auch Spezialisierung haben einen flachen Satz pro Punkt (costOverride
+  // = klickpreisDelta, siehe dort/waffenSpezKosten.ts) - "+" und "-" kosten/erstatten daher exakt
+  // denselben Betrag, anders als die kumulative SVERWEIS-Kostentabelle in renderEditableRow (kein
+  // kostenPrev noetig).
   const minusTooltip = costOverride !== undefined && value > 0 ? tooltipAttr(`-${costOverride} SP`) : '';
   const plusTooltip = costOverride !== undefined ? tooltipAttr(`+${costOverride} SP`) : '';
   return `
@@ -345,32 +344,14 @@ function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number, 
   return `<td${rowspanAttr} class="stat-value-readonly"${tooltip}>${escapeHtml(formatComputedValue(displayValue))}</td>`;
 }
 
-/** SP-Kosten pro TaW-Punkt fuer Spezialisierungen (Nutzer 2026-07-22, kein kostenRaw in
- *  nahkampf.jsonl/fernkampf.jsonl): Nahkampf 15/8/4, Fernkampf 10/5/3. Die Hauptfertigkeit selbst
- *  zeigt keinen Kosten-Hinweis mehr (Nutzer-Korrektur: "no need to show cost in main taw, only
- *  spez has any point" - ihr Satz ist ohnehin konstant und steht schon im Spaltenkopf). */
-const NK_SPEZ_KOSTEN_RATES = [15, 8, 4] as const;
-const FK_SPEZ_KOSTEN_RATES = [10, 5, 3] as const;
-
-/** Kostensatz pro Spezialisierungs-"Slot" (Nutzer-Korrektur 2026-07-22, vorherige Version war
- *  "backwards"): eine bereits investierte Spezialisierung (TaW>0) behaelt fuer immer den Satz, zu
- *  dem sie als n-te investierte Spezialisierung angefangen wurde (Rang unter den INVESTIERTEN
- *  Geschwistern nach aktuellem TaW absteigend, Gleichstand per Listenreihenfolge) - rates[0] fuer
- *  die erste investierte, rates[1] fuer die zweite, rates[2] fuer alle weiteren. Noch unangetastete
- *  Spezialisierungen (TaW=0) zeigen dagegen, was der NAECHSTE neue Slot kosten wuerde: rates[0]
- *  solange noch keine investiert ist ("as standard show the high cost"), rates[1] sobald genau
- *  eine investiert ist ("second highest cost in all others, until a second spez is skilled"),
- *  rates[2] sobald zwei oder mehr investiert sind ("show lowest cost on all lower lines"). */
-function computeSpezCostRates(children: ComputedRule[], rates: readonly [number, number, number]): Map<string, number> {
-  const invested = children
-    .map((c, i) => ({ referenz: c.rule.referenz, value: c.currentValue ?? 0, i }))
-    .filter((c) => c.value > 0)
-    .sort((a, b) => b.value - a.value || a.i - b.i);
-  const nextSlotRate = rates[Math.min(invested.length, rates.length - 1)];
-  const map = new Map<string, number>();
-  for (const c of children) map.set(c.rule.referenz, nextSlotRate);
-  invested.forEach((r, rank) => map.set(r.referenz, rates[Math.min(rank, rates.length - 1)]));
-  return map;
+/** Klickpreis (Kosten fuer den naechsten Punkt) fuer eine Nahkampf-/Fernkampf-Zeile - sowohl
+ *  Hauptfertigkeit (flacher Satz, xlsx-Formel "wert*25"/"wert*18") als auch Spezialisierung
+ *  (flacher, vom Investitions-Rang abhaengiger Satz, siehe engine/waffenSpezKosten.ts) sind
+ *  linear, die Differenz kostenNext-kostenCurrent ist also fuer beide der reale, bereits von
+ *  characterSheet.ts berechnete SP-Preis - keine eigene Rate-Logik mehr hier noetig (vor
+ *  2026-07-24 war das UI-Deko ohne echten SP-Abzug, siehe waffenSpezKosten.ts-Kommentar). */
+function klickpreisDelta(r: ComputedRule): number | undefined {
+  return r.kostenNext !== undefined && r.kostenCurrent !== undefined ? r.kostenNext - r.kostenCurrent : undefined;
 }
 
 /** Eine Zeile (bzw. Zeilengruppe) pro Hauptfertigkeit - Nutzer-Korrektur 2026-07-22: "i want all
@@ -385,17 +366,16 @@ function renderNahkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: Comput
   const paBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'pa_', readOnly);
   const basisCells = (rowspan: number) => `${renderWaffenBasisCell(atBasisRule, rowspan, values)}${renderWaffenBasisCell(paBasisRule, rowspan, values)}`;
   if (node.children.length === 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}<td colspan="4">–</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${basisCells(1)}<td colspan="4">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${basisCells(1)}<td colspan="4" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${basisCells(1)}<td colspan="4" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
-  const spezRates = computeSpezCostRates(node.children, NK_SPEZ_KOSTEN_RATES);
   return node.children.map((child, i) => `
     <tr>
-      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${basisCells(n)}` : ''}
-      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert, spezRates.get(child.rule.referenz))}
+      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n, undefined, klickpreisDelta(node.row))}${basisCells(n)}` : ''}
+      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert, klickpreisDelta(child))}
     </tr>`).join('');
 }
 
@@ -455,21 +435,20 @@ function renderFernkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: Compu
   const fkGuteRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_gute_', readOnly);
   const fkMeisterlichRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_meisterlich_', readOnly);
   if (node.children.length === 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5">–</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
-  const spezRates = computeSpezCostRates(node.children, FK_SPEZ_KOSTEN_RATES);
   return node.children.map((child, i) => {
     const fksBasisRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_basis_spez_', readOnly);
     const fksGuteRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_gute_spez_', readOnly);
     const fksMeisterlichRule = findFernkampfSpezBasisRule(child.rule.referenz, 'fk_meisterlich_spez_', readOnly);
     return `
     <tr>
-      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n)}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, n)}` : ''}
-      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert, spezRates.get(child.rule.referenz))}${renderFernkampfBasisCell(fksBasisRule, fksGuteRule, fksMeisterlichRule, 1)}
+      ${i === 0 ? `${renderWaffenLabelCell(node.row, n)}${renderWaffenControlCells(node.row, n, undefined, klickpreisDelta(node.row))}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, n)}` : ''}
+      ${renderWaffenLabelCell(child, undefined)}${renderWaffenControlCells(child, undefined, hauptwert, klickpreisDelta(child))}${renderFernkampfBasisCell(fksBasisRule, fksGuteRule, fksMeisterlichRule, 1)}
     </tr>`;
   }).join('');
 }

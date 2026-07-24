@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { createCharacter, loadCharacter, STARTBUDGET_PRESETS, getLastActiveCharacterId, setLastActiveCharacterId } from './characterStore';
-import { updateHeader } from './characterMutations';
+import { buyFernkampfwaffe, updateHeader } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
+import { BOEGEN } from '../data/equipment/fernkampf';
 
 describe('createCharacter mit Charakterheader + Startbudget', () => {
   it('legt einen Charakter mit vollem Header an', () => {
@@ -123,6 +124,35 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     expect(loaded.herkunftSnapshot).toEqual({ name: 'Altdorf', region: '', welt: 'NW' });
     expect('heimat' in loaded).toBe(false);
     expect('region' in loaded).toBe(false);
+  });
+
+  it('loescht alte Bogen-/Armbrust-Eintraege ohne aufgeloesten Inventar-Snapshot', () => {
+    const id = 'alt-charakter-vor-ranged-snapshot';
+    const alterCharakter = {
+      id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {}, selections: {}, poolAllocations: {}, ruestungSlots: {},
+      equipment: [{
+        id: 'alter-bogen', family: 'fernkampfwaffe', baseTable: 'boegen', baseId: '2',
+        selections: {}, quantity: 1, computedPriceSnapshot: 0.001,
+      }, {
+        id: 'alte-pfeile', family: 'ammo', baseTable: 'pfeile', baseId: '3',
+        selections: {}, quantity: 10, computedPriceSnapshot: 0.05,
+      }],
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
+    expect(loadCharacter(id)?.equipment).toEqual([]);
+  });
+
+  it('regeneriert vorhandene aufgeloeste Snapshots beim Laden aus den aktuellen Katalogdaten', () => {
+    const bogen = BOEGEN.find((row) => row.name === 'Improvisierter Bogen')!;
+    let character = createCharacter('Snapshot', {}, undefined, true);
+    character.values['dublonen_bank'] = 100;
+    character = buyFernkampfwaffe(character, 'boegen', bogen.sourceRow);
+    character.equipment[0].rangedSnapshot!.name = 'Veralteter Name';
+    localStorage.setItem(`nasus:character:${character.id}`, JSON.stringify(character));
+
+    const loaded = loadCharacter(character.id)!;
+    expect(loaded.equipment[0].rangedSnapshot?.name).toBe(bogen.name);
   });
 });
 

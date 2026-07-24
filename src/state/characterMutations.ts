@@ -21,6 +21,9 @@ import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../da
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { composeMunition } from '../engine/pfeilBolzenComposition';
+import {
+  createRangedAmmoInventorySnapshot, createRangedWeaponInventorySnapshot,
+} from '../engine/rangedInventorySnapshot';
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
 import { computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier } from '../engine/waffenPool';
 import { gutBudget, meisterlichBudget } from '../engine/poolCaps';
@@ -721,6 +724,7 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'fernkampfwaffe', baseTable: typ, baseId: String(sourceRow),
     selections: {}, quantity: 1, computedPriceSnapshot: row.preisDublonen,
+    rangedSnapshot: createRangedWeaponInventorySnapshot(typ, row),
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);
@@ -805,6 +809,7 @@ export function buyMunition(
     selections: modifikator ? { modifikator: String(modifikator.sourceRow) } : {},
     quantity, computedPriceSnapshot: composed.preisDublonen,
     computedStatsSnapshot: { fixschaden: composed.fixschaden, rb: composed.rb, rwModMeter: composed.rwModMeter, be: composed.be },
+    rangedSnapshot: createRangedAmmoInventorySnapshot(typ, basis, modifikator),
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);

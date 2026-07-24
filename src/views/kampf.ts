@@ -9,7 +9,7 @@ import { makeValueSource } from '../engine/characterSheet';
 import { evalReferenz, type CharacterValueSource } from '../engine/rules';
 import type { CharacterState, PoolAllocation, WaffenLoadoutEntry, WaffenLoadoutComboType } from '../state/characterStore';
 import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
-import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
+import { FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
 import { feuerwaffenMunitionOptionen, FEUERWAFFEN_MUNITION_PREISE } from '../data/equipment/feuerwaffenMunition';
 import {
   resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier, getZweiWaffenCap,
@@ -28,6 +28,7 @@ import {
 } from '../engine/waffenLoadout';
 import { xKlingeTooltip, xKlingeWeaponName, xKlingeWirkungForEntry } from '../engine/xKlinge';
 import { tooltipAttr } from './tooltip';
+import type { RangedWeaponInventorySnapshot } from '../engine/rangedInventorySnapshot';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -374,6 +375,33 @@ function computeFkNkWerte(
   };
 }
 
+function computeResolvedRangedNkWerte(
+  basis: RangedWeaponInventorySnapshot, character: CharacterState, values: CharacterValueSource,
+): FkNkWerte | null {
+  if (!basis.hauptfertigkeit) return null;
+  const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
+  const minStaerke = basis.minStaerke1H ?? basis.minStaerke2H ?? 0;
+  const usable = eigKStaerke >= minStaerke;
+  const overflow = computeWeaponAtPaOverflow(
+    basis.hauptfertigkeit, basis.atBasis, basis.paBasis, values, getKampfstilModifier(character),
+  );
+  const schadenBasis = {
+    'Schadenswuerfel-1': basis.schadenswuerfel1,
+    'Schadenswuerfel-2': basis.schadenswuerfel2,
+    'Staerke-Teiler': String(basis.staerkeTeiler),
+  };
+  return {
+    usable,
+    unusableReason: usable ? undefined : 'nicht tragbar (Stärke zu niedrig)',
+    schaden: usable ? computeSchaden(schadenBasis, basis.staerkeMalusBasis, eigKStaerke) : '–',
+    wk: usable ? String(basis.wkBasis) : '–',
+    nat: usable ? Math.min(20, overflow.uncAtWeapon) : null,
+    npa: usable ? Math.min(20, overflow.uncPaWeapon) : null,
+    kb: basis.klingenbrecherBasis,
+    ks: basis.klingenschutzBasis,
+  };
+}
+
 // ---------------------------------------------------------------------------------------------
 // FEUERWAFFEN
 // ---------------------------------------------------------------------------------------------
@@ -494,39 +522,39 @@ export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen'
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
   const ladeschuetzeWert = character.values[ARMBRUST_BOEGEN_LADESCHUETZE_REF[typ]] ?? 0;
   const ammoFamily = typ === 'boegen' ? 'pfeile' : 'bolzen';
-  const ammoTable = typ === 'boegen' ? PFEILE : BOLZEN;
   const rows: ArmbrustBogenRow[] = [];
 
   for (const e of character.equipment) {
     if (e.family !== 'fernkampfwaffe' || e.baseTable !== typ) continue;
-    const basis = (typ === 'boegen' ? BOEGEN : ARMBRUST).find((r) => String(r.sourceRow) === e.baseId);
-    if (!basis) continue;
-    const ranges = RANGE_HEADERS.map((h) => formatRangeCell(basis[h] ?? 'x', basisWert, gutDivisor, meisterlichDivisor));
-    const weaponRb = num(basis, 'RB');
-    const weaponFix = num(basis, 'Fixschaden');
+    const basis = e.rangedSnapshot;
+    if (!basis || basis.kind !== 'ranged-weapon' || basis.table !== typ) continue;
+    const ranges = basis.rangeMods.map((rangeMod) => formatRangeCell(rangeMod, basisWert, gutDivisor, meisterlichDivisor));
+    const weaponRb = basis.rb;
+    const weaponFix = basis.fixschaden;
     const ladedauer = typ === 'boegen'
-      ? `${ladezeitKr(num(basis, 'Nachladezeit'), num(basis, 'Nachladen TaW-Teiler'), gesBon, ladeschuetzeWert)} KR`
-      : computeArmbrustLadezeitLabel(basis, eigKStaerke, gesBon, ladeschuetzeWert);
-    const nk = computeFkNkWerte(basis, character, values);
-    const ownedAmmo = character.equipment.filter((a) => a.family === 'ammo' && a.baseTable === ammoFamily);
+      ? `${ladezeitKr(basis.nachladezeit, basis.nachladenTawTeiler, gesBon, ladeschuetzeWert)} KR`
+      : computeArmbrustLadezeitLabel(basis.armbrustLadedaten, eigKStaerke, gesBon, ladeschuetzeWert);
+    const nk = computeResolvedRangedNkWerte(basis, character, values);
+    const ownedAmmo = character.equipment.filter(
+      (a) => a.family === 'ammo' && a.baseTable === ammoFamily
+        && a.rangedSnapshot?.kind === 'ranged-ammo' && a.rangedSnapshot.table === ammoFamily,
+    );
     const ammoRows = ownedAmmo.length > 0 ? ownedAmmo : [undefined];
     for (const ammo of ammoRows) {
-      const ammoBasis = ammo ? ammoTable.find((r) => String(r.sourceRow) === ammo.baseId) : undefined;
-      const ammoMod = ammo?.selections.modifikator ? ammoTable.find((r) => String(r.sourceRow) === ammo.selections.modifikator) : undefined;
-      const ammoFix = ammo?.computedStatsSnapshot?.fixschaden ?? 0;
-      const ammoRb = ammo?.computedStatsSnapshot?.rb ?? 0;
+      const ammoSnapshot = ammo?.rangedSnapshot?.kind === 'ranged-ammo' ? ammo.rangedSnapshot : undefined;
+      const ammoFix = ammoSnapshot?.fixschaden ?? 0;
+      const ammoRb = ammoSnapshot?.rb ?? 0;
       const totalFix = weaponFix + ammoFix;
-      const ammoName = ammoBasis ? (ammoMod ? `${ammoMod.name} (${ammoBasis.name})` : ammoBasis.name) : undefined;
       rows.push({
         key: `${e.id}:${ammo?.id ?? 'keine'}`,
         label: basis.name,
-        schaden: `${basis['1.W'] ?? '–'}${totalFix !== 0 ? ` ${formatSigned(totalFix)}` : ''}`,
+        schaden: `${basis.fernkampfWuerfel}${totalFix !== 0 ? ` ${formatSigned(totalFix)}` : ''}`,
         rb: weaponRb + ammoRb,
-        munition: ammoName ? `${ammoName} (${ammo!.quantity} Stück)` : '–',
+        munition: ammoSnapshot ? `${ammoSnapshot.name} (${ammo!.quantity} Stück)` : '–',
         ranges,
-        rw: basis['RW'] ?? '–',
+        rw: basis.rw,
         ladedauer,
-        ini: Math.round(Number(evalReferenz('ini', values))) + num(basis, 'Ini'),
+        ini: Math.round(Number(evalReferenz('ini', values))) + basis.ini,
         nk,
       });
     }

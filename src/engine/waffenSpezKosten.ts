@@ -6,11 +6,43 @@
 // Spezialisierungen ziehen kein SP ab"). Dieses Modul ist jetzt die einzige Quelle der Rate,
 // von characterSheet.ts (echte Kosten) UND categoryView.ts (Anzeige) gleichermassen genutzt.
 
-import { getRule, findParentRule, findChildRules } from './rules';
+import { RULES, type RuleEntry } from '../data/rules';
+import { findParentRule } from './rules';
 import type { CharacterState } from '../state/characterStore';
 
 export const NK_SPEZ_KOSTEN_RATES = [15, 8, 4] as const;
 export const FK_SPEZ_KOSTEN_RATES = [10, 5, 3] as const;
+
+interface SpezGruppe {
+  rules: RuleEntry[];
+  rates: readonly [number, number, number];
+}
+
+/** Statischer Index statt findChildRules() waehrend jedes computeSheet()-Durchlaufs.
+ *  findChildRules() durchsucht fuer jedes Kind erneut das komplette Regelwerk und loest dabei
+ *  fuer jede Regel wiederum den Parent per Vollscan auf. Bei 1.356 Regeln und 30 Waffen-
+ *  Spezialisierungen erzeugte das zig Millionen Vergleiche pro Render und blockierte die UI
+ *  mehrere Sekunden. Der Regelsatz ist zur Laufzeit unveraenderlich, daher reicht ein einmaliger
+ *  Aufbau beim Laden dieses Moduls. */
+const SPEZ_GRUPPE_BY_REFERENZ = new Map<string, SpezGruppe>();
+const gruppenByParent = new Map<RuleEntry, SpezGruppe>();
+for (const rule of RULES) {
+  const key = rule.referenz.toLowerCase();
+  const isNk = key.startsWith('nk_spez_');
+  const isFk = key.startsWith('fk_spez_');
+  if (!isNk && !isFk) continue;
+  const parent = findParentRule(rule);
+  if (!parent) continue;
+  let gruppe = gruppenByParent.get(parent);
+  if (!gruppe) {
+    gruppe = { rules: [], rates: isNk ? NK_SPEZ_KOSTEN_RATES : FK_SPEZ_KOSTEN_RATES };
+    gruppenByParent.set(parent, gruppe);
+  }
+  gruppe.rules.push(rule);
+}
+for (const gruppe of gruppenByParent.values()) {
+  for (const rule of gruppe.rules) SPEZ_GRUPPE_BY_REFERENZ.set(rule.referenz.toLowerCase(), gruppe);
+}
 
 /** Kostensatz pro Spezialisierungs-"Slot" (Nutzer-Korrektur 2026-07-22, siehe frueherer Kommentar
  *  in categoryView.ts): eine bereits investierte Spezialisierung (TaW>0) behaelt fuer immer den
@@ -37,15 +69,13 @@ function computeRatesByReferenz(
 /** SP-Rate fuer EINE Spezialisierungs-Referenz, oder undefined wenn referenz weder nk_spez_ noch
  *  fk_spez_ als Praefix hat, oder keine aufloesbare Hauptfertigkeit besitzt. */
 export function getWaffenSpezKostenRate(character: CharacterState, referenz: string): number | undefined {
-  const rule = getRule(referenz);
-  if (!rule) return undefined;
-  const key = rule.referenz.toLowerCase();
-  const isNk = key.startsWith('nk_spez_');
-  const isFk = key.startsWith('fk_spez_');
-  if (!isNk && !isFk) return undefined;
-  const parent = findParentRule(rule);
-  if (!parent) return undefined;
-  const siblings = findChildRules(parent).map((r) => r.referenz);
-  const rates = isNk ? NK_SPEZ_KOSTEN_RATES : FK_SPEZ_KOSTEN_RATES;
-  return computeRatesByReferenz(siblings, character, rates).get(key);
+  const key = referenz.toLowerCase();
+  if (!key.startsWith('nk_spez_') && !key.startsWith('fk_spez_')) return undefined;
+  const gruppe = SPEZ_GRUPPE_BY_REFERENZ.get(key);
+  if (!gruppe) return undefined;
+  return computeRatesByReferenz(
+    gruppe.rules.map((rule) => rule.referenz),
+    character,
+    gruppe.rates,
+  ).get(key);
 }

@@ -5,8 +5,6 @@
 // Features (Talent "Kampf mit zwei Waffen"): dort reicht der reine Flachbonus-Vergleich nicht,
 // der Nutzer wollte explizit den vollen Erwartungswert (Wuerfeldurchschnitt + Flachbonus).
 
-import type { GenericRow as WeaponRow } from '../data/equipment/weapons';
-
 export function num(row: Record<string, string> | undefined, header: string): number {
   const raw = row?.[header];
   if (raw === undefined) return 0;
@@ -40,7 +38,7 @@ export function formatSchadenswuerfel(row: Record<string, string> | undefined): 
  *  Material), nicht nur die rohe Basis-Spalte - konsistent mit jeder anderen Zahl in dieser
  *  Tabelle (die kommen alle aus dem Snapshot, nicht aus der rohen Basiszeile). */
 export function computeSchaden(
-  basis: WeaponRow | undefined, staerkeMalus: number, eigKStaerke: number,
+  basis: Record<string, string> | undefined, staerkeMalus: number, eigKStaerke: number,
   element?: { schadenswuerfel: string; schadenselement: string },
 ): string {
   const staerkeTeiler = num(basis, 'Staerke-Teiler');
@@ -88,7 +86,7 @@ function averageMaxOfNDice(n: number, sides: number): number {
  *  dem selben geflooreten Flachbonus wie computeSchaden) - NUR fuer den "besseres Waffe"-
  *  Vergleich des Kampf-mit-zwei-Waffen-Talents (Waffen-Loadout-Feature), die Anzeige selbst nutzt
  *  weiterhin computeSchaden's formatierten String. */
-export function averageSchadenValue(basis: WeaponRow | undefined, staerkeMalus: number, eigKStaerke: number): number {
+export function averageSchadenValue(basis: Record<string, string> | undefined, staerkeMalus: number, eigKStaerke: number): number {
   const staerkeTeiler = num(basis, 'Staerke-Teiler');
   const flatBonus = staerkeTeiler !== 0 ? floorSigned(eigKStaerke / staerkeTeiler + staerkeMalus) : floorSigned(staerkeMalus);
   const diceAverage = parseDiceAverage(basis?.['Schadenswuerfel-1']) + parseDiceAverage(basis?.['Schadenswuerfel-2']);

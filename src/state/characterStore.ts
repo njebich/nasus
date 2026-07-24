@@ -5,6 +5,10 @@ import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Welt } from '../data/orte';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
+import {
+  resolveRangedAmmoInventorySnapshot, resolveRangedWeaponInventorySnapshot,
+  type RangedInventorySnapshot,
+} from '../engine/rangedInventorySnapshot';
 
 export interface XKlingeVerzauberung {
   artefaktReferenz: string;
@@ -33,6 +37,10 @@ export interface EquipmentEntry {
   quantity: number;
   computedPriceSnapshot?: number;
   computedStatsSnapshot?: Record<string, number>;
+  /** Vollstaendig aufgeloester, bei jedem Laden aus den aktuellen Katalogdaten regenerierter
+   * Kampf-Snapshot fuer Boegen/Armbrueste bzw. Pfeile/Bolzen. Der Kampf-Tab greift danach nicht
+   * mehr auf die grossen Katalogtabellen zurueck. */
+  rangedSnapshot?: RangedInventorySnapshot;
   /** Unsichtbares Inventar-Flag. Fehlend = profan; nur nicht-profane Gegenstaende tragen true. */
   magisch?: true;
   /** Nur bei einer aus profaner NK-Waffe + X-Klinge amalgamierten Artefakt-Waffe. */
@@ -253,7 +261,41 @@ export function loadCharacter(id: string): CharacterState | null {
   if (!parsed.waffenLoadouts) parsed.waffenLoadouts = [];
   // Magisch/profan ist ein unsichtbares Positiv-Flag: fehlend bedeutet profan. Artefakte sind
   // immer magisch; bei Alchemika ist Spalte B des SPOT-Sheets die alleinige Quelle.
-  parsed.equipment = (parsed.equipment ?? []).map((entry) => {
+  parsed.equipment = (parsed.equipment ?? []).flatMap((entry) => {
+    // Nutzerentscheidung 2026-07-25: alte Bogen-/Armbrust-/Pfeil-/Bolzen-Eintraege ohne den
+    // neuen aufgeloesten Snapshot werden geloescht, nicht migriert. Neue Snapshots werden bei
+    // jedem Laden aus den aktuellen Katalogdaten regeneriert, damit Regel-/Datenupdates gelten.
+    if (entry.family === 'fernkampfwaffe' && (entry.baseTable === 'boegen' || entry.baseTable === 'armbrust')) {
+      if (!entry.rangedSnapshot) return [];
+      const rangedSnapshot = resolveRangedWeaponInventorySnapshot(entry.baseTable, entry.baseId);
+      if (!rangedSnapshot) return [];
+      entry = {
+        ...entry,
+        rangedSnapshot,
+        ...(rangedSnapshot.preisDublonen !== undefined
+          ? { computedPriceSnapshot: rangedSnapshot.preisDublonen }
+          : {}),
+      };
+    } else if (entry.family === 'ammo' && (entry.baseTable === 'pfeile' || entry.baseTable === 'bolzen')) {
+      if (!entry.rangedSnapshot) return [];
+      const rangedSnapshot = resolveRangedAmmoInventorySnapshot(
+        entry.baseTable, entry.baseId, entry.selections?.modifikator,
+      );
+      if (!rangedSnapshot) return [];
+      entry = {
+        ...entry,
+        rangedSnapshot,
+        ...(rangedSnapshot.preisDublonen !== null
+          ? { computedPriceSnapshot: rangedSnapshot.preisDublonen }
+          : {}),
+        computedStatsSnapshot: {
+          fixschaden: rangedSnapshot.fixschaden,
+          rb: rangedSnapshot.rb,
+          rwModMeter: rangedSnapshot.rwModMeter,
+          be: rangedSnapshot.be,
+        },
+      };
+    }
     const alchemika = entry.family === 'alchemika'
       ? ALCHEMIKA.find((row) => String(row.sourceRow) === entry.baseId)
       : undefined;
@@ -261,7 +303,7 @@ export function loadCharacter(id: string): CharacterState | null {
     const migrated = { ...entry, selections: { ...(entry.selections ?? {}) } };
     if (magisch) migrated.magisch = true;
     else delete migrated.magisch;
-    return migrated;
+    return [migrated];
   });
   // Angst-Referenzen wurden von vn_<stufenname>_<thema> auf das numerische, exklusiv
   // auswertbare Schema vn_angst_<thema>_<5|10|15|20|25|30> umgestellt. Bei alten, zuvor noch

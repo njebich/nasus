@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { createCharacter } from '../state/characterStore';
 import {
-  buyFeuerwaffe, buyFeuerwaffenMunition, buyWeapon, setValue, setWaffenPoolAllocation, addWaffenLoadout, BudgetError,
+  buyFernkampfwaffe, buyFeuerwaffe, buyFeuerwaffenMunition, buyMunition, buyWeapon, setValue,
+  setWaffenPoolAllocation, addWaffenLoadout, BudgetError,
 } from '../state/characterMutations';
 import {
-  buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows, previewWaffenPoolAllocation,
+  buildArmbrustBoegenRows, buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows,
+  previewWaffenPoolAllocation,
 } from './kampf';
-import { FEUERWAFFEN } from '../data/equipment/fernkampf';
+import { ARMBRUST, BOEGEN, BOLZEN, FEUERWAFFEN, PFEILE } from '../data/equipment/fernkampf';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { feuerwaffenStandardauswahl, composeFeuerwaffe } from '../engine/feuerwaffenComposition';
 import { computeSheet } from '../engine/characterSheet';
@@ -63,6 +65,62 @@ describe('buildFeuerwaffenRows', () => {
     // ueberhaupt eine reale Zahl (nicht durchgehend "x") liefern.
     for (const row of rows) {
       expect(row.ranges.some((cell) => cell !== 'x')).toBe(true);
+    }
+  });
+});
+
+describe('buildArmbrustBoegenRows: aufgeloestes Inventar', () => {
+  const bogen = BOEGEN.find((row) => row.name === 'Improvisierter Bogen')!;
+  const pfeil = PFEILE.find((row) => row.name === 'Holzspitzen-Pfeil')!;
+  const spitze = PFEILE.find((row) => row.name === 'Breitkopfspitzen-Pfeil')!;
+
+  it('dupliziert die Waffenzeile fuer jeden besessenen kompatiblen Munitionsstapel', () => {
+    let character = baseCharacter();
+    character = buyFernkampfwaffe(character, 'boegen', bogen.sourceRow);
+    character = buyMunition(character, 'pfeile', pfeil.sourceRow, null, 10);
+    character = buyMunition(character, 'pfeile', pfeil.sourceRow, spitze.sourceRow, 5);
+
+    const rows = buildArmbrustBoegenRows(character, 'boegen');
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.munition)).toEqual([
+      'Holzspitzen-Pfeil (10 Stück)',
+      'Breitkopfspitzen-Pfeil (Holzspitzen-Pfeil) (5 Stück)',
+    ]);
+  });
+
+  it('zeigt die bestaetigte Waffe auch ohne kompatible Munition', () => {
+    const character = buyFernkampfwaffe(baseCharacter(), 'boegen', bogen.sourceRow);
+    const rows = buildArmbrustBoegenRows(character, 'boegen');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].munition).toBe('–');
+  });
+
+  it('wendet denselben Snapshot-/Duplikationspfad auf Armbrust und Bolzen an', () => {
+    const armbrust = ARMBRUST.find((row) => row.name === 'Improvisierte Armbrust')!;
+    const bolzen = BOLZEN.find((row) => row['Kategorie'] !== 'Spitzen-Modifikator' && row.preisDublonen !== undefined)!;
+    let character = baseCharacter();
+    character = buyFernkampfwaffe(character, 'armbrust', armbrust.sourceRow);
+    character = buyMunition(character, 'bolzen', bolzen.sourceRow, null, 7);
+
+    const rows = buildArmbrustBoegenRows(character, 'armbrust');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].label).toBe(armbrust.name);
+    expect(rows[0].munition).toBe(`${bolzen.name} (7 Stück)`);
+  });
+
+  it('liest im Kampf-Tab Namen und Fernkampfschaden aus dem Inventar-Snapshot statt erneut aus dem Katalog', () => {
+    const character = buyFernkampfwaffe(baseCharacter(), 'boegen', bogen.sourceRow);
+    const oldName = bogen.name;
+    const oldWuerfel = bogen['1.W'];
+    try {
+      bogen.name = 'Katalog wurde nach Kauf geaendert';
+      bogen['1.W'] = 'W999';
+      const [row] = buildArmbrustBoegenRows(character, 'boegen');
+      expect(row.label).toBe(oldName);
+      expect(row.schaden).toBe(oldWuerfel);
+    } finally {
+      bogen.name = oldName;
+      bogen['1.W'] = oldWuerfel;
     }
   });
 });

@@ -29,6 +29,7 @@ import { ALCHEMIKA } from '../data/equipment/alchemika';
 import { FEUERWAFFEN_MUNITION_PREISE, type FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
 import type { RsGruppe } from '../data/trefferzonen';
 import { listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen } from '../engine/waffenLoadout';
+import { isXKlingeReferenz, resolveXKlingeWirkung } from '../engine/xKlinge';
 import {
   ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry,
   type WaffenLoadoutEntry, type WaffenLoadoutComboType,
@@ -49,7 +50,11 @@ function clone(character: CharacterState): CharacterState {
     values: { ...character.values },
     selections: { ...character.selections },
     poolAllocations: { ...character.poolAllocations },
-    equipment: character.equipment.map((e) => ({ ...e, selections: { ...e.selections } })),
+    equipment: character.equipment.map((e) => ({
+      ...e,
+      selections: { ...e.selections },
+      xKlinge: e.xKlinge ? { ...e.xKlinge } : undefined,
+    })),
     ruestungSlots: { ...character.ruestungSlots },
     grundfertigkeitAuswahl: Object.fromEntries(
       Object.entries(character.grundfertigkeitAuswahl ?? {}).map(([k, v]) => [k, [...v]]),
@@ -452,7 +457,7 @@ export function buyPreislisteItem(character: CharacterState, sourceRow: number, 
 }
 
 export function buyArtefakt(
-  character: CharacterState, referenz: string, grad: string, variant: ArtefaktVariant,
+  character: CharacterState, referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string,
 ): CharacterState {
   const kostenRow = ARTEFAKT_KOSTEN.find((r) => r.referenz === referenz && r.grad === grad);
   if (!kostenRow) throw new MutationError(`Artefakt '${referenz}' Grad ${grad} existiert nicht`);
@@ -468,13 +473,44 @@ export function buyArtefakt(
   if (price === null) throw new MutationError(`Kein Preis für '${referenz}' Grad ${grad} (${variant}) hinterlegt`);
 
   const candidate = clone(character);
+  if (isXKlingeReferenz(referenz)) {
+    // Validiert zugleich die im SPOT hinterlegte Grad -> Wirkungsstufe-Zuordnung.
+    resolveXKlingeWirkung(referenz, grad);
+    const eligible = listProfaneNahkampfWeapons(character);
+    if (eligible.length === 0) {
+      throw new MutationError('Für eine X-Klinge wird mindestens eine profane Nahkampfwaffe benötigt');
+    }
+    if (!targetWeaponId) throw new MutationError('Bitte eine profane Nahkampfwaffe zum Verzaubern auswählen');
+    if (!eligible.some((entry) => entry.id === targetWeaponId)) {
+      throw new MutationError('Die ausgewählte Nahkampfwaffe ist nicht profan oder nicht mehr im Inventar');
+    }
+    candidate.equipment = candidate.equipment.map((entry) => entry.id === targetWeaponId
+      ? {
+        ...entry,
+        magisch: true as const,
+        xKlinge: { artefaktReferenz: referenz, grad, variant },
+        // Inventarwert = bereits bezahlter Waffenwert + jetzt bezahlter Artefaktwert. Da das
+        // alte Waffen-Entry ersetzt wird, steigt dublonenSpent nur um `price`.
+        computedPriceSnapshot: (entry.computedPriceSnapshot ?? 0) + price,
+      }
+      : entry);
+    assertBudgetOk(candidate);
+    return candidate;
+  }
+
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'artefakt', baseTable: 'artefakt_kosten', baseId: String(kostenRow.sourceRow),
-    selections: { variant }, quantity: 1, computedPriceSnapshot: price,
+    selections: { variant }, quantity: 1, computedPriceSnapshot: price, magisch: true,
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);
   return candidate;
+}
+
+/** Nur profane NK-Waffen dürfen Ziel einer X-Klinge sein. Fehlendes magisch-Flag bedeutet
+ *  gemäß Nutzerregel profan; Schilde sind family='shield' und damit automatisch ausgeschlossen. */
+export function listProfaneNahkampfWeapons(character: CharacterState): EquipmentEntry[] {
+  return character.equipment.filter((entry) => entry.family === 'weapon' && entry.magisch !== true);
 }
 
 const RS_GRUPPEN: readonly RsGruppe[] = ['kopf', 'torso', 'arme', 'beine'];
@@ -819,6 +855,7 @@ export function buyAlchemika(character: CharacterState, sourceRow: number, quant
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'alchemika', baseTable: 'alchemika', baseId: String(sourceRow),
     selections: {}, quantity, computedPriceSnapshot: row.preisDublonen,
+    ...(row.magisch ? { magisch: true as const } : {}),
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);

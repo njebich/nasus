@@ -26,6 +26,8 @@ import {
   listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen, resolveLoadout, describeLoadout,
   type LoadoutResult, type PoolSideRef,
 } from '../engine/waffenLoadout';
+import { xKlingeTooltip, xKlingeWeaponName, xKlingeWirkungForEntry } from '../engine/xKlinge';
+import { tooltipAttr } from './tooltip';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -69,6 +71,9 @@ export interface NahkampfRow {
   schaden: string;
   wk: string;
   rb: number;
+  /** Nur die zweite, aktive Zeile einer amalgamierten X-Klinge-Waffe. */
+  activeEnchant?: boolean;
+  wirkungTooltip?: string;
   poolReferenz: string | null;
   nat: PoolFieldState;
   gat: PoolFieldState;
@@ -161,7 +166,10 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
   const zweihaenderMoeglich = hasColumn(basis, 'Min-Staerke-1H-Basis') && hasColumn(basis, 'Min-Staerke-2H-Basis');
   const grips: Array<'1H' | '2H'> = zweihaenderMoeglich ? ['1H', '2H'] : ['1H'];
 
-  return grips.map((grip): NahkampfRow => {
+  const wirkung = xKlingeWirkungForEntry(e);
+  const weaponName = xKlingeWeaponName(e) ?? basis.name;
+
+  return grips.flatMap((grip): NahkampfRow[] => {
     // Schilde (family='shield') speichern ihre Mindeststaerke unter 'minStaerke' statt
     // 'minStaerke1H' (siehe buyShield) - Schilde haben ohnehin nur den 1H-Griff (grips oben).
     const minStaerke = grip === '1H' ? (snap.minStaerke1H ?? snap.minStaerke ?? 0) : (snap.minStaerke2H ?? 0);
@@ -177,9 +185,9 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
         npa: { value: 0, allocated: 0 }, gpa: { value: 0, allocated: 0 }, mpa: { value: 0, allocated: 0 },
         pp: 0, atSpent: 0, paSpent: 0, poolValid: true,
       };
-    return {
+    const standardRow: NahkampfRow = {
       key: e.id,
-      label: basis.name,
+      label: weaponName,
       spezialisierung,
       grip,
       minStaerke,
@@ -195,6 +203,20 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       ini: Math.round(Number(evalReferenz('ini', ctx.values))) + num(basis, 'Ini'),
       zweiWaffenFaehig,
     };
+    if (!wirkung) return [standardRow];
+    return [
+      standardRow,
+      {
+        ...standardRow,
+        label: `${weaponName} (aktiv)`,
+        activeEnchant: true,
+        wirkungTooltip: xKlingeTooltip(wirkung),
+        schaden: usable
+          ? computeSchaden(basis, snap.staerkeMalus ?? 0, eigKStaerke, wirkung)
+          : '–',
+        rb: (snap.rb ?? 0) + (wirkung.rb ?? 0),
+      },
+    ];
   });
 }
 
@@ -835,7 +857,7 @@ function renderNahkampfRow(row: NahkampfRow, showZweiWaffen: boolean): string {
   const zweiWaffenCell = row.zweiWaffenFaehig === undefined ? '–' : row.zweiWaffenFaehig ? '✓' : '✗';
   const spezTitle = row.spezialisierung ? ` title="Spezialisierung: ${escapeHtml(row.spezialisierung)}"` : '';
   return `
-    <tr class="${unusable ? 'kampf-row-unusable' : ''}" title="${unusable ? escapeHtml(row.unusableReason ?? '') : ''}">
+    <tr class="${unusable ? 'kampf-row-unusable ' : ''}${row.activeEnchant ? 'kampf-row-xklinge-active' : ''}"${tooltipAttr(row.wirkungTooltip)}${!row.wirkungTooltip && unusable ? ` title="${escapeHtml(row.unusableReason ?? '')}"` : ''}>
       <td${spezTitle}>${escapeHtml(row.label)}</td>
       <td>${escapeHtml(row.schaden)}</td>
       <td title="Mindest-Stärke: ${row.minStaerke}">${row.grip}</td>

@@ -16,6 +16,11 @@ export interface ArtefaktBasis {
   wirkungBasis?: string;
   wirkungEinheit?: string;
   eigenschaft?: string;
+  element?: string;
+  wirkungsstufeOffset?: string;
+  zusatzwertArt?: string;
+  schadenselement?: string;
+  namenspraefix?: string;
 }
 export interface ArtefaktKosten {
   sourceRow: number;
@@ -27,7 +32,14 @@ export interface ArtefaktKosten {
   kostenPermanent?: string;
   verfuegbarkeitPermanent?: string;
 }
+export interface ArtefaktWirkungsstufe {
+  wirkungsstufe: string;
+  schadenswuerfel?: string;
+  rb?: string;
+  sb?: string;
+}
 
-export const ARTEFAKTE_RAW = artefakteJson as unknown as { basis: ArtefaktBasis[]; kosten: ArtefaktKosten[] };
+export const ARTEFAKTE_RAW = artefakteJson as unknown as { basis: ArtefaktBasis[]; kosten: ArtefaktKosten[]; wirkungsstufen: ArtefaktWirkungsstufe[] };
 export const ARTEFAKT_BASIS = ARTEFAKTE_RAW.basis;
 export const ARTEFAKT_KOSTEN = ARTEFAKTE_RAW.kosten;
+export const ARTEFAKT_WIRKUNGSSTUFEN = ARTEFAKTE_RAW.wirkungsstufen;

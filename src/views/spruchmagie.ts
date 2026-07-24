@@ -6,11 +6,20 @@
 //    Grad>Weisheit+1 wird komplett ausgeblendet (nicht nur gesperrt).
 // 2. canIncreaseSpell: Mindestintelligenz + Vorstufe derselben Schule auf TaW>=10 (ausser Grad 1).
 //
-// Zeilen-Layout (Nutzer-Vorgabe 2026-07-21): TaW | Name | Grad | Min.Int | Eig | Wirkung |
-// Gegenprobe | RW | Ziel | Form | Art | Aufr. | VZ | ED | WD | "St.1/St.2/St.3" | Mana.
-// St.2/St.3 nur sichtbar mit den Talenten talente_spruchmagie_stufe_2/3_zaubern (schulen-
-// uebergreifend). Zauberprobe (nur wenn TaW>0): fuer jede freigeschaltete Stufe einzeln
-// Magie+Eig-Bonus+TaW-StufeX berechnet, alle Werte durch "/" getrennt (nicht nur die hoechste).
+// Zeilen-Layout (Nutzer-Vorgabe 2026-07-24: Grad ist jetzt die erste Spalte): Grad | TaW | Name |
+// Min.Int | Eig | Wirkung | Gegenprobe | RW | Ziel | Form | Art | Aufr. | VZ | ED | WD |
+// "St.1/St.2/St.3" | Mana. St.2/St.3 nur sichtbar mit den Talenten
+// talente_spruchmagie_stufe_2/3_zaubern (schulen-uebergreifend). Zauberprobe (nur wenn TaW>0):
+// fuer jede freigeschaltete Stufe einzeln Magie+Eig-Bonus+TaW-StufeX berechnet, alle Werte durch
+// "/" getrennt (nicht nur die hoechste).
+//
+// Struktur je Schule (Nutzer 2026-07-24): innerhalb der Schule-Gruppe ist jeder Grad ein eigener
+// Block mit Header-Zeile. Bereits gelernte Zauber (TaW>0) dieses Grades sind IMMER sichtbar,
+// unabhaengig vom Auf/Zu-Zustand - nur die noch nicht gelernten Zauber dieses Grades stecken
+// hinter einem eigenen Auf/Zu-Toggle ("n weitere nicht gelernte Zauber"), damit man die grosse
+// Zauberliste ausblenden kann, ohne die eigenen Zauber zu verlieren. Zusaetzlich gibt es oben im
+// Tab eine eigene collapsible Gesamtliste ueber alle Schulen hinweg mit allen gewaehlten Zaubern
+// (TaW>0), inkl. Schule-Spalte, damit man nicht durch jede Schule einzeln scrollen muss.
 
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import { canLearnSpell, canIncreaseSpell, getMaxLernbarerGrad } from '../engine/spruchmagieGating';
@@ -23,9 +32,23 @@ import type { OnValueChange } from './categoryView';
 const STUFE_2_TALENT_REFERENZ = 'talente_spruchmagie_stufe_2_zaubern';
 const STUFE_3_TALENT_REFERENZ = 'talente_spruchmagie_stufe_3_zaubern';
 
+const SPRUCHMAGIE_COLUMNS = [
+  'Grad', 'TaW', 'Name', 'Min.Int', 'Eig', 'Wirkung', 'Gegenprobe', 'RW', 'Ziel', 'Form', 'Art',
+  'Aufr.', 'VZ', 'ED', 'WD', 'St. 1/2/3', 'Mana',
+];
+const SPRUCHMAGIE_COLUMNS_MIT_SCHULE = ['Schule', ...SPRUCHMAGIE_COLUMNS];
+
 /** Aufgeklappte Zauberschulen (Nutzer-Persistenz-Muster wie openAlchemikaKategorien in
  *  ausruestung.ts) - alle standardmaessig zu. */
 const openSchulen = new Set<string>();
+
+/** Aufgeklappte Grad-Bloecke je Schule (Key "<Schule>::<Grad>") - analog openSchulen, ebenfalls
+ *  standardmaessig zu (nur die bereits gelernten Zauber sollen ungefragt sichtbar sein). */
+const openGrade = new Set<string>();
+
+/** Gesamtliste ueber alle Schulen (Nutzer 2026-07-24) - anders als Schulen/Grad-Bloecke per
+ *  Default OFFEN, weil sie nur die bereits gewaehlten (also wenigen) Zauber zeigt. */
+let openGesamtliste = true;
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -106,12 +129,47 @@ function buildSchulRows(sheet: ComputedSheet, schule: string): Row[] {
     })
     // Grad > Weisheit+1 ist mit keinem Hauszauber jemals erreichbar - komplett ausblenden
     // statt nur zu sperren (Nutzer 2026-07-21: "only show zauber available with wei+1").
-    .filter((r) => Number(r.rule.grad ?? 0) <= weisheit + 1)
+    .filter((r) => Number(r.rule.grad ?? 0) <= weisheit + 1);
+}
+
+interface GradGruppe {
+  grad: number;
+  gewaehlt: Row[];
+  rest: Row[];
+}
+
+/** Gruppiert die Zauber einer Schule nach Grad (aufsteigend) - innerhalb jeder Gruppe getrennt
+ *  nach bereits gewaehlt (TaW>0, immer sichtbar) und Rest (freigeschaltet/gesperrt, hinter dem
+ *  Grad-Toggle versteckbar). */
+function groupRowsByGrad(rows: Row[]): GradGruppe[] {
+  const byGrad = new Map<number, Row[]>();
+  for (const r of rows) {
+    const grad = Number(r.rule.grad ?? 0);
+    if (!byGrad.has(grad)) byGrad.set(grad, []);
+    byGrad.get(grad)!.push(r);
+  }
+  const nameCompare = (a: Row, b: Row) => (a.rule.beschreibung ?? '').localeCompare(b.rule.beschreibung ?? '', 'de');
+  return [...byGrad.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([grad, gruppenRows]) => ({
+      grad,
+      gewaehlt: gruppenRows.filter((r) => r.currentValue > 0).sort(nameCompare),
+      rest: gruppenRows
+        .filter((r) => r.currentValue <= 0)
+        .sort((a, b) => (a.unlocked !== b.unlocked ? (a.unlocked ? -1 : 1) : nameCompare(a, b))),
+    }));
+}
+
+/** Alle gewaehlten Zauber (TaW>0) ueber alle Schulen hinweg, fuer die Gesamtliste (Nutzer
+ *  2026-07-24) - sortiert nach Schule, dann Grad, dann Name. */
+function buildAllGewaehlteRows(sheet: ComputedSheet, schulen: string[]): Row[] {
+  return schulen
+    .flatMap((s) => buildSchulRows(sheet, s))
+    .filter((r) => r.currentValue > 0)
     .sort((a, b) => {
-      const groupOf = (r: Row) => (r.currentValue > 0 ? 0 : r.unlocked ? 1 : 2);
-      const ga = groupOf(a);
-      const gb = groupOf(b);
-      if (ga !== gb) return ga - gb;
+      const schuleA = a.rule.parent ?? '';
+      const schuleB = b.rule.parent ?? '';
+      if (schuleA !== schuleB) return schuleA.localeCompare(schuleB, 'de');
       const gradA = Number(a.rule.grad ?? 0);
       const gradB = Number(b.rule.grad ?? 0);
       if (gradA !== gradB) return gradA - gradB;
@@ -188,7 +246,11 @@ function gateTitle(row: Row): string {
   return gruende.join(' | ');
 }
 
-function renderRow(sheet: ComputedSheet, row: Row): string {
+/** rowKey identifiziert die konkrete <tr>-Instanz eindeutig im DOM (nicht nur den Zauber) - ein
+ *  gewaehlter Zauber taucht sowohl in seiner Schul-Tabelle als auch in der Gesamtliste auf, beide
+ *  Zeilen brauchen fuer withScrollAnchor (siehe scrollAnchor.ts) einen je Vorkommen eindeutigen
+ *  Selektor, sonst trifft document.querySelector immer nur das erste Vorkommen im DOM. */
+function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean }): string {
   const { rule, currentValue, detail } = row;
   const name = rule.beschreibung ?? rule.referenz;
   const stufen = unlockedStufen(sheet, detail);
@@ -203,9 +265,14 @@ function renderRow(sheet: ComputedSheet, row: Row): string {
     ? `${row.kostenNext - row.kostenCurrent}SP/total ${row.kostenNext}`
     : '';
   const probe = renderZauberprobeCell(sheet, row, stufen);
+  const showSchule = opts?.showSchule ?? false;
+  const rowKey = showSchule ? `gesamt::${rule.referenz}` : `schule::${rule.parent}::${rule.referenz}`;
+  const schuleCell = showSchule ? `<td>${escapeHtml(rule.parent ?? '–')}</td>` : '';
 
   return `
-    <tr class="${rowClass}" data-referenz="${rule.referenz}">
+    <tr class="${rowClass}" data-referenz="${rule.referenz}" data-row-key="${escapeHtml(rowKey)}">
+      ${schuleCell}
+      <td>${escapeHtml(rule.grad ?? '–')}</td>
       <td class="spruchmagie-taw-cell">
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
         <span class="kampf-pool-value">${currentValue}</span>
@@ -213,7 +280,6 @@ function renderRow(sheet: ComputedSheet, row: Row): string {
         <span class="stat-cost stat-cost-click">${costLabel}</span>
       </td>
       <td class="spruchmagie-name-cell">${escapeHtml(name)}${probe ? `<div class="spruchmagie-probe">Probe: ${probe}</div>` : ''}</td>
-      <td>${escapeHtml(rule.grad ?? '–')}</td>
       <td>${escapeHtml(detail?.minInt ?? '–')}</td>
       <td>${escapeHtml(getEigBonusValue(sheet, rule.eigBonus)?.label ?? '–')}</td>
       <td class="spruchmagie-wirkung-cell">${escapeHtml(rule.wirkung ?? '–')}</td>
@@ -231,22 +297,69 @@ function renderRow(sheet: ComputedSheet, row: Row): string {
     </tr>`;
 }
 
+function gradToggleLabel(isOpen: boolean, count: number): string {
+  return `${isOpen ? '▾' : '▸'} ${count} weitere nicht gelernte Zauber`;
+}
+
+function renderGradToggleRow(gradKey: string, count: number, colspan: number, isOpen: boolean): string {
+  return `
+    <tr class="spruchmagie-grad-toggle-row">
+      <td colspan="${colspan}">
+        <button type="button" class="spruchmagie-grad-toggle-btn" data-grad-target="${escapeHtml(gradKey)}" data-grad-count="${count}" aria-expanded="${isOpen}">${escapeHtml(gradToggleLabel(isOpen, count))}</button>
+      </td>
+    </tr>`;
+}
+
+function renderGradGruppe(sheet: ComputedSheet, schule: string, gruppe: GradGruppe, colspan: number): string {
+  const gradKey = `${schule}::${gruppe.grad}`;
+  const isOpen = openGrade.has(gradKey);
+  const kopfUndGewaehlt = `
+    <tbody>
+      <tr class="spruchmagie-grad-header"><td colspan="${colspan}">Grad ${gruppe.grad}</td></tr>
+      ${gruppe.gewaehlt.map((r) => renderRow(sheet, r)).join('')}
+      ${gruppe.rest.length > 0 ? renderGradToggleRow(gradKey, gruppe.rest.length, colspan, isOpen) : ''}
+    </tbody>`;
+  const restKoerper = gruppe.rest.length > 0
+    ? `<tbody data-grad-body="${escapeHtml(gradKey)}" class="${isOpen ? '' : 'spruchmagie-grad-hidden'}">${gruppe.rest.map((r) => renderRow(sheet, r)).join('')}</tbody>`
+    : '';
+  return kopfUndGewaehlt + restKoerper;
+}
+
 function renderSchulGruppe(sheet: ComputedSheet, schule: string): string {
   const rows = buildSchulRows(sheet, schule);
   if (rows.length === 0) return '';
   const openAttr = openSchulen.has(schule) ? ' open' : '';
+  const gruppen = groupRowsByGrad(rows);
+  const colspan = SPRUCHMAGIE_COLUMNS.length;
   return `
     <div class="stat-card">
       <details class="stat-group" data-spruchmagie-schule="${escapeHtml(schule)}"${openAttr}>
         <summary>${escapeHtml(schule)} <span class="stat-group-count">(${rows.length} Zauber)</span></summary>
         <div class="kampf-table-scroll">
           <table class="bogen-table spruchmagie-table">
-            <thead><tr>
-              <th>TaW</th><th>Name</th><th>Grad</th><th>Min.Int</th><th>Eig</th><th>Wirkung</th>
-              <th>Gegenprobe</th><th>RW</th><th>Ziel</th><th>Form</th><th>Art</th><th>Aufr.</th>
-              <th>VZ</th><th>ED</th><th>WD</th><th>St. 1/2/3</th><th>Mana</th>
-            </tr></thead>
-            <tbody>${rows.map((r) => renderRow(sheet, r)).join('')}</tbody>
+            <thead><tr>${SPRUCHMAGIE_COLUMNS.map((c) => `<th>${escapeHtml(c)}</th>`).join('')}</tr></thead>
+            ${gruppen.map((g) => renderGradGruppe(sheet, schule, g, colspan)).join('')}
+          </table>
+        </div>
+      </details>
+    </div>`;
+}
+
+function renderGesamtliste(sheet: ComputedSheet, schulen: string[]): string {
+  const rows = buildAllGewaehlteRows(sheet, schulen);
+  const openAttr = openGesamtliste ? ' open' : '';
+  const colspan = SPRUCHMAGIE_COLUMNS_MIT_SCHULE.length;
+  const body = rows.length > 0
+    ? rows.map((r) => renderRow(sheet, r, { showSchule: true })).join('')
+    : `<tr><td colspan="${colspan}" class="spruchmagie-empty">Noch keine Zauber gewählt.</td></tr>`;
+  return `
+    <div class="stat-card">
+      <details class="stat-group" data-spruchmagie-gesamtliste${openAttr}>
+        <summary>Alle gewählten Zauber <span class="stat-group-count">(${rows.length})</span></summary>
+        <div class="kampf-table-scroll">
+          <table class="bogen-table spruchmagie-table">
+            <thead><tr>${SPRUCHMAGIE_COLUMNS_MIT_SCHULE.map((c) => `<th>${escapeHtml(c)}</th>`).join('')}</tr></thead>
+            <tbody>${body}</tbody>
           </table>
         </div>
       </details>
@@ -261,6 +374,7 @@ export function renderSpruchmagieView(container: HTMLElement, sheet: ComputedShe
     <div class="spruchmagie-info">
       <b>Zauberprobe</b> = Magie + Eig-Bonus + TaW − Stufe-Erschwerung (St. 1/2/3, je nachdem welche Stufe gesprochen wird)
     </div>
+    ${renderGesamtliste(sheet, schulen)}
     ${schulen.map((s) => renderSchulGruppe(sheet, s)).join('')}`;
 
   container.querySelectorAll<HTMLDetailsElement>('details[data-spruchmagie-schule]').forEach((details) => {
@@ -271,13 +385,34 @@ export function renderSpruchmagieView(container: HTMLElement, sheet: ComputedShe
     });
   });
 
+  const gesamtDetails = container.querySelector<HTMLDetailsElement>('details[data-spruchmagie-gesamtliste]');
+  gesamtDetails?.addEventListener('toggle', () => {
+    openGesamtliste = gesamtDetails.open;
+  });
+
+  container.querySelectorAll<HTMLButtonElement>('button[data-grad-target]').forEach((btn) => {
+    const key = btn.dataset.gradTarget!;
+    btn.addEventListener('click', () => {
+      const body = container.querySelector<HTMLTableSectionElement>(`tbody[data-grad-body="${CSS.escape(key)}"]`);
+      if (!body) return;
+      const isHiddenNow = body.classList.toggle('spruchmagie-grad-hidden');
+      const isOpen = !isHiddenNow;
+      if (isOpen) openGrade.add(key);
+      else openGrade.delete(key);
+      const count = Number(btn.dataset.gradCount ?? '0');
+      btn.setAttribute('aria-expanded', String(isOpen));
+      btn.textContent = gradToggleLabel(isOpen, count);
+    });
+  });
+
   container.querySelectorAll<HTMLTableRowElement>('tr[data-referenz]').forEach((tr) => {
     const referenz = tr.dataset.referenz!;
+    const rowKey = tr.dataset.rowKey!;
     const decBtn = tr.querySelector<HTMLButtonElement>('.stat-dec');
     const incBtn = tr.querySelector<HTMLButtonElement>('.stat-inc');
     const valueSpan = tr.querySelector<HTMLSpanElement>('.kampf-pool-value');
     const currentValue = Number(valueSpan?.textContent ?? 0);
-    const rowSelector = `tr[data-referenz="${CSS.escape(referenz)}"]`;
+    const rowSelector = `tr[data-row-key="${CSS.escape(rowKey)}"]`;
     decBtn?.addEventListener('click', () => {
       if (decBtn.disabled) return;
       withScrollAnchor(rowSelector, () => onChange(referenz, Math.max(0, currentValue - 1)));

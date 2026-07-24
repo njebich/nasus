@@ -1319,3 +1319,43 @@ body {
 .spruchmagie-row-invalid .stat-inc:disabled {
   cursor: not-allowed;
 }
+
+/* Grad-Bloecke je Schule (Nutzer 2026-07-24): Header-Zeile pro Grad, darunter immer sichtbare
+   bereits gewaehlte Zauber, dahinter optional ein Toggle fuer die restlichen (noch nicht
+   gelernten) Zauber dieses Grades - siehe renderGradGruppe in spruchmagie.ts. */
+.spruchmagie-grad-header td {
+  text-align: left;
+  font-weight: 600;
+  background: #8882;
+  padding-top: 0.5rem;
+}
+
+.spruchmagie-grad-toggle-row td {
+  text-align: left;
+  padding: 0.2rem 0;
+}
+
+.spruchmagie-grad-toggle-btn {
+  font: inherit;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0.1rem 0;
+}
+
+.spruchmagie-grad-toggle-btn:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.spruchmagie-grad-hidden {
+  display: none;
+}
+
+.spruchmagie-empty {
+  text-align: center;
+  opacity: 0.6;
+  font-style: italic;
+}

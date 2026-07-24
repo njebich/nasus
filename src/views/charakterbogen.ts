@@ -93,7 +93,7 @@ function renderCharakterwerteUndAttribute(sheet: ComputedSheet): string {
     </div>`;
 }
 
-const EIGENSCHAFTEN_PAARE: Array<[string, string]> = [
+export const EIGENSCHAFTEN_PAARE: Array<[string, string]> = [
   ['eig_k_ausstrahlung', 'eig_k_athletik'],
   ['eig_g_intelligenz', 'eig_k_geschicklichkeit'],
   ['eig_g_mut', 'eig_k_konstitution'],

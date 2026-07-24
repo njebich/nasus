@@ -15,6 +15,7 @@ import { computeFormulaImpact } from '../engine/formulaImpact';
 import type { CharacterValueSource } from '../engine/rules';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
+import { EIGENSCHAFTEN_PAARE } from './charakterbogen';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
@@ -389,6 +390,47 @@ function renderFernkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: Compu
   }).join('');
 }
 
+/** Eigenschaften-Tab (Nutzer "debugging" 2026-07-24, Layout-Korrektur 2026-07-24: "eig.bon next to
+ *  the relevant eig"): uebernimmt das Zwei-Spalten-Paar-Layout der read-only Eigenschaften-Tabelle
+ *  im Charakterbogen (EIGENSCHAFTEN_PAARE, siehe charakterbogen.ts) fuer die editierbare Ansicht,
+ *  ergaenzt um je eine Eig.Bonus-Spalte direkt neben ihrer Eigenschaft (Spaltenreihenfolge
+ *  Eigenschaft|Eig.Bon|Eigenschaft|Eig.Bon, wie im Charakterbogen). Die Eigenschaft-Zellen bleiben
+ *  unveraendert renderEditableRow (Selektoren/Tooltip/Kosten-Anzeige) - nur in eine <td> statt eines
+ *  Top-Level-Divs gepackt. */
+function findByReferenz(rows: ComputedRule[], referenz: string): ComputedRule | undefined {
+  return rows.find((r) => r.rule.referenz === referenz);
+}
+
+function renderEigenschaftsbonusCell(bonus: ComputedRule | undefined): string {
+  if (!bonus) return '<td class="stat-eig-bonus-cell"></td>';
+  if (bonus.error) {
+    return `<td class="stat-eig-bonus-cell"><span class="stat-error" title="${escapeHtml(bonus.error)}">nicht definiert ⚠</span></td>`;
+  }
+  return `<td class="stat-eig-bonus-cell stat-value-readonly"${formulaTooltip(bonus.rule.formelRaw)}>${escapeHtml(formatComputedValue(bonus.computedValue ?? '–'))}</td>`;
+}
+
+function renderEigenschaftenTable(editable: ComputedRule[], bonusRows: ComputedRule[], impactValues?: CharacterValueSource): string {
+  const findEig = (referenz: string) => findByReferenz(editable, referenz);
+  const rows = EIGENSCHAFTEN_PAARE.map(([links, rechts]) => {
+    const eigLinks = findEig(links);
+    const eigRechts = findEig(rechts);
+    const bonusLinks = findByReferenz(bonusRows, links.replace(/^eig_/, 'eig_bonus_'));
+    const bonusRechts = findByReferenz(bonusRows, rechts.replace(/^eig_/, 'eig_bonus_'));
+    return `
+      <tr>
+        <td>${eigLinks ? renderEditableRow(eigLinks, undefined, impactValues) : ''}</td>
+        ${renderEigenschaftsbonusCell(bonusLinks)}
+        <td>${eigRechts ? renderEditableRow(eigRechts, undefined, impactValues) : ''}</td>
+        ${renderEigenschaftsbonusCell(bonusRechts)}
+      </tr>`;
+  }).join('');
+  return `
+    <table class="bogen-table eigenschaften-edit-table">
+      <thead><tr><th>Eigenschaft</th><th>Eig.Bon</th><th>Eigenschaft</th><th>Eig.Bon</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
 function poolFieldReadOnly(label: string, value: number, max: number | undefined): string {
   const maxHint = max !== undefined ? ` / ${max}` : '';
   return `
@@ -475,6 +517,7 @@ export function renderCategoryView(
   // "Kampf" mit seinem Leberschutz-Pool) behalten das bisherige Verhalten.
   const isNahkampf = kategorie === 'Nahkampf';
   const isFernkampf = kategorie === 'Fernkampf';
+  const isEigenschaft = kategorie === 'Eigenschaft';
   // Die "Attacke-/Parade-Basis-Wert"- (Nahkampf) bzw. "Fernkampf-(Spezialisierungs-)Basis-Wert"-
   // Formelzeilen (Fernkampf) stehen jetzt live in den Basis-Spalten der Waffentabelle
   // (renderWaffenBasisCell/renderFernkampfBasisCell) - aus "Berechnete Werte" ausgeblendet, sonst
@@ -512,7 +555,9 @@ export function renderCategoryView(
         </tr></thead>
         <tbody>${editableHierarchy.map((n) => renderFernkampfHauptfertigkeitRows(n, readOnly)).join('')}</tbody>
       </table>`
-      : editableHierarchy.map((n) => renderEditableGroup(n, formulaImpactValues)).join('');
+      : isEigenschaft
+        ? renderEigenschaftenTable(restEditable, sheet.byKategorie['Eigenschaftsbonus'] ?? [], formulaImpactValues)
+        : editableHierarchy.map((n) => renderEditableGroup(n, formulaImpactValues)).join('');
 
   container.innerHTML = `
     <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet)}</div>

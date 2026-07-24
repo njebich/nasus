@@ -824,6 +824,16 @@ body {
   width: 3rem;
 }
 
+/* Eigenschaften-Tab (categoryView.ts renderEigenschaftenTable): editierbares Pendant zur
+   read-only .bogen-table-eigenschaften - Eigenschaft-Zellen tragen den vollen .stat-row (Selektoren/
+   Tooltip/Kosten), die beiden Eig.Bonus-Spalten liegen am Tabellenende unter einem gemeinsamen
+   colspan="2"-Kopf. */
+.eigenschaften-edit-table td.stat-eig-bonus-cell {
+  text-align: center;
+  width: 3.5rem;
+  vertical-align: middle;
+}
+
 .bogen-spez td:first-child {
   padding-left: 1.25rem;
   opacity: 0.85;

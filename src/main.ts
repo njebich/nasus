@@ -72,6 +72,10 @@ if (lastActiveId && !currentCharacter) setLastActiveCharacterId(null); // Charak
 let errorMessage = '';
 let activeTab: Tab = 'Eigenschaft';
 let showNewCharacterForm = false;
+/** "Bestehenden Charakter erstellen" (Nutzer 2026-07-24): zweite Auswahl neben "Neuer Charakter"
+ *  im selben Formular - einziger Unterschied ist das bestehenderCharakter-Flag auf dem erzeugten
+ *  Charakter, das alle Verfuegbarkeit-Kaufsperren deaktiviert (siehe characterMutations.ts). */
+let newCharacterBestehend = false;
 let confirmingDelete = false;
 let headerSectionOpen = true;
 
@@ -335,6 +339,7 @@ function handleToggleWaffenLoadoutFavorite(loadoutId: string): void {
 function renderNewCharacterForm(): string {
   return `
     <form id="new-character-form" class="new-character-form">
+      ${newCharacterBestehend ? '<p class="new-character-hinweis">Bestehenden Charakter erstellen: alle Verfügbarkeit-Kaufsperren sind deaktiviert (z.B. für vom Meister vergebene Gegenstände).</p>' : ''}
       <label>Name * <input type="text" id="nc-name" required autofocus /></label>
       <label>Spezies *
         <select id="nc-spezies" required>
@@ -423,6 +428,7 @@ function render(): void {
           ${characters.map((c) => `<option value="${c.id}" ${c.id === currentCharacter?.id ? 'selected' : ''}>${c.name}</option>`).join('')}
         </select>
         <button type="button" id="new-character">Neuer Charakter</button>
+        <button type="button" id="new-character-bestehend">Bestehenden Charakter erstellen</button>
         ${currentCharacter ? '<button type="button" id="delete-character">Löschen</button>' : ''}
       </div>
       ${showNewCharacterForm ? renderNewCharacterForm() : ''}
@@ -464,11 +470,19 @@ function render(): void {
 
   document.querySelector('#new-character')?.addEventListener('click', () => {
     showNewCharacterForm = true;
+    newCharacterBestehend = false;
+    render();
+  });
+
+  document.querySelector('#new-character-bestehend')?.addEventListener('click', () => {
+    showNewCharacterForm = true;
+    newCharacterBestehend = true;
     render();
   });
 
   document.querySelector('#new-character-cancel')?.addEventListener('click', () => {
     showNewCharacterForm = false;
+    newCharacterBestehend = false;
     render();
   });
 
@@ -576,9 +590,10 @@ function render(): void {
       religion: religionName ? combineReligionSekte(religionName, sekteName) : undefined,
     };
     const startbudget = (document.querySelector<HTMLInputElement>('input[name="nc-startbudget"]:checked')!.value) as StartbudgetPreset;
-    currentCharacter = createCharacter(name, header, startbudget);
+    currentCharacter = createCharacter(name, header, startbudget, newCharacterBestehend);
     setLastActiveCharacterId(currentCharacter.id);
     showNewCharacterForm = false;
+    newCharacterBestehend = false;
     headerSectionOpen = false;
     render();
   });

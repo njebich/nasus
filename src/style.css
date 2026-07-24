@@ -636,6 +636,15 @@ body {
   gap: 0.5rem;
 }
 
+.new-character-hinweis {
+  grid-column: 1 / -1;
+  background: #eef6ff;
+  border: 1px solid #90b8e0;
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+  margin: 0 0 0.5rem;
+}
+
 .charakterheader {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

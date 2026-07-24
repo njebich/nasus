@@ -166,6 +166,12 @@ const TOP_SECTIONS = [
 type TopSection = (typeof TOP_SECTIONS)[number];
 const openTopSections = new Set<TopSection>();
 
+/** "Bestehenden Charakter erstellen"-Modus (Nutzer 2026-07-24): deaktiviert alle Verfuegbarkeit-
+ *  Kaufsperren-Anzeigen (gesperrt-Buttons) analog zur Mutation-Gate-Abschaltung in
+ *  characterMutations.ts - modul-globaler Renderer-Zustand wie openGruppen/alchemikaQty etc.,
+ *  von renderAusruestungView() bei jedem Render aus character.bestehenderCharakter gesetzt. */
+let bestehenderCharakterMode = false;
+
 /** Alchemika-Katalog gruppiert nach Kategorie (Gifte/Heiltraenke/Kampftraenke/Parfum/
  *  Zustandstraenke), collapsible je Kategorie (Nutzer 2026-07-19: "Ausgabe collapsible nach
  *  Kategorie") - gleiches Aufklapp-Persistenz-Muster wie openGruppen/openTopSections. */
@@ -187,7 +193,7 @@ const alchemikaQty = new Map<number, number>();
 
 function renderAlchemikaRow(row: AlchemikaRow): string {
   const qty = alchemikaQty.get(row.sourceRow) ?? 1;
-  const gesperrt = row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
+  const gesperrt = !bestehenderCharakterMode && row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
   return `
     <div class="ausruestung-row" data-alchemika="${row.sourceRow}"${alchemikaStatTooltip(row)}>
       <span class="stat-label">${escapeHtml(row.name)}</span>
@@ -233,8 +239,8 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number]): string {
     const permanent = previewArtefaktPrice(k, 'permanent');
     const verfuegbarkeitEinmalig = Number(k.verfuegbarkeitEinmalig);
     const verfuegbarkeitPermanent = Number(k.verfuegbarkeitPermanent);
-    const einmaligGesperrt = Number.isFinite(verfuegbarkeitEinmalig) && verfuegbarkeitEinmalig >= 5;
-    const permanentGesperrt = Number.isFinite(verfuegbarkeitPermanent) && verfuegbarkeitPermanent >= 5;
+    const einmaligGesperrt = !bestehenderCharakterMode && Number.isFinite(verfuegbarkeitEinmalig) && verfuegbarkeitEinmalig >= 5;
+    const permanentGesperrt = !bestehenderCharakterMode && Number.isFinite(verfuegbarkeitPermanent) && verfuegbarkeitPermanent >= 5;
     return `
       <div class="artefakt-grad-row">
         <span class="artefakt-grad-label">Grad ${escapeHtml(k.grad ?? '?')}</span>
@@ -527,7 +533,7 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
 /** Boegen/Armbrust sind fertige Objekte mit festem Preis (keine Material/Fertigung/Anpassung-
  *  Komposition wie NK-Waffen/Schilde/Ruestung - siehe project-fk-waffen-erfassung memory). */
 function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow): string {
-  const gesperrt = row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
+  const gesperrt = !bestehenderCharakterMode && row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
   return `
     <div class="ausruestung-row" data-fernkampfwaffe="${typ}:${row.sourceRow}"${fernkampfwaffeStatTooltip(row)}>
       <span class="stat-label">${escapeHtml(row.name)}</span>
@@ -546,7 +552,7 @@ function renderFeuerwaffeRow(row: FernkampfRow): string {
   const standard = feuerwaffenStandardauswahl(row);
   const auswahl = feuerwaffenPicker.get(row.sourceRow) ?? standard;
   const composed = composeFeuerwaffe(row, auswahl);
-  const gesperrt = composed.verfuegbarkeitStufe >= 5;
+  const gesperrt = !bestehenderCharakterMode && composed.verfuegbarkeitStufe >= 5;
   const quantity = feuerwaffenMunitionQty.get(row.sourceRow) ?? 1;
   const munitionOptionen = feuerwaffenMunitionOptionen(
     row['Lademechanik'] ?? '', composed.munition, composed.kaliber,
@@ -636,7 +642,7 @@ function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
       ? modOptionen.find((r) => r.sourceRow === sel.modifikatorSourceRow) ?? null
       : null;
     const composed = composeMunition(basis, modifikator);
-    const gesperrt = composed.verfuegbarkeitStufe !== undefined && composed.verfuegbarkeitStufe >= 5;
+    const gesperrt = !bestehenderCharakterMode && composed.verfuegbarkeitStufe !== undefined && composed.verfuegbarkeitStufe >= 5;
     const statTooltip = tooltipAttr([
       `Schaden: ${composed.wuerfel}`,
       `Fixschaden: ${composed.fixschaden}`,
@@ -759,6 +765,7 @@ export function renderAusruestungView(
   character: CharacterState,
   callbacks: AusruestungCallbacks,
 ): void {
+  bestehenderCharakterMode = character.bestehenderCharakter ?? false;
   const filteredPreisliste = PREISLISTE.filter((r) => r.art === selectedArt)
     .filter((r) => !searchText || (r.name ?? '').toLowerCase().includes(searchText.toLowerCase()));
   const needleWaffen = searchWaffen.trim().toLowerCase();

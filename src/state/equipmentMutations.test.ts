@@ -60,6 +60,14 @@ describe('buyArtefakt', () => {
     const character = withDublonen(Number(gesperrt.kostenPermanent));
     expect(() => buyArtefakt(character, gesperrt.referenz, gesperrt.grad!, 'permanent')).toThrow(MutationError);
   });
+
+  it('bestehenderCharakter=true: Kaufsperre ab Verfügbarkeit 5 gilt nicht', () => {
+    const gesperrt = ARTEFAKT_KOSTEN.find((r) => Number(r.verfuegbarkeitPermanent) >= 5 && r.kostenPermanent)!;
+    const character = withDublonen(Number(gesperrt.kostenPermanent));
+    character.bestehenderCharakter = true;
+    const updated = buyArtefakt(character, gesperrt.referenz, gesperrt.grad!, 'permanent');
+    expect(updated.equipment).toHaveLength(1);
+  });
 });
 
 describe('buyFeuerwaffe', () => {
@@ -82,6 +90,14 @@ describe('buyFeuerwaffe', () => {
     const hakenbuechse = FEUERWAFFEN.find((row) => row.name === 'Hakenbüchse')!;
     expect(() => buyFeuerwaffe(withDublonen(10000), hakenbuechse.sourceRow, feuerwaffenStandardauswahl(hakenbuechse)))
       .toThrow(MutationError);
+  });
+
+  it('bestehenderCharakter=true: Kaufsperre ab Verfuegbarkeit 5 gilt nicht', () => {
+    const hakenbuechse = FEUERWAFFEN.find((row) => row.name === 'Hakenbüchse')!;
+    const character = withDublonen(10000);
+    character.bestehenderCharakter = true;
+    const updated = buyFeuerwaffe(character, hakenbuechse.sourceRow, feuerwaffenStandardauswahl(hakenbuechse));
+    expect(updated.equipment).toHaveLength(1);
   });
 });
 

@@ -460,7 +460,7 @@ export function buyArtefakt(
   const verfuegbarkeit = Number(variant === 'einmalig'
     ? kostenRow.verfuegbarkeitEinmalig
     : kostenRow.verfuegbarkeitPermanent);
-  if (Number.isFinite(verfuegbarkeit) && verfuegbarkeit >= 5) {
+  if (!character.bestehenderCharakter && Number.isFinite(verfuegbarkeit) && verfuegbarkeit >= 5) {
     throw new MutationError(`'${referenz}' Grad ${grad} (${variant}) ist nicht verfügbar (Verfügbarkeit ${verfuegbarkeit})`);
   }
 
@@ -489,7 +489,8 @@ const VERFUEGBARKEIT_SPERRE_AB = 5;
  *  Armbrust/Pfeile/Bolzen haben nur eine einzige "Direkt beim Volk"-Verfuegbarkeit-Spalte, keinen
  *  NW/AW-Split wie Ruestung - Nutzer 2026-07-19 bestaetigt "Kaufsperre" trotzdem einzubauen, mit
  *  Reminder im Entwickeln-Sheet (Zeile 36), dass der Region-Split hier noch nachgeholt werden muss. */
-function assertFernkampfVerfuegbar(stufe: number | undefined, name: string): void {
+function assertFernkampfVerfuegbar(stufe: number | undefined, name: string, bestehenderCharakter?: boolean): void {
+  if (bestehenderCharakter) return;
   if (stufe !== undefined && stufe >= VERFUEGBARKEIT_SPERRE_AB) {
     throw new MutationError(`'${name}' ist nicht verfügbar (Verfügbarkeit ${stufe})`);
   }
@@ -529,7 +530,7 @@ export function equipRuestung(
   const verfuegbarkeit = welt === 'NW' ? composed.verfuegbarkeitNw
     : welt === 'AW' ? composed.verfuegbarkeitAw
     : undefined;
-  if (verfuegbarkeit !== undefined && verfuegbarkeit >= VERFUEGBARKEIT_SPERRE_AB) {
+  if (!character.bestehenderCharakter && verfuegbarkeit !== undefined && verfuegbarkeit >= VERFUEGBARKEIT_SPERRE_AB) {
     throw new MutationError(`'${basis.name}' ist in ${welt} nicht verfügbar (Verfügbarkeit ${verfuegbarkeit})`);
   }
 
@@ -675,7 +676,7 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
   const table = typ === 'boegen' ? BOEGEN : ARMBRUST;
   const row = table.find((r) => r.sourceRow === sourceRow);
   if (!row) throw new MutationError(`${typ === 'boegen' ? 'Bogen' : 'Armbrust'} (Zeile ${sourceRow}) existiert nicht`);
-  assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name);
+  assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name, character.bestehenderCharakter);
   if (row.preisDublonen === undefined) {
     throw new MutationError(`'${row.name}' ist nicht käuflich (kein Preis hinterlegt: "${row['Preis'] ?? '?'}")`);
   }
@@ -705,7 +706,7 @@ export function buyFeuerwaffe(
   } catch (error) {
     throw new MutationError(error instanceof Error ? error.message : String(error));
   }
-  assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, basis.name);
+  assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, basis.name, character.bestehenderCharakter);
 
   const candidate = clone(character);
   const entry: EquipmentEntry = {
@@ -757,7 +758,7 @@ export function buyMunition(
 
   const composed = composeMunition(basis, modifikator);
   const anzeigeName = modifikator ? `${modifikator.name} (${basis.name})` : basis.name;
-  assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, anzeigeName);
+  assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, anzeigeName, character.bestehenderCharakter);
   if (composed.preisDublonen === null) {
     throw new MutationError(`'${basis.name}' ist nicht käuflich (kein Preis hinterlegt: "${basis['Preis'] ?? '?'}")`);
   }
@@ -809,7 +810,7 @@ export function buyAlchemika(character: CharacterState, sourceRow: number, quant
   if (quantity <= 0) throw new MutationError('Anzahl muss größer als 0 sein');
   const row = ALCHEMIKA.find((r) => r.sourceRow === sourceRow);
   if (!row) throw new MutationError(`Alchemika-Eintrag (Zeile ${sourceRow}) existiert nicht`);
-  assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name);
+  assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name, character.bestehenderCharakter);
   if (!row.preisAvailable || row.preisDublonen === undefined) {
     throw new MutationError(`'${row.name}' ist nicht käuflich (kein Preis hinterlegt: "${row.preisRoh ?? '?'}")`);
   }

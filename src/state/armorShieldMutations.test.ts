@@ -102,6 +102,15 @@ describe('Verfuegbarkeit-NW/-AW Kaufsperre (Nutzer 2026-07-18: ab Stufe 5 "Fast 
     expect(updated.ruestungSlots['torso:4'].computedStatsSnapshot.verfuegbarkeitAw).toBe(3);
   });
 
+  it('bestehenderCharakter=true: Neue Welt Faltstahlpanzer (NW=5) ist NICHT gesperrt', () => {
+    const character = withWelt('NW', 100000);
+    character.bestehenderCharakter = true;
+    const updated = equipRuestung(
+      character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
+    );
+    expect(updated.ruestungSlots['torso:4'].computedStatsSnapshot.verfuegbarkeitNw).toBe(5);
+  });
+
   it('keine Region gewaehlt: keine Sperre (analog zu unbekannter Spezies bei Eigenschaften)', () => {
     const character = createCharacter('Test'); // Herkunft/Welt bleibt leer
     character.values['dublonen_bank'] = 100000;

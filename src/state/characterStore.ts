@@ -114,6 +114,12 @@ export interface CharacterState extends CharacterHeader {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  /** Charaktererstellung "Bestehenden Charakter erstellen" (Nutzer 2026-07-24): bildet einen
+   *  bereits im Spiel etablierten Charakter nach, dessen Ausruestung/Artefakte nicht ueber den
+   *  ueblichen Erstellungs-Einkauf, sondern per Meister-Erlaubnis/Spielgeschehen erworben wurden.
+   *  Einzige Auswirkung: alle Verfuegbarkeit-Kaufsperren (siehe characterMutations.ts,
+   *  VERFUEGBARKEIT_SPERRE_AB) sind deaktiviert, alles andere bleibt identisch zu 'Neuer Charakter'. */
+  bestehenderCharakter?: boolean;
   // "Gesamt-EP" (ep_gesamt) und Geld (dublonen_bank/dublonen_bar) sind selbst normale
   // Art='Wert'-Regelwerkseintraege und leben deshalb HIER, nicht als separate Felder -
   // computeSheet() liest sie wie jeden anderen Wert aus dieser Map.
@@ -282,11 +288,13 @@ export function createCharacter(
   name: string,
   header?: Partial<Omit<CharacterHeader, 'name'>>,
   startbudget?: StartbudgetPreset,
+  bestehenderCharakter?: boolean,
 ): CharacterState {
   const now = new Date().toISOString();
   const state: CharacterState = {
     id: newId(),
     name,
+    bestehenderCharakter: bestehenderCharakter || undefined,
     spezies: header?.spezies ?? '',
     herkunftOrtId: header?.herkunftOrtId,
     herkunftSnapshot: header?.herkunftSnapshot,

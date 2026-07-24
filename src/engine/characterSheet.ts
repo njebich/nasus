@@ -41,6 +41,11 @@ export interface ComputedRule {
   /** Kosten in der fuer diese Kategorie zutreffenden Waehrung (SP ausser bei Talente: TaP). */
   kostenCurrent?: number;
   kostenNext?: number;
+  /** Gesamtkosten bei currentValue-1 (nur wenn currentValue>0) - fuer den echten "Rueckerstattung"-
+   *  Tooltip am "-"-Button (Nutzer-Entscheidung 2026-07-24: "Both buttons, real refund calc" statt
+   *  eines symmetrisch gespiegelten kostenNext-Werts). kostenCurrent-kostenPrev ist der Preis, den
+   *  der zuletzt gekaufte Punkt tatsaechlich gekostet hat. */
+  kostenPrev?: number;
   selected?: boolean;
   kostenSelect?: number;
   /** Nur fuer Art='Fixwert': roher Referenztext (z.B. "0,3 m/s", "je nach Pferd, ca. 10-15"),
@@ -153,6 +158,14 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
         // Wurf darf das bereits erfolgreich berechnete kostenCurrent nicht verwerfen.
         result.kostenCurrent = Number(evalKostenFor(rule.referenz, currentValue, values));
         result.kostenNext = Number(evalKostenFor(rule.referenz, currentValue + 1, values));
+        if (currentValue > 0) {
+          try {
+            result.kostenPrev = Number(evalKostenFor(rule.referenz, currentValue - 1, values));
+          } catch {
+            // kein Rueckerstattungs-Tooltip, wenn currentValue-1 aus irgendeinem Grund nicht
+            // auswertbar ist (z.B. Tabellenrand) - kostenCurrent/kostenNext bleiben davon unberuehrt.
+          }
+        }
       } catch (err) {
         result.error = err instanceof Error ? err.message : String(err);
       }

@@ -55,21 +55,81 @@ function infoIcon(info: string | undefined): string {
   return `<span class="stat-info-icon"${tooltipAttr(info)}>ⓘ</span>`;
 }
 
-/** Formel-Impact-Liste (Plan-Phase 3, nur Eigenschaften/Attribute): baut den Tooltip-Text fuer
- *  einen +/- Button - nur die Formeln, die sich durch den Klick tatsaechlich aendern wuerden,
- *  als "<Formelname>: <neuer Wert>"-Zeilen. Leer (kein Tooltip), wenn nichts sich aendert. */
-function impactTooltip(referenz: string, newWert: number, impactValues: CharacterValueSource | undefined): string {
+/** Kategorien, deren Zeilen-Formel-Tooltip (Nutzer-Direktive 2026-07-24 "Remove Tooltips ... For
+ *  now") momentan entfaellt - NUR der Zeilen-Tooltip (rowTooltipForKategorie), NICHT die Kosten-
+ *  Tooltips an den +/- Buttons (Nutzer-Klarstellung: "cost tooltips are cool for all -/+ buttons",
+ *  siehe stepTooltip, das dieses Set bewusst nicht mehr prueft). */
+const NO_TOOLTIP_KATEGORIEN = new Set(['WHK', 'Sprache & Kultur']);
+
+/** Kategorien, die statt der rohen Kosten-Formel (SVERWEIS-Kostentabelle bzw. "wert*9") den
+ *  bereits gepflegten (i)-Info-Text als Zeilen-Tooltip zeigen (Nutzer 2026-07-24: "on hover, show
+ *  (i) text, not sverweis"/"...not Wert*9" fuer Grundfertigkeiten/Sonderfertigkeiten). */
+const INFO_STATT_KOSTEN_KATEGORIEN = new Set(['Eigenschaft', 'Grundfertigkeit', 'Sonderfertigkeit']);
+
+/** Attribute-Kosten sind ueber alle 6 Referenzen identisch kumulativ ("10*wert*wert+70*wert",
+ *  siehe attribute.jsonl) - der tatsaechliche Klickpreis (kostenNext-kostenCurrent) ist die
+ *  Ableitung davon, 80+20*wert, siehe [[project-attribut-klickpreis-bug-fix]]. Nutzer 2026-07-24
+ *  will genau diese vereinfachte Klickpreis-Formel als Zeilen-Tooltip statt der kumulativen
+ *  Rohformel. */
+const ATTRIBUTE_KLICKPREIS_TEXT = '80 + Wert*20';
+
+/** Referenz-spezifische, fest hinterlegte Tooltip-Texte - analog zu main.ts's TAB_INTRO (kein
+ *  xlsx-Feld, weil es sich nur um eine kuratierte Zeile handelt, kein Massen-Content). */
+const REFERENZ_TOOLTIP_OVERRIDE: Record<string, string> = {
+  gewichtsbelastung: 'Dies ist die Belastung durch das kumulierte Gewicht aller Ausrüstung, die am Körper getragen wird.',
+};
+
+function referenzTooltipOverride(referenz: string): string {
+  const text = REFERENZ_TOOLTIP_OVERRIDE[referenz];
+  return text ? tooltipAttr(text) : '';
+}
+
+/** Zeilen-Tooltip fuer editierbare Wert-Zeilen: ersetzt den vorherigen blanket formulaTooltip
+ *  (kostenRaw) durch die Nutzer-Vorgaben 2026-07-24 pro Kategorie - siehe die Konstanten oben. */
+function rowTooltipForKategorie(r: ComputedRule, kategorie: string): string {
+  const override = referenzTooltipOverride(r.rule.referenz);
+  if (override) return override;
+  if (NO_TOOLTIP_KATEGORIEN.has(kategorie)) return '';
+  if (kategorie === 'Attribute') return tooltipAttr(ATTRIBUTE_KLICKPREIS_TEXT);
+  if (INFO_STATT_KOSTEN_KATEGORIEN.has(kategorie)) return tooltipAttr(r.rule.info);
+  return formulaTooltip(r.rule.kostenRaw);
+}
+
+/** Formel-Impact-Liste (Plan-Phase 3, nur Eigenschaften/Attribute): die Formeln, die sich durch
+ *  den Klick tatsaechlich aendern wuerden, als "<Formelname>: <neuer Wert>"-Zeilen. Leerer String,
+ *  wenn nichts sich aendert oder impactValues fehlt (alle anderen Kategorien) - roher Text (noch
+ *  nicht tooltipAttr-verpackt), damit stepTooltip ihn mit der Kosten-Zeile zusammenfuehren kann. */
+function impactLines(referenz: string, newWert: number, impactValues: CharacterValueSource | undefined): string {
   if (!impactValues) return '';
   const rows = computeFormulaImpact(referenz, newWert, impactValues);
   if (rows.length === 0) return '';
-  return tooltipAttr(rows.map((row) => `${row.label}: ${row.newValue}`).join('\n'));
+  return rows.map((row) => `${row.label}: ${row.newValue}`).join('\n');
+}
+
+/** Tooltip fuer einen +/- Button: Kosten-Zeile ("+80 SP"/"-80 SP", Nutzer 2026-07-24 "add cost to
+ *  + buttons and to - buttons", "-" zeigt die ECHTE Rueckerstattung des zuletzt gekauften Punkts,
+ *  siehe kostenPrev in characterSheet.ts) plus die bestehende Formel-Impact-Liste (Eigenschaften/
+ *  Attribute), sofern vorhanden - beides zusammen in einem Tooltip, durch Zeilenumbruch getrennt.
+ *  Leer (kein Tooltip), wenn beides fehlt. Nutzer-Klarstellung 2026-07-24: "cost tooltips are cool
+ *  for all -/+ buttons" - anders als der Zeilen-Tooltip (rowTooltipForKategorie) gilt
+ *  NO_TOOLTIP_KATEGORIEN hier NICHT, WHK/Sprache & Kultur behalten also ihre Kosten-Tooltips. */
+function stepTooltip(
+  kosten: number | undefined, sign: '+' | '-', referenz: string, newWert: number,
+  impactValues: CharacterValueSource | undefined,
+): string {
+  const lines: string[] = [];
+  if (kosten !== undefined) lines.push(`${sign}${kosten} SP`);
+  const impact = impactLines(referenz, newWert, impactValues);
+  if (impact) lines.push(impact);
+  return lines.length > 0 ? tooltipAttr(lines.join('\n')) : '';
 }
 
 /** maxValue: nur bei Spezialisierungen gesetzt (Regel Nutzer 2026-07-17: Spezialisierung
  *  darf nie hoeher als der TaW der Hauptfertigkeit sein) - deckelt Input und "+"-Button.
  *  impactValues: nur fuer Eigenschaften/Attribute gesetzt (siehe renderCategoryView) - liefert
- *  die Formel-Impact-Tooltips an den +/- Buttons (Plan-Phase 3). */
-function renderEditableRow(r: ComputedRule, maxValue?: number, impactValues?: CharacterValueSource): string {
+ *  die Formel-Impact-Tooltips an den +/- Buttons (Plan-Phase 3). kategorie steuert den Zeilen-
+ *  Tooltip (rowTooltipForKategorie) und ob ueberhaupt Tooltips gezeigt werden (stepTooltip). */
+function renderEditableRow(r: ComputedRule, kategorie: string, maxValue?: number, impactValues?: CharacterValueSource): string {
   const label = escapeHtml(r.rule.beschreibung ?? r.rule.referenz);
   const value = r.currentValue ?? 0;
   // kostenRaw liefert kumulierte Gesamtkosten bei "wert" (siehe characterSheet.ts kostenCurrent/
@@ -85,16 +145,20 @@ function renderEditableRow(r: ComputedRule, maxValue?: number, impactValues?: Ch
   const alteredHint = r.alteredValue !== undefined
     ? ` <span class="stat-altered" title="Durch Artefakt veraendert">(${r.alteredValue})</span>`
     : '';
-  // Eigener Tooltip-Trigger je Button (statt am ganzen Row-Label) - faellt auf den Formel-
-  // Tooltip der Zeile zurueck (closest('[data-tooltip]') in tooltip.ts), wenn hier nichts sich
-  // aendern wuerde oder impactValues fehlt (alle anderen Kategorien).
-  const minusTooltip = impactTooltip(r.rule.referenz, Math.max(0, value - 1), impactValues);
-  const plusTooltip = impactTooltip(r.rule.referenz, value + 1, impactValues);
-  // Formel-Tooltip auf der ganzen Zeile (nicht nur dem Label), damit er auch beim Hover ueber
+  // Eigener Tooltip-Trigger je Button (statt am ganzen Row-Label) - Kosten-Zeile (Nutzer 2026-07-24
+  // "add cost to + and - buttons") plus ggf. die Formel-Impact-Liste, siehe stepTooltip. Faellt auf
+  // den Zeilen-Tooltip zurueck (closest('[data-tooltip]') in tooltip.ts), wenn hier nichts anfaellt.
+  const minusKosten = value > 0 && r.kostenCurrent !== undefined && r.kostenPrev !== undefined
+    ? r.kostenCurrent - r.kostenPrev : undefined;
+  const plusKosten = r.kostenCurrent !== undefined && r.kostenNext !== undefined
+    ? r.kostenNext - r.kostenCurrent : undefined;
+  const minusTooltip = stepTooltip(minusKosten, '-', r.rule.referenz, Math.max(0, value - 1), impactValues);
+  const plusTooltip = stepTooltip(plusKosten, '+', r.rule.referenz, value + 1, impactValues);
+  // Zeilen-Tooltip auf der ganzen Zeile (nicht nur dem Label), damit er auch beim Hover ueber
   // den Wert/die Buttons erscheint - Elemente ohne eigenes title-Attribut fallen auf das des
   // naechsten Vorfahren zurueck.
   return `
-    <div class="stat-row" data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
+    <div class="stat-row" data-referenz="${r.rule.referenz}"${rowTooltipForKategorie(r, kategorie)}>
       <span class="stat-label">${label}${infoIcon(r.rule.info)}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
       <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
@@ -107,12 +171,12 @@ function renderEditableRow(r: ComputedRule, maxValue?: number, impactValues?: Ch
  *  ad-hoc statt ueber buildHierarchy). Jede Waffenart ist komplett ausgeblendet, bis die
  *  zugehoerige Fernkampf-Fertigkeit > 0 ist (siehe ladeschuetzeGating.ts) - keine Sperr-Anzeige,
  *  einfaches Weglassen. Rendert gar nichts, wenn (noch) keine Zeile sichtbar ist. */
-function renderLadeschuetzeGroup(rows: ComputedRule[], sheet: ComputedSheet): string {
+function renderLadeschuetzeGroup(rows: ComputedRule[], sheet: ComputedSheet, kategorie: string): string {
   const visible = rows.filter((r) => isLadeschuetzeSfVisible(sheet, r.rule.referenz));
   if (visible.length === 0) return '';
   const groupKey = 'sf_ladeschuetze_gruppe';
   const openAttr = openGroupReferenzen.has(groupKey) ? ' open' : '';
-  const body = visible.map((r) => renderEditableRow(r)).join('');
+  const body = visible.map((r) => renderEditableRow(r, kategorie)).join('');
   return `
     <div class="stat-card">
       <details class="stat-group" data-referenz="${groupKey}"${openAttr}>
@@ -135,8 +199,9 @@ function renderReadOnlyRow(r: ComputedRule): string {
   const display = r.error
     ? `<span class="stat-error" title="${escapeHtml(r.error)}">nicht definiert ⚠</span>`
     : escapeHtml(formatComputedValue(r.computedValue ?? r.fixedText ?? '–'));
+  const rowTooltip = referenzTooltipOverride(r.rule.referenz) || formulaTooltip(r.rule.formelRaw);
   return `
-    <div class="stat-row stat-row-readonly"${formulaTooltip(r.rule.formelRaw)}>
+    <div class="stat-row stat-row-readonly"${rowTooltip}>
       <span class="stat-label">${label}${infoIcon(r.rule.info)}</span>
       <span class="stat-value-readonly">${display}</span>
     </div>`;
@@ -170,19 +235,19 @@ function renderGroup(node: HierarchyNode, renderRow: (r: ComputedRule) => string
  *  (Regel Nutzer 2026-07-17) - solange die Hauptfertigkeit 0 ist, zeigt die Gruppe nur einen
  *  Hinweis statt der Steuerelemente. Danach ist jede Spezialisierung durch den TaW gedeckelt
  *  (siehe renderEditableRow maxValue + characterMutations.ts setValue). */
-function renderEditableGroup(node: HierarchyNode, impactValues?: CharacterValueSource): string {
-  if (node.children.length === 0) return renderEditableRow(node.row, undefined, impactValues);
+function renderEditableGroup(node: HierarchyNode, kategorie: string, impactValues?: CharacterValueSource): string {
+  if (node.children.length === 0) return renderEditableRow(node.row, kategorie, undefined, impactValues);
   const label = escapeHtml(node.row.rule.beschreibung ?? node.row.rule.referenz);
   const openAttr = openGroupReferenzen.has(node.row.rule.referenz) ? ' open' : '';
   const hauptwert = node.row.currentValue ?? 0;
   const kinder = hauptwert > 0
-    ? node.children.map((r) => renderEditableRow(r, hauptwert)).join('')
+    ? node.children.map((r) => renderEditableRow(r, kategorie, hauptwert)).join('')
     : '<p class="stat-subgroup-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</p>';
   return `
     <div class="stat-card">
       <details class="stat-group" data-referenz="${node.row.rule.referenz}"${openAttr}>
         <summary>${label} <span class="stat-group-count">(${node.children.length} Spezialisierungen)</span></summary>
-        ${renderEditableRow(node.row, undefined, impactValues)}
+        ${renderEditableRow(node.row, kategorie, undefined, impactValues)}
         <div class="stat-subgroup">${kinder}</div>
       </details>
     </div>`;
@@ -213,12 +278,19 @@ function renderWaffenControlCells(r: ComputedRule, rowspan: number | undefined, 
   const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
   const atMax = maxValue !== undefined && value >= maxValue;
   const rowspanAttr = rowspan !== undefined ? ` rowspan="${rowspan}"` : '';
+  // Spezialisierungen haben einen flachen Satz pro Punkt (costOverride, siehe
+  // computeSpezCostRates) - "+" und "-" kosten/erstatten daher exakt denselben Betrag, anders als
+  // die kumulative SVERWEIS-Kostentabelle in renderEditableRow (kein kostenPrev noetig). Die
+  // Hauptfertigkeit selbst zeigt weiterhin keinen Kosten-Tooltip (kein costOverride, kein
+  // rule.kostenNext - "no need to show cost in main taw", Nutzer 2026-07-22).
+  const minusTooltip = costOverride !== undefined && value > 0 ? tooltipAttr(`-${costOverride} SP`) : '';
+  const plusTooltip = costOverride !== undefined ? tooltipAttr(`+${costOverride} SP`) : '';
   return `
-    <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}>
+    <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
       <div class="waffen-value-inner">
-        <button type="button" class="stat-dec" aria-label="verringern">-</button>
+        <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
         <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
-        <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
+        <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>
         ${costNext ? `<span class="stat-cost">${costNext}</span>` : ''}
       </div>
     </td>`;
@@ -252,6 +324,13 @@ function findNahkampfBasisRule(hauptfertigkeitReferenz: string, prefix: 'at_' | 
  *  passiert erst pro Waffe im Kampf-Tab, NACH Anwendung des waffeneigenen AT-/PA-Mods (siehe
  *  waffenPool.ts's computeWeaponAtPaOverflow) - eine hier schon gedeckelte Basis wuerde von diesem
  *  tatsaechlich verrechneten Wert abweichen, sobald die Fertigkeit allein schon ueber 20 traegt. */
+// Alle 5 Nahkampf-Hauptfertigkeiten teilen die Formel-Form "MIN(20;(Eig+Eig+Haupt)/3)" (siehe
+// nahkampf.jsonl) - MIN(20;...) wird bereits zentral von prettyFormula weggekuerzt. Die eigene
+// Hauptfertigkeit (z.B. "nk_hiebwaffen") hat aber keine Abkuerzung und wuerde sonst als ihr voller
+// Name ("Hiebwaffen") erscheinen statt als "TaW" - per Nutzer-Entscheidung 2026-07-24 ("real
+// substitution" statt eines generischen Platzhaltertexts) wird sie hier gezielt ueberschrieben,
+// damit z.B. Hiebwaffen "(Mut + Ath + TaW) / 3" zeigt, Stichwaffen "(Mut + Sch + TaW) / 3" usw. -
+// pro Zeile unterschiedlich, nicht ein fester Text fuer alle 10 Zellen.
 function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number, values: CharacterValueSource | undefined): string {
   const rowspanAttr = ` rowspan="${rowspan}"`;
   if (!rule) return `<td${rowspanAttr}>–</td>`;
@@ -259,7 +338,11 @@ function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number, 
     return `<td${rowspanAttr}><span class="stat-error" title="${escapeHtml(rule.error)}">nicht definiert ⚠</span></td>`;
   }
   const displayValue = values ? uncappedBasisByReferenz(rule.rule.referenz, values) : (rule.computedValue ?? '–');
-  return `<td${rowspanAttr} class="stat-value-readonly"${formulaTooltip(rule.rule.formelRaw)}>${escapeHtml(formatComputedValue(displayValue))}</td>`;
+  const hauptfertigkeitReferenz = rule.rule.referenz.replace(/^(at_|pa_)/, 'nk_');
+  const tooltip = rule.rule.formelRaw
+    ? tooltipAttr(prettyFormula(rule.rule.formelRaw, { [hauptfertigkeitReferenz]: 'TaW' }))
+    : '';
+  return `<td${rowspanAttr} class="stat-value-readonly"${tooltip}>${escapeHtml(formatComputedValue(displayValue))}</td>`;
 }
 
 /** SP-Kosten pro TaW-Punkt fuer Spezialisierungen (Nutzer 2026-07-22, kein kostenRaw in
@@ -419,9 +502,9 @@ function renderEigenschaftenTable(editable: ComputedRule[], bonusRows: ComputedR
     const bonusRechts = findByReferenz(bonusRows, rechts.replace(/^eig_/, 'eig_bonus_'));
     return `
       <tr>
-        <td>${eigLinks ? renderEditableRow(eigLinks, undefined, impactValues) : ''}</td>
+        <td>${eigLinks ? renderEditableRow(eigLinks, 'Eigenschaft', undefined, impactValues) : ''}</td>
         ${renderEigenschaftsbonusCell(bonusLinks)}
-        <td>${eigRechts ? renderEditableRow(eigRechts, undefined, impactValues) : ''}</td>
+        <td>${eigRechts ? renderEditableRow(eigRechts, 'Eigenschaft', undefined, impactValues) : ''}</td>
         ${renderEigenschaftsbonusCell(bonusRechts)}
       </tr>`;
   }).join('');
@@ -558,10 +641,10 @@ export function renderCategoryView(
       </table>`
       : isEigenschaft
         ? renderEigenschaftenTable(restEditable, sheet.byKategorie['Eigenschaftsbonus'] ?? [], formulaImpactValues)
-        : editableHierarchy.map((n) => renderEditableGroup(n, formulaImpactValues)).join('');
+        : editableHierarchy.map((n) => renderEditableGroup(n, kategorie, formulaImpactValues)).join('');
 
   container.innerHTML = `
-    <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet)}</div>
+    <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet, kategorie)}</div>
     ${readOnlyForBerechneteWerte.length > 0 ? `
       <h3 class="stat-section-heading">Berechnete Werte</h3>
       <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>

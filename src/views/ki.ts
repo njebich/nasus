@@ -23,6 +23,7 @@ import {
 import { KI_DAUER } from '../data/kiFaehigkeiten';
 import { withScrollAnchor } from './scrollAnchor';
 import { formatKlickpreis, type OnValueChange } from './categoryView';
+import { tooltipAttr } from './tooltip';
 
 export type OnGrundfertigkeitPick = (talentReferenz: string, slotIndex: number, grundfertigkeitReferenz: string) => void;
 
@@ -163,6 +164,13 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   const normaleProbe = currentValue + (eigBon?.value ?? 0) + 2 * getAttMagie(sheet);
   const guteProbe = currentValue < 1 ? undefined : getGuteProbe(sheet, normaleProbe);
   const probe = currentValue < 1 ? '' : guteProbe !== undefined ? `${normaleProbe} / G${guteProbe}` : `${normaleProbe}`;
+  // Nutzer 2026-07-24: "On Probe Value, show Formula" - dieselbe Formel wie im statischen
+  // Info-Kasten (renderInfoBlock), aber nur der Teil, der den hier angezeigten Zahlenwert ergibt
+  // (ohne den Erfolgs-Check "(W30-W12) <= ... - Zuschlag - (ME:X)", der die Probe selbst betrifft,
+  // nicht ihre Berechnung).
+  const probeTooltip = probe
+    ? tooltipAttr(`Probe = TaW + Eig.Bon. + 2 × Magie${guteProbe !== undefined ? ' (G = Gute Probe)' : ''}`)
+    : '';
   const dauer = KI_DAUER[referenz];
   const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
@@ -173,7 +181,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
 
   return `
     <tr class="${rowClass}" data-referenz="${referenz}">
-      <td>${probe}</td>
+      <td${probeTooltip}>${probe}</td>
       <td class="ki-name-cell">${escapeHtml(name)}</td>
       <td class="ki-wirkung-cell">${escapeHtml(wirkung ?? '–')}</td>
       <td>${eigBon ? `${escapeHtml(eigBon.label)} (${eigBon.value})` : '–'}</td>

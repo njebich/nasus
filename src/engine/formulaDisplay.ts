@@ -17,16 +17,96 @@ export function displayNameFor(referenz: string): string {
   return rule.abkuerzung || rule.beschreibung || rule.referenz;
 }
 
-function textFor(token: Token): string {
+/** nameOverrides: Aufrufer-seitige Anzeigenamen-Ueberschreibung je Referenz (lowercase Key) - z.B.
+ *  Nahkampf AT-/PA-Basis (categoryView.ts's renderWaffenBasisCell), wo die Formel die EIGENE
+ *  Hauptfertigkeit referenziert und diese als "TaW" statt ihres Namens ("Hiebwaffen" etc.) lesen
+ *  soll. Nur fuer prettyFormula-Aufrufer, aendert nichts an der eigentlichen Formel-Auswertung. */
+function textFor(token: Token, nameOverrides?: Record<string, string>): string {
   if (token.type === 'IDENT') {
     const upper = token.value.toUpperCase();
     if (FUNCTION_NAMES.has(upper)) return upper;
     const pseudo = PSEUDO_VARS[token.value.toLowerCase()];
     if (pseudo) return pseudo;
+    const override = nameOverrides?.[token.value.toLowerCase()];
+    if (override) return override;
     return displayNameFor(token.value);
   }
   if (token.type === 'STRING') return `'${token.value}'`;
   return token.value;
+}
+
+/** Index des zu tokens[openIdx] ('(') passenden ')' - Tiefe-Tracking fuer verschachtelte Klammern. */
+function matchingParenIndex(tokens: Token[], openIdx: number): number {
+  let depth = 0;
+  for (let i = openIdx; i < tokens.length; i++) {
+    if (tokens[i].type === '(') depth++;
+    else if (tokens[i].type === ')') {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+/** Teilt Tokens im Bereich [start, end] an Top-Level-';' (Klammertiefe 0 relativ zum Bereich) in
+ *  Funktionsargumente auf - fuer die AUFRUNDEN/ABRUNDEN/MIN-Erkennung unten. */
+function splitTopLevelArgs(tokens: Token[], start: number, end: number): Token[][] {
+  const args: Token[][] = [];
+  let depth = 0;
+  let current: Token[] = [];
+  for (let i = start; i <= end; i++) {
+    const t = tokens[i];
+    if (t.type === '(') depth++;
+    if (t.type === ')') depth--;
+    if (t.type === ';' && depth === 0) {
+      args.push(current);
+      current = [];
+    } else {
+      current.push(t);
+    }
+  }
+  args.push(current);
+  return args;
+}
+
+function isSingleNumber(tokens: Token[], value: string): boolean {
+  return tokens.length === 1 && tokens[0].type === 'NUMBER' && tokens[0].value === value;
+}
+
+/** Entfernt rein kosmetische Rundungs-/Kappungs-Huellen vor der Tooltip-Anzeige (Nutzer-Direktive
+ *  2026-07-24: "hide all technical excel formula stuff", z.B. "AUFRUNDEN(...;0)"): AUFRUNDEN(x;0)/
+ *  ABRUNDEN(x;0) tragen fuer den Spieler keine Zusatzinformation gegenueber x selbst, ebenso die
+ *  verbreitete "auf 20 gedeckelt"-Huelle MIN(20;x) (siehe waffenPool.ts's stripMin20 fuer denselben
+ *  Cap-Fall in der Auswertung). Rein textuell fuer prettyFormula - engine/rules.ts wertet weiterhin
+ *  die ungekuerzte formelRaw aus. Rekursiv, damit verschachtelte Kombinationen (z.B. AUFRUNDEN(MIN(
+ *  20;x)/3;0)) in einem Durchlauf vollstaendig vereinfacht werden. */
+function simplifyTokens(tokens: Token[]): Token[] {
+  const out: Token[] = [];
+  let i = 0;
+  while (i < tokens.length) {
+    const t = tokens[i];
+    if (t.type === 'IDENT' && tokens[i + 1]?.type === '(') {
+      const upper = t.value.toUpperCase();
+      const openIdx = i + 1;
+      const closeIdx = matchingParenIndex(tokens, openIdx);
+      if (closeIdx !== -1 && (upper === 'AUFRUNDEN' || upper === 'ABRUNDEN' || upper === 'MIN')) {
+        const args = splitTopLevelArgs(tokens, openIdx + 1, closeIdx - 1);
+        if ((upper === 'AUFRUNDEN' || upper === 'ABRUNDEN') && args.length === 2 && isSingleNumber(args[1], '0')) {
+          out.push(...simplifyTokens(args[0]));
+          i = closeIdx + 1;
+          continue;
+        }
+        if (upper === 'MIN' && args.length === 2 && isSingleNumber(args[0], '20')) {
+          out.push(...simplifyTokens(args[1]));
+          i = closeIdx + 1;
+          continue;
+        }
+      }
+    }
+    out.push(t);
+    i++;
+  }
+  return out;
 }
 
 /**
@@ -34,10 +114,10 @@ function textFor(token: Token): string {
  * Darstellung um, z.B. "aw_def_normal"-Formel -> "(Athletik+Schnelligkeit+Glue+AW)/5+6-GBE".
  * Nicht parsebare Rohtexte (z.B. der GBE-Prosa-Platzhalter) werden unveraendert zurueckgegeben.
  */
-export function prettyFormula(raw: string): string {
+export function prettyFormula(raw: string, nameOverrides?: Record<string, string>): string {
   let tokens: Token[];
   try {
-    tokens = tokenize(raw);
+    tokens = simplifyTokens(tokenize(raw));
   } catch {
     return raw;
   }
@@ -51,7 +131,7 @@ export function prettyFormula(raw: string): string {
     // liest sich als Tooltip-Text deutlich angenehmer als dicht gepackter Formeltext.
     const noSpaceBefore = token.type === ')' || token.type === ';' || prevType === '(' || prevType === null
       || (token.type === '(' && prevType === 'IDENT');
-    out += (noSpaceBefore ? '' : ' ') + textFor(token);
+    out += (noSpaceBefore ? '' : ' ') + textFor(token, nameOverrides);
     prevType = token.type;
   }
   return out;

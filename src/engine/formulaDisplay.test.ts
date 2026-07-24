@@ -26,4 +26,24 @@ describe('prettyFormula', () => {
     expect(prettyFormula("SVERWEIS(ep_gesamt;'EP-Stufe-Kreis';2;1)"))
       .toBe("SVERWEIS(Gesamte Erfahrungspunke; 'EP-Stufe-Kreis'; 2; 1)");
   });
+
+  it('entfernt AUFRUNDEN(x;0)/ABRUNDEN(x;0)-Huellen (rein kosmetische Rundung)', () => {
+    expect(prettyFormula('AUFRUNDEN(eig_g_mut/2;0)')).toBe('Mut / 2');
+    expect(prettyFormula('ABRUNDEN(eig_g_mut/2;0)')).toBe('Mut / 2');
+  });
+
+  it('entfernt die "auf 20 gedeckelt"-Huelle MIN(20;x), laesst andere MIN-Aufrufe unveraendert', () => {
+    expect(prettyFormula('MIN(20;eig_g_mut+att_glueck)')).toBe('Mut + Glü');
+    expect(prettyFormula('MIN(21;eig_g_mut)')).toBe('MIN(21; Mut)');
+  });
+
+  it('vereinfacht verschachtelte Rundungs-/Kappungs-Huellen rekursiv', () => {
+    expect(prettyFormula('AUFRUNDEN(MIN(20;eig_g_mut)/3;0)')).toBe('Mut / 3');
+  });
+
+  it('erlaubt Aufrufer-seitige Namens-Ueberschreibung fuer einzelne Referenzen (nameOverrides)', () => {
+    // Nahkampf AT-/PA-Basis (categoryView.ts's renderWaffenBasisCell): die eigene Hauptfertigkeit
+    // (hier synthetisch eig_g_mut) soll als "TaW" statt ihres normalen Anzeigenamens erscheinen.
+    expect(prettyFormula('MIN(20;(eig_g_mut+att_glueck)/3)', { eig_g_mut: 'TaW' })).toBe('(TaW + Glü) / 3');
+  });
 });

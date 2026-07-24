@@ -292,7 +292,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
         <button type="button" class="stat-inc" aria-label="erhöhen" ${disabled ? 'disabled' : ''}${tooltipAttr(plusTitle)}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>
       </div></td>
-      <td class="spruchmagie-name-cell">${escapeHtml(name)}${probe ? `<div class="spruchmagie-probe">Probe: ${probe}</div>` : ''}</td>
+      <td class="spruchmagie-name-cell">${escapeHtml(name)}${probe ? `<div class="spruchmagie-probe"${tooltipAttr('Probe = TaW + Eig.Bon. + Magie − Erschwerung (je Zauberstufe)')}>Probe: ${probe}</div>` : ''}</td>
       <td>${escapeHtml(detail?.minInt ?? '–')}</td>
       <td>${escapeHtml(getEigBonusValue(sheet, rule.eigBonus)?.label ?? '–')}</td>
       <td class="spruchmagie-wirkung-cell">${escapeHtml(rule.wirkung ?? '–')}</td>

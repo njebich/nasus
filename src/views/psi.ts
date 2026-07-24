@@ -145,6 +145,11 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
   const normaleProbe = currentValue + (eigBon?.value ?? 0) + getAttAura(sheet) + getAttMagie(sheet);
   const guteProbe = currentValue < 1 ? undefined : getGuteProbe(sheet, normaleProbe, eigBon?.value ?? 0);
   const probe = currentValue < 1 ? '' : guteProbe !== undefined ? `${normaleProbe} / G${guteProbe}` : `${normaleProbe}`;
+  // Nutzer 2026-07-24: "On Probe Value, show Formula" - identisch zur Formel im statischen
+  // Info-Kasten (renderInfoBlock).
+  const probeTooltip = probe
+    ? tooltipAttr(`Probe = TaW + Eig.Bon. + Aura + Magie${guteProbe !== undefined ? ' (G = Gute Probe)' : ''}`)
+    : '';
   const detail = PSI_ZAUBERTABELLE[referenz];
   const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';
   const plusTitle = unlocked ? freischaltungTitle(referenz, sheet) : vorbedingungTitle(referenz, sheet);
@@ -161,7 +166,7 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>
       </td>
-      <td>${probe}</td>
+      <td${probeTooltip}>${probe}</td>
       <td class="ki-name-cell"${tooltipAttr(detail?.wirkung)}>${escapeHtml(name)}</td>
       <td>${eigBon ? `${escapeHtml(eigBon.label)} (${eigBon.value})` : '–'}</td>
       <td>${escapeHtml(detail?.st1 ?? '–')}</td>

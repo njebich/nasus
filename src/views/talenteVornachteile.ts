@@ -3,7 +3,6 @@
 // Kategorisierung, KEINE Kaufsperre: jeder Charakter kann jedes Talent kaufen (siehe Plan).
 
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
-import { prettyFormula } from '../engine/formulaDisplay';
 import { tooltipAttr } from './tooltip';
 import {
   GEWEIHTER_TALENT_PREFIX, GEWEIHTER_RELIGION_BY_REFERENZ, getGeweihtenGrad, getGeweihtenGradEintrag,
@@ -35,14 +34,18 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function formulaTooltip(raw: string | undefined): string {
-  if (!raw) return '';
-  return tooltipAttr(prettyFormula(raw));
+// Nutzer-Direktive 2026-07-24: Talente/Vor-Nachteile sollen beim Hover ueber die ganze Zeile die
+// Wirkung zeigen, NICHT mehr die TaP-/SP-Kosten-Formel (frueher formulaTooltip(kostenRaw), z.B.
+// eine SVERWEIS-Kostentabelle) - dieselbe Wirkung wie das (i)-Icon, nur zusaetzlich auf der ganzen
+// Zeile statt nur auf dem kleinen Icon.
+function wirkungTooltip(wirkung: string | undefined): string {
+  if (!wirkung) return '';
+  return tooltipAttr(wirkung);
 }
 
-// Eigener Trigger (statt am ganzen Row-Label) - Kosten-Tooltip (formulaTooltip) und
-// Wirkung-Tooltip sollen unabhaengig voneinander per Hover erreichbar sein, siehe
-// PLAN-Tooltip-System.md Phase 2 Punkt 1: Wirkung statt Kosten im Tooltip.
+// Eigener Trigger (statt am ganzen Row-Label) - das (i)-Icon bleibt zusaetzlich zum jetzt
+// identischen Zeilen-Tooltip bestehen (Nutzer 2026-07-24, explizit fuer Vor-/Nachteile: "Add (i)
+// button showing same text"), siehe PLAN-Tooltip-System.md Phase 2 Punkt 1.
 function wirkungIcon(wirkung: string | undefined): string {
   if (!wirkung) return '';
   return `<span class="stat-info-icon"${tooltipAttr(wirkung)}>ⓘ</span>`;
@@ -81,7 +84,7 @@ function renderRow(r: ComputedRule, sheet: ComputedSheet, characterReligion: str
   const rowClass = erlaubt ? '' : r.selected ? 'ki-row-invalid' : 'ki-row-locked';
   const sperrTitle = erlaubt ? '' : ` title="${escapeHtml(geweihterSperrTitle(r.rule.referenz))}"`;
   return `
-    <label class="auswahl-row${rowClass ? ` ${rowClass}` : ''}" data-referenz="${r.rule.referenz}"${formulaTooltip(r.rule.kostenRaw)}${sperrTitle}>
+    <label class="auswahl-row${rowClass ? ` ${rowClass}` : ''}" data-referenz="${r.rule.referenz}"${wirkungTooltip(r.rule.wirkung)}${sperrTitle}>
       <input type="checkbox" class="auswahl-checkbox" ${r.selected ? 'checked' : ''} ${!erlaubt && !r.selected ? 'disabled' : ''} />
       <span class="stat-label">${label}${wirkungIcon(r.rule.wirkung)}${errorNote}</span>
       <span class="stat-cost">${cost}</span>

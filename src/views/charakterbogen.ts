@@ -10,6 +10,7 @@ import { describeSkillStufe } from '../engine/skillStufen';
 import { computeRbe } from '../engine/armorComposition';
 import { aufrunden } from '../engine/functions';
 import { RUESTUNG_BASIS } from '../data/equipment/armor';
+import { tooltipAttr } from './tooltip';
 import type { RsGruppe } from '../data/trefferzonen';
 import {
   buildNahkampfRows, buildFeuerwaffenRows, buildArmbrustBoegenRows, buildAusweichenRow,
@@ -83,8 +84,11 @@ function renderCharakterwerteUndAttribute(sheet: ComputedSheet): string {
   const epSpRows = `
     <tr><th>Erfahrungspkt.</th><td>${sheet.epGesamt}</td></tr>
     <tr><th>Steigerungspkt.</th><td>${sheet.spRemaining} / ${sheet.spTotal}</td></tr>`;
+  // Nutzer 2026-07-24 (categoryView.ts's ATTRIBUTE_KLICKPREIS_TEXT): dieselbe vereinfachte
+  // Klickpreis-Formel wie im editierbaren Attribute-Tab, hier auf den Zeilen des read-only
+  // Charakterbogens gespiegelt ("wire same tooltips to same values/descriptions").
   const attributeRows = attribute
-    .map((r) => `<tr><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${r.currentValue ?? formatValue(r.computedValue)}${r.alteredValue !== undefined ? ` (${r.alteredValue})` : ''}</td></tr>`)
+    .map((r) => `<tr${tooltipAttr('80 + Wert*20')}><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${r.currentValue ?? formatValue(r.computedValue)}${r.alteredValue !== undefined ? ` (${r.alteredValue})` : ''}</td></tr>`)
     .join('');
   return `
     <div class="bogen-zwei-spalten">
@@ -106,8 +110,10 @@ function eigenschaftZellen(eigenschaft: ComputedRule[], bonus: ComputedRule[], r
   if (!eig) return '<td></td><td></td><td></td>';
   const bonusRef = referenz.replace(/^eig_/, 'eig_bonus_');
   const bon = findRule(bonus, bonusRef);
+  // Nutzer 2026-07-24 ("on hover, show (i) text, not sverweis"): gleicher Info-Text wie auf dem
+  // editierbaren Eigenschaft-Tab (categoryView.ts's INFO_STATT_KOSTEN_KATEGORIEN), hier gespiegelt.
   return `
-    <td>${escapeHtml(eig.rule.beschreibung ?? eig.rule.referenz)} (${escapeHtml(eig.rule.abkuerzung ?? '')})</td>
+    <td${tooltipAttr(eig.rule.info)}>${escapeHtml(eig.rule.beschreibung ?? eig.rule.referenz)} (${escapeHtml(eig.rule.abkuerzung ?? '')})</td>
     <td>${eig.currentValue ?? 0}${eig.alteredValue !== undefined ? ` (${eig.alteredValue})` : ''}</td>
     <td>${bon ? formatValue(bon.computedValue) : ''}</td>`;
 }
@@ -128,7 +134,9 @@ function renderEigenschaften(sheet: ComputedSheet): string {
 function renderAuswahlListe(sheet: ComputedSheet, kategorie: string, ueberschrift: string): string {
   const gewaehlt = (sheet.byKategorie[kategorie] ?? []).filter((r) => r.selected);
   if (gewaehlt.length === 0) return `<h3 class="bogen-section-heading">${escapeHtml(ueberschrift)}</h3><p class="bogen-leer">– keine –</p>`;
-  const items = gewaehlt.map((r) => `<li>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</li>`).join('');
+  // Nutzer 2026-07-24 ("show Wirkung, not SP cost"): gleicher Tooltip-Inhalt wie im editierbaren
+  // Talente-/Vor-Nachteile-Tab (talenteVornachteile.ts's wirkungTooltip/wirkungIcon), hier gespiegelt.
+  const items = gewaehlt.map((r) => `<li${tooltipAttr(r.rule.wirkung)}>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</li>`).join('');
   return `<h3 class="bogen-section-heading">${escapeHtml(ueberschrift)}</h3><ul class="bogen-liste">${items}</ul>`;
 }
 
@@ -142,8 +150,10 @@ function renderFertigkeitGruppe(node: HierarchyNode): string {
 }
 
 function renderGrundfertigkeiten(sheet: ComputedSheet): string {
+  // Nutzer 2026-07-24 ("show (i) text, not Wert*9"): gleicher Info-Text wie im editierbaren
+  // Grundfertigkeit-Tab (categoryView.ts's INFO_STATT_KOSTEN_KATEGORIEN), hier gespiegelt.
   const rows = (sheet.byKategorie['Grundfertigkeit'] ?? [])
-    .map((r) => `<tr><td>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</td><td>${r.currentValue ?? 0}</td></tr>`)
+    .map((r) => `<tr${tooltipAttr(r.rule.info)}><td>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</td><td>${r.currentValue ?? 0}</td></tr>`)
     .join('');
   return `
     <div class="bogen-fertigkeit-spalte">
@@ -317,11 +327,15 @@ function renderKampfLeRs(sheet: ComputedSheet, character: CharacterState): strin
  *  Tabellen. */
 function renderKampfWaffenNahkampfRowReadOnly(row: NahkampfRow): string {
   const pool = (field: 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa') => (row.usable ? row[field].value : '–');
+  // Nutzer 2026-07-24 ("Waffe, on Hover, show Spezialisierung"/"1H/2H, show Stä. Requirement
+  // regardless if met or not"): gleiche Tooltips wie im interaktiven Kampf-Tab (kampf.ts's
+  // renderNahkampfRow), hier auf der read-only Spiegelung wiederholt.
+  const spezTitle = row.spezialisierung ? ` title="Spezialisierung: ${escapeHtml(row.spezialisierung)}"` : '';
   return `
     <tr class="${row.usable ? '' : 'kampf-row-unusable'}">
-      <td>${escapeHtml(row.label)}</td>
+      <td${spezTitle}>${escapeHtml(row.label)}</td>
       <td>${escapeHtml(row.schaden)}</td>
-      <td>${row.grip}</td>
+      <td title="Mindest-Stärke: ${row.minStaerke}">${row.grip}</td>
       <td>${escapeHtml(row.wk)}</td>
       <td>${row.rb}</td>
       <td>${pool('nat')}</td><td>${pool('gat')}</td><td>${pool('mat')}</td>

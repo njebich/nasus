@@ -20,6 +20,7 @@ import {
   type FeuerwaffenMunitionArt,
 } from '../data/equipment/feuerwaffenMunition';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
+import { tooltipAttr } from './tooltip';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
 import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
@@ -62,6 +63,51 @@ function escapeHtml(s: string): string {
 
 function kaufenLabel(preis: number): string {
   return `Kaufen (${formatDublonen(preis)})`;
+}
+
+/** Nutzer 2026-07-24: "Show full item stat block if Schilde, NK-Waffe or FK-Waffe or ammo or
+ *  Alchemika" - Beschriftung fuer computedStatsSnapshot-Schluessel (generisch als
+ *  Record<string, number> in characterMutations.ts gespeichert, siehe dort). verfuegbarkeit*-
+ *  Schluessel sind bewusst ausgeschlossen (Kaufsperre, kein Statwert des Gegenstands selbst). */
+const STAT_SNAPSHOT_LABELS: Record<string, string> = {
+  rs: 'RS', at: 'AT', pa: 'PA', wk: 'WK', klingenbrecher: 'Klingenbrecher', klingenschutz: 'Klingenschutz',
+  staerkeMalus: 'Stärke-Malus', minStaerke: 'Mindest-Stärke', minStaerke1H: 'Mindest-Stärke (1H)',
+  minStaerke2H: 'Mindest-Stärke (2H)', rb: 'RB', gewicht: 'Gewicht', fixschaden: 'Fixschaden',
+  kaliber: 'Kaliber', rw: 'RW', nachladezeit: 'Nachladezeit', nachladenTawTeiler: 'Nachladen (TaW-Teiler)',
+  patzermodifikator: 'Patzer-Modifikator', rwModMeter: 'Reichweiten-Mod (m)', be: 'BE', ini: 'Initiative',
+};
+
+/** Baut den Stat-Block-Tooltip aus einem generischen Zahlen-Snapshot (Schilde/NK-Waffen/
+ *  Feuerwaffen/Munition, siehe EquipmentEntry.computedStatsSnapshot bzw. die je-Kategorie
+ *  composeX()-Rueckgabe hier im Shop-Picker) - eine Zeile pro Schluessel. */
+function statSnapshotTooltip(snapshot: Record<string, number | undefined> | undefined): string {
+  if (!snapshot) return '';
+  const lines = Object.entries(snapshot)
+    .filter((entry): entry is [string, number] => entry[1] !== undefined && !entry[0].startsWith('verfuegbarkeit'))
+    .map(([key, value]) => `${STAT_SNAPSHOT_LABELS[key] ?? key}: ${value}`);
+  return lines.length > 0 ? tooltipAttr(lines.join('\n')) : '';
+}
+
+/** Boegen/Armbrust speichern KEINEN computedStatsSnapshot (fertige Objekte mit festem Preis,
+ *  siehe buyFernkampfwaffe) - der Stat-Block kommt hier direkt aus den rohen Basiszeilen-Spalten,
+ *  denselben, die renderFernkampfwaffeRow bereits einzeilig anzeigt. */
+function fernkampfwaffeStatTooltip(row: FernkampfRow): string {
+  const schaden = `${row['1.W'] ?? '–'}${row['Fixschaden'] ? ` ${row['Fixschaden']}` : ''}`;
+  return tooltipAttr([
+    `Min. Stärke: ${row['Min. Stä'] ?? '–'}`,
+    `Schaden: ${schaden}`,
+    `RB: ${row['RB'] ?? '–'}`,
+    `RW: ${row['RW'] ?? '–'}`,
+    `Nachladezeit: ${row['Nachladezeit'] ?? '–'}`,
+  ].join('\n'));
+}
+
+/** Alchemika speichert ebenfalls keinen computedStatsSnapshot (reine Preisliste, kein Kompositions-
+ *  Ergebnis) - der Stat-Block hier ist Kategorie+Wirkung+Beschreibung aus dem Katalog. */
+function alchemikaStatTooltip(row: AlchemikaRow): string {
+  const lines = [`Kategorie: ${row.kategorie}`, `Wirkung: ${row.wirkung}`];
+  if (row.beschreibung) lines.push(`Beschreibung: ${row.beschreibung}`);
+  return tooltipAttr(lines.join('\n'));
 }
 
 function gesperrtLabel(verfuegbarkeit: number): string {
@@ -143,7 +189,7 @@ function renderAlchemikaRow(row: AlchemikaRow): string {
   const qty = alchemikaQty.get(row.sourceRow) ?? 1;
   const gesperrt = row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
   return `
-    <div class="ausruestung-row" data-alchemika="${row.sourceRow}">
+    <div class="ausruestung-row" data-alchemika="${row.sourceRow}"${alchemikaStatTooltip(row)}>
       <span class="stat-label">${escapeHtml(row.name)}</span>
       <span class="stat-cost">${escapeHtml(row.wirkung)}${row.beschreibung ? ` — ${escapeHtml(row.beschreibung)}` : ''}</span>
       ${row.preisDublonen !== undefined ? `
@@ -372,9 +418,13 @@ function renderShieldRow(row: (typeof SHIELDS)[number], character: CharacterStat
   const fertigung = SCHILD_FERTIGUNG.find((f) => f.sourceRow === sel.fertigungSourceRow) ?? SCHILD_FERTIGUNG[0];
   const bespannung = bespannungOptionen.find((b) => b.sourceRow === sel.bespannungSourceRow) ?? bespannungOptionen[0];
   const composed = composeShield(row, material, fertigung, bespannung);
+  const statTooltip = statSnapshotTooltip({
+    rs: composed.rs, klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz,
+    at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus, minStaerke: composed.minStaerke,
+  });
 
   return `
-    <div class="ausruestung-row" data-shield="${row.sourceRow}">
+    <div class="ausruestung-row" data-shield="${row.sourceRow}"${statTooltip}>
       <span class="stat-label">${escapeHtml(row.name)}</span>
       <select class="schild-material-select" data-shield="${row.sourceRow}">
         ${materialOptionen.map((m) => `<option value="${m.sourceRow}" ${m.sourceRow === material.sourceRow ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
@@ -442,9 +492,14 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
     ? (schaftmaterialOptionen.find((s) => s.sourceRow === sel.schaftmaterialSourceRow) ?? schaftmaterialOptionen[0])
     : SCHAFTMATERIAL_STANDARD;
   const composed = composeWeapon(row, material, fertigung, anpassung, schaftmaterial);
+  const statTooltip = statSnapshotTooltip({
+    at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus,
+    minStaerke1H: composed.minStaerke1H, minStaerke2H: composed.minStaerke2H,
+    klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz, rb: composed.rb,
+  });
 
   return `
-    <div class="ausruestung-row" data-weapon="${row.sourceRow}">
+    <div class="ausruestung-row" data-weapon="${row.sourceRow}"${statTooltip}>
       <span class="stat-label">${escapeHtml(row.name)}</span>
       <select class="waffe-material-select" data-weapon="${row.sourceRow}">
         ${materialOptionen.map((m) => `<option value="${m.sourceRow}" ${m.sourceRow === material.sourceRow ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
@@ -474,7 +529,7 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
 function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow): string {
   const gesperrt = row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
   return `
-    <div class="ausruestung-row" data-fernkampfwaffe="${typ}:${row.sourceRow}">
+    <div class="ausruestung-row" data-fernkampfwaffe="${typ}:${row.sourceRow}"${fernkampfwaffeStatTooltip(row)}>
       <span class="stat-label">${escapeHtml(row.name)}</span>
       <span class="stat-cost">Min.Stä ${escapeHtml(row['Min. Stä'] ?? '-')} | ${escapeHtml(row['1.W'] ?? '-')}${row['Fixschaden'] ? escapeHtml(row['Fixschaden']) : ''} | RW ${escapeHtml(row['RW'] ?? '-')} | Nachladezeit ${escapeHtml(row['Nachladezeit'] ?? '-')}</span>
       ${row.preisDublonen !== undefined
@@ -498,8 +553,13 @@ function renderFeuerwaffeRow(row: FernkampfRow): string {
   );
   const option = (items: typeof optionen.verarbeitungen, selected: number) => items
     .map((item) => `<option value="${item.sourceRow}" ${item.sourceRow === selected ? 'selected' : ''}>${escapeHtml(item.name)}</option>`).join('');
+  const statTooltip = statSnapshotTooltip({
+    gewicht: composed.gewicht, minStaerke: composed.minStaerke, fixschaden: composed.fixschaden,
+    rb: composed.rb, kaliber: composed.kaliber, rw: composed.rw, nachladezeit: composed.nachladezeit,
+    nachladenTawTeiler: composed.nachladenTawTeiler, patzermodifikator: composed.patzermodifikator, ini: composed.ini,
+  });
   return `
-    <div class="ausruestung-row feuerwaffe-row" data-feuerwaffe="${row.sourceRow}">
+    <div class="ausruestung-row feuerwaffe-row" data-feuerwaffe="${row.sourceRow}"${statTooltip}>
       <span class="stat-label">${escapeHtml(row.name)}</span>
       <span class="stat-cost">${composed.ersterWuerfel}+${composed.zweiterWuerfel}${composed.fixschaden ? ` +${composed.fixschaden}` : ''} | RB ${composed.rb} | Min.St&auml; ${composed.minStaerke} | RW ${composed.rw}</span>
       <select class="feuerwaffe-verarbeitung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.verarbeitungen, auswahl.verarbeitungSourceRow)}</select>
@@ -577,8 +637,15 @@ function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
       : null;
     const composed = composeMunition(basis, modifikator);
     const gesperrt = composed.verfuegbarkeitStufe !== undefined && composed.verfuegbarkeitStufe >= 5;
+    const statTooltip = tooltipAttr([
+      `Schaden: ${composed.wuerfel}`,
+      `Fixschaden: ${composed.fixschaden}`,
+      `RB: ${composed.rb}`,
+      `Reichweiten-Mod: ${composed.rwModMeter}m`,
+      `BE: ${composed.be}`,
+    ].join('\n'));
     return `
-      <div class="ausruestung-row munition-row" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}">
+      <div class="ausruestung-row munition-row" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}"${statTooltip}>
         <span class="munition-name">${escapeHtml(basis.name)} <span class="munition-kategorie">(${escapeHtml(basis['Kategorie'] ?? '')})</span></span>
         <select class="munition-mod-select" data-munition="${typ}" aria-label="Modifikator f&uuml;r ${escapeHtml(basis.name)}">
           <option value="" ${modifikator === null ? 'selected' : ''}>Kein Modifikator</option>
@@ -613,6 +680,9 @@ function renderInventar(character: CharacterState): string {
   }
   return character.equipment.map((e) => {
     let label = `${e.family} (${e.baseTable} #${e.baseId})`;
+    // Nutzer 2026-07-24: "Show full item stat block if Schilde, NK-Waffe or FK-Waffe or ammo or
+    // Alchemika" - Ruestung/Preisliste/Artefakt bewusst aussen vor (nicht in der Nutzer-Aufzaehlung).
+    let statTooltip = '';
     if (e.family === 'preisliste') {
       const row = PREISLISTE.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;
@@ -625,18 +695,22 @@ function renderInventar(character: CharacterState): string {
       // RS des Schilds wird angezeigt, aber bewusst NICHT in rs_arme eingerechnet (Regel Nutzer
       // 2026-07-17: Anrechnung auf den linken Arm ist Kampfmodul-Scope, siehe characterMutations.ts).
       label = row ? `${row.name} (RS ${rs})` : label;
+      statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
     } else if (e.family === 'weapon') {
       const row = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
       const at = e.computedStatsSnapshot?.at;
       const pa = e.computedStatsSnapshot?.pa;
       label = row ? `${row.name} (AT ${at} | PA ${pa})` : label;
+      statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
     } else if (e.family === 'fernkampfwaffe') {
       const table = e.baseTable === 'boegen' ? BOEGEN : ARMBRUST;
       const row = table.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;
+      if (row) statTooltip = fernkampfwaffeStatTooltip(row);
     } else if (e.family === 'feuerwaffe') {
       const row = FEUERWAFFEN.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;
+      statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
     } else if (e.family === 'ammo') {
       if (e.baseTable === 'feuerwaffen-munition') {
         const ammo = FEUERWAFFEN_MUNITION_PREISE.find(
@@ -650,13 +724,15 @@ function renderInventar(character: CharacterState): string {
         const fixschaden = e.computedStatsSnapshot?.fixschaden;
         label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${fixschaden ? ` (Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden})` : ''}` : label;
       }
+      statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
     } else if (e.family === 'alchemika') {
       const row = ALCHEMIKA.find((r) => String(r.sourceRow) === e.baseId);
       label = row?.name ?? label;
+      if (row) statTooltip = alchemikaStatTooltip(row);
     }
     const total = (e.computedPriceSnapshot ?? 0) * e.quantity;
     return `
-      <div class="inventar-row" data-equipment-id="${e.id}">
+      <div class="inventar-row" data-equipment-id="${e.id}"${statTooltip}>
         <span class="stat-label">${escapeHtml(label)}${e.quantity > 1 ? ` ×${e.quantity}` : ''}</span>
         <span class="stat-cost">${formatDublonen(total)}</span>
         <button type="button" class="inventar-remove" data-equipment-id="${e.id}">Entfernen</button>

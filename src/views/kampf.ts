@@ -57,7 +57,13 @@ export interface NahkampfRow {
    *  besessenen Waffen, sonst 'unbewaffnet' bzw. 'unbewaffnet:<spezReferenz>'. */
   key: string;
   label: string;
+  /** Nutzer 2026-07-24: "Waffe, on Hover, show Spezialisierung" - z.B. "Klingenwaffen" fuer ein
+   *  Langschwert. Leer bei Unbewaffnet-Basiszeilen ohne eigene Spezialisierungs-Spalte. */
+  spezialisierung: string;
   grip: '1H' | '2H' | '–';
+  /** Mindest-Staerke fuer GENAU den hier gezeigten Griff (1H/2H) - Nutzer 2026-07-24: "1H/2H, show
+   *  Stä. Requirement regardless if met or not", also unabhaengig von `usable`. */
+  minStaerke: number;
   usable: boolean;
   unusableReason?: string;
   schaden: string;
@@ -174,7 +180,9 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
     return {
       key: e.id,
       label: basis.name,
+      spezialisierung,
       grip,
+      minStaerke,
       usable,
       unusableReason: usable ? undefined : 'nicht tragbar (Stärke zu niedrig)',
       schaden: usable ? computeSchaden(basis, snap.staerkeMalus ?? 0, eigKStaerke) : '–',
@@ -220,7 +228,9 @@ function buildUnbewaffnetRow(ctx: PoolContext, key: string, label: string, basis
   return {
     key,
     label,
+    spezialisierung: basis['Spezialisierung'] ?? '',
     grip: '–',
+    minStaerke: 0,
     usable: true,
     schaden: computeSchaden(basis, num(basis, 'Staerke-Malus-Basis'), eigKStaerke),
     wk: basis['WK-Basis'] ? String(num(basis, 'WK-Basis')) : '–',
@@ -823,11 +833,12 @@ function ppCell(row: NahkampfRow): string {
 function renderNahkampfRow(row: NahkampfRow, showZweiWaffen: boolean): string {
   const unusable = !row.usable;
   const zweiWaffenCell = row.zweiWaffenFaehig === undefined ? '–' : row.zweiWaffenFaehig ? '✓' : '✗';
+  const spezTitle = row.spezialisierung ? ` title="Spezialisierung: ${escapeHtml(row.spezialisierung)}"` : '';
   return `
     <tr class="${unusable ? 'kampf-row-unusable' : ''}" title="${unusable ? escapeHtml(row.unusableReason ?? '') : ''}">
-      <td>${escapeHtml(row.label)}</td>
+      <td${spezTitle}>${escapeHtml(row.label)}</td>
       <td>${escapeHtml(row.schaden)}</td>
-      <td>${row.grip}</td>
+      <td title="Mindest-Stärke: ${row.minStaerke}">${row.grip}</td>
       <td>${escapeHtml(row.wk)}</td>
       <td>${row.rb}</td>
       ${ppCell(row)}

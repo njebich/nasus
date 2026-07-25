@@ -9,8 +9,7 @@ import { makeValueSource } from '../engine/characterSheet';
 import { evalReferenz, type CharacterValueSource } from '../engine/rules';
 import type { CharacterState, PoolAllocation, WaffenLoadoutEntry, WaffenLoadoutComboType } from '../state/characterStore';
 import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
-import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
-import { feuerwaffenMunitionOptionen, FEUERWAFFEN_MUNITION_PREISE } from '../data/equipment/feuerwaffenMunition';
+import type { FernkampfRow } from '../data/equipment/fernkampf';
 import {
   resolveWaffenPoolReferenz, computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier, getZweiWaffenCap,
 } from '../engine/waffenPool';
@@ -28,6 +27,12 @@ import {
 } from '../engine/waffenLoadout';
 import { xKlingeTooltip, xKlingeWeaponName, xKlingeWirkungForEntry } from '../engine/xKlinge';
 import { tooltipAttr } from './tooltip';
+import type { RangedWeaponInventorySnapshot } from '../engine/rangedInventorySnapshot';
+import {
+  FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW,
+  weaponSpecializationForRow, WEAPON_SPECIALIZATION_BY_ID,
+} from '../engine/weaponCatalog';
+import { firearmAmmunitionType, firearmAmmoTypeForArt } from '../engine/ammunitionTypes';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -105,7 +110,7 @@ export interface NahkampfRow {
 }
 
 function findWeaponBasis(baseId: string): WeaponRow | undefined {
-  return NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === baseId);
+  return MELEE_WEAPON_BY_SOURCE_ROW.get(baseId);
 }
 
 interface PoolContext {
@@ -151,16 +156,36 @@ function poolFieldsForRow(
 
 function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][number], zweiWaffenCap: number | undefined): NahkampfRow[] {
   const basis = findWeaponBasis(e.baseId);
-  if (!basis) return [];
+  if (!basis) {
+    const reason = e.invalidReason
+      ?? `Ungültige Waffe: Tabelle '${e.baseTable}', sourceRow ${e.baseId}, Waffe '<unbekannt>': Katalogeintrag fehlt`;
+    return [{
+      key: e.id, label: e.displayNameSnapshot ?? 'Ungültige Waffe', spezialisierung: '', grip: '–', minStaerke: 0,
+      usable: false, unusableReason: reason, schaden: '–', wk: '–', rb: 0, poolReferenz: null,
+      nat: { value: 0, allocated: 0 }, gat: { value: 0, allocated: 0 }, mat: { value: 0, allocated: 0 },
+      npa: { value: 0, allocated: 0 }, gpa: { value: 0, allocated: 0 }, mpa: { value: 0, allocated: 0 },
+      pp: 0, atSpent: 0, paSpent: 0, poolValid: true, kb: 0, ks: 0, ini: 0,
+    }];
+  }
   const snap = e.computedStatsSnapshot ?? {};
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', ctx.values));
   const hauptfertigkeit = basis['Hauptfertigkeit'] ?? '';
   const spezialisierung = basis['Spezialisierung'] ?? '';
   let poolReferenz: string | null = null;
+  let invalidReason: string | undefined;
   try {
-    poolReferenz = resolveWaffenPoolReferenz(hauptfertigkeit, spezialisierung);
-  } catch {
-    poolReferenz = null;
+    const specialization = e.specializationId
+      ? WEAPON_SPECIALIZATION_BY_ID.get(e.specializationId)
+      : weaponSpecializationForRow('NK-Waffen-Basis', basis);
+    if (!specialization) {
+      throw new Error(
+        `Ungültige Waffe: Tabelle 'NK-Waffen-Basis', sourceRow ${basis.sourceRow}, `
+        + `Waffe '${basis.name}', Spezialisierungs-ID '${e.specializationId}': Referenz fehlt`,
+      );
+    }
+    poolReferenz = specialization.poolReferenz;
+  } catch (error) {
+    invalidReason = error instanceof Error ? error.message : String(error);
   }
 
   const zweihaenderMoeglich = hasColumn(basis, 'Min-Staerke-1H-Basis') && hasColumn(basis, 'Min-Staerke-2H-Basis');
@@ -173,7 +198,7 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
     // Schilde (family='shield') speichern ihre Mindeststaerke unter 'minStaerke' statt
     // 'minStaerke1H' (siehe buyShield) - Schilde haben ohnehin nur den 1H-Griff (grips oben).
     const minStaerke = grip === '1H' ? (snap.minStaerke1H ?? snap.minStaerke ?? 0) : (snap.minStaerke2H ?? 0);
-    const usable = eigKStaerke >= minStaerke;
+    const usable = !invalidReason && eigKStaerke >= minStaerke;
     const wk = grip === '1H' ? (snap.wk ?? 0) : Math.ceil((snap.wk ?? 0) * 1.5 * 2) / 2;
     const zweiWaffenFaehig = zweiWaffenCap !== undefined && grip === '1H' && hauptfertigkeit !== 'Stangenwaffen' && usable
       ? wk <= zweiWaffenCap
@@ -192,7 +217,7 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       grip,
       minStaerke,
       usable,
-      unusableReason: usable ? undefined : 'nicht tragbar (Stärke zu niedrig)',
+      unusableReason: usable ? undefined : invalidReason ?? 'nicht tragbar (Stärke zu niedrig)',
       schaden: usable ? computeSchaden(basis, snap.staerkeMalus ?? 0, eigKStaerke) : '–',
       wk: usable ? String(wk) : '–',
       rb: snap.rb ?? 0,
@@ -374,6 +399,33 @@ function computeFkNkWerte(
   };
 }
 
+function computeResolvedRangedNkWerte(
+  basis: RangedWeaponInventorySnapshot, character: CharacterState, values: CharacterValueSource,
+): FkNkWerte | null {
+  if (!basis.hauptfertigkeit) return null;
+  const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
+  const minStaerke = basis.minStaerke1H ?? basis.minStaerke2H ?? 0;
+  const usable = eigKStaerke >= minStaerke;
+  const overflow = computeWeaponAtPaOverflow(
+    basis.hauptfertigkeit, basis.atBasis, basis.paBasis, values, getKampfstilModifier(character),
+  );
+  const schadenBasis = {
+    'Schadenswuerfel-1': basis.schadenswuerfel1,
+    'Schadenswuerfel-2': basis.schadenswuerfel2,
+    'Staerke-Teiler': String(basis.staerkeTeiler),
+  };
+  return {
+    usable,
+    unusableReason: usable ? undefined : 'nicht tragbar (Stärke zu niedrig)',
+    schaden: usable ? computeSchaden(schadenBasis, basis.staerkeMalusBasis, eigKStaerke) : '–',
+    wk: usable ? String(basis.wkBasis) : '–',
+    nat: usable ? Math.min(20, overflow.uncAtWeapon) : null,
+    npa: usable ? Math.min(20, overflow.uncPaWeapon) : null,
+    kb: basis.klingenbrecherBasis,
+    ks: basis.klingenschutzBasis,
+  };
+}
+
 // ---------------------------------------------------------------------------------------------
 // FEUERWAFFEN
 // ---------------------------------------------------------------------------------------------
@@ -381,6 +433,8 @@ function computeFkNkWerte(
 export interface FeuerwaffenRow {
   key: string;
   label: string;
+  rangedUsable: boolean;
+  invalidReason?: string;
   schaden: string;
   rb: number;
   munition: string;
@@ -405,8 +459,30 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
 
   for (const e of character.equipment) {
     if (e.family !== 'feuerwaffe') continue;
-    const basis = FEUERWAFFEN.find((r) => String(r.sourceRow) === e.baseId);
-    if (!basis) continue;
+    const basis = FIREARM_BY_SOURCE_ROW.get(e.baseId);
+    if (!basis) {
+      const invalidReason = e.invalidReason
+        ?? `Ungültige Waffe: Tabelle 'Feuerwaffen', sourceRow ${e.baseId}, Waffe '<unbekannt>': Katalogeintrag fehlt`;
+      rows.push({
+        key: e.id, label: 'Ungültige Waffe', rangedUsable: false, invalidReason,
+        schaden: '–', rb: 0, munition: '–', ranges: RANGE_HEADERS.map(() => 'x'), rw: 0,
+        ladedauer: '–', ini: 0, nk: null,
+      });
+      continue;
+    }
+    const specialization = e.specializationId
+      ? WEAPON_SPECIALIZATION_BY_ID.get(e.specializationId)
+      : weaponSpecializationForRow('Feuerwaffen', basis);
+    if (!specialization) {
+      const invalidReason = `Ungültige Waffe: Tabelle 'Feuerwaffen', sourceRow ${basis.sourceRow}, `
+        + `Waffe '${basis.name}', Spezialisierungs-ID '${e.specializationId}': Referenz fehlt`;
+      rows.push({
+        key: e.id, label: basis.name, rangedUsable: false, invalidReason,
+        schaden: '–', rb: 0, munition: '–', ranges: RANGE_HEADERS.map(() => 'x'), rw: 0,
+        ladedauer: '–', ini: 0, nk: null,
+      });
+      continue;
+    }
     const snap = e.computedStatsSnapshot ?? {};
     const typ = basis['Typ'] ?? '';
     const basisRef = FEUERWAFFEN_TYP_BASIS_REF[typ];
@@ -423,31 +499,43 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
       ? rwMod.map((mod) => formatRangeCell(mod, basisWert, gutDivisor, meisterlichDivisor))
       : RANGE_HEADERS.map(() => 'x');
 
-    const munitionOptionen = feuerwaffenMunitionOptionen(basis['Lademechanik'] ?? '', basis['Munition'] ?? '', snap.kaliber ?? 0);
-    const munitionArten = new Set<string>(munitionOptionen.map((m) => m.art));
-    const ammo = character.equipment.find(
-      (a) => a.family === 'ammo' && a.baseTable === 'feuerwaffen-munition'
-        && munitionArten.has(a.baseId) && a.selections.kaliber === String(snap.kaliber ?? 0),
-    );
-    const ammoRow = ammo ? FEUERWAFFEN_MUNITION_PREISE.find((m) => m.art === ammo.baseId && m.kaliber === snap.kaliber) : undefined;
-    const munition = ammoRow ? `${ammoRow.label} (${ammo!.quantity} Stück)` : '–';
-
     const ladeschuetzeReferenz = feuerwaffenLadeschuetzeReferenz(basis['Lademechanik'] ?? '');
     const ladeschuetzeWert = character.values[ladeschuetzeReferenz] ?? 0;
     const ladedauer = `${ladezeitKr(snap.nachladezeit ?? 0, snap.nachladenTawTeiler ?? 0, gesBon, ladeschuetzeWert)} KR`;
-
-    rows.push({
-      key: e.id,
-      label: basis.name,
-      schaden: `${basis['1.W'] ?? '–'}${snap.fixschaden ? ` ${formatSigned(snap.fixschaden)}` : ''}`,
-      rb: snap.rb ?? 0,
-      munition,
-      ranges,
-      rw: snap.rw ?? 0,
-      ladedauer,
-      ini: Math.round(Number(evalReferenz('ini', values))) + (snap.ini ?? 0),
-      nk: computeFkNkWerte(basis, character, values),
-    });
+    const requiredTypeId = e.ammunitionTypeId
+      ?? firearmAmmunitionType(basis['Lademechanik'] ?? '', basis['Munition'] ?? '');
+    const caliber = snap.kaliber ?? 0;
+    const ownedAmmo = character.equipment.filter(
+      (ammo) => ammo.family === 'ammo' && ammo.baseTable === 'feuerwaffen-munition'
+        && ammo.selections.kaliber === String(caliber)
+        && (ammo.ammunitionTypeId ?? firearmAmmoTypeForArt(ammo.baseId)) === requiredTypeId,
+    );
+    const ammoRows = ownedAmmo.length > 0 ? ownedAmmo : [undefined];
+    for (const ammo of ammoRows) {
+      const ammoRow = ammo ? FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${ammo.baseId}:${caliber}`) : undefined;
+      const invalidReason = ammo && !ammoRow
+        ? `Ungültige Munition: Waffe '${basis.name}', Munition '${ammo.baseId}', `
+          + `erwarteter Munitions-Typ '${requiredTypeId}', tatsächlicher Typ `
+          + `'${ammo.ammunitionTypeId ?? firearmAmmoTypeForArt(ammo.baseId) ?? '<fehlt>'}': Katalogeintrag fehlt`
+        : ammo?.invalidReason;
+      const rangedUsable = !!ammoRow && !invalidReason;
+      rows.push({
+        key: `${e.id}:${ammo?.id ?? 'keine'}`,
+        label: basis.name,
+        rangedUsable,
+        invalidReason: invalidReason ?? (!ammo ? `Keine kompatible Munition vom Typ '${requiredTypeId}' ausgewählt` : undefined),
+        schaden: rangedUsable
+          ? `${basis['1.W'] ?? '–'}${snap.fixschaden ? ` ${formatSigned(snap.fixschaden)}` : ''}`
+          : '–',
+        rb: rangedUsable ? snap.rb ?? 0 : 0,
+        munition: ammoRow ? `${ammoRow.label} (${ammo!.quantity} Stück)` : '–',
+        ranges: rangedUsable ? ranges : RANGE_HEADERS.map(() => 'x'),
+        rw: rangedUsable ? snap.rw ?? 0 : 0,
+        ladedauer: rangedUsable ? ladedauer : '–',
+        ini: Math.round(Number(evalReferenz('ini', values))) + (snap.ini ?? 0),
+        nk: computeFkNkWerte(basis, character, values),
+      });
+    }
   }
   return rows;
 }
@@ -459,6 +547,8 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
 export interface ArmbrustBogenRow {
   key: string;
   label: string;
+  rangedUsable: boolean;
+  invalidReason?: string;
   schaden: string;
   rb: number;
   munition: string;
@@ -494,39 +584,73 @@ export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen'
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
   const ladeschuetzeWert = character.values[ARMBRUST_BOEGEN_LADESCHUETZE_REF[typ]] ?? 0;
   const ammoFamily = typ === 'boegen' ? 'pfeile' : 'bolzen';
-  const ammoTable = typ === 'boegen' ? PFEILE : BOLZEN;
   const rows: ArmbrustBogenRow[] = [];
 
   for (const e of character.equipment) {
     if (e.family !== 'fernkampfwaffe' || e.baseTable !== typ) continue;
-    const basis = (typ === 'boegen' ? BOEGEN : ARMBRUST).find((r) => String(r.sourceRow) === e.baseId);
-    if (!basis) continue;
-    const ranges = RANGE_HEADERS.map((h) => formatRangeCell(basis[h] ?? 'x', basisWert, gutDivisor, meisterlichDivisor));
-    const weaponRb = num(basis, 'RB');
-    const weaponFix = num(basis, 'Fixschaden');
+    const basis = e.rangedSnapshot;
+    if (e.invalidReason || !basis || basis.kind !== 'ranged-weapon' || basis.table !== typ) {
+      const invalidReason = e.invalidReason
+        ?? `Ungültige Waffe: Tabelle '${typ}', sourceRow ${e.baseId}, Waffe '<unbekannt>': Snapshot fehlt`;
+      rows.push({
+        key: e.id, label: basis?.name ?? 'Ungültige Waffe', rangedUsable: false, invalidReason,
+        schaden: '–', rb: 0, munition: '–', ranges: RANGE_HEADERS.map(() => 'x'), rw: '–',
+        ladedauer: '–', ini: 0, nk: null,
+      });
+      continue;
+    }
+    const specialization = WEAPON_SPECIALIZATION_BY_ID.get(
+      e.specializationId ?? basis.specializationId,
+    );
+    if (!specialization) {
+      const invalidReason = `Ungültige Waffe: Tabelle '${typ}', sourceRow ${e.baseId}, `
+        + `Waffe '${basis.name}', Spezialisierungs-ID `
+        + `'${e.specializationId ?? basis.specializationId ?? '<fehlt>'}': Referenz fehlt`;
+      rows.push({
+        key: e.id, label: basis.name, rangedUsable: false, invalidReason,
+        schaden: '–', rb: 0, munition: '–', ranges: RANGE_HEADERS.map(() => 'x'), rw: '–',
+        ladedauer: '–', ini: 0, nk: null,
+      });
+      continue;
+    }
+    const ranges = basis.rangeMods.map((rangeMod) => formatRangeCell(rangeMod, basisWert, gutDivisor, meisterlichDivisor));
+    const weaponRb = basis.rb;
+    const weaponFix = basis.fixschaden;
     const ladedauer = typ === 'boegen'
-      ? `${ladezeitKr(num(basis, 'Nachladezeit'), num(basis, 'Nachladen TaW-Teiler'), gesBon, ladeschuetzeWert)} KR`
-      : computeArmbrustLadezeitLabel(basis, eigKStaerke, gesBon, ladeschuetzeWert);
-    const nk = computeFkNkWerte(basis, character, values);
-    const ownedAmmo = character.equipment.filter((a) => a.family === 'ammo' && a.baseTable === ammoFamily);
+      ? `${ladezeitKr(basis.nachladezeit, basis.nachladenTawTeiler, gesBon, ladeschuetzeWert)} KR`
+      : computeArmbrustLadezeitLabel(basis.armbrustLadedaten, eigKStaerke, gesBon, ladeschuetzeWert);
+    const nk = computeResolvedRangedNkWerte(basis, character, values);
+    const ownedAmmo = character.equipment.filter(
+      (a) => a.family === 'ammo' && a.baseTable === ammoFamily,
+    );
     const ammoRows = ownedAmmo.length > 0 ? ownedAmmo : [undefined];
     for (const ammo of ammoRows) {
-      const ammoBasis = ammo ? ammoTable.find((r) => String(r.sourceRow) === ammo.baseId) : undefined;
-      const ammoMod = ammo?.selections.modifikator ? ammoTable.find((r) => String(r.sourceRow) === ammo.selections.modifikator) : undefined;
-      const ammoFix = ammo?.computedStatsSnapshot?.fixschaden ?? 0;
-      const ammoRb = ammo?.computedStatsSnapshot?.rb ?? 0;
+      const ammoSnapshot = ammo?.rangedSnapshot?.kind === 'ranged-ammo' ? ammo.rangedSnapshot : undefined;
+      const invalidReason = ammo?.invalidReason
+        ?? (ammo && (!ammoSnapshot || ammoSnapshot.ammunitionTypeId !== basis.ammunitionTypeId)
+          ? `Ungültige Munition: Waffe '${basis.name}', Munition '${ammoSnapshot?.name ?? ammo.baseId}', `
+            + `erwarteter Munitions-Typ '${basis.ammunitionTypeId}', tatsächlicher Typ `
+            + `'${ammoSnapshot?.ammunitionTypeId ?? '<fehlt>'}'`
+          : undefined);
+      const rangedUsable = !!ammoSnapshot && !invalidReason;
+      const ammoFix = ammoSnapshot?.fixschaden ?? 0;
+      const ammoRb = ammoSnapshot?.rb ?? 0;
       const totalFix = weaponFix + ammoFix;
-      const ammoName = ammoBasis ? (ammoMod ? `${ammoMod.name} (${ammoBasis.name})` : ammoBasis.name) : undefined;
       rows.push({
         key: `${e.id}:${ammo?.id ?? 'keine'}`,
         label: basis.name,
-        schaden: `${basis['1.W'] ?? '–'}${totalFix !== 0 ? ` ${formatSigned(totalFix)}` : ''}`,
-        rb: weaponRb + ammoRb,
-        munition: ammoName ? `${ammoName} (${ammo!.quantity} Stück)` : '–',
-        ranges,
-        rw: basis['RW'] ?? '–',
-        ladedauer,
-        ini: Math.round(Number(evalReferenz('ini', values))) + num(basis, 'Ini'),
+        rangedUsable,
+        invalidReason: invalidReason
+          ?? (!ammo ? `Keine kompatible Munition vom Typ '${basis.ammunitionTypeId}' ausgewählt` : undefined),
+        schaden: rangedUsable
+          ? `${basis.fernkampfWuerfel}${totalFix !== 0 ? ` ${formatSigned(totalFix)}` : ''}`
+          : '–',
+        rb: rangedUsable ? weaponRb + ammoRb : 0,
+        munition: ammoSnapshot ? `${ammoSnapshot.name} (${ammo!.quantity} Stück)` : '–',
+        ranges: rangedUsable ? ranges : RANGE_HEADERS.map(() => 'x'),
+        rw: rangedUsable ? basis.rw : '–',
+        ladedauer: rangedUsable ? ladedauer : '–',
+        ini: Math.round(Number(evalReferenz('ini', values))) + basis.ini,
         nk,
       });
     }
@@ -972,7 +1096,7 @@ const FK_NK_TABLE_HEAD_CELLS = '<th>NK-Schaden</th><th>NK-WK</th><th>NK-nAT</th>
 
 function renderFeuerwaffenRow(row: FeuerwaffenRow): string {
   return `
-    <tr>
+    <tr class="${row.rangedUsable ? '' : 'kampf-row-unusable'}"${row.invalidReason ? ` title="${escapeHtml(row.invalidReason)}"` : ''}>
       <td>${escapeHtml(row.label)}</td>
       <td>${escapeHtml(row.schaden)}</td>
       <td>${row.rb}</td>
@@ -1004,7 +1128,7 @@ function renderFeuerwaffenTable(rows: FeuerwaffenRow[]): string {
 
 function renderArmbrustBogenRow(row: ArmbrustBogenRow): string {
   return `
-    <tr>
+    <tr class="${row.rangedUsable ? '' : 'kampf-row-unusable'}"${row.invalidReason ? ` title="${escapeHtml(row.invalidReason)}"` : ''}>
       <td>${escapeHtml(row.label)}</td>
       <td>${escapeHtml(row.schaden)}</td>
       <td>${row.rb}</td>

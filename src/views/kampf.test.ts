@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { createCharacter } from '../state/characterStore';
 import {
-  buyFeuerwaffe, buyFeuerwaffenMunition, buyWeapon, setValue, setWaffenPoolAllocation, addWaffenLoadout, BudgetError,
+  buyFernkampfwaffe, buyFeuerwaffe, buyFeuerwaffenMunition, buyMunition, buyWeapon, setValue,
+  setWaffenPoolAllocation, addWaffenLoadout, BudgetError,
 } from '../state/characterMutations';
 import {
-  buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows, previewWaffenPoolAllocation,
+  buildArmbrustBoegenRows, buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows,
+  previewWaffenPoolAllocation,
 } from './kampf';
-import { FEUERWAFFEN } from '../data/equipment/fernkampf';
+import { ARMBRUST, BOEGEN, BOLZEN, FEUERWAFFEN, PFEILE } from '../data/equipment/fernkampf';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { feuerwaffenStandardauswahl, composeFeuerwaffe } from '../engine/feuerwaffenComposition';
 import { computeSheet } from '../engine/characterSheet';
@@ -34,6 +36,9 @@ describe('buildFeuerwaffenRows', () => {
     const rows = buildFeuerwaffenRows(character);
     expect(rows).toHaveLength(1);
     expect(rows[0].munition).toBe('–');
+    expect(rows[0].rangedUsable).toBe(false);
+    expect(rows[0].ranges).toEqual(['x', 'x', 'x', 'x', 'x', 'x']);
+    expect(rows[0].nk).not.toBeNull();
   });
 
   it('Kreuzprodukt: eine Feuerwaffe + passend besessene Feuerwaffen-Munition (nach Kaliber) ergibt die Munition-Zelle', () => {
@@ -47,14 +52,38 @@ describe('buildFeuerwaffenRows', () => {
     const rows = buildFeuerwaffenRows(character);
     expect(rows).toHaveLength(1);
     expect(rows[0].munition).toContain('10 Stück');
+    expect(rows[0].rangedUsable).toBe(true);
+  });
+
+  it('dupliziert eine Feuerwaffe fuer jeden kompatiblen Munitionsstapel', () => {
+    const muskete = findFeuerwaffe('Muskete');
+    const selections = feuerwaffenStandardauswahl(muskete);
+    const composed = composeFeuerwaffe(muskete, selections);
+    let character = baseCharacter();
+    character = buyFeuerwaffe(character, muskete.sourceRow, selections);
+    character = buyFeuerwaffenMunition(character, 'blei_pulver', composed.kaliber, 10);
+    character = buyFeuerwaffenMunition(character, 'papierpatrone_vl', composed.kaliber, 1);
+
+    const rows = buildFeuerwaffenRows(character);
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.munition)).toEqual([
+      expect.stringContaining('10 Stück'),
+      expect.stringContaining('1 Stück'),
+    ]);
   });
 
   it('Typ="Gewehr" nutzt die Musketen-Pool-Familie, Typ="Pistole" die Pistolen-Familie (unterschiedliche Reichweiten-Basiswerte)', () => {
     const muskete = findFeuerwaffe('Muskete'); // Typ='Gewehr'
     const pistole = findFeuerwaffe('Pistole'); // Typ='Pistole', Verfuegbarkeit-Stufe < 5 (Kaufsperre)
     let character = baseCharacter();
-    character = buyFeuerwaffe(character, muskete.sourceRow, feuerwaffenStandardauswahl(muskete));
-    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const musketeSelections = feuerwaffenStandardauswahl(muskete);
+    const pistoleSelections = feuerwaffenStandardauswahl(pistole);
+    const musketeComposed = composeFeuerwaffe(muskete, musketeSelections);
+    const pistoleComposed = composeFeuerwaffe(pistole, pistoleSelections);
+    character = buyFeuerwaffe(character, muskete.sourceRow, musketeSelections);
+    character = buyFeuerwaffe(character, pistole.sourceRow, pistoleSelections);
+    character = buyFeuerwaffenMunition(character, 'blei_pulver', musketeComposed.kaliber, 10);
+    character = buyFeuerwaffenMunition(character, 'blei_pulver', pistoleComposed.kaliber, 10);
 
     const rows = buildFeuerwaffenRows(character);
     expect(rows).toHaveLength(2);
@@ -63,6 +92,65 @@ describe('buildFeuerwaffenRows', () => {
     // ueberhaupt eine reale Zahl (nicht durchgehend "x") liefern.
     for (const row of rows) {
       expect(row.ranges.some((cell) => cell !== 'x')).toBe(true);
+    }
+  });
+});
+
+describe('buildArmbrustBoegenRows: aufgeloestes Inventar', () => {
+  const bogen = BOEGEN.find((row) => row.name === 'Improvisierter Bogen')!;
+  const pfeil = PFEILE.find((row) => row.name === 'Holzspitzen-Pfeil')!;
+  const spitze = PFEILE.find((row) => row.name === 'Breitkopfspitzen-Pfeil')!;
+
+  it('dupliziert die Waffenzeile fuer jeden besessenen kompatiblen Munitionsstapel', () => {
+    let character = baseCharacter();
+    character = buyFernkampfwaffe(character, 'boegen', bogen.sourceRow);
+    character = buyMunition(character, 'pfeile', pfeil.sourceRow, null, 10);
+    character = buyMunition(character, 'pfeile', pfeil.sourceRow, spitze.sourceRow, 5);
+
+    const rows = buildArmbrustBoegenRows(character, 'boegen');
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.munition)).toEqual([
+      'Holzspitzen-Pfeil (10 Stück)',
+      'Breitkopfspitzen-Pfeil (Holzspitzen-Pfeil) (5 Stück)',
+    ]);
+  });
+
+  it('zeigt die bestaetigte Waffe auch ohne kompatible Munition', () => {
+    const character = buyFernkampfwaffe(baseCharacter(), 'boegen', bogen.sourceRow);
+    const rows = buildArmbrustBoegenRows(character, 'boegen');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].munition).toBe('–');
+    expect(rows[0].rangedUsable).toBe(false);
+    expect(rows[0].nk).not.toBeNull();
+  });
+
+  it('wendet denselben Snapshot-/Duplikationspfad auf Armbrust und Bolzen an', () => {
+    const armbrust = ARMBRUST.find((row) => row.name === 'Improvisierte Armbrust')!;
+    const bolzen = BOLZEN.find((row) => row['Kategorie'] !== 'Spitzen-Modifikator' && row.preisDublonen !== undefined)!;
+    let character = baseCharacter();
+    character = buyFernkampfwaffe(character, 'armbrust', armbrust.sourceRow);
+    character = buyMunition(character, 'bolzen', bolzen.sourceRow, null, 7);
+
+    const rows = buildArmbrustBoegenRows(character, 'armbrust');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].label).toBe(armbrust.name);
+    expect(rows[0].munition).toBe(`${bolzen.name} (7 Stück)`);
+  });
+
+  it('liest im Kampf-Tab Namen und Fernkampfschaden aus dem Inventar-Snapshot statt erneut aus dem Katalog', () => {
+    let character = buyFernkampfwaffe(baseCharacter(), 'boegen', bogen.sourceRow);
+    character = buyMunition(character, 'pfeile', pfeil.sourceRow, null, 10);
+    const oldName = bogen.name;
+    const oldWuerfel = bogen['1.W'];
+    try {
+      bogen.name = 'Katalog wurde nach Kauf geaendert';
+      bogen['1.W'] = 'W999';
+      const [row] = buildArmbrustBoegenRows(character, 'boegen');
+      expect(row.label).toBe(oldName);
+      expect(row.schaden).toBe(oldWuerfel);
+    } finally {
+      bogen.name = oldName;
+      bogen['1.W'] = oldWuerfel;
     }
   });
 });
@@ -187,6 +275,49 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
     const rows = buildNahkampfRows(updated, sheet);
     const row2 = rows.find((r) => r.key === w2.id && r.grip === '1H')!;
     expect(row2.pp).toBe(0);
+  });
+});
+
+describe('buildNahkampfRows: ungueltige gespeicherte Waffen', () => {
+  it('behaelt einen fehlenden Katalogeintrag sichtbar und deaktiviert alle Kampfwerte', () => {
+    const character = baseCharacter();
+    character.equipment.push({
+      id: 'stale-waffe',
+      family: 'weapon',
+      baseTable: 'nk_waffen_basis',
+      baseId: '99999',
+      selections: {},
+      quantity: 1,
+      displayNameSnapshot: 'Alte Waffe',
+      invalidReason: "Ungültige Waffe: Tabelle 'NK-Waffen-Basis', sourceRow 99999: Katalogeintrag fehlt",
+    });
+
+    const row = buildNahkampfRows(character, computeSheet(character))
+      .find((candidate) => candidate.key === 'stale-waffe')!;
+    expect(row.usable).toBe(false);
+    expect(row.poolReferenz).toBeNull();
+    expect(row.schaden).toBe('–');
+    expect(row.unusableReason).toContain('Katalogeintrag fehlt');
+  });
+
+  it('deaktiviert eine Waffe mit unbekannter stabiler Spezialisierungs-ID detailliert', () => {
+    let character = baseCharacter();
+    const axt = NK_WAFFEN_BASIS.find((row) => row.name === 'Axt')!;
+    const material = NK_MATERIAL.find((row) => row.name === 'Eisen')!;
+    const fertigung = NK_FERTIGUNG.find((row) => row.name === 'Gesellenarbeit')!;
+    const anpassung = NK_ANPASSUNG.find((row) => row.name === 'Von der Stange')!;
+    const schaftmaterial = NK_SCHAFTMATERIAL.find((row) => row.name === 'Standard')!;
+    character = buyWeapon(
+      character, axt.sourceRow, material.sourceRow, fertigung.sourceRow,
+      anpassung.sourceRow, schaftmaterial.sourceRow,
+    );
+    character.equipment[0].specializationId = 'nk_spez_fehlt';
+
+    const row = buildNahkampfRows(character, computeSheet(character))
+      .find((candidate) => candidate.key === character.equipment[0].id)!;
+    expect(row.usable).toBe(false);
+    expect(row.poolReferenz).toBeNull();
+    expect(row.unusableReason).toMatch(/Spezialisierungs-ID 'nk_spez_fehlt'.*Referenz fehlt/);
   });
 });
 

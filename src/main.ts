@@ -37,7 +37,25 @@ import {
 } from './data/orte';
 import { getReligionen, addReligion, addSekte, formatReligionLabel, combineReligionSekte } from './state/religionStore';
 
+declare const __LAST_UPDATED_AT__: string;
+
 const app = document.querySelector<HTMLDivElement>('#app')!;
+
+function formatLastUpdated(isoTimestamp: string): string {
+  const timestamp = new Date(isoTimestamp);
+  if (Number.isNaN(timestamp.getTime())) return '';
+
+  return new Intl.DateTimeFormat('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(timestamp).replace(',', '');
+}
+
+const lastUpdated = formatLastUpdated(__LAST_UPDATED_AT__);
 
 const TABS = [
   'Charakterbogen',
@@ -421,6 +439,7 @@ function render(): void {
 
   app.innerHTML = `
     <header class="app-header">
+      ${lastUpdated ? `<small class="last-updated">last updated ${lastUpdated}</small>` : ''}
       <h1>Nasus – Charaktererstellung</h1>
       <div class="character-bar">
         <select id="character-select">

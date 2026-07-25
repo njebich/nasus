@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { createCharacter, loadCharacter, STARTBUDGET_PRESETS, getLastActiveCharacterId, setLastActiveCharacterId } from './characterStore';
-import { updateHeader } from './characterMutations';
+import { buyFernkampfwaffe, updateHeader } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
+import { BOEGEN } from '../data/equipment/fernkampf';
 
 describe('createCharacter mit Charakterheader + Startbudget', () => {
   it('legt einen Charakter mit vollem Header an', () => {
@@ -123,6 +124,61 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     expect(loaded.herkunftSnapshot).toEqual({ name: 'Altdorf', region: '', welt: 'NW' });
     expect('heimat' in loaded).toBe(false);
     expect('region' in loaded).toBe(false);
+  });
+
+  it('migriert alte Bogen-/Pfeil-Eintraege ohne Snapshot, wenn der Katalogeintrag noch existiert', () => {
+    const id = 'alt-charakter-vor-ranged-snapshot';
+    const alterCharakter = {
+      id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {}, selections: {}, poolAllocations: {}, ruestungSlots: {},
+      equipment: [{
+        id: 'alter-bogen', family: 'fernkampfwaffe', baseTable: 'boegen', baseId: '2',
+        selections: {}, quantity: 1, computedPriceSnapshot: 0.001,
+      }, {
+        id: 'alte-pfeile', family: 'ammo', baseTable: 'pfeile', baseId: '3',
+        selections: {}, quantity: 10, computedPriceSnapshot: 0.05,
+      }],
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
+    const loaded = loadCharacter(id)!;
+    expect(loaded.equipment).toHaveLength(2);
+    expect(loaded.equipment[0].rangedSnapshot?.kind).toBe('ranged-weapon');
+    expect(loaded.equipment[1].rangedSnapshot?.kind).toBe('ranged-ammo');
+  });
+
+  it('behaelt nicht mehr aufloesbare Fernkampf-Eintraege und markiert sie detailliert als ungueltig', () => {
+    const id = 'stale-ranged-catalog-entry';
+    const staleCharacter = {
+      id, name: 'Stale', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {}, selections: {}, poolAllocations: {}, ruestungSlots: {},
+      equipment: [{
+        id: 'fehlender-bogen', family: 'fernkampfwaffe', baseTable: 'boegen', baseId: '99999',
+        selections: {}, quantity: 1,
+        rangedSnapshot: {
+          kind: 'ranged-weapon', table: 'boegen', name: 'Alter Bogen',
+          spezialisierung: 'Improvisierte Stangenwaffen',
+        },
+      }],
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(staleCharacter));
+
+    const loaded = loadCharacter(id)!;
+    expect(loaded.equipment).toHaveLength(1);
+    expect(loaded.equipment[0].invalidReason).toMatch(
+      /Ungültige Waffe.*boegen.*99999.*Alter Bogen.*Improvisierte Stangenwaffen.*Katalogeintrag fehlt/,
+    );
+  });
+
+  it('regeneriert vorhandene aufgeloeste Snapshots beim Laden aus den aktuellen Katalogdaten', () => {
+    const bogen = BOEGEN.find((row) => row.name === 'Improvisierter Bogen')!;
+    let character = createCharacter('Snapshot', {}, undefined, true);
+    character.values['dublonen_bank'] = 100;
+    character = buyFernkampfwaffe(character, 'boegen', bogen.sourceRow);
+    character.equipment[0].rangedSnapshot!.name = 'Veralteter Name';
+    localStorage.setItem(`nasus:character:${character.id}`, JSON.stringify(character));
+
+    const loaded = loadCharacter(character.id)!;
+    expect(loaded.equipment[0].rangedSnapshot?.name).toBe(bogen.name);
   });
 });
 

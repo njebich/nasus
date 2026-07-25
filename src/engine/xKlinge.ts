@@ -1,8 +1,8 @@
 import {
   ARTEFAKT_BASIS, ARTEFAKT_WIRKUNGSSTUFEN, type ArtefaktBasis,
 } from '../data/equipment/artefakte';
-import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 import type { EquipmentEntry } from '../state/characterStore';
+import { MELEE_WEAPON_BY_SOURCE_ROW } from './weaponCatalog';
 
 export interface XKlingeWirkung {
   referenz: string;
@@ -69,7 +69,7 @@ export function xKlingeTooltip(wirkung: XKlingeWirkung): string {
 
 export function xKlingeWeaponName(entry: EquipmentEntry): string | undefined {
   if (entry.family !== 'weapon' || !entry.xKlinge) return undefined;
-  const basis = NK_WAFFEN_BASIS.find((row) => String(row.sourceRow) === entry.baseId);
+  const basis = MELEE_WEAPON_BY_SOURCE_ROW.get(entry.baseId);
   if (!basis) return undefined;
   const wirkung = resolveXKlingeWirkung(entry.xKlinge.artefaktReferenz, entry.xKlinge.grad);
   return `${wirkung.namenspraefix}-${basis.name}`;

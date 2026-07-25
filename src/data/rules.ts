@@ -25,7 +25,10 @@ export interface RuleEntry {
   sourceRow: number;
 }
 
-export const RULES = rulesJson as unknown as RuleEntry[];
+// Der generische Unbewaffnet-Pool ist kein gültiger Waffenpool. Unbewaffnet wird ausschließlich
+// über die Spezialisierung nk_spez_unbewaffnet_unbewaffnet aufgelöst.
+export const RULES = (rulesJson as unknown as RuleEntry[])
+  .filter((rule) => rule.referenz !== 'nk_pool_unbewaffnet');
 
 // Codegen-Warnungen (siehe Konsolen-Ausgabe beim Generieren):
 // - Zeile 2: Referenz '#spruchmagie_erdbeschwoerung_1_splitterwand' mit '#' auskommentiert - uebersprungen

@@ -5,6 +5,11 @@ import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Welt } from '../data/orte';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
+import {
+  resolveRangedAmmoInventorySnapshot, resolveRangedWeaponInventorySnapshot,
+  type RangedInventorySnapshot,
+} from '../engine/rangedInventorySnapshot';
+import type { AmmunitionTypeId } from '../engine/ammunitionTypes';
 
 export interface XKlingeVerzauberung {
   artefaktReferenz: string;
@@ -33,6 +38,17 @@ export interface EquipmentEntry {
   quantity: number;
   computedPriceSnapshot?: number;
   computedStatsSnapshot?: Record<string, number>;
+  /** Beim Bestätigen stabil gespeicherte Katalog-Identität; Anzeigenamen sind keine Lookup-Keys. */
+  displayNameSnapshot?: string;
+  specializationId?: string;
+  ammunitionTypeId?: AmmunitionTypeId;
+  /** Vollstaendig aufgeloester, bei jedem Laden aus den aktuellen Katalogdaten regenerierter
+   * Kampf-Snapshot fuer Boegen/Armbrueste bzw. Pfeile/Bolzen. Der Kampf-Tab greift danach nicht
+   * mehr auf die grossen Katalogtabellen zurueck. */
+  rangedSnapshot?: RangedInventorySnapshot;
+  /** Persistenter Diagnosehinweis fuer einen nicht mehr aufloesbaren Katalogeintrag. Der Eintrag
+   *  bleibt im Inventar und kann entfernt werden, ist im Kampf aber vollstaendig deaktiviert. */
+  invalidReason?: string;
   /** Unsichtbares Inventar-Flag. Fehlend = profan; nur nicht-profane Gegenstaende tragen true. */
   magisch?: true;
   /** Nur bei einer aus profaner NK-Waffe + X-Klinge amalgamierten Artefakt-Waffe. */
@@ -254,6 +270,58 @@ export function loadCharacter(id: string): CharacterState | null {
   // Magisch/profan ist ein unsichtbares Positiv-Flag: fehlend bedeutet profan. Artefakte sind
   // immer magisch; bei Alchemika ist Spalte B des SPOT-Sheets die alleinige Quelle.
   parsed.equipment = (parsed.equipment ?? []).map((entry) => {
+    delete entry.invalidReason;
+    if (entry.family === 'fernkampfwaffe' && (entry.baseTable === 'boegen' || entry.baseTable === 'armbrust')) {
+      const rangedSnapshot = resolveRangedWeaponInventorySnapshot(entry.baseTable, entry.baseId);
+      if (!rangedSnapshot) {
+        const previousWeaponSnapshot = entry.rangedSnapshot?.kind === 'ranged-weapon'
+          ? entry.rangedSnapshot
+          : undefined;
+        entry.invalidReason = `Ungültige Waffe: Tabelle '${entry.baseTable}', sourceRow ${entry.baseId}, `
+          + `Waffe '${previousWeaponSnapshot?.name ?? '<unbekannt>'}', `
+          + `Spezialisierung '${previousWeaponSnapshot?.spezialisierung ?? '<fehlt>'}': Katalogeintrag fehlt`;
+      } else {
+        entry = {
+          ...entry,
+          rangedSnapshot,
+          displayNameSnapshot: rangedSnapshot.name,
+          specializationId: rangedSnapshot.specializationId,
+          ammunitionTypeId: rangedSnapshot.ammunitionTypeId,
+          ...(rangedSnapshot.preisDublonen !== undefined
+            ? { computedPriceSnapshot: rangedSnapshot.preisDublonen }
+            : {}),
+        };
+      }
+    } else if (entry.family === 'ammo' && (entry.baseTable === 'pfeile' || entry.baseTable === 'bolzen')) {
+      const rangedSnapshot = resolveRangedAmmoInventorySnapshot(
+        entry.baseTable, entry.baseId, entry.selections?.modifikator,
+      );
+      if (!rangedSnapshot) {
+        const expectedType = entry.baseTable === 'pfeile' ? 'pfeil' : 'bolzen';
+        const actualType = entry.rangedSnapshot?.kind === 'ranged-ammo'
+          ? entry.rangedSnapshot.ammunitionTypeId ?? '<fehlt>'
+          : '<fehlt>';
+        entry.invalidReason = `Ungültige Munition: Tabelle '${entry.baseTable}', sourceRow ${entry.baseId}, `
+          + `Eintrag '${entry.rangedSnapshot?.name ?? '<unbekannt>'}', `
+          + `erwarteter Munitions-Typ '${expectedType}', tatsächlicher Typ '${actualType}': Katalogeintrag fehlt`;
+      } else {
+        entry = {
+          ...entry,
+          rangedSnapshot,
+          displayNameSnapshot: rangedSnapshot.name,
+          ammunitionTypeId: rangedSnapshot.ammunitionTypeId,
+          ...(rangedSnapshot.preisDublonen !== null
+            ? { computedPriceSnapshot: rangedSnapshot.preisDublonen }
+            : {}),
+          computedStatsSnapshot: {
+            fixschaden: rangedSnapshot.fixschaden,
+            rb: rangedSnapshot.rb,
+            rwModMeter: rangedSnapshot.rwModMeter,
+            be: rangedSnapshot.be,
+          },
+        };
+      }
+    }
     const alchemika = entry.family === 'alchemika'
       ? ALCHEMIKA.find((row) => String(row.sourceRow) === entry.baseId)
       : undefined;

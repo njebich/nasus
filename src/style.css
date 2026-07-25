@@ -66,9 +66,37 @@ body {
   text-align: left;
 }
 
+.app-header {
+  position: relative;
+}
+
 .app-header h1 {
   font-size: calc(1.4rem + 2pt);
   margin: 0 0 0.75rem;
+  padding-right: 12rem;
+}
+
+.last-updated {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: #777;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .app-header h1 {
+    padding-right: 0;
+  }
+
+  .last-updated {
+    position: static;
+    display: block;
+    margin-bottom: 0.25rem;
+    text-align: right;
+  }
 }
 
 .character-bar {
@@ -577,6 +605,19 @@ body {
 
 .artefakt-grad-row > .artefakt-grad-label {
   flex: 1;
+}
+
+.inventar-row.inventar-row-invalid {
+  border-color: #b42318;
+  background: #fff2f0;
+}
+
+.inventar-invalid-error {
+  display: block;
+  margin-top: 0.25rem;
+  color: #b42318;
+  font-size: 0.78rem;
+  white-space: normal;
 }
 
 .artefakt-waffen-ziel-label {

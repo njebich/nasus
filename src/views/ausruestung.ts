@@ -16,11 +16,15 @@ import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from
 import { ALCHEMIKA, type AlchemikaRow } from '../data/equipment/alchemika';
 import {
   feuerwaffenMunitionOptionen,
-  FEUERWAFFEN_MUNITION_PREISE,
   type FeuerwaffenMunitionArt,
 } from '../data/equipment/feuerwaffenMunition';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { tooltipAttr } from './tooltip';
+import {
+  ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
+  FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW,
+} from '../engine/weaponCatalog';
+import { firearmAmmoTypeForArt } from '../engine/ammunitionTypes';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
 import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
@@ -251,7 +255,7 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: Ch
       Profane NK-Waffe
       <select class="artefakt-waffen-ziel" ${keineProfaneWaffe ? 'disabled' : ''}>
         ${profaneWaffen.map((entry, index) => {
-          const row = NK_WAFFEN_BASIS.find((weapon) => String(weapon.sourceRow) === entry.baseId);
+          const row = MELEE_WEAPON_BY_SOURCE_ROW.get(entry.baseId);
           return `<option value="${escapeHtml(entry.id)}">${index + 1}. ${escapeHtml(row?.name ?? 'Unbekannte Waffe')} (${formatDublonen(entry.computedPriceSnapshot ?? 0)})</option>`;
         }).join('')}
       </select>
@@ -719,7 +723,28 @@ function renderInventar(character: CharacterState): string {
     return '<p class="inventar-empty">Noch nichts gekauft.</p>';
   }
   return character.equipment.map((e) => {
-    let label = `${e.family} (${e.baseTable} #${e.baseId})`;
+    let invalidReason = e.invalidReason;
+    if (!invalidReason && (e.family === 'weapon' || e.family === 'shield') && !MELEE_WEAPON_BY_SOURCE_ROW.has(e.baseId)) {
+      invalidReason = `Ungültige Waffe: Tabelle '${e.baseTable}', sourceRow ${e.baseId}, `
+        + `Waffe '<unbekannt>', Spezialisierung '<fehlt>': Katalogeintrag fehlt`;
+    } else if (!invalidReason && e.family === 'feuerwaffe' && !FIREARM_BY_SOURCE_ROW.has(e.baseId)) {
+      invalidReason = `Ungültige Waffe: Tabelle 'Feuerwaffen', sourceRow ${e.baseId}, `
+        + `Waffe '<unbekannt>', Spezialisierung '<fehlt>': Katalogeintrag fehlt`;
+    } else if (!invalidReason && e.family === 'fernkampfwaffe' && e.rangedSnapshot?.kind !== 'ranged-weapon') {
+      invalidReason = `Ungültige Waffe: Tabelle '${e.baseTable}', sourceRow ${e.baseId}: Waffen-Snapshot fehlt`;
+    } else if (!invalidReason && e.family === 'ammo' && e.baseTable === 'feuerwaffen-munition') {
+      const caliber = Number(e.selections.kaliber);
+      const ammoRow = FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${e.baseId}:${caliber}`);
+      if (!ammoRow) {
+        invalidReason = `Ungültige Munition: Eintrag '${e.baseId}', Kaliber '${e.selections.kaliber ?? '<fehlt>'}', `
+          + `Munitions-Typ '${firearmAmmoTypeForArt(e.baseId) ?? '<fehlt>'}': Katalogeintrag fehlt`;
+      }
+    } else if (!invalidReason && e.family === 'ammo' && e.baseTable !== 'feuerwaffen-munition'
+      && e.rangedSnapshot?.kind !== 'ranged-ammo') {
+      invalidReason = `Ungültige Munition: Tabelle '${e.baseTable}', sourceRow ${e.baseId}, `
+        + `erwarteter Munitions-Typ '${e.baseTable === 'pfeile' ? 'pfeil' : 'bolzen'}', tatsächlicher Typ '<fehlt>'`;
+    }
+    let label = e.displayNameSnapshot ?? `${e.family} (${e.baseTable} #${e.baseId})`;
     // Nutzer 2026-07-24: "Show full item stat block if Schilde, NK-Waffe or FK-Waffe or ammo or
     // Alchemika" - Ruestung/Preisliste/Artefakt bewusst aussen vor (nicht in der Nutzer-Aufzaehlung).
     let statTooltip = '';
@@ -737,14 +762,14 @@ function renderInventar(character: CharacterState): string {
         statTooltip = tooltipAttr(text);
       }
     } else if (e.family === 'shield') {
-      const row = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
+      const row = MELEE_WEAPON_BY_SOURCE_ROW.get(e.baseId);
       const rs = e.computedStatsSnapshot?.rs;
       // RS des Schilds wird angezeigt, aber bewusst NICHT in rs_arme eingerechnet (Regel Nutzer
       // 2026-07-17: Anrechnung auf den linken Arm ist Kampfmodul-Scope, siehe characterMutations.ts).
       label = row ? `${row.name} (RS ${rs})` : label;
       statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
     } else if (e.family === 'weapon') {
-      const row = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === e.baseId);
+      const row = MELEE_WEAPON_BY_SOURCE_ROW.get(e.baseId);
       const at = e.computedStatsSnapshot?.at;
       const pa = e.computedStatsSnapshot?.pa;
       label = row ? `${xKlingeWeaponName(e) ?? row.name} (AT ${at} | PA ${pa})` : label;
@@ -754,24 +779,21 @@ function renderInventar(character: CharacterState): string {
         wirkung ? xKlingeTooltip(wirkung) : '',
       ].filter(Boolean).join('\n'));
     } else if (e.family === 'fernkampfwaffe') {
-      const table = e.baseTable === 'boegen' ? BOEGEN : ARMBRUST;
-      const row = table.find((r) => String(r.sourceRow) === e.baseId);
+      const row = (e.baseTable === 'boegen' ? BOW_BY_SOURCE_ROW : CROSSBOW_BY_SOURCE_ROW).get(e.baseId);
       label = row?.name ?? label;
       if (row) statTooltip = fernkampfwaffeStatTooltip(row);
     } else if (e.family === 'feuerwaffe') {
-      const row = FEUERWAFFEN.find((r) => String(r.sourceRow) === e.baseId);
+      const row = FIREARM_BY_SOURCE_ROW.get(e.baseId);
       label = row?.name ?? label;
       statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
     } else if (e.family === 'ammo') {
       if (e.baseTable === 'feuerwaffen-munition') {
-        const ammo = FEUERWAFFEN_MUNITION_PREISE.find(
-          (row) => row.art === e.baseId && String(row.kaliber) === e.selections.kaliber,
-        );
+        const ammo = FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${e.baseId}:${e.selections.kaliber}`);
         label = ammo ? `${ammo.label} (Kaliber ${ammo.kaliber})` : label;
       } else {
-        const table = e.baseTable === 'pfeile' ? PFEILE : BOLZEN;
-        const basis = table.find((r) => String(r.sourceRow) === e.baseId);
-        const modRow = e.selections.modifikator ? table.find((r) => String(r.sourceRow) === e.selections.modifikator) : undefined;
+        const table = e.baseTable === 'pfeile' ? ARROW_BY_SOURCE_ROW : BOLT_BY_SOURCE_ROW;
+        const basis = table.get(e.baseId);
+        const modRow = e.selections.modifikator ? table.get(e.selections.modifikator) : undefined;
         const fixschaden = e.computedStatsSnapshot?.fixschaden;
         label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${fixschaden ? ` (Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden})` : ''}` : label;
       }
@@ -783,8 +805,8 @@ function renderInventar(character: CharacterState): string {
     }
     const total = (e.computedPriceSnapshot ?? 0) * e.quantity;
     return `
-      <div class="inventar-row" data-equipment-id="${e.id}"${statTooltip}>
-        <span class="stat-label">${escapeHtml(label)}${e.quantity > 1 ? ` ×${e.quantity}` : ''}</span>
+      <div class="inventar-row${invalidReason ? ' inventar-row-invalid' : ''}" data-equipment-id="${e.id}"${invalidReason ? ` title="${escapeHtml(invalidReason)}"` : statTooltip}>
+        <span class="stat-label">${escapeHtml(label)}${e.quantity > 1 ? ` ×${e.quantity}` : ''}${invalidReason ? `<span class="inventar-invalid-error">Ungültig: ${escapeHtml(invalidReason)}</span>` : ''}</span>
         <span class="stat-cost">${formatDublonen(total)}</span>
         <button type="button" class="inventar-remove" data-equipment-id="${e.id}">Entfernen</button>
       </div>`;
@@ -1079,7 +1101,7 @@ export function renderAusruestungView(
       if (isXKlingeReferenz(referenz)) {
         targetWeaponId = btn.closest('.artefakt-card')?.querySelector<HTMLSelectElement>('.artefakt-waffen-ziel')?.value;
         const weapon = character.equipment.find((entry) => entry.id === targetWeaponId);
-        const weaponRow = weapon ? NK_WAFFEN_BASIS.find((row) => String(row.sourceRow) === weapon.baseId) : undefined;
+        const weaponRow = weapon ? MELEE_WEAPON_BY_SOURCE_ROW.get(weapon.baseId) : undefined;
         const wirkung = resolveXKlingeWirkung(referenz, grad);
         const artefaktPreis = Number(btn.dataset.artefaktPreis ?? 0);
         const waffenWert = weapon?.computedPriceSnapshot ?? 0;
@@ -1159,7 +1181,7 @@ export function renderAusruestungView(
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-weapon').forEach((btn) => {
     btn.addEventListener('click', () => {
       const weaponSourceRow = Number(btn.dataset.weapon);
-      const weaponRow = WEAPONS.find((w) => w.sourceRow === weaponSourceRow);
+      const weaponRow = MELEE_WEAPON_BY_SOURCE_ROW.get(String(weaponSourceRow));
       const brauchtSchaft = !!weaponRow && waffeBrauchtSchaftmaterial(weaponRow);
       const sel = weaponPicker.get(weaponSourceRow);
       const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
@@ -1203,7 +1225,7 @@ export function renderAusruestungView(
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-feuerwaffe').forEach((btn) => {
     btn.addEventListener('click', () => {
       const sourceRow = Number(btn.dataset.feuerwaffe);
-      const basis = FEUERWAFFEN.find((row) => row.sourceRow === sourceRow);
+      const basis = FIREARM_BY_SOURCE_ROW.get(String(sourceRow));
       if (!basis) return;
       callbacks.onBuyFeuerwaffe(sourceRow, feuerwaffenPicker.get(sourceRow) ?? feuerwaffenStandardauswahl(basis));
     });

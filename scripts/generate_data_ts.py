@@ -33,6 +33,7 @@ Aendert NICHTS an der xlsx - reines Lesen. Ueberschreibt die generierten
 """
 import sys
 import json
+import subprocess
 from pathlib import Path
 
 import openpyxl
@@ -420,7 +421,10 @@ def write_rules_ts(rules, warnings):
     lines.append("  sourceRow: number;")
     lines.append("}")
     lines.append("")
-    lines.append("export const RULES = rulesJson as unknown as RuleEntry[];")
+    lines.append("// Der generische Unbewaffnet-Pool ist kein gültiger Waffenpool. Unbewaffnet wird ausschließlich")
+    lines.append("// über die Spezialisierung nk_spez_unbewaffnet_unbewaffnet aufgelöst.")
+    lines.append("export const RULES = (rulesJson as unknown as RuleEntry[])")
+    lines.append("  .filter((rule) => rule.referenz !== 'nk_pool_unbewaffnet');")
     lines.append("")
 
     if warnings:
@@ -1107,6 +1111,7 @@ def main(xlsx_path, feuerwaffen_xlsx_path=None):
     feuerwaffen_values = openpyxl.load_workbook(feuerwaffen_path, data_only=True)
 
     rules, warnings = read_rules(wb)
+    rules = [rule for rule in rules if rule.get("referenz") != "nk_pool_unbewaffnet"]
     rules_path = write_rules_ts(rules, warnings)
     print(f"{rules_path}: {len(rules)} Regeln geschrieben.")
     if warnings:
@@ -1131,6 +1136,11 @@ def main(xlsx_path, feuerwaffen_xlsx_path=None):
     write_voelker_maxima_ts(wb)
     write_ki_baum_kanten_ts(wb)
     write_spruchmagie_details_ts(wb)
+    subprocess.run(
+        ["node", str(REPO_ROOT / "scripts" / "validate_weapon_catalog.mjs")],
+        cwd=REPO_ROOT,
+        check=True,
+    )
 
 
 if __name__ == "__main__":

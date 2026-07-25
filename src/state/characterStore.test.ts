@@ -126,7 +126,7 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     expect('region' in loaded).toBe(false);
   });
 
-  it('loescht alte Bogen-/Armbrust-Eintraege ohne aufgeloesten Inventar-Snapshot', () => {
+  it('migriert alte Bogen-/Pfeil-Eintraege ohne Snapshot, wenn der Katalogeintrag noch existiert', () => {
     const id = 'alt-charakter-vor-ranged-snapshot';
     const alterCharakter = {
       id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '',
@@ -140,7 +140,33 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
       }],
     };
     localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
-    expect(loadCharacter(id)?.equipment).toEqual([]);
+    const loaded = loadCharacter(id)!;
+    expect(loaded.equipment).toHaveLength(2);
+    expect(loaded.equipment[0].rangedSnapshot?.kind).toBe('ranged-weapon');
+    expect(loaded.equipment[1].rangedSnapshot?.kind).toBe('ranged-ammo');
+  });
+
+  it('behaelt nicht mehr aufloesbare Fernkampf-Eintraege und markiert sie detailliert als ungueltig', () => {
+    const id = 'stale-ranged-catalog-entry';
+    const staleCharacter = {
+      id, name: 'Stale', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {}, selections: {}, poolAllocations: {}, ruestungSlots: {},
+      equipment: [{
+        id: 'fehlender-bogen', family: 'fernkampfwaffe', baseTable: 'boegen', baseId: '99999',
+        selections: {}, quantity: 1,
+        rangedSnapshot: {
+          kind: 'ranged-weapon', table: 'boegen', name: 'Alter Bogen',
+          spezialisierung: 'Improvisierte Stangenwaffen',
+        },
+      }],
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(staleCharacter));
+
+    const loaded = loadCharacter(id)!;
+    expect(loaded.equipment).toHaveLength(1);
+    expect(loaded.equipment[0].invalidReason).toMatch(
+      /Ungültige Waffe.*boegen.*99999.*Alter Bogen.*Improvisierte Stangenwaffen.*Katalogeintrag fehlt/,
+    );
   });
 
   it('regeneriert vorhandene aufgeloeste Snapshots beim Laden aus den aktuellen Katalogdaten', () => {

@@ -1,5 +1,6 @@
 // Quelle: werte 0.8-claude.xlsx, Blatt "Munition-Feuerwaffen", A2:D39.
 // Preise sind Dublonen pro Schuss.
+import { firearmAmmunitionType, firearmAmmoTypeForArt } from '../../engine/ammunitionTypes';
 
 export type FeuerwaffenMunitionArt =
   | 'blei_pulver'
@@ -54,13 +55,8 @@ export function feuerwaffenMunitionOptionen(
   munition: string,
   kaliber: number,
 ): FeuerwaffenMunitionRow[] {
-  let arten: FeuerwaffenMunitionArt[];
-  if (munition === 'Harpune') arten = ['harpune'];
-  else if (lademechanik === 'Vorderlader') arten = ['blei_pulver', 'papierpatrone_vl'];
-  else if (lademechanik === 'Hinterlader') arten = ['papierpatrone'];
-  else arten = ['messingpatrone'];
-
-  return arten.flatMap((art) => FEUERWAFFEN_MUNITION_PREISE.filter(
-    (row) => row.art === art && row.kaliber === kaliber,
-  ));
+  const requiredTypeId = firearmAmmunitionType(lademechanik, munition);
+  return FEUERWAFFEN_MUNITION_PREISE.filter(
+    (row) => firearmAmmoTypeForArt(row.art) === requiredTypeId && row.kaliber === kaliber,
+  );
 }

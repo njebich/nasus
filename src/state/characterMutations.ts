@@ -19,7 +19,7 @@ import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
-import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
+import { NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { composeMunition } from '../engine/pfeilBolzenComposition';
 import {
   createRangedAmmoInventorySnapshot, createRangedWeaponInventorySnapshot,
@@ -27,12 +27,20 @@ import {
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
 import { computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier } from '../engine/waffenPool';
 import { gutBudget, meisterlichBudget } from '../engine/poolCaps';
-import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
+import type { FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
-import { FEUERWAFFEN_MUNITION_PREISE, type FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
+import type { FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
 import type { RsGruppe } from '../data/trefferzonen';
 import { listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen } from '../engine/waffenLoadout';
 import { isXKlingeReferenz, resolveXKlingeWirkung } from '../engine/xKlinge';
+import {
+  ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
+  FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW,
+  weaponSpecializationForRow,
+} from '../engine/weaponCatalog';
+import {
+  firearmAmmunitionType, firearmAmmoTypeForArt, rangedWeaponAmmunitionType,
+} from '../engine/ammunitionTypes';
 import {
   ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry,
   type WaffenLoadoutEntry, type WaffenLoadoutComboType,
@@ -605,7 +613,7 @@ export function buyShield(
   character: CharacterState, sourceRow: number,
   materialSourceRow: number, fertigungSourceRow: number, bespannungSourceRow: number,
 ): CharacterState {
-  const row = NK_WAFFEN_BASIS.find((r) => r.sourceRow === sourceRow);
+  const row = MELEE_WEAPON_BY_SOURCE_ROW.get(String(sourceRow));
   if (!row) throw new MutationError(`Schild (Zeile ${sourceRow}) existiert nicht`);
   if (row['Spezialisierung'] !== 'Schild') throw new MutationError(`'${row.name}' ist kein Schild`);
 
@@ -630,6 +638,8 @@ export function buyShield(
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'shield', baseTable: 'nk_waffen_basis', baseId: String(sourceRow),
+    displayNameSnapshot: row.name,
+    specializationId: weaponSpecializationForRow('NK-Waffen-Basis', row).id,
     selections: {
       material: String(materialSourceRow), fertigung: String(fertigungSourceRow), bespannung: String(bespannungSourceRow),
     },
@@ -655,7 +665,7 @@ export function buyWeapon(
   character: CharacterState, sourceRow: number,
   materialSourceRow: number, fertigungSourceRow: number, anpassungSourceRow: number, schaftmaterialSourceRow: number,
 ): CharacterState {
-  const row = NK_WAFFEN_BASIS.find((r) => r.sourceRow === sourceRow);
+  const row = MELEE_WEAPON_BY_SOURCE_ROW.get(String(sourceRow));
   if (!row) throw new MutationError(`Waffe (Zeile ${sourceRow}) existiert nicht`);
   if (row['Spezialisierung'] === 'Schild') throw new MutationError(`'${row.name}' ist ein Schild, siehe buyShield`);
 
@@ -688,6 +698,8 @@ export function buyWeapon(
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'weapon', baseTable: 'nk_waffen_basis', baseId: String(sourceRow),
+    displayNameSnapshot: row.name,
+    specializationId: weaponSpecializationForRow('NK-Waffen-Basis', row).id,
     selections: {
       material: String(materialSourceRow), fertigung: String(fertigungSourceRow),
       anpassung: String(anpassungSourceRow), schaftmaterial: String(schaftmaterialSourceRow),
@@ -712,8 +724,7 @@ export function buyWeapon(
  * System - siehe project-fk-waffen-erfassung memory).
  */
 export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'armbrust', sourceRow: number): CharacterState {
-  const table = typ === 'boegen' ? BOEGEN : ARMBRUST;
-  const row = table.find((r) => r.sourceRow === sourceRow);
+  const row = (typ === 'boegen' ? BOW_BY_SOURCE_ROW : CROSSBOW_BY_SOURCE_ROW).get(String(sourceRow));
   if (!row) throw new MutationError(`${typ === 'boegen' ? 'Bogen' : 'Armbrust'} (Zeile ${sourceRow}) existiert nicht`);
   assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name, character.bestehenderCharakter);
   if (row.preisDublonen === undefined) {
@@ -723,6 +734,9 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'fernkampfwaffe', baseTable: typ, baseId: String(sourceRow),
+    displayNameSnapshot: row.name,
+    specializationId: weaponSpecializationForRow(typ === 'boegen' ? 'Bögen-Basis' : 'Armbrust-Basis', row).id,
+    ammunitionTypeId: rangedWeaponAmmunitionType(typ),
     selections: {}, quantity: 1, computedPriceSnapshot: row.preisDublonen,
     rangedSnapshot: createRangedWeaponInventorySnapshot(typ, row),
   };
@@ -737,7 +751,7 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
 export function buyFeuerwaffe(
   character: CharacterState, sourceRow: number, selections: FeuerwaffenSelections,
 ): CharacterState {
-  const basis = FEUERWAFFEN.find((row) => row.sourceRow === sourceRow);
+  const basis = FIREARM_BY_SOURCE_ROW.get(String(sourceRow));
   if (!basis) throw new MutationError(`Feuerwaffe (Zeile ${sourceRow}) existiert nicht`);
 
   let composed;
@@ -751,6 +765,9 @@ export function buyFeuerwaffe(
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'feuerwaffe', baseTable: 'feuerwaffen', baseId: String(sourceRow),
+    displayNameSnapshot: basis.name,
+    specializationId: weaponSpecializationForRow('Feuerwaffen', basis).id,
+    ammunitionTypeId: firearmAmmunitionType(basis['Lademechanik'] ?? '', composed.munition),
     selections: {
       verarbeitung: String(selections.verarbeitungSourceRow), anpassung: String(selections.anpassungSourceRow),
     },
@@ -781,15 +798,15 @@ export function buyMunition(
   basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number,
 ): CharacterState {
   if (quantity <= 0) throw new MutationError('Anzahl muss größer als 0 sein');
-  const table = typ === 'pfeile' ? PFEILE : BOLZEN;
-  const basis = table.find((r) => r.sourceRow === basisSourceRow);
+  const table = typ === 'pfeile' ? ARROW_BY_SOURCE_ROW : BOLT_BY_SOURCE_ROW;
+  const basis = table.get(String(basisSourceRow));
   if (!basis) throw new MutationError(`${typ === 'pfeile' ? 'Pfeil' : 'Bolzen'} (Zeile ${basisSourceRow}) existiert nicht`);
   if (basis['Kategorie'] === 'Spitzen-Modifikator') {
     throw new MutationError(`'${basis.name}' ist ein Spitzen-Modifikator, keine eigenstaendige Munition`);
   }
   let modifikator: FernkampfRow | null = null;
   if (modifikatorSourceRow !== null) {
-    modifikator = table.find((r) => r.sourceRow === modifikatorSourceRow) ?? null;
+    modifikator = table.get(String(modifikatorSourceRow)) ?? null;
     if (!modifikator) throw new MutationError(`Modifikator (Zeile ${modifikatorSourceRow}) existiert nicht`);
     if (modifikator['Kategorie'] !== 'Spitzen-Modifikator') {
       throw new MutationError(`'${modifikator.name}' ist kein Spitzen-Modifikator`);
@@ -806,6 +823,8 @@ export function buyMunition(
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'ammo', baseTable: typ, baseId: String(basisSourceRow),
+    displayNameSnapshot: anzeigeName,
+    ammunitionTypeId: typ === 'pfeile' ? 'pfeil' : 'bolzen',
     selections: modifikator ? { modifikator: String(modifikator.sourceRow) } : {},
     quantity, computedPriceSnapshot: composed.preisDublonen,
     computedStatsSnapshot: { fixschaden: composed.fixschaden, rb: composed.rb, rwModMeter: composed.rwModMeter, be: composed.be },
@@ -821,7 +840,7 @@ export function buyFeuerwaffenMunition(
   character: CharacterState, art: FeuerwaffenMunitionArt, kaliber: number, quantity: number,
 ): CharacterState {
   if (![1, 10, 100].includes(quantity)) throw new MutationError('Anzahl muss 1, 10 oder 100 sein');
-  const ammo = FEUERWAFFEN_MUNITION_PREISE.find((row) => row.art === art && row.kaliber === kaliber);
+  const ammo = FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${art}:${kaliber}`);
   if (!ammo) throw new MutationError(`Keine passende Feuerwaffenmunition für Kaliber ${kaliber}`);
 
   const candidate = clone(character);
@@ -830,6 +849,8 @@ export function buyFeuerwaffenMunition(
     family: 'ammo',
     baseTable: 'feuerwaffen-munition',
     baseId: art,
+    displayNameSnapshot: ammo.label,
+    ammunitionTypeId: firearmAmmoTypeForArt(art),
     selections: { kaliber: String(kaliber) },
     quantity,
     computedPriceSnapshot: ammo.preisDublonen,

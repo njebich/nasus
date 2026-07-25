@@ -15,19 +15,14 @@ import { evalReferenz, type CharacterValueSource } from './rules';
 import { computeWeaponAtPaOverflow, getKampfstilModifier, getZweiWaffenCap, resolveWaffenPoolReferenz } from './waffenPool';
 import { computeSchaden, averageSchadenValue, floorSigned } from './waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor, type RangeCellValues } from './fernkampfRange';
-import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
-import { FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
+import type { GenericRow as WeaponRow } from '../data/equipment/weapons';
+import type { FernkampfRow } from '../data/equipment/fernkampf';
+import {
+  FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW, WEAPON_SPECIALIZATION_BY_ID,
+} from './weaponCatalog';
 
 function findWeaponBasis(baseId: string): WeaponRow | undefined {
-  return NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === baseId);
-}
-
-function resolvePoolReferenzSafe(hauptfertigkeit: string, spezialisierung: string): string | null {
-  try {
-    return resolveWaffenPoolReferenz(hauptfertigkeit, spezialisierung);
-  } catch {
-    return null;
-  }
+  return MELEE_WEAPON_BY_SOURCE_ROW.get(baseId);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -56,6 +51,7 @@ export function listEligibleNahkampf1HWaffen(character: CharacterState): Loadout
   const out: LoadoutItemInfo[] = [];
   for (const e of character.equipment) {
     if (e.family !== 'weapon') continue;
+    if (e.invalidReason || (e.specializationId && !WEAPON_SPECIALIZATION_BY_ID.has(e.specializationId))) continue;
     const basis = findWeaponBasis(e.baseId);
     if (!basis) continue;
     const hauptfertigkeit = basis['Hauptfertigkeit'] ?? '';
@@ -65,7 +61,9 @@ export function listEligibleNahkampf1HWaffen(character: CharacterState): Loadout
       equipmentId: e.id,
       label: basis.name,
       hauptfertigkeit,
-      poolReferenz: resolvePoolReferenzSafe(hauptfertigkeit, basis['Spezialisierung'] ?? ''),
+      poolReferenz: e.specializationId
+        ? WEAPON_SPECIALIZATION_BY_ID.get(e.specializationId)!.poolReferenz
+        : resolveWaffenPoolReferenz(hauptfertigkeit, basis['Spezialisierung'] ?? ''),
       atBonus: snap.at ?? 0,
       paBonus: snap.pa ?? 0,
       wk: snap.wk ?? 0,
@@ -83,6 +81,7 @@ export function listEligibleSchilde(character: CharacterState): LoadoutItemInfo[
   const out: LoadoutItemInfo[] = [];
   for (const e of character.equipment) {
     if (e.family !== 'shield') continue;
+    if (e.invalidReason || (e.specializationId && !WEAPON_SPECIALIZATION_BY_ID.has(e.specializationId))) continue;
     const basis = findWeaponBasis(e.baseId);
     if (!basis) continue;
     const hauptfertigkeit = basis['Hauptfertigkeit'] ?? '';
@@ -91,7 +90,9 @@ export function listEligibleSchilde(character: CharacterState): LoadoutItemInfo[
       equipmentId: e.id,
       label: basis.name,
       hauptfertigkeit,
-      poolReferenz: resolvePoolReferenzSafe(hauptfertigkeit, basis['Spezialisierung'] ?? ''),
+      poolReferenz: e.specializationId
+        ? WEAPON_SPECIALIZATION_BY_ID.get(e.specializationId)!.poolReferenz
+        : resolveWaffenPoolReferenz(hauptfertigkeit, basis['Spezialisierung'] ?? ''),
       atBonus: snap.at ?? 0,
       paBonus: snap.pa ?? 0,
       wk: snap.wk ?? 0,
@@ -117,7 +118,7 @@ export function listEligiblePistolen(character: CharacterState): LoadoutPistoleI
   const out: LoadoutPistoleInfo[] = [];
   for (const e of character.equipment) {
     if (e.family !== 'feuerwaffe') continue;
-    const basis = FEUERWAFFEN.find((r) => String(r.sourceRow) === e.baseId);
+    const basis = FIREARM_BY_SOURCE_ROW.get(e.baseId);
     if (!basis || basis['Typ'] !== 'Pistole') continue;
     out.push({ equipmentId: e.id, label: basis.name, basis, snap: e.computedStatsSnapshot ?? {} });
   }
@@ -634,7 +635,7 @@ export function describeLoadout(character: CharacterState, entry: WaffenLoadoutE
     const e = character.equipment.find((eq) => eq.id === equipmentId);
     if (!e) return '???';
     if (e.family === 'feuerwaffe') {
-      return FEUERWAFFEN.find((r) => String(r.sourceRow) === e.baseId)?.name ?? '???';
+      return FIREARM_BY_SOURCE_ROW.get(e.baseId)?.name ?? e.displayNameSnapshot ?? '???';
     }
     return findWeaponBasis(e.baseId)?.name ?? '???';
   };

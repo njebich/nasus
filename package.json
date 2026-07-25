@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "validate:weapons": "node scripts/validate_weapon_catalog.mjs",
+    "build": "npm run validate:weapons && tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run"
   },

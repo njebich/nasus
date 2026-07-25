@@ -1,5 +1,10 @@
-import { ARMBRUST, BOEGEN, BOLZEN, PFEILE, type FernkampfRow } from '../data/equipment/fernkampf';
+import type { FernkampfRow } from '../data/equipment/fernkampf';
 import { composeMunition } from './pfeilBolzenComposition';
+import {
+  ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
+  weaponSpecializationForRow,
+} from './weaponCatalog';
+import { rangedWeaponAmmunitionType, type AmmunitionTypeId } from './ammunitionTypes';
 
 export type RangedWeaponTable = 'boegen' | 'armbrust';
 export type RangedAmmoTable = 'pfeile' | 'bolzen';
@@ -7,6 +12,8 @@ export type RangedAmmoTable = 'pfeile' | 'bolzen';
 export interface RangedWeaponInventorySnapshot {
   kind: 'ranged-weapon';
   table: RangedWeaponTable;
+  specializationId: string;
+  ammunitionTypeId: AmmunitionTypeId;
   name: string;
   preisDublonen?: number;
   fernkampfWuerfel: string;
@@ -36,6 +43,7 @@ export interface RangedWeaponInventorySnapshot {
 export interface RangedAmmoInventorySnapshot {
   kind: 'ranged-ammo';
   table: RangedAmmoTable;
+  ammunitionTypeId: AmmunitionTypeId;
   name: string;
   preisDublonen: number | null;
   wuerfel: string;
@@ -80,6 +88,10 @@ export function createRangedWeaponInventorySnapshot(
   table: RangedWeaponTable,
   row: FernkampfRow,
 ): RangedWeaponInventorySnapshot {
+  const specialization = weaponSpecializationForRow(
+    table === 'boegen' ? 'Bögen-Basis' : 'Armbrust-Basis',
+    row,
+  );
   const armbrustLadedaten: Record<string, string> = {};
   if (table === 'armbrust') {
     for (const header of ARMBRUST_LADE_HEADERS) {
@@ -89,6 +101,8 @@ export function createRangedWeaponInventorySnapshot(
   return {
     kind: 'ranged-weapon',
     table,
+    specializationId: specialization.id,
+    ammunitionTypeId: rangedWeaponAmmunitionType(table),
     name: row.name,
     preisDublonen: row.preisDublonen,
     fernkampfWuerfel: row['1.W'] ?? '–',
@@ -120,8 +134,7 @@ export function resolveRangedWeaponInventorySnapshot(
   table: RangedWeaponTable,
   baseId: string,
 ): RangedWeaponInventorySnapshot | undefined {
-  const rows = table === 'boegen' ? BOEGEN : ARMBRUST;
-  const row = rows.find((candidate) => String(candidate.sourceRow) === baseId);
+  const row = (table === 'boegen' ? BOW_BY_SOURCE_ROW : CROSSBOW_BY_SOURCE_ROW).get(baseId);
   return row ? createRangedWeaponInventorySnapshot(table, row) : undefined;
 }
 
@@ -134,6 +147,7 @@ export function createRangedAmmoInventorySnapshot(
   return {
     kind: 'ranged-ammo',
     table,
+    ammunitionTypeId: table === 'pfeile' ? 'pfeil' : 'bolzen',
     name: modifikator ? `${modifikator.name} (${basis.name})` : basis.name,
     preisDublonen: composed.preisDublonen,
     wuerfel: composed.wuerfel,
@@ -149,11 +163,11 @@ export function resolveRangedAmmoInventorySnapshot(
   baseId: string,
   modifikatorId?: string,
 ): RangedAmmoInventorySnapshot | undefined {
-  const rows = table === 'pfeile' ? PFEILE : BOLZEN;
-  const basis = rows.find((candidate) => String(candidate.sourceRow) === baseId);
+  const rows = table === 'pfeile' ? ARROW_BY_SOURCE_ROW : BOLT_BY_SOURCE_ROW;
+  const basis = rows.get(baseId);
   if (!basis || basis['Kategorie'] === 'Spitzen-Modifikator') return undefined;
   const modifikator = modifikatorId
-    ? rows.find((candidate) => String(candidate.sourceRow) === modifikatorId)
+    ? rows.get(modifikatorId)
     : undefined;
   if (modifikatorId && (!modifikator || modifikator['Kategorie'] !== 'Spitzen-Modifikator')) return undefined;
   return createRangedAmmoInventorySnapshot(table, basis, modifikator ?? null);

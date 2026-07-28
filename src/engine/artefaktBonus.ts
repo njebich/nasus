@@ -62,8 +62,8 @@ function ownedGradFor(entry: CharacterState['equipment'][number], zielReferenz: 
  *  im Inventar). Wird sowohl fuer die Formel-Auswertung (jede Formel, die die Ziel-Referenz
  *  als Variable nutzt, siehe rules.ts) als auch fuer die "Basiswert (veraendert)"-Anzeige
  *  (characterSheet.ts) verwendet - EXPLIZIT NICHT fuer die SP-Kosten-Berechnung, die immer mit
- *  dem unveraenderten Basiswert rechnet (evalKostenFor bindet "wert"/"grad" direkt an den
- *  gekauften Punktestand, ohne getWert()/diesen Bonus zu durchlaufen). */
+ *  dem unveraenderten Basiswert rechnet (evalKostenFor bindet "wert" direkt an den gekauften
+ *  Punktestand, ohne getWert()/diesen Bonus zu durchlaufen). */
 export function getArtefaktBonus(character: CharacterState, zielReferenz: string): number {
   let maxGrad = 0;
   for (const entry of character.equipment) {

@@ -5,10 +5,9 @@
 
 import { getRule, findParentRule, findChildRules, evalReferenz } from '../engine/rules';
 import { computeSheet, makeValueSource } from '../engine/characterSheet';
-import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
 import { getTalentMaximumBonus } from '../engine/talenteMaximum';
-import { getSchlechteEigenschaftZielReferenz, hasSchlechteEigenschaft, getSchlechteEigenschaftMax } from '../engine/schlechteEigenschaft';
+import { getSchlechteEigenschaftZielReferenz, getSchlechteEigenschaftMax } from '../engine/schlechteEigenschaft';
 import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent, isGeweihterReferenzErlaubt } from '../engine/geweihte';
 import { getVorstufeReferenz, getHoehereStufenReferenzen } from '../engine/talenteStufenKette';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
@@ -131,41 +130,12 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
     }
   }
 
-  // Regel (Nutzer 2026-07-17, werte 0.8 / Sheet "Voelker-Maxima"): Eigenschaften sind je nach
-  // Spezies auf ein Min/Max begrenzt - Max ist Erstellungs-Max bis Kreis 3, danach einheitlich
-  // 31 ("Max ab Kreis 3"). Unbekannte Spezies (z.B. Test-Fixtures) -> keine Einschraenkung.
-  if (rule.kategorie === 'Eigenschaft') {
-    let kreis = 0;
-    try {
-      kreis = Number(evalReferenz('kreis', makeValueSource(character)));
-    } catch {
-      // ep_gesamt noch nicht auswertbar (z.B. ganz frischer Charakter) -> Kreis 0 annehmen.
-    }
-    // Regel (Nutzer 2026-07-24, Nachteil "Schlechte Eigenschaft: X"): ersetzt die Voelker-Maxima-
-    // Tabelle fuer die betroffene Eigenschaft komplett durch ein festes, "grundsaetzlich nicht
-    // uebersteigerbares" Maximum - bewusst OHNE getTalentMaximumBonus obendrauf (siehe
-    // schlechteEigenschaft.ts), im Unterschied zum Normalfall unten.
-    if (hasSchlechteEigenschaft(character, rule.referenz)) {
-      const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
-      const min = grenzen?.min ?? 0;
-      const max = getSchlechteEigenschaftMax(Number.isFinite(kreis) ? kreis : 0);
-      if (wert < min || wert > max) {
-        throw new MutationError(
-          `'${rule.referenz}' ist durch den Nachteil "Schlechte Eigenschaft" auf ${max} gedeckelt (nicht übersteigerbar)`,
-        );
-      }
-    } else {
-      const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
-      if (grenzen) {
-        const effectiveMax = grenzen.max + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
-        if (wert < grenzen.min || wert > effectiveMax) {
-          throw new MutationError(
-            `'${rule.referenz}' muss für ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`,
-          );
-        }
-      }
-    }
-  }
+  // Eigenschafts-Minima/-Maxima sind keine harte Eingabesperre. Ein Charakter kann durch eine
+  // Regeländerung in einen ungültigen Zwischenstand geraten (z.B. Dalkini Ausstrahlung 7 nach
+  // Entfernen von "Schlechte Eigenschaft", obwohl das Spezies-Minimum 9 ist). Würde setValue
+  // jeden Zwischenwert unter 9 ablehnen, bliebe der +/- Regler bei 7 hängen, weil der notwendige
+  // Schritt auf 8 nie gespeichert werden könnte. computeSheet zeigt die Grenzverletzung als
+  // Warnung an; die Zahl bleibt zur Korrektur immer editierbar.
 
   // Regel (Nutzer 2026-07-18, im Zuge der Talente-Wirkung-Analyse): Grundfertigkeit/
   // Sonderfertigkeit/Nahkampf/Fernkampf/WHK/Spruchmagie/Attribute haben einen Basis-Maximalwert

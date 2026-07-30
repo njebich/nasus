@@ -205,21 +205,32 @@ describe('characterMutations', () => {
       expect(updated.values['eig_k_staerke']).toBe(15);
     });
 
-    it('lehnt einen Wert unterhalb des Erstellungs-Min ab', () => {
+    it('erlaubt einen Wert unterhalb des Erstellungs-Min als korrigierbaren Zwischenstand und markiert ihn als ungültig', () => {
       const character = withSpezies('Dalkini', 500);
-      expect(() => setValue(character, 'eig_k_staerke', 10)).toThrow(MutationError);
+      const updated = setValue(character, 'eig_k_staerke', 10);
+      expect(updated.values['eig_k_staerke']).toBe(10);
+      const row = computeSheet(updated).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_staerke');
+      expect(row?.error).toContain('zwischen 11 und 23');
     });
 
-    it('lehnt einen Wert oberhalb des Erstellungs-Max ab, solange Kreis < 3', () => {
+    it('erlaubt einen Wert oberhalb des Erstellungs-Max als korrigierbaren Zwischenstand und markiert ihn als ungültig', () => {
       const character = withSpezies('Dalkini', 500); // ep_gesamt=500 -> Kreis 2 (< 3)
-      expect(() => setValue(character, 'eig_k_staerke', 24)).toThrow(MutationError);
+      const updated = setValue(character, 'eig_k_staerke', 24);
+      expect(updated.values['eig_k_staerke']).toBe(24);
+      const row = computeSheet(updated).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_staerke');
+      expect(row?.error).toContain('zwischen 11 und 23');
     });
 
     it('erlaubt bis zu 31 ("Max ab Kreis 3"), sobald der Charakter Kreis 3 erreicht hat', () => {
       const character = withSpezies('Dalkini', 1600); // ep_gesamt=1600 -> Stufe 15 -> Kreis 3
       const updated = setValue(character, 'eig_k_staerke', 31);
       expect(updated.values['eig_k_staerke']).toBe(31);
-      expect(() => setValue(character, 'eig_k_staerke', 32)).toThrow(MutationError);
+      const aboveMax = setValue(character, 'eig_k_staerke', 32);
+      const row = computeSheet(aboveMax).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_staerke');
+      expect(row?.error).toContain('zwischen 11 und 31');
     });
 
     it('unbekannte Spezies bleibt uneingeschraenkt (z.B. leere Test-Fixtures)', () => {
@@ -631,7 +642,10 @@ describe('Waffen-Loadout-Mutationen', () => {
       const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
       const at7 = setValue(withNachteil, 'eig_k_ausstrahlung', 7);
       expect(at7.values['eig_k_ausstrahlung']).toBe(7);
-      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 8)).toThrow(MutationError);
+      const aboveMax = setValue(withNachteil, 'eig_k_ausstrahlung', 8);
+      const row = computeSheet(aboveMax).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(row?.error).toContain('auf 7 gedeckelt');
     });
 
     it('erlaubt bis 9 ab Kreis 3', () => {
@@ -639,7 +653,10 @@ describe('Waffen-Loadout-Mutationen', () => {
       const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
       const at9 = setValue(withNachteil, 'eig_k_ausstrahlung', 9);
       expect(at9.values['eig_k_ausstrahlung']).toBe(9);
-      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 10)).toThrow(MutationError);
+      const aboveMax = setValue(withNachteil, 'eig_k_ausstrahlung', 10);
+      const row = computeSheet(aboveMax).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(row?.error).toContain('auf 9 gedeckelt');
     });
 
     it('andere Eigenschaften bleiben von der Deckelung unberuehrt', () => {
@@ -672,7 +689,33 @@ describe('Waffen-Loadout-Mutationen', () => {
       const withNachteil = addSelection(withTalent, 'vn_schlechte_eigenschaft_ausstrahlung');
       const at9 = setValue(withNachteil, 'eig_k_ausstrahlung', 9);
       expect(at9.values['eig_k_ausstrahlung']).toBe(9);
-      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 10)).toThrow(MutationError);
+      const aboveMax = setValue(withNachteil, 'eig_k_ausstrahlung', 10);
+      const row = computeSheet(aboveMax).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(row?.error).toContain('auf 9 gedeckelt');
+    });
+
+    it('kann nach dem Abwählen bei Dalkini schrittweise von 7 über 8 auf das Minimum 9 korrigiert werden', () => {
+      const character = createCharacter('Test', { spezies: 'Dalkini' });
+      character.values['ep_gesamt'] = 0;
+      const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
+      const at7 = setValue(withNachteil, 'eig_k_ausstrahlung', 7);
+      const withoutNachteil = removeSelection(at7, 'vn_schlechte_eigenschaft_ausstrahlung');
+
+      const at8 = setValue(withoutNachteil, 'eig_k_ausstrahlung', 8);
+      expect(at8.values['eig_k_ausstrahlung']).toBe(8);
+      const invalidRow = computeSheet(at8).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(invalidRow?.error).toContain('zwischen 9 und');
+
+      const at9 = setValue(at8, 'eig_k_ausstrahlung', 9);
+      const correctedSheet = computeSheet(at9);
+      const validRow = correctedSheet.byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(validRow?.error).toBeUndefined();
+      const bonusRow = correctedSheet.byKategorie['Eigenschaftsbonus']
+        .find((entry) => entry.rule.referenz === 'eig_bonus_k_ausstrahlung');
+      expect(bonusRow?.computedValue).toBe(0);
     });
   });
 });

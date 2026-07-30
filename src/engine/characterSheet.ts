@@ -16,6 +16,9 @@ import { getTalentModifikatorBonus as talentModifikatorBonus } from './talenteMo
 import { getTalentFaktorBonus as talentFaktorBonus } from './talenteFaktor';
 import { getArtefaktBonus as artefaktBonus } from './artefaktBonus';
 import { getWaffenSpezKostenRate } from './waffenSpezKosten';
+import { getEigenschaftGrenzen } from './eigenschaftenGrenzen';
+import { getTalentMaximumBonus } from './talenteMaximum';
+import { getSchlechteEigenschaftMax, hasSchlechteEigenschaft } from './schlechteEigenschaft';
 import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
@@ -150,6 +153,27 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
   if (rule.art === 'Wert') {
     const currentValue = character.values[key] ?? 0;
     const result: ComputedRule = { rule, currentValue };
+    if (rule.kategorie === 'Eigenschaft') {
+      let kreis = 0;
+      try {
+        kreis = Number(evalReferenz('kreis', values));
+      } catch {
+        // ep_gesamt noch nicht auswertbar (z.B. ganz frischer Charakter) -> Kreis 0 annehmen.
+      }
+      const safeKreis = Number.isFinite(kreis) ? kreis : 0;
+      const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, safeKreis);
+      if (hasSchlechteEigenschaft(character, rule.referenz)) {
+        const max = getSchlechteEigenschaftMax(safeKreis);
+        if (currentValue > max) {
+          result.error = `'${rule.referenz}' ist durch den Nachteil "Schlechte Eigenschaft" auf ${max} gedeckelt (nicht übersteigerbar)`;
+        }
+      } else if (grenzen) {
+        const effectiveMax = grenzen.max + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
+        if (currentValue < grenzen.min || currentValue > effectiveMax) {
+          result.error = `'${rule.referenz}' muss für ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`;
+        }
+      }
+    }
     const artefaktBonusValue = values.getArtefaktBonus?.(rule.referenz) ?? 0;
     if (artefaktBonusValue > 0) result.alteredValue = currentValue + artefaktBonusValue;
     // Nahkampf-/Fernkampf-Spezialisierungen tragen keine eigene Kosten-Formel in der xlsx (siehe
@@ -178,7 +202,8 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
           }
         }
       } catch (err) {
-        result.error = err instanceof Error ? err.message : String(err);
+        const kostenError = err instanceof Error ? err.message : String(err);
+        result.error = result.error ? `${result.error}; ${kostenError}` : kostenError;
       }
     }
     return result;

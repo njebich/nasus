@@ -3,7 +3,7 @@
 //
 // Drei getrennte Waehrungen (mit Nutzer 2026-07-17 geklaert):
 // - EP (Erfahrungspunkte): Lebenszeit-Gesamtsumme, speist die Stufe/Kreis-Tabelle.
-// - SP (Steigerungspunkte) = ep_gesamt - (SP-Ausgaben). Bezahlt Eigenschaft, Attribute,
+// - SP (Steigerungspunkte) = 6400 + ep_gesamt - (SP-Ausgaben). Bezahlt Eigenschaft, Attribute,
 //   Grundfertigkeit, Sonderfertigkeit, WHK, Vor-/Nachteile.
 // - TaP (Talentpunkte) = 20 + Stufe*5 (Referenz "talentpunkte"). Bezahlt AUSSCHLIESSLICH
 //   die Kategorie "Talente" - komplett getrennter Pool von SP, waechst nur mit der Stufe.
@@ -26,6 +26,8 @@ import type { Value } from './evaluator';
 const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
 
 const TAP_KATEGORIE = 'Talente';
+const SSK_KATEGORIE = 'Sprache & Kultur';
+export const SSK_MINDEST_SP = 90;
 
 export interface PoolCaps {
   gatMax: number;
@@ -79,6 +81,10 @@ export interface ComputedSheet {
   spTotal: number;
   spSpent: number;
   spRemaining: number;
+  /** In Sprache, Kultur und Schrift investierte SP. Fuer einen gueltigen Charakter muessen
+   *  mindestens SSK_MINDEST_SP ausgegeben sein; bestimmte Stufen sind nicht vorgeschrieben. */
+  sskSpent: number;
+  sskMinimumMet: boolean;
   tapTotal: number;
   tapSpent: number;
   tapRemaining: number;
@@ -292,6 +298,7 @@ export function computeSheet(character: CharacterState): ComputedSheet {
   const byKategorie: Record<string, ComputedRule[]> = {};
 
   let spSpent = 0;
+  let sskSpent = 0;
   let tapSpent = 0;
   for (const rule of RULES) {
     const computed = computeRule(rule, character, values);
@@ -302,7 +309,12 @@ export function computeSheet(character: CharacterState): ComputedSheet {
       ? computed.kostenCurrent
       : (computed.selected && computed.kostenSelect !== undefined ? computed.kostenSelect : undefined);
     if (kosten !== undefined) {
-      if (isTap) tapSpent += kosten; else spSpent += kosten;
+      if (isTap) {
+        tapSpent += kosten;
+      } else {
+        spSpent += kosten;
+        if (rule.kategorie === SSK_KATEGORIE) sskSpent += kosten;
+      }
     }
   }
 
@@ -314,15 +326,13 @@ export function computeSheet(character: CharacterState): ComputedSheet {
   const dublonenBarRemaining = Math.max(0, dublonenBar - dublonenSpent);
   const dublonenBankRemaining = dublonenBank - Math.max(0, dublonenSpent - dublonenBar);
   const epGesamt = character.values['ep_gesamt'] ?? 0;
-  // SP = 6490 + EP - ausgegebene SP. Die 6490 ist eine feste Konstante IN DER FORMEL SELBST
+  // SP = 6400 + EP - ausgegebene SP. Die 6400 ist eine feste Konstante IN DER FORMEL SELBST
   // (jeder Charakter bekommt sie, unabhaengig vom Startbudget-Preset), NICHT nur ein
   // Startwert - bestaetigt mit Nutzer 2026-07-17 nach anfaenglich falscher Gleichsetzung
-  // SP=EP. War urspruenglich 6400; per Nutzer-Entscheidung 2026-07-17 um 90 SP erhoeht
-  // (Kosten fuer Muttersprache=Stufe3/50 SP + Kultur=Stufe3/40 SP), im Gegenzug wurde der
-  // vorherige Sonderfall "erste Sprache/Kultur kostenlos" (freieSpracheReferenz/
-  // freieKulturReferenz) komplett entfernt - jede Sprache/Kultur wird jetzt normal bezahlt,
-  // die erste ist implizit ueber die hoehere SP-Basis abgedeckt statt per Ausnahme.
-  const spTotal = 6490 + epGesamt;
+  // SP=EP. Sprache und Kultur bleiben regulär kostenpflichtig; statt Muttersprache und
+  // Vaterland als harte Einzelanforderungen vorzuschreiben, wird weiter unten die Summe aller
+  // SSK-Ausgaben gegen ein Mindestinvestment von 90 SP geprueft.
+  const spTotal = 6400 + epGesamt;
   const dublonenTotal = (character.values['dublonen_bank'] ?? 0) + (character.values['dublonen_bar'] ?? 0);
 
   let tapTotal = 0;
@@ -341,6 +351,8 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     spTotal,
     spSpent,
     spRemaining: spTotal - spSpent,
+    sskSpent,
+    sskMinimumMet: sskSpent >= SSK_MINDEST_SP,
     tapTotal,
     tapSpent,
     tapRemaining: tapTotal - tapSpent,

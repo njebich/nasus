@@ -11,7 +11,7 @@ import {
   setGrundfertigkeitPick, addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite,
   BudgetError, MutationError,
 } from './state/characterMutations';
-import { computeSheet, makeValueSource, type ComputedSheet } from './engine/characterSheet';
+import { computeSheet, makeValueSource, SSK_MINDEST_SP, type ComputedSheet } from './engine/characterSheet';
 import { formatDublonenNumber } from './utils/format';
 import { renderCategoryView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
@@ -417,8 +417,8 @@ function renderNewCharacterForm(): string {
       </fieldset>
       <fieldset>
         <legend>Startbudget</legend>
-        <label><input type="radio" name="nc-startbudget" value="normal" checked /> Normal (Stufe 0, 6490 SP, 5000D)</label>
-        <label><input type="radio" name="nc-startbudget" value="gehoben" /> Gehoben (Stufe 15, 8090 SP, 6000D)</label>
+        <label><input type="radio" name="nc-startbudget" value="normal" checked /> Normal (Stufe 0, 6400 SP, 5000D)</label>
+        <label><input type="radio" name="nc-startbudget" value="gehoben" /> Gehoben (Stufe 15, 8000 SP, 6000D)</label>
       </fieldset>
       <div class="new-character-form-actions">
         <button type="submit">Anlegen</button>
@@ -466,6 +466,7 @@ function render(): void {
         <div class="budget-bar">
           <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: ${sheet.epGesamt}</span>
           <span title="Steigerungspunkte (übrig): bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK – verbraucht ${sheet.spSpent} von ${sheet.spTotal}">SP: ${sheet.spRemaining}</span>
+          ${sheet.sskMinimumMet ? '' : `<span class="budget-invalid" title="Für einen gültigen Charakter müssen mindestens ${SSK_MINDEST_SP} SP in Sprache, Kultur und Schrift investiert sein. Muttersprache und Vaterland sind keine harten Einzelanforderungen.">SSK: ${sheet.sskSpent} / ${SSK_MINDEST_SP} SP ⚠</span>`}
           <span title="Talentpunkte (übrig): bezahlt ausschließlich Talente, eigener Pool = 20+Stufe×5 – verbraucht ${sheet.tapSpent} von ${sheet.tapTotal}">TaP: ${sheet.tapRemaining}</span>
           <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: ${formatDublonenNumber(sheet.dublonenBarRemaining)} bar / ${formatDublonenNumber(sheet.dublonenBankRemaining)} Bank</span>
         </div>` : ''}

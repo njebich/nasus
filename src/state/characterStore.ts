@@ -178,11 +178,11 @@ export interface CharacterState extends CharacterHeader {
 /**
  * Start-Budget-Pakete bei Charaktererstellung (mit Nutzer 2026-07-17 geklaert, nach
  * anfaenglicher Verwechslung von EP und SP korrigiert):
- * SP wird IMMER als 6490+EP-ausgegebeneSP berechnet (siehe characterSheet.ts) - die 6490
- * sind KEIN separater Startwert hier, sondern stecken schon in der SP-Formel selbst (davon
- * 90 SP fuer Muttersprache+Kultur, die nicht mehr als Sonderfall kostenlos sind, siehe dort).
- * - normal: EP=0 (Stufe 0, SP daher automatisch 6490), 5000 Dublonen.
- * - gehoben: EP=1600 (Stufe 15, SP daher automatisch 8090), 6000 Dublonen.
+ * SP wird IMMER als 6400+EP-ausgegebeneSP berechnet (siehe characterSheet.ts) - die 6400
+ * sind KEIN separater Startwert hier, sondern stecken schon in der SP-Formel selbst.
+ * Fuer einen gueltigen Charakter muessen davon mindestens 90 SP in SSK investiert werden.
+ * - normal: EP=0 (Stufe 0, SP daher automatisch 6400), 5000 Dublonen.
+ * - gehoben: EP=1600 (Stufe 15, SP daher automatisch 8000), 6000 Dublonen.
  */
 export const STARTBUDGET_PRESETS = {
   normal: { epGesamt: 0, dublonen: 5000 },

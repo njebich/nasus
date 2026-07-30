@@ -18,24 +18,24 @@ describe('createCharacter mit Charakterheader + Startbudget', () => {
     expect(character.alter).toBeUndefined();
   });
 
-  it('Startbudget normal: EP=0 (Stufe 0), SP automatisch 6490+0=6490, 5000 Dublonen', () => {
+  it('Startbudget normal: EP=0 (Stufe 0), SP automatisch 6400+0=6400, 5000 Dublonen', () => {
     const character = createCharacter('Test', { spezies: 'Mensch' }, 'normal');
     expect(character.values['ep_gesamt']).toBe(STARTBUDGET_PRESETS.normal.epGesamt);
     expect(character.values['ep_gesamt']).toBe(0);
     expect(character.values['dublonen_bank']).toBe(5000);
     const sheet = computeSheet(character);
     expect(sheet.epGesamt).toBe(0);
-    expect(sheet.spTotal).toBe(6490); // SP = 6490 + EP, NICHT SP = EP
+    expect(sheet.spTotal).toBe(6400); // SP = 6400 + EP, NICHT SP = EP
     expect(sheet.dublonenTotal).toBe(5000);
   });
 
-  it('Startbudget gehoben: EP=1600 (Stufe 15), SP automatisch 6490+1600=8090, 6000 Dublonen', () => {
+  it('Startbudget gehoben: EP=1600 (Stufe 15), SP automatisch 6400+1600=8000, 6000 Dublonen', () => {
     const character = createCharacter('Test', { spezies: 'Mensch' }, 'gehoben');
     expect(character.values['ep_gesamt']).toBe(1600);
     expect(character.values['dublonen_bank']).toBe(6000);
     const sheet = computeSheet(character);
     expect(sheet.epGesamt).toBe(1600);
-    expect(sheet.spTotal).toBe(8090);
+    expect(sheet.spTotal).toBe(8000);
   });
 
   it('ohne Startbudget bleiben ep_gesamt/dublonen_bank ungesetzt (0)', () => {
@@ -59,7 +59,7 @@ describe('createCharacter mit Charakterheader + Startbudget', () => {
     // 1->2 = 100 usw., Nutzer-Bestaetigung 2026-07-24) = 3080 SP.
     const sheet = computeSheet(character);
     expect(sheet.spSpent).toBe(3080);
-    expect(sheet.spRemaining).toBe(6490 - 3080);
+    expect(sheet.spRemaining).toBe(6400 - 3080);
   });
 
   it('ohne Startbudget bleibt der Durchschnittscharakter-Ausgangswert aus (reine Test-Fixtures bleiben leer)', () => {

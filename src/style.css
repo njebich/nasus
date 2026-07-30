@@ -120,6 +120,11 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.budget-invalid {
+  color: #a33;
+  font-weight: 700;
+}
+
 .error-message {
   color: #b00020;
   background: #ffe4e6;

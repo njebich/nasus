@@ -24,11 +24,11 @@ describe('characterMutations', () => {
   });
 
   it('setValue lehnt ab, wenn nicht genug SP vorhanden sind', () => {
-    // SP = 6490 + ep_gesamt (feste Konstante in der Formel) - selbst bei ep_gesamt=0 hat man
-    // also 6490 SP, und eine einzelne Eigenschaft kostet maximal 6213 (Wert 64, Tabellenende) -
+    // SP = 6400 + ep_gesamt (feste Konstante in der Formel) - selbst bei ep_gesamt=0 hat man
+    // also 6400 SP, und eine einzelne Eigenschaft kostet maximal 6213 (Wert 64, Tabellenende) -
     // daher zwei Eigenschaften kombinieren, um das Budget sicher zu ueberschreiten.
     const character = withEpGesamt(0);
-    const afterFirst = setValue(character, 'eig_g_mut', 64); // kostet 6213 von 6490 SP
+    const afterFirst = setValue(character, 'eig_g_mut', 64); // kostet 6213 von 6400 SP
     expect(() => setValue(afterFirst, 'eig_k_athletik', 10)).toThrow(BudgetError); // weitere 300 SP -> ueber Budget
   });
 
@@ -125,7 +125,7 @@ describe('characterMutations', () => {
     expect(withoutStufe1.selections['talente_grundfertigkeiten_stufe_2']).toBeUndefined();
   });
 
-  describe('ssk_sprache_*/ssk_kultur_* (Regel Nutzer 2026-07-17: keine Freibetrag-Ausnahme mehr, SP-Basis stattdessen erhoeht)', () => {
+  describe('ssk_sprache_*/ssk_kultur_* (keine Freibetrag-Ausnahme, mindestens 90 SSK-SP insgesamt)', () => {
     it('Muttersprache (Stufe 3) kostet ganz normal 50 SP, keine Ausnahme', () => {
       const character = withEpGesamt(0);
       const updated = setValue(character, 'ssk_sprache_zwergisch', 3);
@@ -141,13 +141,14 @@ describe('characterMutations', () => {
       expect(sheet.spSpent).toBe(40);
     });
 
-    it('Muttersprache + Kultur zusammen kosten 90 SP - genau der Betrag, um den die SP-Basis erhoeht wurde', () => {
+    it('Muttersprache + Kultur zusammen kosten 90 SP und erfuellen damit das SSK-Minimum', () => {
       const character = withEpGesamt(0);
       const mitSprache = setValue(character, 'ssk_sprache_zwergisch', 3);
       const mitBeidem = setValue(mitSprache, 'ssk_kultur_zwerge', 3);
       const sheet = computeSheet(mitBeidem);
       expect(sheet.spSpent).toBe(90);
-      expect(sheet.spRemaining).toBe(6490 - 90);
+      expect(sheet.sskMinimumMet).toBe(true);
+      expect(sheet.spRemaining).toBe(6400 - 90);
     });
   });
 

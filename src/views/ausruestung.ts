@@ -192,6 +192,90 @@ const openFernkampfVolksgruppen = new Set<string>();
  *  bleibt bei Modifikator- und Mengenwechseln erhalten. */
 const openMunitionGruppen = new Set<'pfeile' | 'bolzen'>();
 
+/** Auch die Artefaktkarten und der Besitz-Block sind native <details>. Deren Zustand muss
+ *  separat gespeichert werden, weil ein Kauf in main.ts die komplette App (einschliesslich
+ *  #view-container) ersetzt und der naechste Renderer deshalb kein altes DOM mehr vorfindet. */
+const openArtefakte = new Set<string>();
+const openBesitzKategorien = new Set<KaufKategorie>();
+
+/** Sichert alle Aufklappzustaende aus dem noch lebenden Inventar-DOM. Diese Funktion wird nicht
+ *  nur am Renderer-Einstieg, sondern bereits in der Capture-Phase jeder Interaktion aufgerufen:
+ *  Kauf-Callbacks ersetzen synchron die komplette App, bevor renderAusruestungView den Zustand
+ *  aus dem alten Container lesen koennte. */
+function rememberOpenInventoryDetails(container: HTMLElement): void {
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-gruppe]').forEach((details) => {
+    const gruppe = details.dataset.gruppe as RsGruppe;
+    if (details.open) openGruppen.add(gruppe);
+    else openGruppen.delete(gruppe);
+  });
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-alchemika-kategorie]').forEach((details) => {
+    const kategorie = details.dataset.alchemikaKategorie!;
+    if (details.open) openAlchemikaKategorien.add(kategorie);
+    else openAlchemikaKategorien.delete(kategorie);
+  });
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-fernkampf-volksgruppe]').forEach((details) => {
+    const gruppenKey = details.dataset.fernkampfVolksgruppe!;
+    if (details.open) openFernkampfVolksgruppen.add(gruppenKey);
+    else openFernkampfVolksgruppen.delete(gruppenKey);
+  });
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-munition-gruppe]').forEach((details) => {
+    const typ = details.dataset.munitionGruppe as 'pfeile' | 'bolzen';
+    if (details.open) openMunitionGruppen.add(typ);
+    else openMunitionGruppen.delete(typ);
+  });
+  container.querySelectorAll<HTMLDetailsElement>('.artefakt-details[data-artefakt-referenz]').forEach((details) => {
+    const referenz = details.dataset.artefaktReferenz!;
+    if (details.open) openArtefakte.add(referenz);
+    else openArtefakte.delete(referenz);
+  });
+  container.querySelectorAll<HTMLDetailsElement>('.ausruestung-owned-in-category[data-owned-category]').forEach((details) => {
+    const category = details.dataset.ownedCategory as KaufKategorie;
+    if (details.open) openBesitzKategorien.add(category);
+    else openBesitzKategorien.delete(category);
+  });
+}
+
+/** Haelt den Viewport bei Inventar-Aktionen stabil. Zweimaliges Wiederherstellen ist absichtlich:
+ *  einmal nach dem synchronen DOM-Neuaufbau und einmal im naechsten Layout-Frame, nachdem der
+ *  Browser die neuen <details>-Hoehen und seine eigene Scroll-Verankerung verarbeitet hat. */
+function preserveInventoryScrollAfterInteraction(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof Element) || !target.closest('button, select, input')) return;
+  const left = window.scrollX;
+  const top = window.scrollY;
+  const anchorDefinitions: ReadonlyArray<{ selector: string; attributes: readonly string[] }> = [
+    { selector: '[data-equipment-id]', attributes: ['data-equipment-id'] },
+    { selector: '[data-slot]', attributes: ['data-slot'] },
+    { selector: '[data-shield]', attributes: ['data-shield'] },
+    { selector: '[data-weapon]', attributes: ['data-weapon'] },
+    { selector: '[data-fernkampfwaffe]', attributes: ['data-fernkampfwaffe'] },
+    { selector: '[data-feuerwaffe]', attributes: ['data-feuerwaffe'] },
+    { selector: '[data-munition][data-basis-source-row]', attributes: ['data-munition', 'data-basis-source-row'] },
+    { selector: '[data-alchemika]', attributes: ['data-alchemika'] },
+    { selector: '[data-referenz][data-grad][data-variant]', attributes: ['data-referenz', 'data-grad', 'data-variant'] },
+    { selector: '[data-source-row]', attributes: ['data-source-row'] },
+  ];
+  let anchorSelector = '';
+  let anchorTop: number | undefined;
+  for (const definition of anchorDefinitions) {
+    const anchor = target.closest<HTMLElement>(definition.selector);
+    if (!anchor) continue;
+    const escapeAttributeValue = (value: string) => value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    anchorSelector = definition.attributes
+      .map((attribute) => `[${attribute}="${escapeAttributeValue(anchor.getAttribute(attribute) ?? '')}"]`)
+      .join('');
+    anchorTop = anchor.getBoundingClientRect().top;
+    break;
+  }
+  const restore = () => {
+    const anchor = anchorSelector ? document.querySelector<HTMLElement>(anchorSelector) : null;
+    const delta = anchor && anchorTop !== undefined ? anchor.getBoundingClientRect().top - anchorTop : 0;
+    window.scrollTo(left, top + delta);
+  };
+  queueMicrotask(restore);
+  window.requestAnimationFrame(restore);
+}
+
 /** Transiente Mengen-Auswahl je Alchemika-Zeile (analog zum Preisliste-Mengenfeld, aber ueber
  *  Re-Renders hinweg gemerkt statt aus dem DOM neu gelesen, da renderAlchemikaRow keine eigene
  *  updatePicker-Funktion braucht). */
@@ -282,7 +366,7 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: Ch
   // trotzdem sichtbar ausserhalb des Layouts) - Huelle als nicht-flex Block-Element dazwischen.
   return `
     <div class="artefakt-card">
-      <details class="artefakt-details">
+      <details class="artefakt-details" data-artefakt-referenz="${escapeHtml(basis.referenz)}"${openArtefakte.has(basis.referenz) ? ' open' : ''}>
         <summary>${escapeHtml(basis.name ?? basis.referenz)}</summary>
         <p class="artefakt-beschreibung">${escapeHtml(basis.beschreibung ?? '')}</p>
         ${waffenPicker}
@@ -855,29 +939,10 @@ export function renderAusruestungView(
   // innerHTML ueberschrieben wird - sonst klappt jede Aenderung (Dropdown, Ausruesten, Kaufen,
   // ...) die gerade geoeffnete Gruppe faelschlich wieder zu (gleicher Bug wie zuvor in
   // categoryView.ts, hier aber am Renderer-Einstieg statt vor jedem einzelnen Handler behoben).
-  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-gruppe]').forEach((details) => {
-    const gruppe = details.dataset.gruppe as RsGruppe;
-    if (details.open) openGruppen.add(gruppe);
-    else openGruppen.delete(gruppe);
-  });
-  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-alchemika-kategorie]').forEach((details) => {
-    const kategorie = details.dataset.alchemikaKategorie!;
-    if (details.open) openAlchemikaKategorien.add(kategorie);
-    else openAlchemikaKategorien.delete(kategorie);
-  });
-  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-fernkampf-volksgruppe]').forEach((details) => {
-    const gruppenKey = details.dataset.fernkampfVolksgruppe!;
-    if (details.open) openFernkampfVolksgruppen.add(gruppenKey);
-    else openFernkampfVolksgruppen.delete(gruppenKey);
-  });
-  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-munition-gruppe]').forEach((details) => {
-    const typ = details.dataset.munitionGruppe as 'pfeile' | 'bolzen';
-    if (details.open) openMunitionGruppen.add(typ);
-    else openMunitionGruppen.delete(typ);
-  });
+  rememberOpenInventoryDetails(container);
 
   const ownedEquipment = category === 'Rüstung' ? '' : `
-    <details class="ausruestung-section ausruestung-owned-in-category">
+    <details class="ausruestung-section ausruestung-owned-in-category" data-owned-category="${category}"${openBesitzKategorien.has(category) ? ' open' : ''}>
       <summary>Besitz in dieser Kategorie</summary>
       <div class="inventar-category">${renderInventar(character, category)}</div>
     </details>`;
@@ -900,6 +965,15 @@ export function renderAusruestungView(
       ${filteredArtefakte.length === 0 && needleArtefakte ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchArtefakte)}".</p>` : `<div class="artefakt-category">${filteredArtefakte.map((row) => renderArtefaktRow(row, character)).join('')}</div>`}`,
   };
   container.innerHTML = `<section class="ausruestung-tab-view"><h2>${category}</h2>${ownedEquipment}${categoryHtml[category]}</section>`;
+
+  // Capture ist hier entscheidend: Die spaeter registrierten Button-Handler koennen ueber main.ts
+  // sofort die gesamte App ersetzen. Dann sind Zustand und Scrollposition bereits gesichert.
+  container.addEventListener('click', () => rememberOpenInventoryDetails(container), { capture: true });
+  container.addEventListener('change', () => rememberOpenInventoryDetails(container), { capture: true });
+  container.addEventListener('input', () => rememberOpenInventoryDetails(container), { capture: true });
+  container.addEventListener('click', preserveInventoryScrollAfterInteraction, { capture: true });
+  container.addEventListener('change', preserveInventoryScrollAfterInteraction, { capture: true });
+  container.addEventListener('input', preserveInventoryScrollAfterInteraction, { capture: true });
 
   if (focusedSearchId) {
     const el = document.getElementById(focusedSearchId);

@@ -88,4 +88,46 @@ describe('getrennte Ausrüstungs-Arbeitsansichten', () => {
     renderAusruestungView(container, sheet, ownedCharacter, callbacks(), 'Armbrüste');
     expect(container.querySelector('.inventar-remove')).toBeNull();
   });
+
+  it('laesst eine geoeffnete Kategorie auch nach einem Kauf-Neurender offen', () => {
+    const cb = callbacks();
+    cb.onBuyAlchemika = vi.fn(() => {
+      renderAusruestungView(container, sheet, character, cb, 'Alchemika');
+    });
+    renderAusruestungView(container, sheet, character, cb, 'Alchemika');
+
+    const details = container.querySelector<HTMLDetailsElement>('[data-alchemika-kategorie]')!;
+    const kategorie = details.dataset.alchemikaKategorie!;
+    details.open = true;
+    details.querySelector<HTMLButtonElement>('.ausruestung-buy-alchemika')!.click();
+
+    expect(container.querySelector<HTMLDetailsElement>(`[data-alchemika-kategorie="${kategorie}"]`)?.open).toBe(true);
+  });
+
+  it('bewahrt auch geoeffnete Artefaktkarten ueber einen Kauf-Neurender', () => {
+    const cb = callbacks();
+    cb.onBuyArtefakt = vi.fn(() => {
+      renderAusruestungView(container, sheet, character, cb, 'Artefakte');
+    });
+    renderAusruestungView(container, sheet, character, cb, 'Artefakte');
+
+    const details = container.querySelector<HTMLDetailsElement>('[data-artefakt-referenz]')!;
+    const referenz = details.dataset.artefaktReferenz!;
+    details.open = true;
+    details.querySelector<HTMLButtonElement>('.ausruestung-buy-artefakt')!.click();
+
+    expect(container.querySelector<HTMLDetailsElement>(`[data-artefakt-referenz="${referenz}"]`)?.open).toBe(true);
+  });
+
+  it('stellt die Scrollposition nach einer Inventar-Aktion wieder her', async () => {
+    Object.defineProperty(window, 'scrollX', { configurable: true, value: 13 });
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 777 });
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    renderAusruestungView(container, sheet, character, callbacks(), 'Preisliste');
+
+    container.querySelector<HTMLButtonElement>('.ausruestung-buy')!.click();
+    await Promise.resolve();
+
+    expect(scrollTo).toHaveBeenCalledWith(13, 777);
+  });
 });

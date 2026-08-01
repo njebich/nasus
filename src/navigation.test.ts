@@ -50,6 +50,15 @@ describe('zweistufige Navigation', () => {
     expect(getViewRoute('Magie', 'Geweihte')).toEqual({ kind: 'geweihte' });
   });
 
+  it('routet alle sechs Charakterbogen-Untertabs auf reine Ausgaben', () => {
+    expect(getViewRoute('Charakterbogen', 'Übersicht')).toEqual({ kind: 'charakterbogen' });
+    expect(getViewRoute('Charakterbogen', 'Spruchmagie')).toEqual({ kind: 'charakterbogen-spruchmagie' });
+    expect(getViewRoute('Charakterbogen', 'KI')).toEqual({ kind: 'charakterbogen-ki' });
+    expect(getViewRoute('Charakterbogen', 'PSI')).toEqual({ kind: 'charakterbogen-psi' });
+    expect(getViewRoute('Charakterbogen', 'Geweihte')).toEqual({ kind: 'charakterbogen-geweihte' });
+    expect(getViewRoute('Charakterbogen', 'Inventar')).toEqual({ kind: 'charakterbogen-inventar' });
+  });
+
   it('gibt Kampf ohne künstlichen Untertab eine vollständige Route', () => {
     expect(normalizeNavigation({ activeMainTab: 'Kampf', activeSubTab: 'Talente' }, true))
       .toEqual({ activeMainTab: 'Kampf', activeSubTab: null });

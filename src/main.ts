@@ -20,9 +20,9 @@ import { renderReadOnlyBesitzView } from './views/besitz';
 import { renderGrunddatenView } from './views/charakterheader';
 import { renderCharakterbogen } from './views/charakterbogen';
 import { renderKampfView } from './views/kampf';
-import { renderKiView } from './views/ki';
-import { renderSpruchmagieView } from './views/spruchmagie';
-import { renderPsiView } from './views/psi';
+import { renderKiView, renderReadOnlyKiView } from './views/ki';
+import { renderReadOnlySpruchmagieView, renderSpruchmagieView } from './views/spruchmagie';
+import { renderPsiView, renderReadOnlyPsiView } from './views/psi';
 import { renderGeweihteView } from './views/geweihte';
 import { isGeweihterTalentSelectedInSheet } from './engine/geweihte';
 import { initTooltips, tooltipAttr } from './views/tooltip';
@@ -671,6 +671,16 @@ function render(): void {
       renderGrunddatenView(viewContainer, currentCharacter, handleHeaderChange);
     } else if (route.kind === 'charakterbogen') {
       renderCharakterbogen(viewContainer, sheet, currentCharacter);
+    } else if (route.kind === 'charakterbogen-spruchmagie') {
+      renderReadOnlySpruchmagieView(viewContainer, sheet);
+    } else if (route.kind === 'charakterbogen-ki') {
+      renderReadOnlyKiView(viewContainer, sheet, currentCharacter.grundfertigkeitAuswahl);
+    } else if (route.kind === 'charakterbogen-psi') {
+      renderReadOnlyPsiView(viewContainer, sheet);
+    } else if (route.kind === 'charakterbogen-geweihte') {
+      renderGeweihteView(viewContainer, sheet, currentCharacter);
+    } else if (route.kind === 'charakterbogen-inventar') {
+      renderReadOnlyBesitzView(viewContainer, currentCharacter);
     } else if (route.kind === 'ausruestung') {
       if (route.category === 'Besitz') {
         renderReadOnlyBesitzView(viewContainer, currentCharacter);

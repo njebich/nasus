@@ -25,6 +25,7 @@ export const SUB_TABS = {
 } as const satisfies Record<MainTab, readonly string[]>;
 
 export type SubTab = (typeof SUB_TABS)[MainTab][number];
+export type InventarSubTab = (typeof SUB_TABS)['Inventar'][number];
 
 export interface NavigationState {
   activeMainTab: MainTab;
@@ -59,7 +60,7 @@ export type ViewRoute =
   | { kind: 'category'; title: CharacterValuesSubTab; categories: readonly string[] }
   | { kind: 'auswahl'; category: 'Talente' | 'Vor- und Nachteile'; isTalent: boolean }
   | { kind: 'kampf' }
-  | { kind: 'ausruestung' }
+  | { kind: 'ausruestung'; category: InventarSubTab }
   | { kind: 'ki' | 'spruchmagie' | 'psi' | 'geweihte' };
 
 export type CharacterValuesSubTab = (typeof SUB_TABS)['Charakterwerte'][number];
@@ -80,7 +81,10 @@ const CATEGORIES_BY_CHARACTER_VALUES_SUB_TAB = {
 export function getViewRoute(mainTab: MainTab, subTab: SubTab | null): ViewRoute {
   if (mainTab === 'Kampf') return { kind: 'kampf' };
   if (mainTab === 'Charakterbogen') return { kind: 'charakterbogen' };
-  if (mainTab === 'Inventar') return { kind: 'ausruestung' };
+  if (mainTab === 'Inventar') {
+    const category = SUB_TABS.Inventar.includes(subTab as InventarSubTab) ? subTab as InventarSubTab : 'Besitz';
+    return { kind: 'ausruestung', category };
+  }
 
   if (mainTab === 'Charakter') {
     if (subTab === 'Talente') return { kind: 'auswahl', category: 'Talente', isTalent: true };

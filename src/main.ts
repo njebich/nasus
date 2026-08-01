@@ -16,6 +16,7 @@ import { formatDublonenNumber } from './utils/format';
 import { renderCategoryRouteView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
+import { renderReadOnlyBesitzView } from './views/besitz';
 import { renderGrunddatenView } from './views/charakterheader';
 import { renderCharakterbogen } from './views/charakterbogen';
 import { renderKampfView } from './views/kampf';
@@ -671,7 +672,9 @@ function render(): void {
     } else if (route.kind === 'charakterbogen') {
       renderCharakterbogen(viewContainer, sheet, currentCharacter);
     } else if (route.kind === 'ausruestung') {
-      renderAusruestungView(viewContainer, sheet, currentCharacter, {
+      if (route.category === 'Besitz') {
+        renderReadOnlyBesitzView(viewContainer, currentCharacter);
+      } else renderAusruestungView(viewContainer, sheet, currentCharacter, {
         onBuyPreisliste: handleBuyPreisliste,
         onBuyArtefakt: handleBuyArtefakt,
         onEquipRuestung: handleEquipRuestung,
@@ -685,7 +688,7 @@ function render(): void {
         onBuyMunition: handleBuyMunition,
         onBuyAlchemika: handleBuyAlchemika,
         onRemoveEquipment: handleRemoveEquipment,
-      });
+      }, route.category);
     } else if (route.kind === 'auswahl') {
       renderAuswahlView(viewContainer, sheet, route.category, route.isTalent, handleToggle, currentCharacter.religion);
     } else if (route.kind === 'kampf') {

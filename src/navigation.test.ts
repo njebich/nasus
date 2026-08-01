@@ -53,4 +53,15 @@ describe('zweistufige Navigation', () => {
       categories: ['Charakterwerte', 'Bewegung', 'Gewichtsbelastung'],
     });
   });
+
+  it('routet Besitz und genau neun getrennte Kaufbereiche', () => {
+    const inventarTabs = getVisibleSubTabs('Inventar', false);
+    expect(inventarTabs).toEqual([
+      'Besitz', 'Rüstung', 'Schilde', 'Waffen', 'Bögen', 'Armbrüste',
+      'Feuerwaffen', 'Alchemika', 'Preisliste', 'Artefakte',
+    ]);
+    expect(inventarTabs.slice(1)).toHaveLength(9);
+    expect(getViewRoute('Inventar', 'Besitz')).toEqual({ kind: 'ausruestung', category: 'Besitz' });
+    expect(getViewRoute('Inventar', 'Bögen')).toEqual({ kind: 'ausruestung', category: 'Bögen' });
+  });
 });

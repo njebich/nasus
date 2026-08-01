@@ -1,0 +1,77 @@
+// @vitest-environment happy-dom
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { computeSheet } from '../engine/characterSheet';
+import { createCharacter } from '../state/characterStore';
+import { renderAusruestungView, type AusruestungCallbacks, type KaufKategorie } from './ausruestung';
+
+function callbacks(): AusruestungCallbacks {
+  return {
+    onBuyPreisliste: vi.fn(), onBuyArtefakt: vi.fn(), onEquipRuestung: vi.fn(),
+    onEquipRuestungAlleTz: vi.fn(), onUnequipRuestung: vi.fn(), onBuyShield: vi.fn(),
+    onBuyWeapon: vi.fn(), onBuyFernkampfwaffe: vi.fn(), onBuyFeuerwaffe: vi.fn(),
+    onBuyFeuerwaffenMunition: vi.fn(), onBuyMunition: vi.fn(), onBuyAlchemika: vi.fn(),
+    onRemoveEquipment: vi.fn(),
+  };
+}
+
+describe('getrennte Ausrüstungs-Arbeitsansichten', () => {
+  let container: HTMLDivElement;
+  const character = createCharacter('Kauftest', undefined, undefined, true);
+  const sheet = computeSheet(character);
+
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="view"></div>';
+    container = document.querySelector<HTMLDivElement>('#view')!;
+  });
+
+  it('rendert jede der genau neun Kaufkategorien einzeln', () => {
+    const categories: KaufKategorie[] = [
+      'Rüstung', 'Schilde', 'Waffen', 'Bögen', 'Armbrüste',
+      'Feuerwaffen', 'Alchemika', 'Preisliste', 'Artefakte',
+    ];
+    for (const category of categories) {
+      renderAusruestungView(container, sheet, character, callbacks(), category);
+      expect(container.querySelector('h2')?.textContent).toBe(category);
+      expect(container.querySelectorAll('.ausruestung-tab-view')).toHaveLength(1);
+    }
+  });
+
+  it('belässt Pfeile, Bolzen und Feuerwaffenmunition in ihren festgelegten Kategorien', () => {
+    renderAusruestungView(container, sheet, character, callbacks(), 'Bögen');
+    expect(container.querySelector('[data-munition-gruppe="pfeile"]')).not.toBeNull();
+    expect(container.querySelector('[data-munition-gruppe="bolzen"]')).toBeNull();
+
+    renderAusruestungView(container, sheet, character, callbacks(), 'Armbrüste');
+    expect(container.querySelector('[data-munition-gruppe="bolzen"]')).not.toBeNull();
+    expect(container.querySelector('[data-munition-gruppe="pfeile"]')).toBeNull();
+
+    renderAusruestungView(container, sheet, character, callbacks(), 'Feuerwaffen');
+    expect(container.querySelector('.ausruestung-buy-feuerwaffen-munition')).not.toBeNull();
+  });
+
+  it('bindet den bisherigen Kaufvorgang im zuständigen Untertab', () => {
+    const cb = callbacks();
+    renderAusruestungView(container, sheet, character, cb, 'Preisliste');
+    container.querySelector<HTMLButtonElement>('.ausruestung-buy')!.click();
+    expect(cb.onBuyPreisliste).toHaveBeenCalledOnce();
+  });
+
+  it('bietet Entfernen nur in der zuständigen Arbeitskategorie an', () => {
+    const ownedCharacter = {
+      ...character,
+      equipment: [{
+        id: 'pfeil-1', family: 'ammo' as const, baseTable: 'pfeile', baseId: 'alt',
+        selections: {}, quantity: 3, computedPriceSnapshot: 1,
+      }],
+    };
+    const cb = callbacks();
+    renderAusruestungView(container, sheet, ownedCharacter, cb, 'Bögen');
+    const remove = container.querySelector<HTMLButtonElement>('.inventar-remove');
+    expect(remove).not.toBeNull();
+    remove!.click();
+    expect(cb.onRemoveEquipment).toHaveBeenCalledWith('pfeil-1');
+
+    renderAusruestungView(container, sheet, ownedCharacter, callbacks(), 'Armbrüste');
+    expect(container.querySelector('.inventar-remove')).toBeNull();
+  });
+});

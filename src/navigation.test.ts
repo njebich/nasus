@@ -41,6 +41,15 @@ describe('zweistufige Navigation', () => {
       .toEqual({ activeMainTab: 'Charakterbogen', activeSubTab: 'Übersicht' });
   });
 
+  it('bündelt alle vier bisherigen Magie-Arbeitsansichten ausschließlich unter Magie', () => {
+    expect(MAIN_TABS).not.toEqual(expect.arrayContaining(['Spruchmagie', 'KI', 'PSI', 'Geweihte']));
+    expect(getVisibleSubTabs('Magie', true)).toEqual(['Spruchmagie', 'KI', 'PSI', 'Geweihte']);
+    expect(getViewRoute('Magie', 'Spruchmagie')).toEqual({ kind: 'spruchmagie' });
+    expect(getViewRoute('Magie', 'KI')).toEqual({ kind: 'ki' });
+    expect(getViewRoute('Magie', 'PSI')).toEqual({ kind: 'psi' });
+    expect(getViewRoute('Magie', 'Geweihte')).toEqual({ kind: 'geweihte' });
+  });
+
   it('gibt Kampf ohne künstlichen Untertab eine vollständige Route', () => {
     expect(normalizeNavigation({ activeMainTab: 'Kampf', activeSubTab: 'Talente' }, true))
       .toEqual({ activeMainTab: 'Kampf', activeSubTab: null });

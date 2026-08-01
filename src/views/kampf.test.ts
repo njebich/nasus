@@ -490,6 +490,9 @@ describe('Waffen-Loadout-Auswahl und getrennte Tabellen', () => {
       () => {}, () => {},
     );
 
+    const typeSelect = container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')!;
+    typeSelect.value = 'nk1h_nk1h';
+    typeSelect.dispatchEvent(new Event('change'));
     const fieldset = container.querySelector<HTMLElement>('[data-combo-type="nk1h_nk1h"]')!;
     const selects = fieldset.querySelectorAll<HTMLSelectElement>('select');
     expect([...selects[0].options].map((option) => option.textContent)).toContain('Axt (1)');
@@ -522,6 +525,101 @@ describe('Waffen-Loadout-Auswahl und getrennte Tabellen', () => {
     expect(fkTable.textContent).toContain(`Axt+${pistole.name}`);
     expect(nkTable.textContent).not.toContain('FK-Reichweiten');
     expect(fkTable.textContent).not.toContain('nAT');
+    expect([...nkTable.querySelectorAll('th')].map((th) => th.textContent)).not.toContain('Typ');
+    expect([...fkTable.querySelectorAll('th')].map((th) => th.textContent)).toEqual([
+      'Loadout', 'Schaden L', 'FK-Reichweiten L', 'Favorit', '',
+    ]);
+    expect(fkTable.querySelector('tbody tr')!.children[1].textContent).not.toBe('');
+    expect(fkTable.querySelector('tbody tr')!.children[2].textContent).not.toBe('');
+  });
+
+  it('zeigt die Reichweiten zweier Pistolen getrennt in R und L', () => {
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    let character = baseCharacter();
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const [rechts, links] = character.equipment;
+    character = addWaffenLoadout(character, 'pistole_pistole', rechts.id, links.id);
+
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+    const cells = container.querySelectorAll('[data-loadout-table="fk"] tbody td');
+    expect(cells[3].textContent).not.toBe('–');
+    expect(cells[4].textContent).not.toBe('–');
+    expect(cells[3].textContent).not.toContain('—');
+    expect(cells[4].textContent).not.toContain('—');
+  });
+
+  it('zeigt nur die Waffen-Dropdowns der aktuell gewählten Kombination', () => {
+    let character = buyAxt(buyAxt(baseCharacter()));
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+
+    const first = container.querySelector<HTMLElement>('[data-combo-type="nk1h"]')!;
+    const mixed = container.querySelector<HTMLElement>('[data-combo-type="nk1h_pistole"]')!;
+    expect(first.hidden).toBe(false);
+    expect(mixed.hidden).toBe(true);
+
+    const typeSelect = container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')!;
+    typeSelect.value = 'nk1h_pistole';
+    typeSelect.dispatchEvent(new Event('change'));
+    expect(first.hidden).toBe(true);
+    expect(mixed.hidden).toBe(false);
+  });
+
+  it('legt eine 1H-Waffe als einzelnes Loadout an', () => {
+    const character = buyAxt(baseCharacter());
+    const [axt] = character.equipment;
+    const container = document.createElement('div');
+    let added = character;
+    renderKampfView(
+      container, computeSheet(character), character, () => {},
+      (comboType, primaryId, secondaryId) => {
+        added = addWaffenLoadout(character, comboType, primaryId, secondaryId);
+      },
+      () => {}, () => {},
+    );
+
+    const typeSelect = container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')!;
+    expect([...typeSelect.options].map((option) => option.textContent)).toContain('1H');
+    const fieldset = container.querySelector<HTMLElement>('[data-combo-type="nk1h"]')!;
+    fieldset.querySelector<HTMLSelectElement>('[data-role="primary"]')!.value = axt.id;
+    container.querySelector<HTMLButtonElement>('.loadout-add-btn')!.click();
+
+    expect(added.waffenLoadouts[0]).toMatchObject({
+      comboType: 'nk1h', primaryEquipmentId: axt.id, secondaryEquipmentId: axt.id,
+    });
+  });
+
+  it('blendet bei einer einzelnen Pistole alle linken FK-Spalten aus', () => {
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    let character = buyFeuerwaffe(baseCharacter(), pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const [pistoleEntry] = character.equipment;
+    character = addWaffenLoadout(character, 'pistole', pistoleEntry.id, pistoleEntry.id);
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+
+    expect([...container.querySelectorAll('[data-loadout-table="fk"] th')].map((th) => th.textContent)).toEqual([
+      'Loadout', 'Schaden R', 'FK-Reichweiten R', 'Favorit', '',
+    ]);
+  });
+
+  it('bietet alle sechs Einzelwaffenarten an, wenn passende Waffen besessen werden', () => {
+    let character = buyAxt(baseCharacter());
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    const muskete = FEUERWAFFEN.find((row) => row['Typ'] === 'Gewehr' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    character = buyFeuerwaffe(character, muskete.sourceRow, feuerwaffenStandardauswahl(muskete));
+    character = buyFernkampfwaffe(character, 'armbrust', ARMBRUST.find((row) => row.name === 'Improvisierte Armbrust')!.sourceRow);
+    character = buyFernkampfwaffe(character, 'boegen', BOEGEN.find((row) => row.name === 'Improvisierter Bogen')!.sourceRow);
+
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+    const labels = [...container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')!.options]
+      .map((option) => option.textContent);
+    expect(labels).toEqual(expect.arrayContaining(['1H', '2H', 'Pistole', 'Muskete', 'Armbrust', 'Bogen']));
   });
 });
 

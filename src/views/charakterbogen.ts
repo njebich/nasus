@@ -9,9 +9,7 @@ import { describeSkillStufe } from '../engine/skillStufen';
 import { tooltipAttr } from './tooltip';
 import { renderKampfLeRs } from './kampfLeRs';
 import {
-  buildNahkampfRows, buildFeuerwaffenRows, buildArmbrustBoegenRows, buildAusweichenRow,
-  buildLoadoutDisplayRows, formatLoadoutCells,
-  type NahkampfRow, type FeuerwaffenRow, type ArmbrustBogenRow, type LoadoutDisplayRow, type FkNkWerte,
+  buildAusweichenRow, buildLoadoutDisplayRows, formatLoadoutCells, type LoadoutDisplayRow,
 } from './kampf';
 
 function escapeHtml(s: string): string {
@@ -210,76 +208,6 @@ function renderWhkNurGewaehlt(sheet: ComputedSheet): string {
   return `<h4>WHK</h4><table class="bogen-table bogen-table-whk">${rows}</table>`;
 }
 
-/** Read-only Spiegelung des Kampf-Tabs (Nutzer-Mockup "S04 Kampfseite", 2026-07-20): dieselben
- *  Row-Builder-Funktionen wie views/kampf.ts, aber ohne Pool-+/--Steuerelemente - nur der aktuelle
- *  nAT/gAT/mAT/nPA/gPA/mPA-Wert als Zahl, passend zu charakterbogen.ts's sonstigen statischen
- *  Tabellen. */
-function renderKampfWaffenNahkampfRowReadOnly(row: NahkampfRow): string {
-  const pool = (field: 'nat' | 'gat' | 'mat' | 'npa' | 'gpa' | 'mpa') => (row.usable ? row[field].value : '–');
-  // Nutzer 2026-07-24 ("Waffe, on Hover, show Spezialisierung"/"1H/2H, show Stä. Requirement
-  // regardless if met or not"): gleiche Tooltips wie im interaktiven Kampf-Tab (kampf.ts's
-  // renderNahkampfRow), hier auf der read-only Spiegelung wiederholt.
-  const spezTitle = row.spezialisierung ? ` title="Spezialisierung: ${escapeHtml(row.spezialisierung)}"` : '';
-  return `
-    <tr class="${row.usable ? '' : 'kampf-row-unusable'}">
-      <td${spezTitle}>${escapeHtml(row.label)}</td>
-      <td>${escapeHtml(row.schaden)}</td>
-      <td title="Mindest-Stärke: ${row.minStaerke}">${row.grip}</td>
-      <td>${escapeHtml(row.wk)}</td>
-      <td>${row.rb}</td>
-      <td>${pool('nat')}</td><td>${pool('gat')}</td><td>${pool('mat')}</td>
-      <td>${pool('npa')}</td><td>${pool('gpa')}</td><td>${pool('mpa')}</td>
-      <td>${row.kb}</td>
-      <td>${row.ks}</td>
-      <td>${row.ini}</td>
-    </tr>`;
-}
-
-/** Read-only Spiegelung von kampf.ts's renderFkNkCells (gleiche 6 Zellen: Schaden/WK/nAT/nPA/
- *  KB/KS) - hier lokal dupliziert statt importiert, gleiche Konvention wie die anderen read-only
- *  Mirror-Renderer in dieser Datei (kein Zugriff auf kampf.ts's private Render-Helfer). */
-function renderFkNkCellsReadOnly(nk: FkNkWerte | null): string {
-  if (!nk) return '<td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td>';
-  const title = nk.unusableReason ? ` title="${escapeHtml(nk.unusableReason)}"` : '';
-  return `
-      <td${title}>${escapeHtml(nk.schaden)}</td>
-      <td${title}>${escapeHtml(nk.wk)}</td>
-      <td${title}>${nk.nat ?? '–'}</td>
-      <td${title}>${nk.npa ?? '–'}</td>
-      <td>${nk.kb}</td>
-      <td>${nk.ks}</td>`;
-}
-
-function renderKampfWaffenFeuerwaffeRowReadOnly(row: FeuerwaffenRow): string {
-  return `
-    <tr>
-      <td>${escapeHtml(row.label)}</td><td>${escapeHtml(row.schaden)}</td><td>${row.rb}</td>
-      <td>${escapeHtml(row.munition)}</td>
-      ${row.ranges.map((r) => `<td>${escapeHtml(r)}</td>`).join('')}
-      <td>${row.rw}</td><td>${escapeHtml(row.ladedauer)}</td><td>${row.ini}</td>
-      ${renderFkNkCellsReadOnly(row.nk)}
-    </tr>`;
-}
-
-function renderKampfWaffenArmbrustBogenRowReadOnly(row: ArmbrustBogenRow): string {
-  return `
-    <tr>
-      <td>${escapeHtml(row.label)}</td><td>${escapeHtml(row.schaden)}</td><td>${row.rb}</td>
-      <td>${escapeHtml(row.munition)}</td>
-      ${row.ranges.map((r) => `<td>${escapeHtml(r)}</td>`).join('')}
-      <td>${escapeHtml(row.rw)}</td><td>${escapeHtml(row.ladedauer)}</td><td>${row.ini}</td>
-      ${renderFkNkCellsReadOnly(row.nk)}
-    </tr>`;
-}
-
-const FERNKAMPF_TABLE_HEAD = `
-  <thead><tr>
-    <th>Waffe</th><th>Schaden</th><th>RB</th><th>Munition</th>
-    <th>10m</th><th>30m</th><th>60m</th><th>100m</th><th>150m</th><th>210m</th>
-    <th>RW</th><th>Ladedauer</th><th>INI</th>
-    <th>NK-Schaden</th><th>NK-WK</th><th>NK-nAT</th><th>NK-nPA</th><th>NK-KB</th><th>NK-KS</th>
-  </tr></thead>`;
-
 /** Read-only Spiegelung NUR der favorisierten Waffen-Loadouts (2026-07-22) - gleiche Zellen wie
  *  die Kampf-Tab-Tabelle, ohne Favorit-/Entfernen-Steuerelemente. */
 function renderNkLoadoutMirrorRow(row: LoadoutDisplayRow): string {
@@ -287,14 +215,13 @@ function renderNkLoadoutMirrorRow(row: LoadoutDisplayRow): string {
   if ('error' in cells) {
     return `
       <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
-        <td>${escapeHtml(row.displayName)}</td><td colspan="9">${escapeHtml(cells.error)}</td>
+        <td>${escapeHtml(row.displayName)}</td><td colspan="8">${escapeHtml(cells.error)}</td>
       </tr>`;
   }
   const pool = row.pool;
   return `
     <tr>
       <td>${escapeHtml(row.displayName)}</td>
-      <td>${escapeHtml(cells.typ)}</td>
       <td>${escapeHtml(cells.schaden)}</td>
       <td>${escapeHtml(cells.wk)}</td>
       <td>${escapeHtml(cells.nat)}</td>
@@ -306,27 +233,39 @@ function renderNkLoadoutMirrorRow(row: LoadoutDisplayRow): string {
     </tr>`;
 }
 
-function renderFkLoadoutMirrorRow(row: LoadoutDisplayRow): string {
+function renderFkLoadoutMirrorRow(row: LoadoutDisplayRow, showRight: boolean, showLeft: boolean): string {
   const cells = formatLoadoutCells(row.result);
   if ('error' in cells) {
+    const dataColumns = (showRight ? 2 : 0) + (showLeft ? 2 : 0);
     return `
       <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
-        <td>${escapeHtml(row.displayName)}</td><td colspan="2">${escapeHtml(cells.error)}</td>
+        <td>${escapeHtml(row.displayName)}</td><td colspan="${dataColumns}">${escapeHtml(cells.error)}</td>
       </tr>`;
   }
   return `
     <tr>
       <td>${escapeHtml(row.displayName)}</td>
-      <td>${escapeHtml(cells.typ)}</td>
-      <td>${escapeHtml(cells.fkReichweiten)}</td>
+      ${showRight ? `<td>${escapeHtml(cells.fkSchadenR)}</td>` : ''}
+      ${showLeft ? `<td>${escapeHtml(cells.fkSchadenL)}</td>` : ''}
+      ${showRight ? `<td>${escapeHtml(cells.fkReichweitenR)}</td>` : ''}
+      ${showLeft ? `<td>${escapeHtml(cells.fkReichweitenL)}</td>` : ''}
     </tr>`;
 }
 
 function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterState): string {
   const favorites = buildLoadoutDisplayRows(character, sheet).filter((r) => r.entry.favorite);
   if (favorites.length === 0) return '';
-  const nkRows = favorites.filter((row) => row.entry.comboType !== 'pistole_pistole');
-  const fkRows = favorites.filter((row) => row.entry.comboType === 'nk1h_pistole'
+  const nkRows = favorites.filter((row) => row.entry.comboType === 'nk1h' || row.entry.comboType === 'nk2h'
+    || row.entry.comboType === 'nk1h_nk1h' || row.entry.comboType === 'nk1h_pistole'
+    || row.entry.comboType === 'nk1h_schild' || row.entry.comboType === 'schild_pistole');
+  const fkRows = favorites.filter((row) => row.entry.comboType === 'pistole' || row.entry.comboType === 'muskete'
+    || row.entry.comboType === 'armbrust' || row.entry.comboType === 'bogen'
+    || row.entry.comboType === 'nk1h_pistole'
+    || row.entry.comboType === 'schild_pistole' || row.entry.comboType === 'pistole_pistole');
+  const showFkRight = fkRows.some((row) => row.entry.comboType === 'pistole' || row.entry.comboType === 'muskete'
+    || row.entry.comboType === 'armbrust' || row.entry.comboType === 'bogen'
+    || row.entry.comboType === 'pistole_pistole');
+  const showFkLeft = fkRows.some((row) => row.entry.comboType === 'nk1h_pistole'
     || row.entry.comboType === 'schild_pistole' || row.entry.comboType === 'pistole_pistole');
   return `
     <h3 class="bogen-section-heading">Waffen-Loadout</h3>
@@ -335,7 +274,7 @@ function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterSta
       <table class="bogen-table kampf-loadout-table" data-loadout-table="nk">
         <caption class="loadout-table-heading">Nahkampf</caption>
         <thead><tr>
-          <th>Loadout</th><th>Typ</th><th>Schaden</th><th>WK</th>
+          <th>Loadout</th><th>Schaden</th><th>WK</th>
           <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
         </tr></thead>
         <tbody>${nkRows.map(renderNkLoadoutMirrorRow).join('')}</tbody>
@@ -345,35 +284,19 @@ function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterSta
     <div class="kampf-table-scroll">
       <table class="bogen-table kampf-loadout-table" data-loadout-table="fk">
         <caption class="loadout-table-heading">Fernkampf</caption>
-        <thead><tr><th>Loadout</th><th>Typ</th><th>FK-Reichweiten</th></tr></thead>
-        <tbody>${fkRows.map(renderFkLoadoutMirrorRow).join('')}</tbody>
+        <thead><tr><th>Loadout</th>
+          ${showFkRight ? '<th>Schaden R</th>' : ''}${showFkLeft ? '<th>Schaden L</th>' : ''}
+          ${showFkRight ? '<th>FK-Reichweiten R</th>' : ''}${showFkLeft ? '<th>FK-Reichweiten L</th>' : ''}
+        </tr></thead>
+        <tbody>${fkRows.map((row) => renderFkLoadoutMirrorRow(row, showFkRight, showFkLeft)).join('')}</tbody>
       </table>
     </div>` : ''}`;
 }
 
-function renderKampfWaffenMirror(sheet: ComputedSheet, character: CharacterState): string {
-  // AT/PA-Balance-Regel (Nutzer-Diktat 2026-07-23, siehe poolFieldsForRow/isPoolBalanceValid):
-  // solange die PP-Verteilung einer Waffenzeile ungueltig ist, ist die komplette Zeile ungueltig
-  // und wird nicht auf den Charakterbogen exportiert (nur im interaktiven Kampf-Tab sichtbar, dort
-  // per Warn-Icon markiert - siehe kampf.ts's ppCell).
-  const nahkampf = buildNahkampfRows(character, sheet).filter((r) => r.poolValid);
-  const feuerwaffen = buildFeuerwaffenRows(character);
-  const boegen = buildArmbrustBoegenRows(character, 'boegen');
-  const armbrust = buildArmbrustBoegenRows(character, 'armbrust');
+function renderAusweichenMirror(character: CharacterState): string {
   const ausweichen = buildAusweichenRow(character);
 
   return `
-    <h3 class="bogen-section-heading">Nahkampf (Kampf-Tab)</h3>
-    <div class="kampf-table-scroll">
-      <table class="bogen-table kampf-waffen-table">
-        <thead><tr>
-          <th>Waffe</th><th>Schaden</th><th>1H/2H</th><th>WK</th><th>RB</th>
-          <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
-          <th>KB</th><th>KS</th><th>INI</th>
-        </tr></thead>
-        <tbody>${nahkampf.map(renderKampfWaffenNahkampfRowReadOnly).join('')}</tbody>
-      </table>
-    </div>
     <h3 class="bogen-section-heading">Ausweichen / Bewegung</h3>
     <div class="kampf-table-scroll">
       <table class="bogen-table kampf-ausweichen-table">
@@ -388,31 +311,7 @@ function renderKampfWaffenMirror(sheet: ComputedSheet, character: CharacterState
           <td>${ausweichen.hochsprung}</td><td>${ausweichen.weitsprung}</td>
         </tr></tbody>
       </table>
-    </div>
-    ${feuerwaffen.length > 0 ? `
-    <h3 class="bogen-section-heading">Feuerwaffen</h3>
-    <div class="kampf-table-scroll">
-      <table class="bogen-table kampf-waffen-table">
-        ${FERNKAMPF_TABLE_HEAD}
-        <tbody>${feuerwaffen.map(renderKampfWaffenFeuerwaffeRowReadOnly).join('')}</tbody>
-      </table>
-    </div>` : ''}
-    ${armbrust.length > 0 ? `
-    <h3 class="bogen-section-heading">Armbrüste</h3>
-    <div class="kampf-table-scroll">
-      <table class="bogen-table kampf-waffen-table">
-        ${FERNKAMPF_TABLE_HEAD}
-        <tbody>${armbrust.map(renderKampfWaffenArmbrustBogenRowReadOnly).join('')}</tbody>
-      </table>
-    </div>` : ''}
-    ${boegen.length > 0 ? `
-    <h3 class="bogen-section-heading">Bögen</h3>
-    <div class="kampf-table-scroll">
-      <table class="bogen-table kampf-waffen-table">
-        ${FERNKAMPF_TABLE_HEAD}
-        <tbody>${boegen.map(renderKampfWaffenArmbrustBogenRowReadOnly).join('')}</tbody>
-      </table>
-    </div>` : ''}`;
+    </div>`;
 }
 
 export function renderCharakterbogen(container: HTMLElement, sheet: ComputedSheet, character: CharacterState): void {
@@ -430,7 +329,7 @@ export function renderCharakterbogen(container: HTMLElement, sheet: ComputedShee
         ${renderSpracheUndKultur(sheet)}
       </div>
       ${renderKampfLeRs(sheet, character)}
-      ${renderKampfWaffenMirror(sheet, character)}
+      ${renderAusweichenMirror(character)}
       ${renderWaffenLoadoutMirror(sheet, character)}
     </div>`;
 }

@@ -523,6 +523,25 @@ describe('Waffen-Loadout-Mutationen', () => {
     expect(updated.waffenLoadouts[0]).toMatchObject({ comboType: 'nk1h_nk1h', primaryEquipmentId: axt.id, secondaryEquipmentId: dolch.id, favorite: false });
   });
 
+  it('legt 1H und 2H als einzelne Waffen-Loadouts an', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const [axt] = character.equipment;
+    character = addWaffenLoadout(character, 'nk1h', axt.id, axt.id);
+    character = addWaffenLoadout(character, 'nk2h', axt.id, axt.id);
+    expect(character.waffenLoadouts).toMatchObject([
+      { comboType: 'nk1h', primaryEquipmentId: axt.id, secondaryEquipmentId: axt.id, favorite: false },
+      { comboType: 'nk2h', primaryEquipmentId: axt.id, secondaryEquipmentId: axt.id, favorite: false },
+    ]);
+  });
+
+  it('lehnt eine Waffe in der falschen Einzelwaffen-Art ab', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const [axt] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'pistole', axt.id, axt.id)).toThrow(MutationError);
+  });
+
   it('lehnt ab, wenn beide Seiten dieselbe Ausruestung referenzieren', () => {
     let character = loadoutBaseCharacter();
     character = buyTestWeapon(character, 'Axt');

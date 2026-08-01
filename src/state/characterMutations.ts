@@ -42,7 +42,7 @@ import {
 } from '../engine/ammunitionTypes';
 import {
   ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry,
-  type WaffenLoadoutEntry, type WaffenLoadoutComboType,
+  type WaffenLoadoutEntry, type WaffenLoadoutComboType, isWaffenLoadoutSingleType,
 } from './characterStore';
 
 export class BudgetError extends Error {}
@@ -877,11 +877,26 @@ function newLoadoutId(): string {
 export function addWaffenLoadout(
   character: CharacterState, comboType: WaffenLoadoutComboType, primaryEquipmentId: string, secondaryEquipmentId: string,
 ): CharacterState {
-  if (primaryEquipmentId === secondaryEquipmentId) {
+  if (!isWaffenLoadoutSingleType(comboType) && primaryEquipmentId === secondaryEquipmentId) {
     throw new MutationError('Ein Loadout braucht zwei verschiedene Gegenstände');
   }
 
-  if (comboType === 'nk1h_nk1h') {
+  if (isWaffenLoadoutSingleType(comboType)) {
+    const equipment = character.equipment.find((entry) => entry.id === primaryEquipmentId);
+    const basis = equipment?.family === 'feuerwaffe' ? FIREARM_BY_SOURCE_ROW.get(equipment.baseId) : undefined;
+    const valid = comboType === 'nk1h'
+      ? equipment?.family === 'weapon' && equipment.computedStatsSnapshot?.minStaerke1H !== undefined
+      : comboType === 'nk2h'
+        ? equipment?.family === 'weapon' && equipment.computedStatsSnapshot?.minStaerke2H !== undefined
+        : comboType === 'pistole'
+          ? equipment?.family === 'feuerwaffe' && basis?.['Typ'] === 'Pistole'
+          : comboType === 'muskete'
+            ? equipment?.family === 'feuerwaffe' && basis?.['Typ'] === 'Gewehr'
+            : comboType === 'armbrust'
+              ? equipment?.family === 'fernkampfwaffe' && equipment.baseTable === 'armbrust'
+              : equipment?.family === 'fernkampfwaffe' && equipment.baseTable === 'boegen';
+    if (!valid) throw new MutationError(`Benötigt eine besessene Waffe der Loadout-Art '${comboType}'`);
+  } else if (comboType === 'nk1h_nk1h') {
     const ids = new Set(listEligibleNahkampf1HWaffen(character).map((i) => i.equipmentId));
     if (!ids.has(primaryEquipmentId) || !ids.has(secondaryEquipmentId)) {
       throw new MutationError('Benötigt zwei besessene, 1H-fähige Nahkampfwaffen');

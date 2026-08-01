@@ -9,11 +9,11 @@
 // Nutzer 2026-07-23 als komplettes Rework der 2026-07-22-Version dictiert. Alle Funktionen hier
 // sind reine Funktionen ueber CharacterState/ComputedSheet - keine Mutation, kein Seiteneffekt.
 
-import type { CharacterState, WaffenLoadoutEntry } from '../state/characterStore';
+import { isWaffenLoadoutSingleType, type CharacterState, type WaffenLoadoutEntry } from '../state/characterStore';
 import type { ComputedSheet } from './characterSheet';
 import { evalReferenz, type CharacterValueSource } from './rules';
 import { computeWeaponAtPaOverflow, getKampfstilModifier, getZweiWaffenCap, resolveWaffenPoolReferenz } from './waffenPool';
-import { computeSchaden, averageSchadenValue, floorSigned } from './waffenSchaden';
+import { combineDiceNotations, computeSchaden, averageSchadenValue, floorSigned, formatSigned } from './waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor, type RangeCellValues } from './fernkampfRange';
 import type { GenericRow as WeaponRow } from '../data/equipment/weapons';
 import type { FernkampfRow } from '../data/equipment/fernkampf';
@@ -365,7 +365,13 @@ export interface PistoleSideResult {
   equipmentId: string;
   label: string;
   halved: boolean;
+  schaden: string;
   ranges: string[];
+}
+
+function computeFeuerwaffenSchaden(pistole: LoadoutPistoleInfo): string {
+  const fixschaden = pistole.snap.fixschaden ?? 0;
+  return `${combineDiceNotations(pistole.basis['1.W'])}${fixschaden ? ` ${formatSigned(fixschaden)}` : ''}`;
 }
 
 export interface Nk1hPistoleResult {
@@ -404,6 +410,7 @@ export function resolveNk1hPistole(
     },
     pistole: {
       equipmentId: pistole.equipmentId, label: pistole.label, halved: pistoleHalved,
+      schaden: computeFeuerwaffenSchaden(pistole),
       ranges: computePistoleRanges(pistole, values, pistoleHalved),
     },
   };
@@ -451,6 +458,7 @@ export function resolveSchildPistole(
     },
     pistole: {
       equipmentId: pistole.equipmentId, label: pistole.label, halved: pistoleHalved,
+      schaden: computeFeuerwaffenSchaden(pistole),
       ranges: computePistoleRanges(pistole, values, pistoleHalved),
     },
   };
@@ -467,6 +475,7 @@ export interface PistolePistoleSide {
   label: string;
   isPrimary: boolean;
   halved: boolean;
+  schaden: string;
   ranges: string[];
 }
 
@@ -494,10 +503,12 @@ export function resolvePistolePistole(
     ok: true, comboType: 'pistole_pistole',
     primary: {
       equipmentId: primary.equipmentId, label: primary.label, isPrimary: true, halved: primaryHalved,
+      schaden: computeFeuerwaffenSchaden(primary),
       ranges: computePistoleRanges(primary, values, primaryHalved),
     },
     secondary: {
       equipmentId: secondary.equipmentId, label: secondary.label, isPrimary: false, halved: secondaryHalved,
+      schaden: computeFeuerwaffenSchaden(secondary),
       ranges: computePistoleRanges(secondary, values, secondaryHalved),
     },
   };
@@ -616,6 +627,9 @@ export type LoadoutResult = Nk1hNk1hResult | LoadoutResolutionError | Nk1hPistol
 export function resolveLoadout(
   character: CharacterState, sheet: ComputedSheet, values: CharacterValueSource, entry: WaffenLoadoutEntry,
 ): LoadoutResult {
+  if (isWaffenLoadoutSingleType(entry.comboType)) {
+    return { ok: false, reason: 'Einzelwaffen-Loadouts werden aus der jeweiligen Kampfzeile dargestellt' };
+  }
   switch (entry.comboType) {
     case 'nk1h_nk1h':
       return resolveNk1hNk1h(character, sheet, values, entry.primaryEquipmentId, entry.secondaryEquipmentId);
@@ -639,7 +653,9 @@ export function describeLoadout(character: CharacterState, entry: WaffenLoadoutE
     if (e.family === 'feuerwaffe') {
       return FIREARM_BY_SOURCE_ROW.get(e.baseId)?.name ?? e.displayNameSnapshot ?? '???';
     }
+    if (e.family === 'fernkampfwaffe') return e.rangedSnapshot?.name ?? e.displayNameSnapshot ?? '???';
     return findWeaponBasis(e.baseId)?.name ?? '???';
   };
+  if (isWaffenLoadoutSingleType(entry.comboType)) return labelFor(entry.primaryEquipmentId);
   return `${labelFor(entry.primaryEquipmentId)}+${labelFor(entry.secondaryEquipmentId)}`;
 }

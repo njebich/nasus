@@ -7,7 +7,11 @@
 import type { ComputedSheet } from '../engine/characterSheet';
 import { makeValueSource } from '../engine/characterSheet';
 import { evalReferenz, type CharacterValueSource } from '../engine/rules';
-import type { CharacterState, PoolAllocation, WaffenLoadoutEntry, WaffenLoadoutComboType } from '../state/characterStore';
+import {
+  isWaffenLoadoutSingleType,
+  type CharacterState, type PoolAllocation, type WaffenLoadoutEntry,
+  type WaffenLoadoutComboType, type WaffenLoadoutSingleType,
+} from '../state/characterStore';
 import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
 import type { FernkampfRow } from '../data/equipment/fernkampf';
 import {
@@ -708,8 +712,19 @@ export function buildAusweichenRow(character: CharacterState): AusweichenRow {
 export interface LoadoutDisplayRow {
   entry: WaffenLoadoutEntry;
   displayName: string;
-  result: LoadoutResult;
+  result: LoadoutResult | SingleLoadoutResult;
   pool?: { gat: number; gpa: number; mat: number; mpa: number; pp: number };
+}
+
+export interface SingleLoadoutResult {
+  ok: true;
+  comboType: WaffenLoadoutSingleType;
+  schaden: string;
+  wk: string;
+  nat: string;
+  npa: string;
+  fkSchaden: string;
+  fkReichweiten: string;
 }
 
 function findLoadoutItemInfo(character: CharacterState, equipmentId: string): { hauptfertigkeit: string; atBonus: number; paBonus: number } | undefined {
@@ -727,6 +742,14 @@ function poolMirrorFields(ctx: PoolContext, higherPoolSide: PoolSideRef): Loadou
 export function buildLoadoutDisplayRows(character: CharacterState, sheet: ComputedSheet): LoadoutDisplayRow[] {
   const ctx: PoolContext = { sheet, character, values: makeValueSource(character) };
   return character.waffenLoadouts.map((entry) => {
+    if (isWaffenLoadoutSingleType(entry.comboType)) {
+      const single = buildSingleLoadoutDisplayRow(character, sheet, entry);
+      if (single) return single;
+      return {
+        entry, displayName: describeLoadout(character, entry),
+        result: { ok: false, reason: 'Die ausgewählte Einzelwaffe ist nicht mehr vorhanden oder ungültig' },
+      };
+    }
     const result = resolveLoadout(character, sheet, ctx.values, entry);
     const pool = result.ok && (result.comboType === 'nk1h_nk1h' || result.comboType === 'nk1h_schild')
       ? poolMirrorFields(ctx, result.higherPoolSide)
@@ -735,64 +758,134 @@ export function buildLoadoutDisplayRows(character: CharacterState, sheet: Comput
   });
 }
 
+function buildSingleLoadoutDisplayRow(
+  character: CharacterState, sheet: ComputedSheet, entry: WaffenLoadoutEntry,
+): LoadoutDisplayRow | null {
+  if (!isWaffenLoadoutSingleType(entry.comboType)) return null;
+  const displayName = describeLoadout(character, entry);
+  if (entry.comboType === 'nk1h' || entry.comboType === 'nk2h') {
+    const grip = entry.comboType === 'nk1h' ? '1H' : '2H';
+    const row = buildNahkampfRows(character, sheet).find(
+      (candidate) => candidate.key === entry.primaryEquipmentId && candidate.grip === grip,
+    );
+    if (!row) return null;
+    return {
+      entry, displayName,
+      result: {
+        ok: true, comboType: entry.comboType, schaden: row.schaden, wk: row.wk,
+        nat: String(row.nat.value), npa: String(row.npa.value), fkSchaden: '–', fkReichweiten: '–',
+      },
+      pool: { gat: row.gat.value, gpa: row.gpa.value, mat: row.mat.value, mpa: row.mpa.value, pp: row.pp },
+    };
+  }
+
+  if (entry.comboType === 'pistole' || entry.comboType === 'muskete') {
+    const row = buildFeuerwaffenRows(character).find(
+      (candidate) => candidate.key.startsWith(`${entry.primaryEquipmentId}:`),
+    );
+    if (!row) return null;
+    return {
+      entry, displayName,
+      result: {
+        ok: true, comboType: entry.comboType, schaden: '–', wk: '–', nat: '–', npa: '–',
+        fkSchaden: row.schaden, fkReichweiten: row.ranges.join(' / '),
+      },
+    };
+  }
+
+  const typ = entry.comboType === 'armbrust' ? 'armbrust' : 'boegen';
+  const row = buildArmbrustBoegenRows(character, typ).find(
+    (candidate) => candidate.key.startsWith(`${entry.primaryEquipmentId}:`),
+  );
+  if (!row) return null;
+  return {
+    entry, displayName,
+    result: {
+      ok: true, comboType: entry.comboType, schaden: '–', wk: '–', nat: '–', npa: '–',
+      fkSchaden: row.schaden, fkReichweiten: row.ranges.join(' / '),
+    },
+  };
+}
+
 export interface LoadoutCells {
-  typ: string;
   schaden: string;
   wk: string;
   nat: string;
   npa: string;
-  fkReichweiten: string;
+  fkSchadenR: string;
+  fkSchadenL: string;
+  fkReichweitenR: string;
+  fkReichweitenL: string;
 }
 
-export function formatLoadoutCells(result: LoadoutResult): LoadoutCells | { error: string } {
+export function formatLoadoutCells(result: LoadoutResult | SingleLoadoutResult): LoadoutCells | { error: string } {
   if (!result.ok) return { error: result.reason };
   switch (result.comboType) {
+    case 'nk1h':
+    case 'nk2h':
+      return {
+        schaden: result.schaden, wk: result.wk, nat: result.nat, npa: result.npa,
+        fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
+      };
+    case 'pistole':
+    case 'muskete':
+    case 'armbrust':
+    case 'bogen':
+      return {
+        schaden: '–', wk: '–', nat: '–', npa: '–',
+        fkSchadenR: result.fkSchaden, fkSchadenL: '',
+        fkReichweitenR: result.fkReichweiten, fkReichweitenL: '',
+      };
     case 'nk1h_nk1h':
       if (result.talentActive) {
         return {
-          typ: 'NK 1H+1H (Talent)', schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
-          nat: String(result.nat), npa: String(result.npa), fkReichweiten: '–',
+          schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
+          nat: String(result.nat), npa: String(result.npa),
+          fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
         };
       }
       return {
-        typ: 'NK 1H+1H',
         schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
         wk: `${result.primary.wk} / ${result.secondary.wk}`,
         nat: `${result.primary.nat} / ${result.secondary.nat}`,
         npa: `${result.primary.npa} / ${result.secondary.npa}`,
-        fkReichweiten: '–',
+        fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
       };
     case 'nk1h_pistole':
       return {
-        typ: 'NK 1H+Pistole', schaden: result.melee.schaden, wk: result.melee.wk,
+        schaden: result.melee.schaden, wk: result.melee.wk,
         nat: String(result.melee.nat), npa: String(result.melee.npa),
-        fkReichweiten: result.pistole.ranges.join(' / '),
+        fkSchadenR: '', fkSchadenL: result.pistole.schaden,
+        fkReichweitenR: '', fkReichweitenL: result.pistole.ranges.join(' / '),
       };
     case 'nk1h_schild':
       if (result.talentActive) {
         return {
-          typ: 'NK 1H+Schild (Talent)', schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
-          nat: String(result.nat), npa: String(result.npa), fkReichweiten: '–',
+          schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
+          nat: String(result.nat), npa: String(result.npa),
+          fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
         };
       }
       return {
-        typ: 'NK 1H+Schild',
         schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
         wk: `${result.primary.wk} / ${result.secondary.wk}`,
         nat: `${result.primary.nat} / ${result.secondary.nat}`,
         npa: `${result.primary.npa} / ${result.secondary.npa}`,
-        fkReichweiten: '–',
+        fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
       };
     case 'schild_pistole':
       return {
-        typ: 'Schild+Pistole', schaden: result.schild.schaden, wk: result.schild.wk,
+        schaden: result.schild.schaden, wk: result.schild.wk,
         nat: String(result.schild.nat), npa: String(result.schild.npa),
-        fkReichweiten: result.pistole.ranges.join(' / '),
+        fkSchadenR: '', fkSchadenL: result.pistole.schaden,
+        fkReichweitenR: '', fkReichweitenL: result.pistole.ranges.join(' / '),
       };
     case 'pistole_pistole':
       return {
-        typ: 'Pistole+Pistole', schaden: '–', wk: '–', nat: '–', npa: '–',
-        fkReichweiten: `${result.primary.ranges.join(' / ')} — ${result.secondary.ranges.join(' / ')}`,
+        schaden: '–', wk: '–', nat: '–', npa: '–',
+        fkSchadenR: result.primary.schaden, fkSchadenL: result.secondary.schaden,
+        fkReichweitenR: result.primary.ranges.join(' / '),
+        fkReichweitenL: result.secondary.ranges.join(' / '),
       };
   }
 }
@@ -825,7 +918,20 @@ function renderLoadoutCombo(comboType: WaffenLoadoutComboType, hidden: boolean, 
     </div>`;
 }
 
+function renderSingleLoadout(
+  comboType: WaffenLoadoutSingleType, hidden: boolean,
+  options: string, label: string,
+): string {
+  return `
+    <div class="loadout-combo-fieldset" data-combo-type="${comboType}" ${hidden ? 'hidden' : ''}>
+      <label>${label}
+        <select data-role="primary"><option value="">–</option>${options}</select>
+      </label>
+    </div>`;
+}
+
 const LOADOUT_COMBO_LABELS: Record<WaffenLoadoutComboType, string> = {
+  nk1h: '1H', nk2h: '2H', pistole: 'Pistole', muskete: 'Muskete', armbrust: 'Armbrust', bogen: 'Bogen',
   nk1h_nk1h: 'NK 1H + NK 1H', nk1h_pistole: 'NK 1H + Pistole', nk1h_schild: 'NK 1H + Schild',
   schild_pistole: 'Schild + Pistole', pistole_pistole: 'Pistole + Pistole',
 };
@@ -838,7 +944,38 @@ function renderLoadoutCreationForm(character: CharacterState): string {
   const schildOptions = loadoutOptionList(schilde);
   const pistoleOptions = loadoutOptionList(pistolen);
 
+  const equipmentOption = (equipment: CharacterState['equipment'][number], label: string) => ({
+    equipmentId: equipment.id, label,
+  });
+  const nk1hSingle = character.equipment.flatMap((equipment) => {
+    if (equipment.family !== 'weapon' || equipment.computedStatsSnapshot?.minStaerke1H === undefined) return [];
+    const basis = MELEE_WEAPON_BY_SOURCE_ROW.get(equipment.baseId);
+    return basis ? [equipmentOption(equipment, basis.name)] : [];
+  });
+  const nk2hSingle = character.equipment.flatMap((equipment) => {
+    if (equipment.family !== 'weapon' || equipment.computedStatsSnapshot?.minStaerke2H === undefined) return [];
+    const basis = MELEE_WEAPON_BY_SOURCE_ROW.get(equipment.baseId);
+    return basis ? [equipmentOption(equipment, basis.name)] : [];
+  });
+  const musketen = character.equipment.flatMap((equipment) => {
+    if (equipment.family !== 'feuerwaffe') return [];
+    const basis = FIREARM_BY_SOURCE_ROW.get(equipment.baseId);
+    return basis?.['Typ'] === 'Gewehr' ? [equipmentOption(equipment, basis.name)] : [];
+  });
+  const armbrueste = character.equipment.flatMap((equipment) => equipment.family === 'fernkampfwaffe'
+    && equipment.baseTable === 'armbrust' && equipment.rangedSnapshot?.kind === 'ranged-weapon'
+    ? [equipmentOption(equipment, equipment.rangedSnapshot.name)] : []);
+  const boegen = character.equipment.flatMap((equipment) => equipment.family === 'fernkampfwaffe'
+    && equipment.baseTable === 'boegen' && equipment.rangedSnapshot?.kind === 'ranged-weapon'
+    ? [equipmentOption(equipment, equipment.rangedSnapshot.name)] : []);
+
   const available: WaffenLoadoutComboType[] = [];
+  if (nk1hSingle.length >= 1) available.push('nk1h');
+  if (nk2hSingle.length >= 1) available.push('nk2h');
+  if (pistolen.length >= 1) available.push('pistole');
+  if (musketen.length >= 1) available.push('muskete');
+  if (armbrueste.length >= 1) available.push('armbrust');
+  if (boegen.length >= 1) available.push('bogen');
   if (nk1h.length >= 2) available.push('nk1h_nk1h');
   if (nk1h.length >= 1 && pistolen.length >= 1) available.push('nk1h_pistole');
   if (nk1h.length >= 1 && schilde.length >= 1) available.push('nk1h_schild');
@@ -851,12 +988,24 @@ function renderLoadoutCreationForm(character: CharacterState): string {
       benötigt.</p>`;
   }
 
-  const radios = available.map((comboType, i) => `
-      <label><input type="radio" name="loadout-combo-type" value="${comboType}" ${i === 0 ? 'checked' : ''}> ${LOADOUT_COMBO_LABELS[comboType]}</label>`).join('');
+  const typeOptions = available.map((comboType) => `
+      <option value="${comboType}">${LOADOUT_COMBO_LABELS[comboType]}</option>`).join('');
 
   const fieldsets = available.map((comboType, i) => {
     const hidden = i !== 0;
     switch (comboType) {
+      case 'nk1h':
+        return renderSingleLoadout(comboType, hidden, loadoutOptionList(nk1hSingle), '1H-Waffe');
+      case 'nk2h':
+        return renderSingleLoadout(comboType, hidden, loadoutOptionList(nk2hSingle), '2H-Waffe');
+      case 'pistole':
+        return renderSingleLoadout(comboType, hidden, pistoleOptions, 'Pistole');
+      case 'muskete':
+        return renderSingleLoadout(comboType, hidden, loadoutOptionList(musketen), 'Muskete');
+      case 'armbrust':
+        return renderSingleLoadout(comboType, hidden, loadoutOptionList(armbrueste), 'Armbrust');
+      case 'bogen':
+        return renderSingleLoadout(comboType, hidden, loadoutOptionList(boegen), 'Bogen');
       case 'nk1h_nk1h':
         return renderLoadoutCombo(comboType, hidden, nk1hOptions, nk1hOptions, 'Primärhand (rechte Hand)', 'Sekundärhand');
       case 'nk1h_pistole':
@@ -874,7 +1023,9 @@ function renderLoadoutCreationForm(character: CharacterState): string {
 
   return `
     <div class="loadout-creation-form">
-      ${available.length > 1 ? `<div class="loadout-combo-radios">${radios}</div>` : ''}
+      <label>Loadout-Art
+        <select name="loadout-combo-type">${typeOptions}</select>
+      </label>
       ${fieldsets}
       <button type="button" class="loadout-add-btn">Hinzufügen</button>
     </div>`;
@@ -895,7 +1046,7 @@ function renderNkLoadoutRow(row: LoadoutDisplayRow): string {
     return `
       <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
         <td>${escapeHtml(row.displayName)}</td>
-        <td colspan="9">${escapeHtml(cells.error)}</td>
+        <td colspan="8">${escapeHtml(cells.error)}</td>
         <td>${favoriteBtn}</td>
         <td>${removeBtn}</td>
       </tr>`;
@@ -904,7 +1055,6 @@ function renderNkLoadoutRow(row: LoadoutDisplayRow): string {
   return `
     <tr>
       <td>${escapeHtml(row.displayName)}</td>
-      <td>${escapeHtml(cells.typ)}</td>
       <td>${escapeHtml(cells.schaden)}</td>
       <td>${escapeHtml(cells.wk)}</td>
       <td>${escapeHtml(cells.nat)}</td>
@@ -918,14 +1068,15 @@ function renderNkLoadoutRow(row: LoadoutDisplayRow): string {
     </tr>`;
 }
 
-function renderFkLoadoutRow(row: LoadoutDisplayRow): string {
+function renderFkLoadoutRow(row: LoadoutDisplayRow, showRight: boolean, showLeft: boolean): string {
   const cells = formatLoadoutCells(row.result);
   const { favoriteBtn, removeBtn } = renderLoadoutActions(row);
   if ('error' in cells) {
+    const dataColumns = (showRight ? 2 : 0) + (showLeft ? 2 : 0);
     return `
       <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
         <td>${escapeHtml(row.displayName)}</td>
-        <td colspan="2">${escapeHtml(cells.error)}</td>
+        <td colspan="${dataColumns}">${escapeHtml(cells.error)}</td>
         <td>${favoriteBtn}</td>
         <td>${removeBtn}</td>
       </tr>`;
@@ -933,20 +1084,37 @@ function renderFkLoadoutRow(row: LoadoutDisplayRow): string {
   return `
     <tr>
       <td>${escapeHtml(row.displayName)}</td>
-      <td>${escapeHtml(cells.typ)}</td>
-      <td>${escapeHtml(cells.fkReichweiten)}</td>
+      ${showRight ? `<td>${escapeHtml(cells.fkSchadenR)}</td>` : ''}
+      ${showLeft ? `<td>${escapeHtml(cells.fkSchadenL)}</td>` : ''}
+      ${showRight ? `<td>${escapeHtml(cells.fkReichweitenR)}</td>` : ''}
+      ${showLeft ? `<td>${escapeHtml(cells.fkReichweitenL)}</td>` : ''}
       <td>${favoriteBtn}</td>
       <td>${removeBtn}</td>
     </tr>`;
 }
 
 function loadoutHasNk(row: LoadoutDisplayRow): boolean {
-  return row.entry.comboType !== 'pistole_pistole';
+  return row.entry.comboType === 'nk1h' || row.entry.comboType === 'nk2h'
+    || row.entry.comboType === 'nk1h_nk1h' || row.entry.comboType === 'nk1h_pistole'
+    || row.entry.comboType === 'nk1h_schild' || row.entry.comboType === 'schild_pistole';
 }
 
 function loadoutHasFk(row: LoadoutDisplayRow): boolean {
-  return row.entry.comboType === 'nk1h_pistole'
+  return row.entry.comboType === 'pistole' || row.entry.comboType === 'muskete'
+    || row.entry.comboType === 'armbrust' || row.entry.comboType === 'bogen'
+    || row.entry.comboType === 'nk1h_pistole'
     || row.entry.comboType === 'schild_pistole'
+    || row.entry.comboType === 'pistole_pistole';
+}
+
+function loadoutHasFkRight(row: LoadoutDisplayRow): boolean {
+  return row.entry.comboType === 'pistole' || row.entry.comboType === 'muskete'
+    || row.entry.comboType === 'armbrust' || row.entry.comboType === 'bogen'
+    || row.entry.comboType === 'pistole_pistole';
+}
+
+function loadoutHasFkLeft(row: LoadoutDisplayRow): boolean {
+  return row.entry.comboType === 'nk1h_pistole' || row.entry.comboType === 'schild_pistole'
     || row.entry.comboType === 'pistole_pistole';
 }
 
@@ -954,6 +1122,8 @@ function renderWaffenLoadoutBlock(character: CharacterState, sheet: ComputedShee
   const rows = buildLoadoutDisplayRows(character, sheet);
   const nkRows = rows.filter(loadoutHasNk);
   const fkRows = rows.filter(loadoutHasFk);
+  const showFkRight = fkRows.some(loadoutHasFkRight);
+  const showFkLeft = fkRows.some(loadoutHasFkLeft);
   return `
     <h3 class="bogen-section-heading">Waffen-Loadout</h3>
     ${renderLoadoutCreationForm(character)}
@@ -962,7 +1132,7 @@ function renderWaffenLoadoutBlock(character: CharacterState, sheet: ComputedShee
       <table class="bogen-table kampf-loadout-table" data-loadout-table="nk">
         <caption class="loadout-table-heading">Nahkampf</caption>
         <thead><tr>
-          <th>Loadout</th><th>Typ</th><th>Schaden</th><th>WK</th>
+          <th>Loadout</th><th>Schaden</th><th>WK</th>
           <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
           <th>Favorit</th><th></th>
         </tr></thead>
@@ -974,9 +1144,12 @@ function renderWaffenLoadoutBlock(character: CharacterState, sheet: ComputedShee
       <table class="bogen-table kampf-loadout-table" data-loadout-table="fk">
         <caption class="loadout-table-heading">Fernkampf</caption>
         <thead><tr>
-          <th>Loadout</th><th>Typ</th><th>FK-Reichweiten</th><th>Favorit</th><th></th>
+          <th>Loadout</th>
+          ${showFkRight ? '<th>Schaden R</th>' : ''}${showFkLeft ? '<th>Schaden L</th>' : ''}
+          ${showFkRight ? '<th>FK-Reichweiten R</th>' : ''}${showFkLeft ? '<th>FK-Reichweiten L</th>' : ''}
+          <th>Favorit</th><th></th>
         </tr></thead>
-        <tbody>${fkRows.map(renderFkLoadoutRow).join('')}</tbody>
+        <tbody>${fkRows.map((row) => renderFkLoadoutRow(row, showFkRight, showFkLeft)).join('')}</tbody>
       </table>
     </div>` : ''}`;
 }
@@ -1333,24 +1506,23 @@ export function renderKampfView(
     }
   });
 
-  container.querySelectorAll<HTMLInputElement>('input[name="loadout-combo-type"]').forEach((radio) => {
-    radio.addEventListener('change', () => {
-      container.querySelectorAll<HTMLElement>('.loadout-combo-fieldset').forEach((fieldset) => {
-        fieldset.hidden = fieldset.dataset.comboType !== radio.value;
-      });
+  container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')?.addEventListener('change', (event) => {
+    const selectedType = (event.currentTarget as HTMLSelectElement).value;
+    container.querySelectorAll<HTMLElement>('.loadout-combo-fieldset').forEach((fieldset) => {
+      fieldset.hidden = fieldset.dataset.comboType !== selectedType;
     });
   });
 
   container.querySelector<HTMLButtonElement>('.loadout-add-btn')?.addEventListener('click', () => {
-    const checkedRadio = container.querySelector<HTMLInputElement>('input[name="loadout-combo-type"]:checked');
+    const typeSelect = container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]');
     const soleFieldset = container.querySelector<HTMLElement>('.loadout-combo-fieldset');
-    const comboType = (checkedRadio?.value ?? soleFieldset?.dataset.comboType) as WaffenLoadoutComboType | undefined;
+    const comboType = (typeSelect?.value ?? soleFieldset?.dataset.comboType) as WaffenLoadoutComboType | undefined;
     if (!comboType) return;
     const fieldset = container.querySelector<HTMLElement>(`.loadout-combo-fieldset[data-combo-type="${comboType}"]`);
     const primaryId = fieldset?.querySelector<HTMLSelectElement>('[data-role="primary"]')?.value;
     const secondaryId = fieldset?.querySelector<HTMLSelectElement>('[data-role="secondary"]')?.value;
-    if (!primaryId || !secondaryId) return;
-    onAddWaffenLoadout(comboType, primaryId, secondaryId);
+    if (!primaryId || (!isWaffenLoadoutSingleType(comboType) && !secondaryId)) return;
+    onAddWaffenLoadout(comboType, primaryId, secondaryId ?? primaryId);
   });
 
   container.querySelectorAll<HTMLButtonElement>('.loadout-remove').forEach((btn) => {

@@ -1397,6 +1397,10 @@ input.numeric-field-formatted-five {
   gap: 0.75rem;
 }
 
+.loadout-combo-fieldset[hidden] {
+  display: none;
+}
+
 .loadout-combo-fieldset label,
 .loadout-creation-form > label {
   display: flex;

@@ -75,7 +75,14 @@ export function ruestungSlotKey(gruppe: RsGruppe, lage: number): string {
   return `${gruppe}:${lage}`;
 }
 
-export type WaffenLoadoutComboType = 'nk1h_nk1h' | 'nk1h_pistole' | 'nk1h_schild' | 'schild_pistole' | 'pistole_pistole';
+export type WaffenLoadoutSingleType = 'nk1h' | 'nk2h' | 'pistole' | 'muskete' | 'armbrust' | 'bogen';
+export type WaffenLoadoutComboType = WaffenLoadoutSingleType
+  | 'nk1h_nk1h' | 'nk1h_pistole' | 'nk1h_schild' | 'schild_pistole' | 'pistole_pistole';
+
+export function isWaffenLoadoutSingleType(type: WaffenLoadoutComboType): type is WaffenLoadoutSingleType {
+  return type === 'nk1h' || type === 'nk2h' || type === 'pistole'
+    || type === 'muskete' || type === 'armbrust' || type === 'bogen';
+}
 
 /**
  * Ein gespeichertes Waffen-Loadout (Kampf-Tab, "Waffen-Loadout"-Feature, 2026-07-22, REWORKED
@@ -95,6 +102,8 @@ export interface WaffenLoadoutEntry {
   id: string;
   comboType: WaffenLoadoutComboType;
   primaryEquipmentId: string;
+  /** Bei Einzelwaffen-Loadouts identisch mit primaryEquipmentId; dadurch bleiben ältere
+   *  gespeicherte Zwei-Waffen-Loadouts ohne Schema-Migration kompatibel. */
   secondaryEquipmentId: string;
   /** Mehrere Loadouts duerfen gleichzeitig favorisiert sein - steuert nur, ob das Loadout
    *  zusaetzlich read-only auf den Charakterbogen-Tab gespiegelt wird, analog zur bestehenden

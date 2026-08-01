@@ -33,8 +33,13 @@ export function formatSchadenswuerfel(row: Record<string, string> | undefined): 
   return sw1 || sw2 || '–';
 }
 
-/** Schaden = Wuerfelnotation + Flachbonus (eig_k_staerke/Staerke-Teiler + Stä-Malus, ABGERUNDET -
- *  siehe Plan-Kommentar zur Rundung). Nutzt den KOMPONIERTEN Stä-Malus aus dem Snapshot (Basis +
+/** Stä-Mod-Schreibweise ":2-5": Stärke durch 2 teilen, DIE DIVISION aufrunden, danach 5
+ *  abziehen (Nutzerpräzisierung 2026-08-01). */
+export function computeStaerkeBonus(staerke: number, staerkeTeiler: number, staerkeMalus: number): number {
+  return staerkeTeiler !== 0 ? Math.ceil(staerke / staerkeTeiler) + staerkeMalus : staerkeMalus;
+}
+
+/** Schaden = Wuerfelnotation + Flachbonus aus dem Stä-Mod. Nutzt den KOMPONIERTEN Stä-Malus aus dem Snapshot (Basis +
  *  Material), nicht nur die rohe Basis-Spalte - konsistent mit jeder anderen Zahl in dieser
  *  Tabelle (die kommen alle aus dem Snapshot, nicht aus der rohen Basiszeile). */
 export function computeSchaden(
@@ -42,7 +47,7 @@ export function computeSchaden(
   element?: { schadenswuerfel: string; schadenselement: string },
 ): string {
   const staerkeTeiler = num(basis, 'Staerke-Teiler');
-  const flatBonus = staerkeTeiler !== 0 ? floorSigned(eigKStaerke / staerkeTeiler + staerkeMalus) : floorSigned(staerkeMalus);
+  const flatBonus = computeStaerkeBonus(eigKStaerke, staerkeTeiler, staerkeMalus);
   const basisDice = formatSchadenswuerfel(basis);
   const dice = element ? `${basisDice}+(${element.schadenswuerfel} ${element.schadenselement})` : basisDice;
   return flatBonus !== 0 ? `${dice} ${formatSigned(flatBonus)}` : dice;
@@ -83,12 +88,12 @@ function averageMaxOfNDice(n: number, sides: number): number {
 }
 
 /** Durchschnittlicher Gesamtschaden (Wuerfeldurchschnitt beider Schadenswuerfel-Spalten plus
- *  dem selben geflooreten Flachbonus wie computeSchaden) - NUR fuer den "besseres Waffe"-
+ *  demselben Stä-Mod-Flachbonus wie computeSchaden) - NUR fuer den "besseres Waffe"-
  *  Vergleich des Kampf-mit-zwei-Waffen-Talents (Waffen-Loadout-Feature), die Anzeige selbst nutzt
  *  weiterhin computeSchaden's formatierten String. */
 export function averageSchadenValue(basis: Record<string, string> | undefined, staerkeMalus: number, eigKStaerke: number): number {
   const staerkeTeiler = num(basis, 'Staerke-Teiler');
-  const flatBonus = staerkeTeiler !== 0 ? floorSigned(eigKStaerke / staerkeTeiler + staerkeMalus) : floorSigned(staerkeMalus);
+  const flatBonus = computeStaerkeBonus(eigKStaerke, staerkeTeiler, staerkeMalus);
   const diceAverage = parseDiceAverage(basis?.['Schadenswuerfel-1']) + parseDiceAverage(basis?.['Schadenswuerfel-2']);
   return diceAverage + flatBonus;
 }

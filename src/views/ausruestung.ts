@@ -36,6 +36,7 @@ import {
 import {
   isXKlingeReferenz, resolveXKlingeWirkung, xKlingeTooltip, xKlingeWeaponName, xKlingeWirkungForEntry,
 } from '../engine/xKlinge';
+import { describeStoredWeapon, describeWeaponSelection } from './weaponDisplay';
 
 export interface RuestungGruppenSelection {
   lage: number;
@@ -499,15 +500,6 @@ function waffeBrauchtSchaftmaterial(row: GenericRow): boolean {
   return row['Hauptfertigkeit'] === 'Stangenwaffen';
 }
 
-/** Schadenswuerfel-1/-2 kommen unveraendert von der Basis-Zeile (keine der 4 Modifikator-Tabellen
- *  hat eine Schadenswuerfel-Spalte) - "W10+W6" bei zwei Wuerfeln, sonst nur der eine. */
-function formatSchadenswuerfel(row: GenericRow): string {
-  const sw1 = row['Schadenswuerfel-1']?.trim();
-  const sw2 = row['Schadenswuerfel-2']?.trim();
-  if (sw1 && sw2) return `${sw1}+${sw2}`;
-  return sw1 || sw2 || '–';
-}
-
 function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterState): string {
   const brauchtSchaft = waffeBrauchtSchaftmaterial(row);
   const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
@@ -529,6 +521,7 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
     ? (schaftmaterialOptionen.find((s) => s.sourceRow === sel.schaftmaterialSourceRow) ?? schaftmaterialOptionen[0])
     : SCHAFTMATERIAL_STANDARD;
   const composed = composeWeapon(row, material, fertigung, anpassung, schaftmaterial);
+  const display = describeWeaponSelection(row, material, fertigung, anpassung, schaftmaterial, composed);
   const statTooltip = statSnapshotTooltip({
     at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus,
     minStaerke1H: composed.minStaerke1H, minStaerke2H: composed.minStaerke2H,
@@ -551,13 +544,13 @@ function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterStat
       <select class="waffe-schaftmaterial-select" data-weapon="${row.sourceRow}">
         ${schaftmaterialOptionen.map((s) => `<option value="${s.sourceRow}" ${s.sourceRow === schaftmaterial.sourceRow ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('')}
       </select>` : ''}
-      <span class="stat-cost">AT ${composed.at} | PA ${composed.pa}${composed.preis === null ? ' | kein Preis (kein Materialpreis-Faktor)' : ''}</span>
+      <span class="stat-cost">n-Mod ${composed.at}/${composed.pa}${composed.preis === null ? ' | kein Preis (kein Materialpreis-Faktor)' : ''}</span>
       ${composed.preis !== null
     ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-weapon" data-weapon="${row.sourceRow}">${kaufenLabel(composed.preis)}</button>`
     : '<span></span>'}
     </div>
     <div class="waffe-details">
-      Schaden ${formatSchadenswuerfel(row)} | Stä-Mod ${composed.staerkeMalus} | RB ${composed.rb}${row['Art-Specials'] ? ` | ${escapeHtml(row['Art-Specials'])}` : ''}
+      <strong>${escapeHtml(display.title)}</strong><br>${escapeHtml(display.stats)}
     </div>`;
 }
 
@@ -779,9 +772,8 @@ function renderInventar(character: CharacterState, category: KaufKategorie): str
       statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
     } else if (e.family === 'weapon') {
       const row = MELEE_WEAPON_BY_SOURCE_ROW.get(e.baseId);
-      const at = e.computedStatsSnapshot?.at;
-      const pa = e.computedStatsSnapshot?.pa;
-      label = row ? `${xKlingeWeaponName(e) ?? row.name} (AT ${at} | PA ${pa})` : label;
+      const display = describeStoredWeapon(e);
+      label = display ? `${display.title} — ${display.stats}` : row ? (xKlingeWeaponName(e) ?? row.name) : label;
       const wirkung = xKlingeWirkungForEntry(e);
       statTooltip = tooltipAttr([
         statSnapshotTooltipText(e.computedStatsSnapshot),

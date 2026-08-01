@@ -1,5 +1,13 @@
 import type { CharacterState } from '../state/characterStore';
 import { formatDublonen } from '../utils/format';
+import { PREISLISTE } from '../data/equipment/preisliste';
+import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
+import { ALCHEMIKA } from '../data/equipment/alchemika';
+import {
+  ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
+  FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW,
+} from '../engine/weaponCatalog';
+import { describeStoredWeapon } from './weaponDisplay';
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -28,17 +36,63 @@ function renderDetailFields(value: unknown): string {
   </dl>`;
 }
 
+function equipmentLabel(entry: CharacterState['equipment'][number]): { title: string; stats?: string } {
+  if (entry.family === 'weapon') {
+    const display = describeStoredWeapon(entry);
+    if (display) return display;
+  }
+  if (entry.family === 'shield') {
+    const row = MELEE_WEAPON_BY_SOURCE_ROW.get(entry.baseId);
+    if (row) return { title: row.name, stats: `RS ${entry.computedStatsSnapshot?.rs ?? '–'}, n-Mod ${entry.computedStatsSnapshot?.at ?? '–'}/${entry.computedStatsSnapshot?.pa ?? '–'}` };
+  }
+  if (entry.family === 'preisliste') {
+    const row = PREISLISTE.find((item) => String(item.sourceRow) === entry.baseId);
+    if (row) return { title: row.name ?? entry.displayNameSnapshot ?? `Preisliste #${entry.baseId}` };
+  }
+  if (entry.family === 'artefakt') {
+    const row = ARTEFAKT_KOSTEN.find((item) => String(item.sourceRow) === entry.baseId);
+    if (row) return { title: `${row.name} Grad ${row.grad} (${entry.selections.variant ?? 'Variante unbekannt'})` };
+  }
+  if (entry.family === 'feuerwaffe') {
+    const row = FIREARM_BY_SOURCE_ROW.get(entry.baseId);
+    if (row) return { title: row.name, stats: `Kaliber ${entry.computedStatsSnapshot?.kaliber ?? '–'}, RB ${entry.computedStatsSnapshot?.rb ?? '–'}` };
+  }
+  if (entry.family === 'fernkampfwaffe') {
+    const row = (entry.baseTable === 'boegen' ? BOW_BY_SOURCE_ROW : CROSSBOW_BY_SOURCE_ROW).get(entry.baseId);
+    if (row) return { title: row.name };
+  }
+  if (entry.family === 'ammo') {
+    if (entry.baseTable === 'feuerwaffen-munition') {
+      const row = FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${entry.baseId}:${entry.selections.kaliber}`);
+      if (row) return { title: `${row.label}, Kaliber ${row.kaliber}` };
+    } else {
+      const table = entry.baseTable === 'pfeile' ? ARROW_BY_SOURCE_ROW : BOLT_BY_SOURCE_ROW;
+      const basis = table.get(entry.baseId);
+      const mod = entry.selections.modifikator ? table.get(entry.selections.modifikator) : undefined;
+      if (basis) return { title: mod ? `${mod.name} (${basis.name})` : basis.name };
+    }
+  }
+  if (entry.family === 'alchemika') {
+    const row = ALCHEMIKA.find((item) => String(item.sourceRow) === entry.baseId);
+    if (row) return { title: row.name, stats: row.wirkung };
+  }
+  return { title: entry.displayNameSnapshot ?? `${entry.family} · ${entry.baseTable} #${entry.baseId}` };
+}
+
 function renderEquipment(character: CharacterState): string {
   if (character.equipment.length === 0) return '<p class="inventar-empty">Keine Ausrüstung gespeichert.</p>';
   return character.equipment.map((entry) => {
-    const label = entry.displayNameSnapshot ?? `${entry.family} · ${entry.baseTable} #${entry.baseId}`;
-    const quantity = `×${entry.quantity}`;
+    const display = equipmentLabel(entry);
+    const quantity = entry.quantity > 1 ? ` ×${entry.quantity}` : '';
     const price = entry.computedPriceSnapshot === undefined
       ? ''
       : `<span class="stat-cost">${formatDublonen(entry.computedPriceSnapshot * entry.quantity)}</span>`;
     return `
       <details class="besitz-entry" data-besitz-equipment-id="${escapeHtml(entry.id)}">
-        <summary><span class="stat-label">${escapeHtml(label)} ${quantity}</span>${price}</summary>
+        <summary>
+          <span class="stat-label">${escapeHtml(display.title)}${quantity}${display.stats ? `<small class="besitz-summary-stats">${escapeHtml(display.stats)}</small>` : ''}</span>
+          ${price}
+        </summary>
         ${renderDetailFields(entry)}
       </details>`;
   }).join('');

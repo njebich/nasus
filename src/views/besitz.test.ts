@@ -55,4 +55,23 @@ describe('renderReadOnlyBesitzView', () => {
     expect(container.textContent).not.toContain('Kaufen');
     expect(container.textContent).not.toContain('Ausziehen');
   });
+
+  it('zeigt bei alten Käufen Katalognamen statt interner Tabellen-IDs', () => {
+    const character = createCharacter('Altinventar');
+    character.equipment = [
+      {
+        id: 'fw', family: 'feuerwaffe', baseTable: 'feuerwaffen', baseId: '68',
+        selections: {}, quantity: 1, computedPriceSnapshot: 319.55,
+      },
+      {
+        id: 'ammo', family: 'ammo', baseTable: 'feuerwaffen-munition', baseId: 'papierpatrone_vl',
+        selections: { kaliber: '14' }, quantity: 100, computedPriceSnapshot: 0.44,
+      },
+    ];
+
+    renderReadOnlyBesitzView(container, character);
+    expect(container.textContent).not.toContain('feuerwaffen #68');
+    expect(container.textContent).not.toContain('feuerwaffen-munition #papierpatrone_vl');
+    expect(container.textContent).toContain('Kaliber 14');
+  });
 });

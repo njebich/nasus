@@ -16,7 +16,7 @@ import { formatDublonenNumber } from './utils/format';
 import { renderCategoryView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
-import { renderCharakterheader } from './views/charakterheader';
+import { renderGrunddatenView } from './views/charakterheader';
 import { renderCharakterbogen } from './views/charakterbogen';
 import { renderKampfView } from './views/kampf';
 import { renderKiView } from './views/ki';
@@ -83,7 +83,6 @@ let showNewCharacterForm = false;
  *  Charakter, das alle Verfuegbarkeit-Kaufsperren deaktiviert (siehe characterMutations.ts). */
 let newCharacterBestehend = false;
 let confirmingDelete = false;
-let headerSectionOpen = true;
 
 function handleValueChange(referenz: string, newValue: number): void {
   if (!currentCharacter) return;
@@ -447,11 +446,6 @@ function render(): void {
           <button type="button" id="delete-confirm">Ja, löschen</button>
           <button type="button" id="delete-cancel">Abbrechen</button>
         </div>` : ''}
-      ${currentCharacter ? `
-        <details class="stat-group" id="charakterheader-details" ${headerSectionOpen ? 'open' : ''}>
-          <summary>Grunddaten</summary>
-          <div id="charakterheader"></div>
-        </details>` : ''}
       ${sheet ? `
         <div class="budget-bar">
           <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: ${sheet.epGesamt}</span>
@@ -480,7 +474,6 @@ function render(): void {
     currentCharacter = id ? loadCharacter(id) : null;
     setLastActiveCharacterId(id || null);
     navigationState = { ...DEFAULT_NAVIGATION };
-    headerSectionOpen = true;
     errorMessage = '';
     confirmingDelete = false;
     render();
@@ -613,7 +606,6 @@ function render(): void {
     navigationState = { ...DEFAULT_NAVIGATION };
     showNewCharacterForm = false;
     newCharacterBestehend = false;
-    headerSectionOpen = true;
     render();
   });
 
@@ -671,18 +663,12 @@ function render(): void {
     });
   });
 
-  if (currentCharacter) {
-    const headerContainer = document.querySelector<HTMLDivElement>('#charakterheader')!;
-    renderCharakterheader(headerContainer, currentCharacter, handleHeaderChange);
-    document.querySelector<HTMLDetailsElement>('#charakterheader-details')?.addEventListener('toggle', (e) => {
-      headerSectionOpen = (e.target as HTMLDetailsElement).open;
-    });
-  }
-
   if (sheet && currentCharacter) {
     const viewContainer = document.querySelector<HTMLDivElement>('#view-container')!;
     const route = getViewRoute(navigationState.activeMainTab, navigationState.activeSubTab);
-    if (route.kind === 'charakterbogen') {
+    if (route.kind === 'grunddaten') {
+      renderGrunddatenView(viewContainer, currentCharacter, handleHeaderChange);
+    } else if (route.kind === 'charakterbogen') {
       renderCharakterbogen(viewContainer, sheet, currentCharacter);
     } else if (route.kind === 'ausruestung') {
       renderAusruestungView(viewContainer, sheet, currentCharacter, {
@@ -725,13 +711,6 @@ function render(): void {
           renderCategoryView(categoryContainer, sheet, category, handleValueChange, handlePoolChange, characterValues);
         }
       });
-    } else {
-      // Session 2 verschiebt den bestehenden globalen Grunddaten-Editor in diese Route.
-      viewContainer.innerHTML = `
-        <section class="provisional-route" aria-labelledby="grunddaten-heading">
-          <h2 id="grunddaten-heading">Grunddaten</h2>
-          <p>Die Grunddaten werden in dieser ersten Umstrukturierungsstufe noch im aufgeklappten Bereich oberhalb der Navigation bearbeitet.</p>
-        </section>`;
     }
   }
 }

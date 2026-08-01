@@ -203,15 +203,14 @@ body {
   border-top: 1px solid #8884;
 }
 
-.provisional-route {
+.grunddaten-view {
   padding: 0.75rem 1rem;
   border: 1px solid #8884;
   border-radius: 6px;
   background: #8881;
 }
 
-.provisional-route h2,
-.provisional-route p {
+.grunddaten-view h2 {
   margin-block: 0 0.4rem;
 }
 

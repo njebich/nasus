@@ -3,15 +3,11 @@
 // neben den editierbaren Punktekauf-Tabs, kein Ersatz dafuer.
 
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
-import { makeValueSource } from '../engine/characterSheet';
-import { ruestungSlotKey, type CharacterState, type CharacterHeader } from '../state/characterStore';
+import type { CharacterState, CharacterHeader } from '../state/characterStore';
 import { buildHierarchy, sortHierarchyByValue, type HierarchyNode } from '../engine/hierarchy';
 import { describeSkillStufe } from '../engine/skillStufen';
-import { computeRbe } from '../engine/armorComposition';
-import { aufrunden } from '../engine/functions';
-import { RUESTUNG_BASIS } from '../data/equipment/armor';
 import { tooltipAttr } from './tooltip';
-import type { RsGruppe } from '../data/trefferzonen';
+import { renderKampfLeRs } from './kampfLeRs';
 import {
   buildNahkampfRows, buildFeuerwaffenRows, buildArmbrustBoegenRows, buildAusweichenRow,
   buildLoadoutDisplayRows, formatLoadoutCells,
@@ -82,8 +78,8 @@ function renderCharakterwerteUndAttribute(sheet: ComputedSheet): string {
     .map((r) => `<tr><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${formatValue(r.computedValue)}</td></tr>`)
     .join('');
   const epSpRows = `
-    <tr><th>Erfahrungspkt.</th><td>${sheet.epGesamt}</td></tr>
-    <tr><th>Steigerungspkt.</th><td>${sheet.spRemaining} / ${sheet.spTotal}</td></tr>`;
+    <tr><th>Erfahrungspkt.</th><td><span class="numeric-field-output numeric-field-signed-five">${sheet.epGesamt}</span></td></tr>
+    <tr><th>Steigerungspkt.</th><td><span class="numeric-field-output numeric-field-signed-five">${sheet.spRemaining}</span> / <span class="numeric-field-output numeric-field-signed-five">${sheet.spTotal}</span></td></tr>`;
   // Nutzer 2026-07-24 (categoryView.ts's ATTRIBUTE_KLICKPREIS_TEXT): dieselbe vereinfachte
   // Klickpreis-Formel wie im editierbaren Attribute-Tab, hier auf den Zeilen des read-only
   // Charakterbogens gespiegelt ("wire same tooltips to same values/descriptions").
@@ -212,113 +208,6 @@ function renderWhkNurGewaehlt(sheet: ComputedSheet): string {
   const hierarchie = sortHierarchyByValue(buildHierarchy(whk));
   const rows = hierarchie.map(renderFertigkeitGruppe).join('');
   return `<h4>WHK</h4><table class="bogen-table bogen-table-whk">${rows}</table>`;
-}
-
-const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
-
-/** Eine Trefferzonen-Gruppe der LE/RS-Tabelle (Nutzer-Mockup "S03 Kampfseite mockup"). RH/RS
- *  kommen aus den echten Ruestungs-Slots einer TZ-Gruppe (rsGruppe) - Unterleib hat KEINE
- *  eigenen Slots und teilt sich die von Torso (Regelkorrektur Nutzer 2026-07-17: "Torso inkl.
- *  Unterleib" ist EINE Ruestungs-TZ-Gruppe), bekommt aber trotzdem eine eigene LE-Zeile, da
- *  le_unterleib eine eigenstaendige Formel-Referenz ist (siehe data/rules.json). Arme/Beine
- *  haben zwar getrennte L/R-Referenzen, zeigen hier aber nur EINEN Wert (Nutzer 2026-07-19) -
- *  beide Seiten nutzen ohnehin dieselbe Formel, le_arm_l/le_bein_l stehen stellvertretend. */
-interface KampfTzGruppe {
-  key: string;
-  label: string;
-  rsGruppe: RsGruppe;
-  leReferenz: string;
-  rechtsLabel: string;
-}
-
-const KAMPF_TZ_GRUPPEN: KampfTzGruppe[] = [
-  { key: 'kopf', label: 'Kopf', rsGruppe: 'kopf', leReferenz: 'le_kopf', rechtsLabel: 'Gesundheit' },
-  { key: 'torso', label: 'Torso', rsGruppe: 'torso', leReferenz: 'le_brust', rechtsLabel: 'Trefferschwelle' },
-  { key: 'unterleib', label: 'Unterleib', rsGruppe: 'torso', leReferenz: 'le_unterleib', rechtsLabel: 'Selbstbeherrschung' },
-  { key: 'arme', label: 'Arme', rsGruppe: 'arme', leReferenz: 'le_arm_l', rechtsLabel: 'Rüstungshinderlichkeit' },
-  { key: 'beine', label: 'Beine', rsGruppe: 'beine', leReferenz: 'le_bein_l', rechtsLabel: 'RBE' },
-];
-
-function ruestungLagenStats(character: CharacterState, gruppe: RsGruppe) {
-  return RUESTUNG_LAGEN.map((lage) => {
-    const entry = character.ruestungSlots[ruestungSlotKey(gruppe, lage)];
-    if (!entry) return { lage, name: undefined as string | undefined, rh: 0, rs: 0 };
-    const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === entry.basisSourceRow);
-    return { lage, name: basis?.name, rh: entry.computedStatsSnapshot.rh, rs: entry.computedStatsSnapshot.rs };
-  });
-}
-
-function leText(sheet: ComputedSheet, referenz: string): string {
-  const r = findRule(sheet.byKategorie['Charakterwerte'] ?? [], referenz);
-  return r ? formatValue(r.computedValue) : '–';
-}
-
-function renderKampfTzGruppe(gruppe: KampfTzGruppe, sheet: ComputedSheet, character: CharacterState, rechtsWert: string): string {
-  const lagen = ruestungLagenStats(character, gruppe.rsGruppe);
-  const rhSumme = lagen.reduce((sum, l) => sum + l.rh, 0);
-  const rsSumme = lagen.reduce((sum, l) => sum + l.rs, 0);
-  const lagenZeilen = lagen.map((l) => `
-    <tr>
-      <td>Lage ${l.lage}</td>
-      <td>${escapeHtml(l.name ?? '–')}</td>
-      <td>${l.rh}</td>
-      <td>${l.rs}</td>
-    </tr>`).join('');
-  return `
-    <div class="kampf-tz-row">
-      <details class="kampf-tz-details">
-        <summary class="kampf-tz-summary">
-          <span class="kampf-tz-name">${escapeHtml(gruppe.label)}</span>
-          <span class="kampf-tz-rh">${rhSumme}</span>
-          <span class="kampf-tz-rs">${rsSumme}</span>
-          <span class="kampf-tz-le">${leText(sheet, gruppe.leReferenz)}</span>
-        </summary>
-        <table class="kampf-tz-lagen">${lagenZeilen}</table>
-      </details>
-      <div class="kampf-tz-rechts">
-        <span class="kampf-tz-rechts-label">${escapeHtml(gruppe.rechtsLabel)}</span>
-        <span class="kampf-tz-rechts-wert">${rechtsWert}</span>
-      </div>
-    </div>`;
-}
-
-/** RHg/RBE sind KEINE eigenen Regelwerk-Referenzen (siehe engine/rules.ts's
- *  computeGewichtsbelastungRbe) - hier direkt ueber dieselben Bausteine nachgerechnet, statt nur
- *  ueber die davon abgeleitete "gewichtsbelastung" (=MAX(0;RBE)) zu gehen, da das Mockup den
- *  RBE-Wert separat von RHg zeigen will. RBE selbst ist per computeRbe() bereits auf 0 nach unten
- *  begrenzt (Regelkorrektur Nutzer 2026-07-22), das nachtraegliche Aufrunden hier bleibt. */
-function renderKampfLeRs(sheet: ComputedSheet, character: CharacterState): string {
-  const charakterwerte = sheet.byKategorie['Charakterwerte'] ?? [];
-  const values = makeValueSource(character);
-  const rhg = values.getRhGesamt?.() ?? 0;
-  const rbeRoh = computeRbe(rhg, values.getWert('eig_k_konstitution'), values.getWert('eig_k_staerke'), values.getWert('sf_ruestungsmanoever'));
-  // Nutzer 2026-07-19: RBE immer aufrunden - gleiche "aufgerundet" (vom Nullpunkt weg)-Konvention
-  // wie fuer alle anderen berechneten Werte im Regelwerk (siehe engine/rules.ts's
-  // applyRoundingRule), hier nur nachgeholt, da RBE selbst keine Regelwerk-Referenz ist.
-  const rbe = aufrunden(rbeRoh, 0);
-
-  const rechtsWerte: Record<string, string> = {
-    kopf: formatValue(findRule(charakterwerte, 'gesundheit')?.computedValue),
-    torso: formatValue(findRule(charakterwerte, 'trefferschwelle')?.computedValue),
-    unterleib: formatValue(findRule(charakterwerte, 'selbstbeherrschung')?.computedValue),
-    arme: formatValue(rhg),
-    beine: formatValue(rbe),
-  };
-
-  return `
-    <h3 class="bogen-section-heading">Lebensenergie &amp; Rüstungsschutz</h3>
-    <div class="kampf-tz-tabelle">
-      <div class="kampf-tz-row kampf-tz-kopfzeile">
-        <div class="kampf-tz-summary">
-          <span class="kampf-tz-name">Trefferzone</span>
-          <span class="kampf-tz-rh">RH</span>
-          <span class="kampf-tz-rs">RS</span>
-          <span class="kampf-tz-le">LE</span>
-        </div>
-        <div class="kampf-tz-rechts-spacer"></div>
-      </div>
-      ${KAMPF_TZ_GRUPPEN.map((g) => renderKampfTzGruppe(g, sheet, character, rechtsWerte[g.key])).join('')}
-    </div>`;
 }
 
 /** Read-only Spiegelung des Kampf-Tabs (Nutzer-Mockup "S04 Kampfseite", 2026-07-20): dieselben

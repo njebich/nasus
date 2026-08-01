@@ -139,7 +139,7 @@ function buildRows(sheet: ComputedSheet): Row[] {
     });
 }
 
-function renderRow(r: Row, sheet: ComputedSheet): string {
+function renderRow(r: Row, sheet: ComputedSheet, readOnly = false): string {
   const { referenz, name, currentValue, unlocked } = r;
   const eigBon = getEigBonusValue(sheet, r.eigBonusReferenz);
   const normaleProbe = currentValue + (eigBon?.value ?? 0) + getAttAura(sheet) + getAttMagie(sheet);
@@ -161,10 +161,10 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
   return `
     <tr class="${rowClass}" data-referenz="${referenz}">
       <td class="ki-taw-cell">
-        <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
-        <span class="kampf-pool-value">${currentValue}</span>
-        <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
-        <span class="stat-cost stat-cost-click">${costLabel}</span>
+        ${readOnly ? '' : `<button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>`}
+        <span class="kampf-pool-value numeric-field-output numeric-field-two">${currentValue}</span>
+        ${readOnly ? '' : `<button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
+        <span class="stat-cost stat-cost-click">${costLabel}</span>`}
       </td>
       <td${probeTooltip}>${probe}</td>
       <td class="ki-name-cell"${tooltipAttr(detail?.wirkung)}>${escapeHtml(name)}</td>
@@ -183,8 +183,9 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
     </tr>`;
 }
 
-export function renderPsiView(container: HTMLElement, sheet: ComputedSheet, onChange: OnValueChange): void {
+function renderPsiContent(container: HTMLElement, sheet: ComputedSheet, onChange?: OnValueChange): void {
   const rows = buildRows(sheet);
+  const readOnly = onChange === undefined;
 
   container.innerHTML = `
     ${renderInfoBlock()}
@@ -195,10 +196,11 @@ export function renderPsiView(container: HTMLElement, sheet: ComputedSheet, onCh
           <th>ST.1</th><th>ST.2</th><th>ST.3</th><th>ST.4</th><th>ST.5</th><th>ST.6</th><th>ST.7</th>
           <th>RW</th><th>WD</th><th>ED</th><th>MpZ</th>
         </tr></thead>
-        <tbody>${rows.map((r) => renderRow(r, sheet)).join('')}</tbody>
+        <tbody>${rows.map((r) => renderRow(r, sheet, readOnly)).join('')}</tbody>
       </table>
     </div>`;
 
+  if (!onChange) return;
   container.querySelectorAll<HTMLTableRowElement>('tr[data-referenz]').forEach((tr) => {
     const referenz = tr.dataset.referenz!;
     const row = rows.find((r) => r.referenz === referenz);
@@ -213,4 +215,12 @@ export function renderPsiView(container: HTMLElement, sheet: ComputedSheet, onCh
       withScrollAnchor(rowSelector, () => onChange(referenz, Math.max(0, row.currentValue - 1)));
     });
   });
+}
+
+export function renderPsiView(container: HTMLElement, sheet: ComputedSheet, onChange: OnValueChange): void {
+  renderPsiContent(container, sheet, onChange);
+}
+
+export function renderReadOnlyPsiView(container: HTMLElement, sheet: ComputedSheet): void {
+  renderPsiContent(container, sheet);
 }

@@ -64,6 +64,9 @@ export interface AusruestungCallbacks {
   onRemoveEquipment: (equipmentId: string) => void;
 }
 
+export type KaufKategorie = 'Rüstung' | 'Schilde' | 'Waffen' | 'Bögen' | 'Armbrüste'
+  | 'Feuerwaffen' | 'Alchemika' | 'Preisliste' | 'Artefakte';
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -167,16 +170,6 @@ const slotPicker = new Map<string, { basisSourceRow: number; verarbeitungSourceR
  *  Wechsel, Ausruesten, ...) faelschlich wieder zu. */
 const openGruppen = new Set<RsGruppe>();
 
-/** Welche Oberpunkte (Mein Inventar/Ruestung/Schilde/Waffen/Bögen/Armbrüste/Feuerwaffen/...) aufgeklappt
- *  sind (Nutzer 2026-07-18: "jeden oberpunkt ... collapsible haben, damit die tabelle nicht so
- *  lang ist") - alle standardmaessig zu, gleiches Persistenz-Muster wie openGruppen oben. */
-const TOP_SECTIONS = [
-  'inventar', 'ruestung', 'schilde', 'waffen', 'boegen', 'armbrueste', 'feuerwaffen',
-  'alchemika', 'preisliste', 'artefakte',
-] as const;
-type TopSection = (typeof TOP_SECTIONS)[number];
-const openTopSections = new Set<TopSection>();
-
 /** "Bestehenden Charakter erstellen"-Modus (Nutzer 2026-07-24): deaktiviert alle Verfuegbarkeit-
  *  Kaufsperren-Anzeigen (gesperrt-Buttons) analog zur Mutation-Gate-Abschaltung in
  *  characterMutations.ts - modul-globaler Renderer-Zustand wie openGruppen/alchemikaQty etc.,
@@ -185,7 +178,7 @@ let bestehenderCharakterMode = false;
 
 /** Alchemika-Katalog gruppiert nach Kategorie (Gifte/Heiltraenke/Kampftraenke/Parfum/
  *  Zustandstraenke), collapsible je Kategorie (Nutzer 2026-07-19: "Ausgabe collapsible nach
- *  Kategorie") - gleiches Aufklapp-Persistenz-Muster wie openGruppen/openTopSections. */
+ *  Kategorie") - gleiches Aufklapp-Persistenz-Muster wie openGruppen. */
 const ALCHEMIKA_KATEGORIEN = [...new Set(ALCHEMIKA.map((r) => r.kategorie))];
 const openAlchemikaKategorien = new Set<string>();
 
@@ -718,11 +711,27 @@ function renderMunitionGruppe(typ: 'pfeile' | 'bolzen', label: string): string {
     </div>`;
 }
 
-function renderInventar(character: CharacterState): string {
-  if (character.equipment.length === 0) {
-    return '<p class="inventar-empty">Noch nichts gekauft.</p>';
+function equipmentInKategorie(entry: CharacterState['equipment'][number], category: KaufKategorie): boolean {
+  if (category === 'Schilde') return entry.family === 'shield';
+  if (category === 'Waffen') return entry.family === 'weapon';
+  if (category === 'Bögen') return (entry.family === 'fernkampfwaffe' && entry.baseTable === 'boegen')
+    || (entry.family === 'ammo' && entry.baseTable === 'pfeile');
+  if (category === 'Armbrüste') return (entry.family === 'fernkampfwaffe' && entry.baseTable === 'armbrust')
+    || (entry.family === 'ammo' && entry.baseTable === 'bolzen');
+  if (category === 'Feuerwaffen') return entry.family === 'feuerwaffe'
+    || (entry.family === 'ammo' && entry.baseTable === 'feuerwaffen-munition');
+  if (category === 'Alchemika') return entry.family === 'alchemika';
+  if (category === 'Preisliste') return entry.family === 'preisliste';
+  if (category === 'Artefakte') return entry.family === 'artefakt';
+  return false;
+}
+
+function renderInventar(character: CharacterState, category: KaufKategorie): string {
+  const equipment = character.equipment.filter((entry) => equipmentInKategorie(entry, category));
+  if (equipment.length === 0) {
+    return '<p class="inventar-empty">In dieser Kategorie noch nichts gekauft.</p>';
   }
-  return character.equipment.map((e) => {
+  return equipment.map((e) => {
     let invalidReason = e.invalidReason;
     if (!invalidReason && (e.family === 'weapon' || e.family === 'shield') && !MELEE_WEAPON_BY_SOURCE_ROW.has(e.baseId)) {
       invalidReason = `Ungültige Waffe: Tabelle '${e.baseTable}', sourceRow ${e.baseId}, `
@@ -813,24 +822,12 @@ function renderInventar(character: CharacterState): string {
   }).join('');
 }
 
-/** Wrappt einen Oberpunkt in ein eigenes <details>, damit die insgesamt sehr lange Tabelle nur
- *  die gerade gewuenschten Abschnitte zeigt (Nutzer 2026-07-18). Kein Grid/Flex-Elternelement
- *  hier (view-container ist ein einfaches <main>), daher ist der sonstige Chromium-<details>-
- *  in-Grid-Fix (siehe artefakt-card) nicht noetig. */
-function renderTopSection(section: TopSection, heading: string, countLabel: string | undefined, bodyHtml: string): string {
-  const openAttr = openTopSections.has(section) ? ' open' : '';
-  return `
-    <details class="ausruestung-section" data-section="${section}"${openAttr}>
-      <summary>${heading}${countLabel ? ` <span class="stat-group-count">(${countLabel})</span>` : ''}</summary>
-      ${bodyHtml}
-    </details>`;
-}
-
 export function renderAusruestungView(
   container: HTMLElement,
   sheet: ComputedSheet,
   character: CharacterState,
   callbacks: AusruestungCallbacks,
+  category: KaufKategorie,
 ): void {
   bestehenderCharakterMode = character.bestehenderCharakter ?? false;
   const filteredPreisliste = PREISLISTE.filter((r) => r.art === selectedArt)
@@ -872,11 +869,6 @@ export function renderAusruestungView(
     if (details.open) openGruppen.add(gruppe);
     else openGruppen.delete(gruppe);
   });
-  container.querySelectorAll<HTMLDetailsElement>('.ausruestung-section[data-section]').forEach((details) => {
-    const section = details.dataset.section as TopSection;
-    if (details.open) openTopSections.add(section);
-    else openTopSections.delete(section);
-  });
   container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-alchemika-kategorie]').forEach((details) => {
     const kategorie = details.dataset.alchemikaKategorie!;
     if (details.open) openAlchemikaKategorien.add(kategorie);
@@ -893,93 +885,30 @@ export function renderAusruestungView(
     else openMunitionGruppen.delete(typ);
   });
 
-  container.innerHTML = `
-    ${renderTopSection('inventar', 'Mein Inventar', undefined, `
-      <div class="inventar-category">${renderInventar(character)}</div>
-    `)}
-
-    ${renderTopSection('ruestung', 'Rüstung', undefined, `
-      <div class="stat-category">${RS_GRUPPEN.map(({ gruppe, label }) => renderRuestungGruppe(gruppe, label, character)).join('')}</div>
-    `)}
-
-    ${renderTopSection('schilde', 'Schilde', `${filteredShields.length} Einträge`, `
-      <div class="ausruestung-filters">
-        <input type="text" id="schilde-search" placeholder="Suche..." value="${escapeHtml(searchSchilde)}" />
-      </div>
-      ${filteredShields.length === 0 && needleSchilde
-    ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchSchilde)}".</p>`
-    : `<div class="ausruestung-category">${filteredShields.map((row) => renderShieldRow(row, character)).join('')}</div>`}
-    `)}
-
-    ${renderTopSection('waffen', 'Waffen', `${filteredWeapons.length} Einträge`, `
-      <div class="ausruestung-filters">
-        <select id="weapon-hauptfertigkeit-select">
-          ${WEAPON_HAUPTFERTIGKEITEN.map((h) => `<option value="${escapeHtml(h)}" ${h === selectedHauptfertigkeit ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}
-        </select>
-        <input type="text" id="waffen-search" placeholder="Suche..." value="${escapeHtml(searchWaffen)}" />
-      </div>
-      ${filteredWeapons.length === 0 && needleWaffen
-    ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchWaffen)}".</p>`
-    : `<div class="ausruestung-category">${filteredWeapons.map((row) => renderWeaponRow(row, character)).join('')}</div>`}
-    `)}
-
-    ${renderTopSection('boegen', 'Bögen', `${filteredBoegen.length} Einträge`, `
-      <div class="ausruestung-filters">
-        <input type="text" id="boegen-search" placeholder="Suche..." value="${escapeHtml(searchBoegen)}" />
-      </div>
-      ${renderMunitionGruppe('pfeile', 'Pfeile')}
-      ${filteredBoegen.length === 0 && needleBoegen
-    ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchBoegen)}".</p>`
-    : `<div class="stat-category">${renderFernkampfVolksgruppen('boegen', filteredBoegen, (row) => renderFernkampfwaffeRow('boegen', row), !!needleBoegen)}</div>`}
-    `)}
-
-    ${renderTopSection('armbrueste', 'Armbrüste', `${filteredArmbrust.length} Einträge`, `
-      <div class="ausruestung-filters">
-        <input type="text" id="armbrueste-search" placeholder="Suche..." value="${escapeHtml(searchArmbrueste)}" />
-      </div>
-      ${renderMunitionGruppe('bolzen', 'Bolzen')}
-      ${filteredArmbrust.length === 0 && needleArmbrueste
-    ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchArmbrueste)}".</p>`
-    : `<div class="stat-category">${renderFernkampfVolksgruppen('armbrust', filteredArmbrust, (row) => renderFernkampfwaffeRow('armbrust', row), !!needleArmbrueste)}</div>`}
-    `)}
-
-    ${renderTopSection('feuerwaffen', 'Feuerwaffen', `${filteredFeuerwaffen.length} Einträge`, `
-      <div class="ausruestung-filters">
-        <input type="text" id="feuerwaffen-search" placeholder="Suche..." value="${escapeHtml(searchFeuerwaffen)}" />
-      </div>
-      ${filteredFeuerwaffen.length === 0 && needleFeuerwaffen
-    ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchFeuerwaffen)}".</p>`
-    : `<div class="stat-category">${renderFernkampfVolksgruppen('feuerwaffen', filteredFeuerwaffen, renderFeuerwaffeRow, !!needleFeuerwaffen)}</div>`}
-    `)}
-
-    ${renderTopSection('alchemika', 'Alchemika', `${alchemikaMatchCount} Einträge`, `
-      <div class="ausruestung-filters">
-        <input type="text" id="alchemika-search" placeholder="Suche..." value="${escapeHtml(searchAlchemika)}" />
-      </div>
-      ${alchemikaMatchCount === 0 && needleAlchemika
-    ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchAlchemika)}".</p>`
-    : `<div class="stat-category">${ALCHEMIKA_KATEGORIEN.map((k) => renderAlchemikaKategorie(k, needleAlchemika)).join('')}</div>`}
-    `)}
-
-    ${renderTopSection('preisliste', 'Preisliste', `${filteredPreisliste.length} Einträge`, `
-      <div class="ausruestung-filters">
-        <select id="ausruestung-art-select">
-          ${PREISLISTE_ARTEN.map((a) => `<option value="${escapeHtml(a)}" ${a === selectedArt ? 'selected' : ''}>${escapeHtml(a)}</option>`).join('')}
-        </select>
-        <input type="text" id="ausruestung-search" placeholder="Suche..." value="${escapeHtml(searchText)}" />
-      </div>
-      <div class="ausruestung-category">${filteredPreisliste.map(renderPreislisteRow).join('')}</div>
-    `)}
-
-    ${renderTopSection('artefakte', 'Artefakte', `${filteredArtefakte.length} Einträge`, `
-      <div class="ausruestung-filters">
-        <input type="text" id="artefakte-search" placeholder="Suche..." value="${escapeHtml(searchArtefakte)}" />
-      </div>
-      ${filteredArtefakte.length === 0 && needleArtefakte
-    ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchArtefakte)}".</p>`
-    : `<div class="artefakt-category">${filteredArtefakte.map((row) => renderArtefaktRow(row, character)).join('')}</div>`}
-    `)}
-  `;
+  const ownedEquipment = category === 'Rüstung' ? '' : `
+    <details class="ausruestung-section ausruestung-owned-in-category">
+      <summary>Besitz in dieser Kategorie</summary>
+      <div class="inventar-category">${renderInventar(character, category)}</div>
+    </details>`;
+  const categoryHtml: Record<KaufKategorie, string> = {
+    'Rüstung': `<div class="stat-category">${RS_GRUPPEN.map(({ gruppe, label }) => renderRuestungGruppe(gruppe, label, character)).join('')}</div>`,
+    'Schilde': `<div class="ausruestung-filters"><input type="text" id="schilde-search" placeholder="Suche..." value="${escapeHtml(searchSchilde)}" /></div>
+      ${filteredShields.length === 0 && needleSchilde ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchSchilde)}".</p>` : `<div class="ausruestung-category">${filteredShields.map((row) => renderShieldRow(row, character)).join('')}</div>`}`,
+    'Waffen': `<div class="ausruestung-filters"><select id="weapon-hauptfertigkeit-select">${WEAPON_HAUPTFERTIGKEITEN.map((h) => `<option value="${escapeHtml(h)}" ${h === selectedHauptfertigkeit ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}</select><input type="text" id="waffen-search" placeholder="Suche..." value="${escapeHtml(searchWaffen)}" /></div>
+      ${filteredWeapons.length === 0 && needleWaffen ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchWaffen)}".</p>` : `<div class="ausruestung-category">${filteredWeapons.map((row) => renderWeaponRow(row, character)).join('')}</div>`}`,
+    'Bögen': `<div class="ausruestung-filters"><input type="text" id="boegen-search" placeholder="Suche..." value="${escapeHtml(searchBoegen)}" /></div>${renderMunitionGruppe('pfeile', 'Pfeile')}
+      ${filteredBoegen.length === 0 && needleBoegen ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchBoegen)}".</p>` : `<div class="stat-category">${renderFernkampfVolksgruppen('boegen', filteredBoegen, (row) => renderFernkampfwaffeRow('boegen', row), !!needleBoegen)}</div>`}`,
+    'Armbrüste': `<div class="ausruestung-filters"><input type="text" id="armbrueste-search" placeholder="Suche..." value="${escapeHtml(searchArmbrueste)}" /></div>${renderMunitionGruppe('bolzen', 'Bolzen')}
+      ${filteredArmbrust.length === 0 && needleArmbrueste ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchArmbrueste)}".</p>` : `<div class="stat-category">${renderFernkampfVolksgruppen('armbrust', filteredArmbrust, (row) => renderFernkampfwaffeRow('armbrust', row), !!needleArmbrueste)}</div>`}`,
+    'Feuerwaffen': `<div class="ausruestung-filters"><input type="text" id="feuerwaffen-search" placeholder="Suche..." value="${escapeHtml(searchFeuerwaffen)}" /></div>
+      ${filteredFeuerwaffen.length === 0 && needleFeuerwaffen ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchFeuerwaffen)}".</p>` : `<div class="stat-category">${renderFernkampfVolksgruppen('feuerwaffen', filteredFeuerwaffen, renderFeuerwaffeRow, !!needleFeuerwaffen)}</div>`}`,
+    'Alchemika': `<div class="ausruestung-filters"><input type="text" id="alchemika-search" placeholder="Suche..." value="${escapeHtml(searchAlchemika)}" /></div>
+      ${alchemikaMatchCount === 0 && needleAlchemika ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchAlchemika)}".</p>` : `<div class="stat-category">${ALCHEMIKA_KATEGORIEN.map((k) => renderAlchemikaKategorie(k, needleAlchemika)).join('')}</div>`}`,
+    'Preisliste': `<div class="ausruestung-filters"><select id="ausruestung-art-select">${PREISLISTE_ARTEN.map((a) => `<option value="${escapeHtml(a)}" ${a === selectedArt ? 'selected' : ''}>${escapeHtml(a)}</option>`).join('')}</select><input type="text" id="ausruestung-search" placeholder="Suche..." value="${escapeHtml(searchText)}" /></div><div class="ausruestung-category">${filteredPreisliste.map(renderPreislisteRow).join('')}</div>`,
+    'Artefakte': `<div class="ausruestung-filters"><input type="text" id="artefakte-search" placeholder="Suche..." value="${escapeHtml(searchArtefakte)}" /></div>
+      ${filteredArtefakte.length === 0 && needleArtefakte ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchArtefakte)}".</p>` : `<div class="artefakt-category">${filteredArtefakte.map((row) => renderArtefaktRow(row, character)).join('')}</div>`}`,
+  };
+  container.innerHTML = `<section class="ausruestung-tab-view"><h2>${category}</h2>${ownedEquipment}${categoryHtml[category]}</section>`;
 
   if (focusedSearchId) {
     const el = document.getElementById(focusedSearchId);
@@ -992,43 +921,43 @@ export function renderAusruestungView(
 
   document.getElementById('ausruestung-art-select')?.addEventListener('change', (e) => {
     selectedArt = (e.target as HTMLSelectElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('ausruestung-search')?.addEventListener('input', (e) => {
     searchText = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('weapon-hauptfertigkeit-select')?.addEventListener('change', (e) => {
     selectedHauptfertigkeit = (e.target as HTMLSelectElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('waffen-search')?.addEventListener('input', (e) => {
     searchWaffen = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('schilde-search')?.addEventListener('input', (e) => {
     searchSchilde = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('boegen-search')?.addEventListener('input', (e) => {
     searchBoegen = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('armbrueste-search')?.addEventListener('input', (e) => {
     searchArmbrueste = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('feuerwaffen-search')?.addEventListener('input', (e) => {
     searchFeuerwaffen = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('alchemika-search')?.addEventListener('input', (e) => {
     searchAlchemika = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   document.getElementById('artefakte-search')?.addEventListener('input', (e) => {
     searchArtefakte = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   });
   // Liest die aktuell angezeigten Werte aller 3 Dropdowns einer Slot-Zeile aus dem DOM, damit
   // ein einzelnes "change" (z.B. nur Verarbeitung) die anderen beiden nicht auf Zeile-0 zuruecksetzt.
@@ -1048,7 +977,7 @@ export function renderAusruestungView(
       anpassungSourceRow: readSelect('ruestung-anpassung-select', RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0),
       ...patch,
     });
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   }
   container.querySelectorAll<HTMLSelectElement>('.ruestung-basis-select').forEach((sel) => {
     sel.addEventListener('change', () => updateSlotPicker(sel.dataset.slot!, { basisSourceRow: Number(sel.value) }));
@@ -1128,7 +1057,7 @@ export function renderAusruestungView(
       bespannungSourceRow: readSelect('schild-bespannung-select'),
       ...patch,
     });
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   }
   container.querySelectorAll<HTMLSelectElement>('.schild-material-select').forEach((sel) => {
     sel.addEventListener('change', () => updateShieldPicker(Number(sel.dataset.shield), { materialSourceRow: Number(sel.value) }));
@@ -1164,7 +1093,7 @@ export function renderAusruestungView(
       schaftmaterialSourceRow: readSelect('waffe-schaftmaterial-select'),
       ...patch,
     });
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   }
   container.querySelectorAll<HTMLSelectElement>('.waffe-material-select').forEach((sel) => {
     sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { materialSourceRow: Number(sel.value) }));
@@ -1214,7 +1143,7 @@ export function renderAusruestungView(
       anpassungSourceRow: read('feuerwaffe-anpassung-select'),
       ...patch,
     });
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   }
   container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-verarbeitung-select').forEach((sel) => {
     sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { verarbeitungSourceRow: Number(sel.value) }));
@@ -1233,7 +1162,7 @@ export function renderAusruestungView(
   container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-munition-qty').forEach((select) => {
     select.addEventListener('change', () => {
       feuerwaffenMunitionQty.set(Number(select.dataset.feuerwaffe), Number(select.value));
-      renderAusruestungView(container, sheet, character, callbacks);
+      renderAusruestungView(container, sheet, character, callbacks, category);
     });
   });
   container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-feuerwaffen-munition').forEach((btn) => {
@@ -1253,7 +1182,7 @@ export function renderAusruestungView(
       modifikatorSourceRow: modValue === '' ? null : Number(modValue),
       quantity: Math.max(1, Math.floor(Number(row?.querySelector<HTMLSelectElement>('.munition-qty')?.value ?? '1'))),
     });
-    renderAusruestungView(container, sheet, character, callbacks);
+    renderAusruestungView(container, sheet, character, callbacks, category);
   }
   container.querySelectorAll<HTMLSelectElement>('.munition-mod-select').forEach((sel) => {
     sel.addEventListener('change', () => {

@@ -134,12 +134,14 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.app-navigation {
+  margin: 0.75rem 0;
+}
+
 .tab-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
-  border-bottom: 1px solid #8884;
-  margin-bottom: 0.75rem;
 }
 
 .tab-btn {
@@ -151,9 +153,94 @@ body {
   font: inherit;
 }
 
-.tab-btn[aria-current='page'] {
+.tab-btn[aria-selected='true'] {
   border-bottom-color: currentColor;
   font-weight: 600;
+}
+
+.main-tab-nav {
+  gap: 0.35rem;
+  border-bottom: 2px solid #8888;
+}
+
+.main-tab-btn {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-radius: 6px 6px 0 0;
+}
+
+.main-tab-btn[aria-selected='true'] {
+  border-color: #8888;
+  border-bottom-color: currentColor;
+  background: #8882;
+}
+
+.sub-tab-nav {
+  gap: 0.2rem;
+  padding: 0.45rem 0.35rem 0.35rem;
+  border-bottom: 1px solid #8885;
+  background: #8881;
+}
+
+.sub-tab-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+}
+
+.sub-tab-btn[aria-selected='true'] {
+  background: #8883;
+}
+
+.tab-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.category-route-view {
+  padding: 0.75rem 1rem;
+}
+
+.category-route-view > h2 {
+  margin-block: 0 0.75rem;
+}
+
+.category-route-section + .category-route-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #8884;
+}
+
+.category-route-section-heading {
+  margin-block: 0 0.65rem;
+}
+
+.grunddaten-view {
+  padding: 0.75rem 1rem;
+  border: 1px solid #8884;
+  border-radius: 6px;
+  background: #8881;
+}
+
+.grunddaten-view h2 {
+  margin-block: 0 0.4rem;
+}
+
+@media (max-width: 700px) {
+  .character-bar,
+  .budget-bar {
+    flex-wrap: wrap;
+  }
+
+  .sub-tab-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .sub-tab-btn {
+    flex: 0 0 auto;
+  }
 }
 
 /* Karteikarten-Optik, aber Listenanordnung (Nutzer 2026-07-17: "innerhalb der Karten, zurueck
@@ -193,13 +280,55 @@ body {
 }
 
 .stat-value {
-  width: 5ch;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font: inherit;
   border: 1px solid #8888;
   border-radius: 4px;
   padding: 0.1rem 0.2rem;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+/* Zahlenfelder werden nach ihrem moeglichen Wertebereich dimensioniert, nicht nach dem gerade
+   sichtbaren Wert. Inputs erhalten zusaetzlich Platz fuer die nativen Number-Spinner. */
+.numeric-field-one {
+  --numeric-field-chars: 1;
+}
+
+.numeric-field-two {
+  --numeric-field-chars: 2;
+}
+
+.numeric-field-signed-two {
+  --numeric-field-chars: 3;
+}
+
+.numeric-field-signed-five {
+  --numeric-field-chars: 6;
+}
+
+.numeric-field-formatted-five {
+  /* -99.999,999: Vorzeichen + 5 Stellen + Tausenderpunkt + 3 Nachkommastellen. */
+  --numeric-field-chars: 11;
+}
+
+input.numeric-field-one,
+input.numeric-field-two,
+input.numeric-field-signed-two,
+input.numeric-field-signed-five,
+input.numeric-field-formatted-five {
+  width: calc(var(--numeric-field-chars) * 1ch + 2.4rem);
+  min-width: calc(var(--numeric-field-chars) * 1ch + 2.4rem);
+}
+
+.numeric-field-output {
+  display: inline-block;
+  width: calc(var(--numeric-field-chars) * 1ch);
+  min-width: calc(var(--numeric-field-chars) * 1ch);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-cost {
@@ -1159,8 +1288,11 @@ body {
 }
 
 .kampf-pool-value {
-  min-width: 1.4rem;
+  width: 2ch;
+  min-width: 2ch;
   display: inline-block;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .kampf-row-allocation-dirty {

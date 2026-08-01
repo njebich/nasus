@@ -11,17 +11,18 @@ import {
   setGrundfertigkeitPick, addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite,
   BudgetError, MutationError,
 } from './state/characterMutations';
-import { computeSheet, makeValueSource, SSK_MINDEST_SP, type ComputedSheet } from './engine/characterSheet';
+import { computeSheet, makeValueSource, SSK_MINDEST_SP } from './engine/characterSheet';
 import { formatDublonenNumber } from './utils/format';
-import { renderCategoryView } from './views/categoryView';
+import { renderCategoryRouteView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
-import { renderCharakterheader } from './views/charakterheader';
+import { renderReadOnlyBesitzView } from './views/besitz';
+import { renderGrunddatenView } from './views/charakterheader';
 import { renderCharakterbogen } from './views/charakterbogen';
 import { renderKampfView } from './views/kampf';
-import { renderKiView } from './views/ki';
-import { renderSpruchmagieView } from './views/spruchmagie';
-import { renderPsiView } from './views/psi';
+import { renderKiView, renderReadOnlyKiView } from './views/ki';
+import { renderReadOnlySpruchmagieView, renderSpruchmagieView } from './views/spruchmagie';
+import { renderPsiView, renderReadOnlyPsiView } from './views/psi';
 import { renderGeweihteView } from './views/geweihte';
 import { isGeweihterTalentSelectedInSheet } from './engine/geweihte';
 import { initTooltips, tooltipAttr } from './views/tooltip';
@@ -36,6 +37,11 @@ import {
   createOrt, formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
 } from './data/orte';
 import { getReligionen, addReligion, addSekte, formatReligionLabel, combineReligionSekte } from './state/religionStore';
+import {
+  DEFAULT_NAVIGATION, getActiveNavigationTabId, getViewRoute, getVisibleSubTabs, normalizeNavigation,
+  type MainTab, type NavigationState, type SubTab,
+} from './navigation';
+import { renderNavigationMarkup } from './navigationMarkup';
 
 declare const __LAST_UPDATED_AT__: string;
 
@@ -57,28 +63,12 @@ function formatLastUpdated(isoTimestamp: string): string {
 
 const lastUpdated = formatLastUpdated(__LAST_UPDATED_AT__);
 
-const TABS = [
-  'Charakterbogen',
-  'Eigenschaft', 'Attribute', 'Charakterwerte', 'Grundfertigkeit', 'Sonderfertigkeit',
-  'Nahkampf', 'Fernkampf', 'Kampf', 'Bewegung', 'Gewichtsbelastung', 'WHK',
-  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung', 'KI', 'Spruchmagie', 'Psi', 'Geweihte',
-] as const;
-type Tab = (typeof TABS)[number];
-const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und Nachteile': false };
-
-// Geweihte-Tab bleibt ausgeblendet, bis ein Geweihte-Gate-Talent gewaehlt ist (Nutzer 2026-07-22,
-// "rang 0" = "hiding of the tab Geweihte") - anders als alle anderen Tabs, die immer sichtbar sind.
-function isTabVisible(tab: Tab, sheet: ComputedSheet | null): boolean {
-  if (tab !== 'Geweihte') return true;
-  return sheet !== null && isGeweihterTalentSelectedInSheet(sheet);
-}
-
 // Tab-Intro-Texte aus `tooltips text.txt` (Zeilen "tab_..."): erklaeren die Kategorie als
 // Ganzes (z.B. wie Grundfertigkeiten grundsaetzlich funktionieren), gehoeren daher an den
 // Tab-Button selbst statt an eine einzelne Zeile - siehe PLAN-Tooltip-System.md Phase 2.
-const TAB_INTRO: Partial<Record<Tab, string>> = {
-  'Grundfertigkeit': 'Grundfertigkeiten werden, sofern der Meister sie für die Probe zulässt, zum Probenwert addiert. Zugelassene Grundfertigkeiten werden entweder vom Meister mit der Probe angesagt, oder wenn er eine Eigenschaftsprobe verlangt, so wird vom Spieler nachgefragt ob er eine bestimmte verwenden darf, die er als passend ansieht. Für eine Probe darf höchstens eine Grundfertigkeit verwendet werden. Der Meister kann aber auch mehr als eine Grundfertigkeit zulassen, dann darf der Charakter eine davon auswählen. Der einzige Unterschied zwischen körperlichen und geistigen Grundfertigkeiten ist, dass der Meister dadurch einen Anhaltspunkt hat, ob eine Grundfertigkeitsprobe durch GBE behindert werden sollte: In der Regel bei körperlichen 1-fach und bei geistigen nicht. Durch Kampf oder andere Ereignisse erhaltene BE gilt für alle Grundfertigkeiten gleich.',
-  'Sonderfertigkeit': 'Sonderfertigkeiten werden in der Regel nicht mit eigenen Proben abgefragt; sie sind entweder in Formeln vertreten oder geben Boni auf Tabellenproben.',
+const TAB_INTRO: Partial<Record<SubTab, string>> = {
+  'Grundfertigkeiten': 'Grundfertigkeiten werden, sofern der Meister sie für die Probe zulässt, zum Probenwert addiert. Zugelassene Grundfertigkeiten werden entweder vom Meister mit der Probe angesagt, oder wenn er eine Eigenschaftsprobe verlangt, so wird vom Spieler nachgefragt ob er eine bestimmte verwenden darf, die er als passend ansieht. Für eine Probe darf höchstens eine Grundfertigkeit verwendet werden. Der Meister kann aber auch mehr als eine Grundfertigkeit zulassen, dann darf der Charakter eine davon auswählen. Der einzige Unterschied zwischen körperlichen und geistigen Grundfertigkeiten ist, dass der Meister dadurch einen Anhaltspunkt hat, ob eine Grundfertigkeitsprobe durch GBE behindert werden sollte: In der Regel bei körperlichen 1-fach und bei geistigen nicht. Durch Kampf oder andere Ereignisse erhaltene BE gilt für alle Grundfertigkeiten gleich.',
+  'Sonderfertigkeiten': 'Sonderfertigkeiten werden in der Regel nicht mit eigenen Proben abgefragt; sie sind entweder in Formeln vertreten oder geben Boni auf Tabellenproben.',
   'Geweihte': 'Zeigt Geweihtengrad, Karma-Pool-Punkte (KPP) und die verfügbaren Wunder der gewählten Religion. Die Fähigkeiten Stoßgebet/Wunder/Ritual (Probe-Basis) werden im WHK-Tab gesteigert.',
 };
 
@@ -88,14 +78,13 @@ const lastActiveId = getLastActiveCharacterId();
 let currentCharacter: CharacterState | null = lastActiveId ? loadCharacter(lastActiveId) : null;
 if (lastActiveId && !currentCharacter) setLastActiveCharacterId(null); // Charakter wurde geloescht
 let errorMessage = '';
-let activeTab: Tab = 'Eigenschaft';
+let navigationState: NavigationState = { ...DEFAULT_NAVIGATION };
 let showNewCharacterForm = false;
 /** "Bestehenden Charakter erstellen" (Nutzer 2026-07-24): zweite Auswahl neben "Neuer Charakter"
  *  im selben Formular - einziger Unterschied ist das bestehenderCharakter-Flag auf dem erzeugten
  *  Charakter, das alle Verfuegbarkeit-Kaufsperren deaktiviert (siehe characterMutations.ts). */
 let newCharacterBestehend = false;
 let confirmingDelete = false;
-let headerSectionOpen = true;
 
 function handleValueChange(referenz: string, newValue: number): void {
   if (!currentCharacter) return;
@@ -433,9 +422,11 @@ function render(): void {
   // Fuer die Formel-Impact-Liste (Plan-Phase 3, nur Eigenschaft/Attribute-Tab) - billig zu bauen
   // (reine Closures ueber currentCharacter, keine Berechnung), siehe categoryView.ts.
   const characterValues = currentCharacter ? makeValueSource(currentCharacter) : undefined;
-  // Geweihte-Tab kann durch Ab-/Umwaehlen des Gate-Talents nachtraeglich unsichtbar werden -
-  // dann auf einen immer sichtbaren Tab zurueckfallen statt eine leere Ansicht zu zeigen.
-  if (sheet && !isTabVisible(activeTab, sheet)) activeTab = 'Eigenschaft';
+  // Geweihte kann durch Ab-/Umwaehlen des Gate-Talents nachtraeglich unsichtbar werden.
+  // normalizeNavigation faellt dann innerhalb des aktiven Hauptbereichs kontrolliert zurueck.
+  const showGeweihte = sheet !== null && isGeweihterTalentSelectedInSheet(sheet);
+  navigationState = normalizeNavigation(navigationState, showGeweihte);
+  const visibleSubTabs = getVisibleSubTabs(navigationState.activeMainTab, showGeweihte);
 
   app.innerHTML = `
     <header class="app-header">
@@ -457,32 +448,27 @@ function render(): void {
           <button type="button" id="delete-confirm">Ja, löschen</button>
           <button type="button" id="delete-cancel">Abbrechen</button>
         </div>` : ''}
-      ${currentCharacter ? `
-        <details class="stat-group" id="charakterheader-details" ${headerSectionOpen ? 'open' : ''}>
-          <summary>Grunddaten</summary>
-          <div id="charakterheader"></div>
-        </details>` : ''}
       ${sheet ? `
         <div class="budget-bar">
-          <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: ${sheet.epGesamt}</span>
-          <span title="Steigerungspunkte (übrig): bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK – verbraucht ${sheet.spSpent} von ${sheet.spTotal}">SP: ${sheet.spRemaining}</span>
-          ${sheet.sskMinimumMet ? '' : `<span class="budget-invalid" title="Für einen gültigen Charakter müssen mindestens ${SSK_MINDEST_SP} SP in Sprache, Kultur und Schrift investiert sein. Muttersprache und Vaterland sind keine harten Einzelanforderungen.">SSK: ${sheet.sskSpent} / ${SSK_MINDEST_SP} SP ⚠</span>`}
-          <span title="Talentpunkte (übrig): bezahlt ausschließlich Talente, eigener Pool = 20+Stufe×5 – verbraucht ${sheet.tapSpent} von ${sheet.tapTotal}">TaP: ${sheet.tapRemaining}</span>
-          <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: ${formatDublonenNumber(sheet.dublonenBarRemaining)} bar / ${formatDublonenNumber(sheet.dublonenBankRemaining)} Bank</span>
+          <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: <span class="numeric-field-output numeric-field-signed-five">${sheet.epGesamt}</span></span>
+          <span title="Steigerungspunkte (übrig): bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK – verbraucht ${sheet.spSpent} von ${sheet.spTotal}">SP: <span class="numeric-field-output numeric-field-signed-five">${sheet.spRemaining}</span></span>
+          ${sheet.sskMinimumMet ? '' : `<span class="budget-invalid" title="Für einen gültigen Charakter müssen mindestens ${SSK_MINDEST_SP} SP in Sprache, Kultur und Schrift investiert sein. Muttersprache und Vaterland sind keine harten Einzelanforderungen.">SSK: <span class="numeric-field-output numeric-field-two">${sheet.sskSpent}</span> / ${SSK_MINDEST_SP} SP ⚠</span>`}
+          <span title="Talentpunkte (übrig): bezahlt ausschließlich Talente, eigener Pool = 20+Stufe×5 – verbraucht ${sheet.tapSpent} von ${sheet.tapTotal}">TaP: <span class="numeric-field-output numeric-field-signed-five">${sheet.tapRemaining}</span></span>
+          <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: <span class="numeric-field-output numeric-field-formatted-five">${formatDublonenNumber(sheet.dublonenBarRemaining)}</span> bar / <span class="numeric-field-output numeric-field-formatted-five">${formatDublonenNumber(sheet.dublonenBankRemaining)}</span> Bank</span>
         </div>` : ''}
       ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
-      ${currentCharacter ? `
-        <nav class="tab-nav">
-          ${TABS.filter((tab) => isTabVisible(tab, sheet)).map((tab) => `<button type="button" class="tab-btn" data-tab="${tab}"${tooltipAttr(TAB_INTRO[tab])} ${activeTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
-        </nav>` : ''}
+      ${currentCharacter ? renderNavigationMarkup(
+        navigationState, visibleSubTabs, (tab) => tooltipAttr(TAB_INTRO[tab]),
+      ) : ''}
     </header>
-    <main id="view-container"></main>
+    <main id="view-container" role="tabpanel" aria-labelledby="${currentCharacter ? getActiveNavigationTabId(navigationState) : ''}" tabindex="0"></main>
   `;
 
   document.querySelector<HTMLSelectElement>('#character-select')?.addEventListener('change', (e) => {
     const id = (e.target as HTMLSelectElement).value;
     currentCharacter = id ? loadCharacter(id) : null;
     setLastActiveCharacterId(id || null);
+    navigationState = { ...DEFAULT_NAVIGATION };
     errorMessage = '';
     confirmingDelete = false;
     render();
@@ -612,9 +598,9 @@ function render(): void {
     const startbudget = (document.querySelector<HTMLInputElement>('input[name="nc-startbudget"]:checked')!.value) as StartbudgetPreset;
     currentCharacter = createCharacter(name, header, startbudget, newCharacterBestehend);
     setLastActiveCharacterId(currentCharacter.id);
+    navigationState = { ...DEFAULT_NAVIGATION };
     showNewCharacterForm = false;
     newCharacterBestehend = false;
-    headerSectionOpen = false;
     render();
   });
 
@@ -637,27 +623,67 @@ function render(): void {
     render();
   });
 
-  document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((btn) => {
+  document.querySelectorAll<HTMLButtonElement>('.main-tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      activeTab = btn.dataset.tab as Tab;
+      navigationState = normalizeNavigation({
+        activeMainTab: btn.dataset.mainTab as MainTab,
+        activeSubTab: null,
+      }, showGeweihte);
       render();
     });
   });
 
-  if (currentCharacter) {
-    const headerContainer = document.querySelector<HTMLDivElement>('#charakterheader')!;
-    renderCharakterheader(headerContainer, currentCharacter, handleHeaderChange);
-    document.querySelector<HTMLDetailsElement>('#charakterheader-details')?.addEventListener('toggle', (e) => {
-      headerSectionOpen = (e.target as HTMLDetailsElement).open;
+  document.querySelectorAll<HTMLButtonElement>('.sub-tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      navigationState = {
+        activeMainTab: navigationState.activeMainTab,
+        activeSubTab: btn.dataset.subTab as SubTab,
+      };
+      render();
     });
-  }
+  });
+
+  document.querySelectorAll<HTMLElement>('[role="tablist"]').forEach((tabList) => {
+    tabList.addEventListener('keydown', (event) => {
+      if (!(event instanceof KeyboardEvent) || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      const tabs = Array.from(tabList.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+      const currentIndex = tabs.indexOf(document.activeElement as HTMLButtonElement);
+      if (currentIndex < 0 || tabs.length === 0) return;
+      event.preventDefault();
+      const nextIndex = event.key === 'Home' ? 0
+        : event.key === 'End' ? tabs.length - 1
+          : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      const nextTab = tabs[nextIndex];
+      if (!nextTab) return;
+      const selectedTabSelector = tabList.classList.contains('main-tab-nav')
+        ? '.main-tab-nav [role="tab"][aria-selected="true"]'
+        : '.sub-tab-nav [role="tab"][aria-selected="true"]';
+      nextTab.click();
+      document.querySelector<HTMLButtonElement>(selectedTabSelector)?.focus();
+    });
+  });
 
   if (sheet && currentCharacter) {
     const viewContainer = document.querySelector<HTMLDivElement>('#view-container')!;
-    if (activeTab === 'Charakterbogen') {
+    const route = getViewRoute(navigationState.activeMainTab, navigationState.activeSubTab);
+    if (route.kind === 'grunddaten') {
+      renderGrunddatenView(viewContainer, currentCharacter, handleHeaderChange);
+    } else if (route.kind === 'charakterbogen') {
       renderCharakterbogen(viewContainer, sheet, currentCharacter);
-    } else if (activeTab === 'Ausrüstung') {
-      renderAusruestungView(viewContainer, sheet, currentCharacter, {
+    } else if (route.kind === 'charakterbogen-spruchmagie') {
+      renderReadOnlySpruchmagieView(viewContainer, sheet);
+    } else if (route.kind === 'charakterbogen-ki') {
+      renderReadOnlyKiView(viewContainer, sheet, currentCharacter.grundfertigkeitAuswahl);
+    } else if (route.kind === 'charakterbogen-psi') {
+      renderReadOnlyPsiView(viewContainer, sheet);
+    } else if (route.kind === 'charakterbogen-geweihte') {
+      renderGeweihteView(viewContainer, sheet, currentCharacter);
+    } else if (route.kind === 'charakterbogen-inventar') {
+      renderReadOnlyBesitzView(viewContainer, currentCharacter);
+    } else if (route.kind === 'ausruestung') {
+      if (route.category === 'Besitz') {
+        renderReadOnlyBesitzView(viewContainer, currentCharacter);
+      } else renderAusruestungView(viewContainer, sheet, currentCharacter, {
         onBuyPreisliste: handleBuyPreisliste,
         onBuyArtefakt: handleBuyArtefakt,
         onEquipRuestung: handleEquipRuestung,
@@ -671,24 +697,27 @@ function render(): void {
         onBuyMunition: handleBuyMunition,
         onBuyAlchemika: handleBuyAlchemika,
         onRemoveEquipment: handleRemoveEquipment,
-      });
-    } else if (activeTab in AUSWAHL_TABS) {
-      renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle, currentCharacter.religion);
-    } else if (activeTab === 'Kampf') {
+      }, route.category);
+    } else if (route.kind === 'auswahl') {
+      renderAuswahlView(viewContainer, sheet, route.category, route.isTalent, handleToggle, currentCharacter.religion);
+    } else if (route.kind === 'kampf') {
       renderKampfView(
         viewContainer, sheet, currentCharacter, handleWaffenPoolChange,
         handleAddWaffenLoadout, handleRemoveWaffenLoadout, handleToggleWaffenLoadoutFavorite,
       );
-    } else if (activeTab === 'KI') {
+    } else if (route.kind === 'ki') {
       renderKiView(viewContainer, sheet, handleValueChange, currentCharacter.grundfertigkeitAuswahl, handleGrundfertigkeitPick);
-    } else if (activeTab === 'Spruchmagie') {
+    } else if (route.kind === 'spruchmagie') {
       renderSpruchmagieView(viewContainer, sheet, handleValueChange);
-    } else if (activeTab === 'Psi') {
+    } else if (route.kind === 'psi') {
       renderPsiView(viewContainer, sheet, handleValueChange);
-    } else if (activeTab === 'Geweihte') {
+    } else if (route.kind === 'geweihte') {
       renderGeweihteView(viewContainer, sheet, currentCharacter);
-    } else {
-      renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange, characterValues);
+    } else if (route.kind === 'category') {
+      renderCategoryRouteView(
+        viewContainer, sheet, route.title, route.categories,
+        handleValueChange, handlePoolChange, characterValues,
+      );
     }
   }
 }

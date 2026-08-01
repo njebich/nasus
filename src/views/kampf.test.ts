@@ -6,12 +6,13 @@ import {
 } from '../state/characterMutations';
 import {
   buildArmbrustBoegenRows, buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows,
-  previewWaffenPoolAllocation,
+  previewWaffenPoolAllocation, renderKampfView,
 } from './kampf';
 import { ARMBRUST, BOEGEN, BOLZEN, FEUERWAFFEN, PFEILE } from '../data/equipment/fernkampf';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { feuerwaffenStandardauswahl, composeFeuerwaffe } from '../engine/feuerwaffenComposition';
 import { computeSheet } from '../engine/characterSheet';
+import { TALENTE_KAMPFMODUL } from '../data/talenteKampfmodul';
 
 function findFeuerwaffe(name: string) {
   const row = FEUERWAFFEN.find((r) => r.name === name);
@@ -25,6 +26,67 @@ function baseCharacter() {
   character.values['dublonen_bank'] = 100000;
   return character;
 }
+
+describe('vollstaendiger Kampfbereich mit gemeinsamer LE/RS-Zustandsanzeige', () => {
+  it('stellt den identischen Zustandsblock vor alle bestehenden Kampfsektionen', () => {
+    const character = baseCharacter();
+    character.selections[TALENTE_KAMPFMODUL[0].toLowerCase()] = 1;
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+
+    expect(container.querySelector('h3')?.textContent).toBe('Lebensenergie & Rüstungsschutz');
+    expect([...container.querySelectorAll('.kampf-tz-rechts-label')].map((node) => node.textContent)).toEqual([
+      'Gesundheit', 'Trefferschwelle', 'Selbstbeherrschung', 'Rüstungshinderlichkeit', 'RBE',
+    ]);
+    const headings = [...container.querySelectorAll('h3')].map((heading) => heading.textContent);
+    expect(headings).toEqual(expect.arrayContaining([
+      'Nahkampf', 'Waffen-Loadout', 'Ausweichen / Bewegung', 'Talent-Effekte (Kampfmodul)',
+    ]));
+  });
+
+  it('behaelt geoeffnete Trefferzonen beim Neurendern nach bestaetigter Poolaenderung', () => {
+    let character = baseCharacter();
+    character = setValue(character, 'eig_g_mut', 30);
+    character = setValue(character, 'eig_k_athletik', 30);
+    character = setValue(character, 'eig_k_schnelligkeit', 30);
+    character = setValue(character, 'eig_k_staerke', 30);
+    character = setValue(character, 'nk_hiebwaffen', 10);
+    const axt = NK_WAFFEN_BASIS.find((row) => row.name === 'Axt')!;
+    const material = NK_MATERIAL.find((row) => row.name === 'Eisen')!;
+    const fertigung = NK_FERTIGUNG.find((row) => row.name === 'Gesellenarbeit')!;
+    const anpassung = NK_ANPASSUNG.find((row) => row.name === 'Von der Stange')!;
+    const schaftmaterial = NK_SCHAFTMATERIAL.find((row) => row.name === 'Standard')!;
+    character = buyWeapon(
+      character, axt.sourceRow, material.sourceRow, fertigung.sourceRow,
+      anpassung.sourceRow, schaftmaterial.sourceRow,
+    );
+
+    const container = document.createElement('div');
+    document.body.append(container);
+    const render = () => renderKampfView(
+      container, computeSheet(character), character,
+      (referenz, equipmentId, allocation) => {
+        character = setWaffenPoolAllocation(character, referenz, equipmentId, allocation);
+        render();
+      },
+      () => {}, () => {}, () => {},
+    );
+
+    try {
+      render();
+      const torso = container.querySelector<HTMLDetailsElement>('[data-kampf-tz-gruppe="torso"]')!;
+      torso.open = true;
+      const increment = container.querySelector<HTMLButtonElement>('.kampf-pool-cell .stat-inc:not([disabled])')!;
+      expect(increment).toBeTruthy();
+      increment.click();
+      container.querySelector<HTMLButtonElement>('.kampf-allocation-apply')!.click();
+
+      expect(container.querySelector<HTMLDetailsElement>('[data-kampf-tz-gruppe="torso"]')?.open).toBe(true);
+    } finally {
+      container.remove();
+    }
+  });
+});
 
 describe('buildFeuerwaffenRows', () => {
   it('zeigt eine leere Munition-Zelle, wenn keine passende Feuerwaffen-Munition besessen wird', () => {

@@ -45,5 +45,13 @@ describe('Charakterwerte-Routenansicht', () => {
     expect(container.querySelector('.category-route-section')?.getAttribute('data-category'))
       .toBe('Sprache & Kultur');
     expect(container.querySelectorAll('.category-route-section-heading')).toHaveLength(0);
+    expect([...container.querySelectorAll('.ssk-people-group > h3')].map((heading) => heading.textContent))
+      .toEqual(['Dalkini', 'Draw', 'Elfen', 'Gnome', 'Goblins', 'Indianer', 'Katzen', 'Orks', 'Trolle', 'Zentauren', 'Zwerge']);
+    expect(container.querySelectorAll('.ssk-people-group .stat-row')).toHaveLength(
+      computeSheet(character).byKategorie['Sprache & Kultur'].length,
+    );
+    const zwerge = container.querySelector('[data-ssk-volk="Zwerge"]');
+    expect([...zwerge!.querySelectorAll('.stat-label')].map((label) => label.textContent))
+      .toEqual(expect.arrayContaining(['Zwergische Kultur', 'Zwergisch', 'Zwergische Schrift']));
   });
 });

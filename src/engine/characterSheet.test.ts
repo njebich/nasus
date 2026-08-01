@@ -46,6 +46,7 @@ describe('computeSheet', () => {
 
       expect(sheet.sskSpent).toBe(90);
       expect(sheet.sskMinimumMet).toBe(true);
+      expect(sheet.sskLanguageMinimumMet).toBe(true);
     });
 
     it('markiert einen Charakter unter 90 SSK-SP als noch nicht gueltig', () => {
@@ -57,6 +58,20 @@ describe('computeSheet', () => {
 
       expect(sheet.sskSpent).toBe(75);
       expect(sheet.sskMinimumMet).toBe(false);
+    });
+
+    it('verlangt auch bei mindestens 90 SSK-SP wenigstens eine Sprache auf Stufe 1+', () => {
+      const character = createCharacter('Test');
+      character.values['ssk_kultur_zwerge'] = 4;
+      character.values['ssk_kultur_elfen'] = 4; // zusammen 110 SP, aber keine Sprache
+
+      const sheet = computeSheet(character);
+
+      expect(sheet.sskMinimumMet).toBe(true);
+      expect(sheet.sskLanguageMinimumMet).toBe(false);
+      expect(sheet.validationIssues).toContainEqual({
+        source: 'SSK › Sprachen', message: 'keine Sprache auf Stufe 1 oder höher',
+      });
     });
   });
 

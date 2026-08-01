@@ -29,6 +29,12 @@ const TAP_KATEGORIE = 'Talente';
 const SSK_KATEGORIE = 'Sprache & Kultur';
 export const SSK_MINDEST_SP = 90;
 
+export interface CharacterValidationIssue {
+  /** Bereich bzw. konkrete Regel, in der der Fehler behoben werden kann. */
+  source: string;
+  message: string;
+}
+
 export interface PoolCaps {
   gatMax: number;
   gpaMax: number;
@@ -85,6 +91,8 @@ export interface ComputedSheet {
    *  mindestens SSK_MINDEST_SP ausgegeben sein; bestimmte Stufen sind nicht vorgeschrieben. */
   sskSpent: number;
   sskMinimumMet: boolean;
+  /** Neben den 90 SSK-SP muss mindestens eine echte Sprache auf Stufe 1+ beherrscht werden. */
+  sskLanguageMinimumMet: boolean;
   tapTotal: number;
   tapSpent: number;
   tapRemaining: number;
@@ -97,6 +105,8 @@ export interface ComputedSheet {
    *  Quelle der Wahrheit fuer "ausgegeben", siehe dublonenSpent oben). */
   dublonenBarRemaining: number;
   dublonenBankRemaining: number;
+  /** Zentrale, fuer die Kopfzeilen-Warnung bestimmte Liste aller bekannten Regelverstoesse. */
+  validationIssues: CharacterValidationIssue[];
 }
 
 /** Kleinste "EP ab"-Schwelle oberhalb von epGesamt (naechste Stufe), oder undefined am Anschlag. */
@@ -343,6 +353,55 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     // z.B. bei einem ganz frischen Charakter ohne ep_gesamt. TaP bleibt dann 0.
   }
 
+  const sskLanguageMinimumMet = Object.entries(character.values)
+    .some(([referenz, value]) => referenz.toLowerCase().startsWith('ssk_sprache_') && value > 0);
+  const validationIssues: CharacterValidationIssue[] = [];
+  if (spTotal - spSpent < 0) {
+    validationIssues.push({ source: 'SP-Budget', message: `${spSpent - spTotal} SP zu viel ausgegeben` });
+  }
+  if (tapTotal - tapSpent < 0) {
+    validationIssues.push({ source: 'TaP-Budget', message: `${tapSpent - tapTotal} TaP zu viel ausgegeben` });
+  }
+  if (dublonenTotal - dublonenSpent < 0) {
+    validationIssues.push({
+      source: 'Dublonen-Budget',
+      message: `${Math.round((dublonenSpent - dublonenTotal) * 100) / 100} Dublonen zu viel ausgegeben`,
+    });
+  }
+  if (sskSpent < SSK_MINDEST_SP) {
+    validationIssues.push({
+      source: 'SSK',
+      message: `nur ${sskSpent} von mindestens ${SSK_MINDEST_SP} SP investiert`,
+    });
+  }
+  if (!sskLanguageMinimumMet) {
+    validationIssues.push({ source: 'SSK › Sprachen', message: 'keine Sprache auf Stufe 1 oder höher' });
+  }
+  for (const rows of Object.values(byKategorie)) {
+    for (const row of rows) {
+      if (row.rule.art === 'Pool' && row.poolRemaining !== undefined && row.poolRemaining < 0) {
+        validationIssues.push({
+          source: `${row.rule.kategorie} › ${row.rule.beschreibung ?? row.rule.referenz}`,
+          message: `${Math.abs(row.poolRemaining)} Poolpunkte zu viel verteilt`,
+        });
+      }
+      // Formel-/Lookup-Fehler sind technische Datenfehler. Charakterkonformität betrifft hier
+      // die vom Spieler gesetzten Werte und Auswahlen; deren Fehler werden bereits an der Zeile gezeigt.
+      if (!row.error || (row.rule.art !== 'Wert' && row.rule.art !== 'Auswahl')) continue;
+      validationIssues.push({
+        source: `${row.rule.kategorie} › ${row.rule.beschreibung ?? row.rule.referenz}`,
+        message: row.error,
+      });
+    }
+  }
+  for (const entry of character.equipment) {
+    if (!entry.invalidReason) continue;
+    validationIssues.push({
+      source: `Inventar › ${entry.displayNameSnapshot ?? entry.baseId}`,
+      message: entry.invalidReason,
+    });
+  }
+
   return {
     characterId: character.id,
     byKategorie,
@@ -353,6 +412,7 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     spRemaining: spTotal - spSpent,
     sskSpent,
     sskMinimumMet: sskSpent >= SSK_MINDEST_SP,
+    sskLanguageMinimumMet,
     tapTotal,
     tapSpent,
     tapRemaining: tapTotal - tapSpent,
@@ -361,5 +421,6 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     dublonenRemaining: dublonenTotal - dublonenSpent,
     dublonenBarRemaining,
     dublonenBankRemaining,
+    validationIssues,
   };
 }

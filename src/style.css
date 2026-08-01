@@ -120,6 +120,18 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.character-conformity-warning {
+  color: #a33;
+  cursor: help;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ssk-people-group + .ssk-people-group {
+  margin-top: 1rem;
+}
+
 .budget-invalid {
   color: #a33;
   font-weight: 700;

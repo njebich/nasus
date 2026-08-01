@@ -180,6 +180,45 @@ function renderEditableRow(r: ComputedRule, kategorie: string, maxValue?: number
     </div>`;
 }
 
+const SSK_VOLKS_GRUPPEN = [
+  { title: 'Dalkini', tokens: ['dalkini', 'dalkin'] },
+  { title: 'Draw', tokens: ['draw', 'drow'] },
+  { title: 'Elfen', tokens: ['elfen', 'elfisch'] },
+  { title: 'Gnome', tokens: ['gnome', 'gnomisch'] },
+  { title: 'Goblins', tokens: ['goblins', 'goblinisch'] },
+  { title: 'Indianer', tokens: ['indian'] },
+  { title: 'Katzen', tokens: ['katzen', 'felinisch'] },
+  { title: 'Orks', tokens: ['orks', 'orkisch'] },
+  { title: 'Trolle', tokens: ['trolle', 'trollisch'] },
+  { title: 'Zentauren', tokens: ['zentaur'] },
+  { title: 'Zwerge', tokens: ['zwerge', 'zwergisch'] },
+] as const;
+
+function sskArtRang(referenz: string): number {
+  if (referenz.startsWith('ssk_kultur_')) return 0;
+  if (referenz.startsWith('ssk_sprache_')) return 1;
+  return 2;
+}
+
+/** SSK besitzt in den Quelldaten keine Parent-Hierarchie. Deshalb ordnet diese kuratierte
+ * Zuordnung Kultur, Sprachen und Schriften jeweils ihrem spielbaren Volk zu. */
+function renderSskGroups(rows: ComputedRule[]): string {
+  return SSK_VOLKS_GRUPPEN.map(({ title, tokens }) => {
+    const matching = rows
+      .filter((row) => tokens.some((token) => row.rule.referenz.includes(token)))
+      .sort((a, b) => sskArtRang(a.rule.referenz) - sskArtRang(b.rule.referenz)
+        || (a.rule.beschreibung ?? a.rule.referenz).localeCompare(
+          b.rule.beschreibung ?? b.rule.referenz, 'de', { numeric: true },
+        ));
+    if (matching.length === 0) return '';
+    return `
+      <section class="ssk-people-group" data-ssk-volk="${title}">
+        <h3 class="stat-section-heading">${title}</h3>
+        <div class="stat-card">${matching.map((row) => renderEditableRow(row, 'Sprache & Kultur')).join('')}</div>
+      </section>`;
+  }).join('');
+}
+
 /** SF "Ladeschuetze": eigene Gruppe (kein Hauptfertigkeit/Spezialisierung-Verhaeltnis, daher
  *  ad-hoc statt ueber buildHierarchy). Jede Waffenart ist komplett ausgeblendet, bis die
  *  zugehoerige Fernkampf-Fertigkeit > 0 ist (siehe ladeschuetzeGating.ts) - keine Sperr-Anzeige,
@@ -595,6 +634,7 @@ export function renderCategoryView(
   const isNahkampf = kategorie === 'Nahkampf';
   const isFernkampf = kategorie === 'Fernkampf';
   const isEigenschaft = kategorie === 'Eigenschaft';
+  const isSsk = kategorie === 'Sprache & Kultur';
   // Die "Attacke-/Parade-Basis-Wert"- (Nahkampf) bzw. "Fernkampf-(Spezialisierungs-)Basis-Wert"-
   // Formelzeilen (Fernkampf) stehen jetzt live in den Basis-Spalten der Waffentabelle
   // (renderWaffenBasisCell/renderFernkampfBasisCell) - aus "Berechnete Werte" ausgeblendet, sonst
@@ -634,6 +674,8 @@ export function renderCategoryView(
       </table>`
       : isEigenschaft
         ? renderEigenschaftenTable(restEditable, sheet.byKategorie['Eigenschaftsbonus'] ?? [], formulaImpactValues)
+        : isSsk
+          ? renderSskGroups(restEditable)
         : editableHierarchy.map((n) => renderEditableGroup(n, kategorie, formulaImpactValues)).join('');
 
   container.innerHTML = `

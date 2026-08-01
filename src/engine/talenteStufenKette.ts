@@ -15,7 +15,7 @@
 
 import { RULES } from '../data/rules';
 
-interface StufeInfo {
+export interface TalentStufeInfo {
   family: string;
   stufe: number;
 }
@@ -24,7 +24,7 @@ const MAGUS_STUFE_RE = /^talente_magus_stufe_(\d+)_(.+)$/;
 const MAGUS_SUFFIX_RE = /_(gross|erz)?magus$/;
 const GENERAL_STUFE_RE = /^(talente_.+?)_stufe_?0*(\d+)/;
 
-function parseStufe(referenzLower: string): StufeInfo | null {
+function parseStufe(referenzLower: string): TalentStufeInfo | null {
   const magus = MAGUS_STUFE_RE.exec(referenzLower);
   if (magus) {
     const schule = magus[2].replace(MAGUS_SUFFIX_RE, '').replace(/s$/, '');
@@ -36,7 +36,7 @@ function parseStufe(referenzLower: string): StufeInfo | null {
 }
 
 // Einmalig aus RULES aufgebaut (Talente-Auswahl-Regeln aendern sich nicht zur Laufzeit).
-const stufeByReferenz = new Map<string, StufeInfo>();
+const stufeByReferenz = new Map<string, TalentStufeInfo>();
 const referenzByFamilyStufe = new Map<string, string>(); // Key `${family}::${stufe}`
 for (const rule of RULES) {
   if (rule.kategorie !== 'Talente' || rule.art !== 'Auswahl') continue;
@@ -55,6 +55,13 @@ export function getVorstufeReferenz(referenz: string): string | undefined {
   const info = stufeByReferenz.get(referenz.toLowerCase());
   if (!info || info.stufe <= 1) return undefined;
   return referenzByFamilyStufe.get(`${info.family}::${info.stufe - 1}`);
+}
+
+/** Liefert Familie und Stufe einer nummerierten Talentreihe. Die Ansicht nutzt dieselbe
+ * Erkennung wie die Kauf- und Wirkungssysteme, um unter "Gekauft" nur die höchste erworbene
+ * Stufe einer Reihe zu zeigen. */
+export function getTalentStufeInfo(referenz: string): TalentStufeInfo | undefined {
+  return stufeByReferenz.get(referenz.toLowerCase());
 }
 
 /** Alle Referenzen (lowercase) hoeherer Stufen derselben Familie - fuer die Kaskaden-Entfernung

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getVorstufeReferenz, getHoehereStufenReferenzen } from './talenteStufenKette';
+import { getVorstufeReferenz, getHoehereStufenReferenzen, getTalentStufeInfo } from './talenteStufenKette';
 
 describe('talenteStufenKette', () => {
   it('findet die direkte Vorstufe im Regelfall (Praefix vor "_stufe_")', () => {
@@ -38,6 +38,14 @@ describe('talenteStufenKette', () => {
       ]),
     );
     expect(getHoehereStufenReferenzen('talente_grundfertigkeiten_stufe_4')).toEqual([]);
+  });
+
+  it('liefert Familie und Stufe für die Anzeige der höchsten gekauften Stufe', () => {
+    expect(getTalentStufeInfo('talente_zaeher_bursche_stufe_3')).toEqual({
+      family: 'talente_zaeher_bursche',
+      stufe: 3,
+    });
+    expect(getTalentStufeInfo('talente_meuchler')).toBeUndefined();
   });
 
   it('eine unbekannte Referenz liefert keine Vor-/Hoeherstufen', () => {

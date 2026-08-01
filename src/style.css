@@ -558,6 +558,24 @@ input.numeric-field-formatted-five {
   opacity: 0.72;
 }
 
+.besitz-equipment-group, .besitz-ruestung-group {
+  padding: 0.25rem 0 0.45rem;
+  border-bottom: 1px solid #8882;
+}
+
+.besitz-equipment-group:last-child, .besitz-ruestung-group:last-child {
+  border-bottom: 0;
+}
+
+.besitz-equipment-group > h4, .besitz-ruestung-group > h4 {
+  margin: 0 0 0.15rem;
+}
+
+.besitz-ruestung-total {
+  margin-left: 0.4rem;
+  font-weight: 400;
+}
+
 .ausruestung-row.feuerwaffe-row {
   display: grid;
   grid-template-columns: minmax(5.5rem, 0.45fr) minmax(13rem, 1.55fr) 9.5rem 8.5rem max-content;

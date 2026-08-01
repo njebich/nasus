@@ -16,6 +16,22 @@ describe('zweistufige Navigation', () => {
     expect(getVisibleSubTabs('Inventar', false)).toHaveLength(10);
   });
 
+  it('ordnet die Charakterwerte-Untertabs exakt und vollständig den bestehenden Kategorien zu', () => {
+    expect(getVisibleSubTabs('Charakterwerte', false)).toEqual([
+      'Eigenschaft', 'Attribute', 'Berechnete Werte', 'Sonderfertigkeiten',
+      'Grundfertigkeiten', 'Nahkampf', 'Fernkampf', 'WHK', 'SSK',
+    ]);
+    expect(getViewRoute('Charakterwerte', 'Sonderfertigkeiten')).toEqual({
+      kind: 'category', title: 'Sonderfertigkeiten', categories: ['Sonderfertigkeit'],
+    });
+    expect(getViewRoute('Charakterwerte', 'Grundfertigkeiten')).toEqual({
+      kind: 'category', title: 'Grundfertigkeiten', categories: ['Grundfertigkeit'],
+    });
+    expect(getViewRoute('Charakterwerte', 'SSK')).toEqual({
+      kind: 'category', title: 'SSK', categories: ['Sprache & Kultur'],
+    });
+  });
+
   it('blendet Geweihte in beiden Bereichen aus und fällt auf den ersten erlaubten Untertab zurück', () => {
     expect(getVisibleSubTabs('Magie', false)).not.toContain('Geweihte');
     expect(getVisibleSubTabs('Charakterbogen', false)).not.toContain('Geweihte');
@@ -31,9 +47,10 @@ describe('zweistufige Navigation', () => {
     expect(getViewRoute('Kampf', null)).toEqual({ kind: 'kampf' });
   });
 
-  it('hält die drei bisherigen berechneten Kategorien vorläufig gemeinsam erreichbar', () => {
+  it('fasst Charakterwerte, Bewegung und Gewichtsbelastung unter Berechnete Werte zusammen', () => {
     expect(getViewRoute('Charakterwerte', 'Berechnete Werte')).toEqual({
-      kind: 'category', categories: ['Charakterwerte', 'Bewegung', 'Gewichtsbelastung'],
+      kind: 'category', title: 'Berechnete Werte',
+      categories: ['Charakterwerte', 'Bewegung', 'Gewichtsbelastung'],
     });
   });
 });

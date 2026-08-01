@@ -13,7 +13,7 @@ import {
 } from './state/characterMutations';
 import { computeSheet, makeValueSource, SSK_MINDEST_SP } from './engine/characterSheet';
 import { formatDublonenNumber } from './utils/format';
-import { renderCategoryView } from './views/categoryView';
+import { renderCategoryRouteView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
 import { renderGrunddatenView } from './views/charakterheader';
@@ -702,15 +702,10 @@ function render(): void {
     } else if (route.kind === 'geweihte') {
       renderGeweihteView(viewContainer, sheet, currentCharacter);
     } else if (route.kind === 'category') {
-      viewContainer.innerHTML = route.categories.map((_, index) =>
-        `<section class="legacy-category-view" data-category-index="${index}"></section>`,
-      ).join('');
-      route.categories.forEach((category, index) => {
-        const categoryContainer = viewContainer.querySelector<HTMLDivElement>(`[data-category-index="${index}"]`);
-        if (categoryContainer) {
-          renderCategoryView(categoryContainer, sheet, category, handleValueChange, handlePoolChange, characterValues);
-        }
-      });
+      renderCategoryRouteView(
+        viewContainer, sheet, route.title, route.categories,
+        handleValueChange, handlePoolChange, characterValues,
+      );
     }
   }
 }

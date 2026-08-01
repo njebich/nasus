@@ -56,11 +56,25 @@ export function normalizeNavigation(
 export type ViewRoute =
   | { kind: 'grunddaten' }
   | { kind: 'charakterbogen' }
-  | { kind: 'category'; categories: readonly string[] }
+  | { kind: 'category'; title: CharacterValuesSubTab; categories: readonly string[] }
   | { kind: 'auswahl'; category: 'Talente' | 'Vor- und Nachteile'; isTalent: boolean }
   | { kind: 'kampf' }
   | { kind: 'ausruestung' }
   | { kind: 'ki' | 'spruchmagie' | 'psi' | 'geweihte' };
+
+export type CharacterValuesSubTab = (typeof SUB_TABS)['Charakterwerte'][number];
+
+const CATEGORIES_BY_CHARACTER_VALUES_SUB_TAB = {
+  Eigenschaft: ['Eigenschaft'],
+  Attribute: ['Attribute'],
+  'Berechnete Werte': ['Charakterwerte', 'Bewegung', 'Gewichtsbelastung'],
+  Sonderfertigkeiten: ['Sonderfertigkeit'],
+  Grundfertigkeiten: ['Grundfertigkeit'],
+  Nahkampf: ['Nahkampf'],
+  Fernkampf: ['Fernkampf'],
+  WHK: ['WHK'],
+  SSK: ['Sprache & Kultur'],
+} as const satisfies Record<CharacterValuesSubTab, readonly string[]>;
 
 /** Central bridge from the new visible navigation to the existing view/category names. */
 export function getViewRoute(mainTab: MainTab, subTab: SubTab | null): ViewRoute {
@@ -83,16 +97,8 @@ export function getViewRoute(mainTab: MainTab, subTab: SubTab | null): ViewRoute
     return { kind: 'spruchmagie' };
   }
 
-  const categoriesBySubTab: Partial<Record<SubTab, readonly string[]>> = {
-    Eigenschaft: ['Eigenschaft'],
-    Attribute: ['Attribute'],
-    'Berechnete Werte': ['Charakterwerte', 'Bewegung', 'Gewichtsbelastung'],
-    Sonderfertigkeiten: ['Sonderfertigkeit'],
-    Grundfertigkeiten: ['Grundfertigkeit'],
-    Nahkampf: ['Nahkampf'],
-    Fernkampf: ['Fernkampf'],
-    WHK: ['WHK'],
-    SSK: ['Sprache & Kultur'],
-  };
-  return { kind: 'category', categories: categoriesBySubTab[subTab ?? 'Eigenschaft'] ?? ['Eigenschaft'] };
+  const title = subTab !== null && subTab in CATEGORIES_BY_CHARACTER_VALUES_SUB_TAB
+    ? subTab as CharacterValuesSubTab
+    : 'Eigenschaft';
+  return { kind: 'category', title, categories: CATEGORIES_BY_CHARACTER_VALUES_SUB_TAB[title] };
 }

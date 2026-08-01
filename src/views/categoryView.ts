@@ -560,6 +560,7 @@ export function renderCategoryView(
   // deshalb hier optional statt bei jedem Aufruf Pflicht - main.ts uebergibt sie trotzdem immer
   // mit (billig zu bauen, siehe makeValueSource), die Kategorie-Gate entscheidet hier.
   impactValues?: CharacterValueSource,
+  showReadOnlyHeading = true,
 ): void {
   // att_karma bleibt aus dem Attribute-Tab ausgeblendet, solange kein Geweihte-Gate-Talent
   // gewaehlt ist (Nutzer 2026-07-22, "rang 0" = "hiding of att_karma from the app").
@@ -625,7 +626,7 @@ export function renderCategoryView(
   container.innerHTML = `
     <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet, kategorie)}</div>
     ${readOnlyForBerechneteWerte.length > 0 ? `
-      <h3 class="stat-section-heading">Berechnete Werte</h3>
+      ${showReadOnlyHeading ? '<h3 class="stat-section-heading">Berechnete Werte</h3>' : ''}
       <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>
     ` : ''}
     ${!isNahkampf && pools.length > 0 ? `
@@ -679,4 +680,58 @@ export function renderCategoryView(
   // Pool-Zuteilung ist hier seit dem Kampf-Tab (2026-07-20) reine Anzeige (renderPoolRow) - keine
   // Eingabefelder mehr, daher keine Event-Wiring noetig (Verteilung passiert jetzt pro Waffe auf
   // dem Kampf-Tab, siehe views/kampf.ts).
+}
+
+const COMBINED_CATEGORY_SECTION_TITLES: Readonly<Record<string, string>> = {
+  Charakterwerte: 'Allgemeine berechnete Werte',
+  Bewegung: 'Bewegung',
+  Gewichtsbelastung: 'Gewichtsbelastung',
+};
+
+/**
+ * Rendert einen sichtbaren Charakterwerte-Untertab aus einer oder mehreren internen
+ * Regelkategorien. Die internen Kategorienamen bleiben dabei unveraendert; insbesondere fasst
+ * "Berechnete Werte" Charakterwerte, Bewegung und Gewichtsbelastung in einer Ansicht zusammen.
+ */
+export function renderCategoryRouteView(
+  container: HTMLElement,
+  sheet: ComputedSheet,
+  title: string,
+  categories: readonly string[],
+  onChange: OnValueChange,
+  onPoolChange: OnPoolChange,
+  impactValues?: CharacterValueSource,
+): void {
+  const combined = categories.length > 1;
+  container.innerHTML = `
+    <section class="category-route-view" aria-labelledby="category-route-heading">
+      <h2 id="category-route-heading">${escapeHtml(title)}</h2>
+      <div data-category-route-sections></div>
+    </section>`;
+
+  const sections = container.querySelector<HTMLElement>('[data-category-route-sections]');
+  if (!sections) return;
+
+  categories.forEach((category, index) => {
+    const section = document.createElement('section');
+    section.className = 'category-route-section';
+    section.dataset.category = category;
+    if (combined) {
+      const headingId = `category-route-section-${index}`;
+      section.setAttribute('aria-labelledby', headingId);
+      section.innerHTML = `
+        <h3 id="${headingId}" class="category-route-section-heading">${escapeHtml(COMBINED_CATEGORY_SECTION_TITLES[category] ?? category)}</h3>
+        <div data-category-content></div>`;
+    } else {
+      section.innerHTML = '<div data-category-content></div>';
+    }
+    sections.append(section);
+    const content = section.querySelector<HTMLElement>('[data-category-content]');
+    if (content) {
+      const showReadOnlyHeading = !combined || category === 'Charakterwerte';
+      renderCategoryView(
+        content, sheet, category, onChange, onPoolChange, impactValues, showReadOnlyHeading,
+      );
+    }
+  });
 }

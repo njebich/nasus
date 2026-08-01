@@ -197,10 +197,22 @@ body {
   outline-offset: 2px;
 }
 
-.legacy-category-view + .legacy-category-view {
+.category-route-view {
+  padding: 0.75rem 1rem;
+}
+
+.category-route-view > h2 {
+  margin-block: 0 0.75rem;
+}
+
+.category-route-section + .category-route-section {
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #8884;
+}
+
+.category-route-section-heading {
+  margin-block: 0 0.65rem;
 }
 
 .grunddaten-view {

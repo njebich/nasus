@@ -397,6 +397,28 @@ describe('setWaffenPoolAllocation', () => {
       .toThrow(BudgetError);
   });
 
+  it('eine unveraenderte alte nAT-Zuteilung ueber einer nachtraeglich gesunkenen Grenze blockiert keine andere Erhoehung', () => {
+    let character = characterWithZweiAexten(0);
+    const [w1] = character.equipment;
+    character.values['nk_spez_hiebwaffen_aexte'] = 2;
+    // Bei nk_hiebwaffen=0 liegt die Axt-AT bei 16; ein nAT-Punkt ist zulaessig.
+    character = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, {
+      gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 1, npa: 0,
+    });
+
+    // Der gestiegene Skill bringt die Axt ohne Zuteilung auf nAT 20: aktuelle natMax ist jetzt 0.
+    character = setValue(character, 'nk_hiebwaffen', 10);
+    // Der unveraenderte alte nat=1 darf das Erhoehen eines anderen Feldes nicht mit "max 0"
+    // blockieren; eine weitere nAT-Erhoehung bleibt dagegen verboten.
+    const updated = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, {
+      gat: 1, gpa: 0, mat: 0, mpa: 0, nat: 1, npa: 0,
+    });
+    expect(updated.poolAllocations[`nk_pool_hiebwaffen_aexte::${w1.id}`]).toMatchObject({ gat: 1, nat: 1 });
+    expect(() => setWaffenPoolAllocation(updated, 'nk_pool_hiebwaffen_aexte', w1.id, {
+      gat: 1, gpa: 0, mat: 0, mpa: 0, nat: 2, npa: 0,
+    })).toThrow(/nAT ueberschreitet die Obergrenze \(max 0\)/);
+  });
+
   it('Budget beruecksichtigt den eigenen Waffen-Ueberschuss ueber 20 unbefoerderter AT/PA-Basis - und NUR den eigenen, nicht den einer Geschwister-Waffe', () => {
     // w1 wird kuenstlich auf AT/PA=+10 gesetzt (simuliert eine seltene Waffe mit positivem
     // AT/PA-Bonus, siehe Plan-Kommentar "gelegentlich positiv") - uncAtWeapon/uncPaWeapon =

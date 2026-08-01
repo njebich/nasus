@@ -293,6 +293,24 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
     expect(character.poolAllocations).toEqual({});
   });
 
+  it('laesst einen auf 20 gedeckelten N-Wert beim Minus-Klick nicht faelschlich auf 19 fallen', () => {
+    const character = characterWithZweiAexten();
+    const [w1] = character.equipment;
+    // Simuliert eine aeltere Zuteilung: Die aktuelle Waffenbasis erreicht bereits allein 20,
+    // daher ist natMax=0; der alte Punkt ist wirkungslos, aber noch gespeichert.
+    character.poolAllocations[`nk_pool_hiebwaffen_aexte::${w1.id}`] = {
+      gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 1, npa: 0,
+    };
+    const row = buildNahkampfRows(character, computeSheet(character))
+      .find((candidate) => candidate.key === w1.id && candidate.grip === '1H')!;
+    expect(row.nat).toMatchObject({ value: 20, allocated: 1, max: 0 });
+
+    const preview = previewWaffenPoolAllocation(row, {
+      gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0,
+    });
+    expect(preview.nat.value).toBe(20);
+  });
+
   it('addiert den eigenen AT/PA-Ueberschuss ueber 20 dieser Zeile zum Budget, bevor die eigene Zuteilung abgezogen wird', () => {
     // Gleiches Fixture wie characterMutations.test.ts's "Budget beruecksichtigt den Waffen-
     // Ueberschuss ueber 20": w1 kuenstlich auf AT/PA=+10 -> uncAtWeapon/uncPaWeapon=34,

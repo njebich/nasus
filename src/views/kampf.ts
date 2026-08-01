@@ -1198,7 +1198,12 @@ export function previewWaffenPoolAllocation(row: NahkampfRow, allocation: PoolAl
   const newTotal = POOL_FIELDS.reduce((sum, field) => sum + allocation[field], 0);
   const nextState = (field: PoolField): PoolFieldState => {
     const previous = row[field];
-    const baseValue = previous.value - previous.allocated;
+    // Bei nAT/nPA kann der angezeigte Wert bereits auf 20 gedeckelt sein. Dann ist
+    // `value - allocated` kein gueltiger Rueckschluss auf die Basis (z.B. 20 angezeigt,
+    // natMax=0, alter allocated=1: die echte Basis ist weiterhin mindestens 20, nicht 19).
+    const baseValue = (field === 'nat' || field === 'npa') && previous.max !== undefined
+      ? 20 - previous.max
+      : previous.value - previous.allocated;
     return {
       ...previous,
       allocated: allocation[field],

@@ -333,10 +333,13 @@ export function setPoolAllocation(character: CharacterState, referenz: string, a
     if (computed?.poolCaps) {
       const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
       const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
-      if (allocation.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
-      if (allocation.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
-      if (allocation.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
-      if (allocation.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
+      // Eine nachtraeglich gesunkene Feldgrenze darf eine unveraenderte Altzuteilung nicht zum
+      // Speicher-Blocker fuer ein anderes Feld machen. Nur eine weitere Erhoehung genau des
+      // bereits ueber der aktuellen Grenze liegenden Feldes wird abgelehnt.
+      if (allocation.gat > gatBudget && allocation.gat > previous.gat) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
+      if (allocation.gpa > gpaBudget && allocation.gpa > previous.gpa) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
+      if (allocation.mat > matBudget && allocation.mat > previous.mat) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
+      if (allocation.mpa > mpaBudget && allocation.mpa > previous.mpa) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
     }
   }
 
@@ -405,8 +408,8 @@ export function setWaffenPoolAllocation(
     }
 
     if (overflow) {
-      if (allocation.nat > overflow.natMax) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
-      if (allocation.npa > overflow.npaMax) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
+      if (allocation.nat > overflow.natMax && allocation.nat > previous.nat) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
+      if (allocation.npa > overflow.npaMax && allocation.npa > previous.npa) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
     }
   }
 

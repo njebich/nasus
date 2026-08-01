@@ -56,6 +56,20 @@ describe('getrennte Ausrüstungs-Arbeitsansichten', () => {
     expect(cb.onBuyPreisliste).toHaveBeenCalledOnce();
   });
 
+  it('rendert je Artefaktgrad die berechnete Wirkung sowie ED und WD im Tooltip', () => {
+    renderAusruestungView(container, sheet, character, callbacks(), 'Artefakte');
+    const licht = [...container.querySelectorAll<HTMLElement>('.artefakt-card')]
+      .find((card) => card.querySelector('summary')?.textContent === 'Licht');
+    const grade = licht?.querySelectorAll<HTMLElement>('.artefakt-grad-row');
+
+    expect(grade).toHaveLength(7);
+    expect(grade?.[0].dataset.tooltip).toContain('Wirkungswert: 5 Fackeln');
+    expect(grade?.[0].dataset.tooltip).toContain('ED: sofort');
+    expect(grade?.[0].dataset.tooltip).toContain('WD: 5 min');
+    expect(grade?.[6].dataset.tooltip).toContain('Wirkungswert: 40 Fackeln');
+    expect(grade?.[0].dataset.tooltip).not.toBe(grade?.[6].dataset.tooltip);
+  });
+
   it('bietet Entfernen nur in der zuständigen Arbeitskategorie an', () => {
     const ownedCharacter = {
       ...character,

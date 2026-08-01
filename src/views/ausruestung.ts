@@ -36,6 +36,7 @@ import {
 import {
   isXKlingeReferenz, resolveXKlingeWirkung, xKlingeTooltip, xKlingeWeaponName, xKlingeWirkungForEntry,
 } from '../engine/xKlinge';
+import { artefaktTooltip, resolveArtefaktGradWerte } from '../engine/artefaktWirkung';
 import { describeStoredWeapon, describeWeaponSelection } from './weaponDisplay';
 
 export interface RuestungGruppenSelection {
@@ -266,12 +267,10 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: Ch
     const einmaligDisabled = einmaligGesperrt || keineProfaneWaffe;
     const permanentDisabled = permanentGesperrt || keineProfaneWaffe;
     const wirkung = xKlinge ? resolveXKlingeWirkung(basis.referenz, k.grad ?? '') : undefined;
+    const gradWerte = resolveArtefaktGradWerte(basis, k.grad ?? '');
     const wirkungText = wirkung
-      ? xKlingeTooltip(wirkung)
-      : [
-        basis.beschreibung ? `Wirkung: ${basis.beschreibung}` : '',
-        basis.wirkungBasis ? `Wirkungswert: ${basis.wirkungBasis}${basis.wirkungEinheit ? ` ${basis.wirkungEinheit}` : ''}` : '',
-      ].filter(Boolean).join('\n');
+      ? [xKlingeTooltip(wirkung), `ED: ${gradWerte.effektdauer}`, `WD: ${gradWerte.wirkungsdauer}`].join('\n')
+      : artefaktTooltip(basis, k.grad ?? '');
     return `
       <div class="artefakt-grad-row"${tooltipAttr(wirkungText)}>
         <span class="artefakt-grad-label">Grad ${escapeHtml(k.grad ?? '?')}</span>

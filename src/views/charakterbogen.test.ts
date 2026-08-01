@@ -20,6 +20,25 @@ describe('gedruckter Herkunftsheader', () => {
   });
 });
 
+describe('gemeinsam genutzte LE/RS-Zustandsanzeige', () => {
+  it('enthaelt im Charakterbogen alle Trefferzonen sowie Gesundheit, TS, SB, RHg und RBE', () => {
+    const character = createCharacter('Test', { spezies: 'Mensch' });
+    const container = document.createElement('div');
+    renderCharakterbogen(container, computeSheet(character), character);
+
+    const headings = [...container.querySelectorAll('h3')]
+      .filter((heading) => heading.textContent === 'Lebensenergie & Rüstungsschutz');
+    expect(headings).toHaveLength(1);
+    const block = headings[0].nextElementSibling!;
+    expect([...block.querySelectorAll('.kampf-tz-name')].map((node) => node.textContent)).toEqual([
+      'Trefferzone', 'Kopf', 'Torso', 'Unterleib', 'Arme', 'Beine',
+    ]);
+    expect([...block.querySelectorAll('.kampf-tz-rechts-label')].map((node) => node.textContent)).toEqual([
+      'Gesundheit', 'Trefferschwelle', 'Selbstbeherrschung', 'Rüstungshinderlichkeit', 'RBE',
+    ]);
+  });
+});
+
 // Kampf-Tab-Spiegelung (2026-07-20): dieselben Row-Builder wie views/kampf.ts, aber read-only.
 describe('Kampf-Tab-Spiegelung auf dem Charakterbogen', () => {
   function find<T extends { name: string }>(rows: readonly T[], name: string): T {

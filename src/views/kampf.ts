@@ -33,6 +33,9 @@ import {
   weaponSpecializationForRow, WEAPON_SPECIALIZATION_BY_ID,
 } from '../engine/weaponCatalog';
 import { firearmAmmunitionType, firearmAmmoTypeForArt } from '../engine/ammunitionTypes';
+import { renderKampfLeRs } from './kampfLeRs';
+
+const openKampfLeRsGruppen = new Set<string>();
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -1188,6 +1191,7 @@ export function renderKampfView(
   const ausweichen = buildAusweichenRow(character);
 
   container.innerHTML = `
+    ${renderKampfLeRs(sheet, character, openKampfLeRsGruppen)}
     ${renderNahkampfTable(nahkampfRows)}
     ${renderWaffenLoadoutBlock(character, sheet)}
     ${renderAusweichenBlock(ausweichen)}
@@ -1200,6 +1204,13 @@ export function renderKampfView(
   // Pool buttons edit a row-local draft. Mutation, persistence and the expensive full render only
   // happen after explicit confirmation.
   const draftAllocations = new Map<string, PoolAllocation>();
+  const syncKampfLeRsOpenState = (): void => {
+    container.querySelectorAll<HTMLDetailsElement>('.kampf-tz-details[data-kampf-tz-gruppe]').forEach((details) => {
+      const gruppe = details.dataset.kampfTzGruppe!;
+      if (details.open) openKampfLeRsGruppen.add(gruppe);
+      else openKampfLeRsGruppen.delete(gruppe);
+    });
+  };
   const showZweiWaffen = nahkampfRows.some((row) => row.zweiWaffenFaehig !== undefined);
   const draftKey = (row: NahkampfRow) => `${row.poolReferenz}::${row.key}`;
   const repaintDraftRows = (changedRow: NahkampfRow, allocation?: PoolAllocation): void => {
@@ -1258,6 +1269,7 @@ export function renderKampfView(
     if (target.closest('.kampf-allocation-apply')) {
       const allocation = draftAllocations.get(key);
       if (!allocation) return;
+      syncKampfLeRsOpenState();
       const cellSelector = `.kampf-pool-cell[data-key="${CSS.escape(row.key)}"][data-pool-referenz="${CSS.escape(row.poolReferenz)}"]`;
       withScrollAnchor(cellSelector, () => onWaffenPoolChange(row.poolReferenz!, row.key, allocation));
     }

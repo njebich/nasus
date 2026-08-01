@@ -134,12 +134,14 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.app-navigation {
+  margin: 0.75rem 0;
+}
+
 .tab-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
-  border-bottom: 1px solid #8884;
-  margin-bottom: 0.75rem;
 }
 
 .tab-btn {
@@ -154,6 +156,80 @@ body {
 .tab-btn[aria-current='page'] {
   border-bottom-color: currentColor;
   font-weight: 600;
+}
+
+.main-tab-nav {
+  gap: 0.35rem;
+  border-bottom: 2px solid #8888;
+}
+
+.main-tab-btn {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-radius: 6px 6px 0 0;
+}
+
+.main-tab-btn[aria-current='page'] {
+  border-color: #8888;
+  border-bottom-color: currentColor;
+  background: #8882;
+}
+
+.sub-tab-nav {
+  gap: 0.2rem;
+  padding: 0.45rem 0.35rem 0.35rem;
+  border-bottom: 1px solid #8885;
+  background: #8881;
+}
+
+.sub-tab-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+}
+
+.sub-tab-btn[aria-current='page'] {
+  background: #8883;
+}
+
+.tab-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.legacy-category-view + .legacy-category-view {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #8884;
+}
+
+.provisional-route {
+  padding: 0.75rem 1rem;
+  border: 1px solid #8884;
+  border-radius: 6px;
+  background: #8881;
+}
+
+.provisional-route h2,
+.provisional-route p {
+  margin-block: 0 0.4rem;
+}
+
+@media (max-width: 700px) {
+  .character-bar,
+  .budget-bar {
+    flex-wrap: wrap;
+  }
+
+  .sub-tab-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .sub-tab-btn {
+    flex: 0 0 auto;
+  }
 }
 
 /* Karteikarten-Optik, aber Listenanordnung (Nutzer 2026-07-17: "innerhalb der Karten, zurueck

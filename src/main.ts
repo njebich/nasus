@@ -11,7 +11,7 @@ import {
   setGrundfertigkeitPick, addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite,
   BudgetError, MutationError,
 } from './state/characterMutations';
-import { computeSheet, makeValueSource, SSK_MINDEST_SP, type ComputedSheet } from './engine/characterSheet';
+import { computeSheet, makeValueSource, SSK_MINDEST_SP } from './engine/characterSheet';
 import { formatDublonenNumber } from './utils/format';
 import { renderCategoryView } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
@@ -36,6 +36,10 @@ import {
   createOrt, formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
 } from './data/orte';
 import { getReligionen, addReligion, addSekte, formatReligionLabel, combineReligionSekte } from './state/religionStore';
+import {
+  DEFAULT_NAVIGATION, MAIN_TABS, getViewRoute, getVisibleSubTabs, normalizeNavigation,
+  type MainTab, type NavigationState, type SubTab,
+} from './navigation';
 
 declare const __LAST_UPDATED_AT__: string;
 
@@ -57,28 +61,12 @@ function formatLastUpdated(isoTimestamp: string): string {
 
 const lastUpdated = formatLastUpdated(__LAST_UPDATED_AT__);
 
-const TABS = [
-  'Charakterbogen',
-  'Eigenschaft', 'Attribute', 'Charakterwerte', 'Grundfertigkeit', 'Sonderfertigkeit',
-  'Nahkampf', 'Fernkampf', 'Kampf', 'Bewegung', 'Gewichtsbelastung', 'WHK',
-  'Sprache & Kultur', 'Talente', 'Vor- und Nachteile', 'Ausrüstung', 'KI', 'Spruchmagie', 'Psi', 'Geweihte',
-] as const;
-type Tab = (typeof TABS)[number];
-const AUSWAHL_TABS: Partial<Record<Tab, boolean>> = { 'Talente': true, 'Vor- und Nachteile': false };
-
-// Geweihte-Tab bleibt ausgeblendet, bis ein Geweihte-Gate-Talent gewaehlt ist (Nutzer 2026-07-22,
-// "rang 0" = "hiding of the tab Geweihte") - anders als alle anderen Tabs, die immer sichtbar sind.
-function isTabVisible(tab: Tab, sheet: ComputedSheet | null): boolean {
-  if (tab !== 'Geweihte') return true;
-  return sheet !== null && isGeweihterTalentSelectedInSheet(sheet);
-}
-
 // Tab-Intro-Texte aus `tooltips text.txt` (Zeilen "tab_..."): erklaeren die Kategorie als
 // Ganzes (z.B. wie Grundfertigkeiten grundsaetzlich funktionieren), gehoeren daher an den
 // Tab-Button selbst statt an eine einzelne Zeile - siehe PLAN-Tooltip-System.md Phase 2.
-const TAB_INTRO: Partial<Record<Tab, string>> = {
-  'Grundfertigkeit': 'Grundfertigkeiten werden, sofern der Meister sie für die Probe zulässt, zum Probenwert addiert. Zugelassene Grundfertigkeiten werden entweder vom Meister mit der Probe angesagt, oder wenn er eine Eigenschaftsprobe verlangt, so wird vom Spieler nachgefragt ob er eine bestimmte verwenden darf, die er als passend ansieht. Für eine Probe darf höchstens eine Grundfertigkeit verwendet werden. Der Meister kann aber auch mehr als eine Grundfertigkeit zulassen, dann darf der Charakter eine davon auswählen. Der einzige Unterschied zwischen körperlichen und geistigen Grundfertigkeiten ist, dass der Meister dadurch einen Anhaltspunkt hat, ob eine Grundfertigkeitsprobe durch GBE behindert werden sollte: In der Regel bei körperlichen 1-fach und bei geistigen nicht. Durch Kampf oder andere Ereignisse erhaltene BE gilt für alle Grundfertigkeiten gleich.',
-  'Sonderfertigkeit': 'Sonderfertigkeiten werden in der Regel nicht mit eigenen Proben abgefragt; sie sind entweder in Formeln vertreten oder geben Boni auf Tabellenproben.',
+const TAB_INTRO: Partial<Record<SubTab, string>> = {
+  'Grundfertigkeiten': 'Grundfertigkeiten werden, sofern der Meister sie für die Probe zulässt, zum Probenwert addiert. Zugelassene Grundfertigkeiten werden entweder vom Meister mit der Probe angesagt, oder wenn er eine Eigenschaftsprobe verlangt, so wird vom Spieler nachgefragt ob er eine bestimmte verwenden darf, die er als passend ansieht. Für eine Probe darf höchstens eine Grundfertigkeit verwendet werden. Der Meister kann aber auch mehr als eine Grundfertigkeit zulassen, dann darf der Charakter eine davon auswählen. Der einzige Unterschied zwischen körperlichen und geistigen Grundfertigkeiten ist, dass der Meister dadurch einen Anhaltspunkt hat, ob eine Grundfertigkeitsprobe durch GBE behindert werden sollte: In der Regel bei körperlichen 1-fach und bei geistigen nicht. Durch Kampf oder andere Ereignisse erhaltene BE gilt für alle Grundfertigkeiten gleich.',
+  'Sonderfertigkeiten': 'Sonderfertigkeiten werden in der Regel nicht mit eigenen Proben abgefragt; sie sind entweder in Formeln vertreten oder geben Boni auf Tabellenproben.',
   'Geweihte': 'Zeigt Geweihtengrad, Karma-Pool-Punkte (KPP) und die verfügbaren Wunder der gewählten Religion. Die Fähigkeiten Stoßgebet/Wunder/Ritual (Probe-Basis) werden im WHK-Tab gesteigert.',
 };
 
@@ -88,7 +76,7 @@ const lastActiveId = getLastActiveCharacterId();
 let currentCharacter: CharacterState | null = lastActiveId ? loadCharacter(lastActiveId) : null;
 if (lastActiveId && !currentCharacter) setLastActiveCharacterId(null); // Charakter wurde geloescht
 let errorMessage = '';
-let activeTab: Tab = 'Eigenschaft';
+let navigationState: NavigationState = { ...DEFAULT_NAVIGATION };
 let showNewCharacterForm = false;
 /** "Bestehenden Charakter erstellen" (Nutzer 2026-07-24): zweite Auswahl neben "Neuer Charakter"
  *  im selben Formular - einziger Unterschied ist das bestehenderCharakter-Flag auf dem erzeugten
@@ -433,9 +421,11 @@ function render(): void {
   // Fuer die Formel-Impact-Liste (Plan-Phase 3, nur Eigenschaft/Attribute-Tab) - billig zu bauen
   // (reine Closures ueber currentCharacter, keine Berechnung), siehe categoryView.ts.
   const characterValues = currentCharacter ? makeValueSource(currentCharacter) : undefined;
-  // Geweihte-Tab kann durch Ab-/Umwaehlen des Gate-Talents nachtraeglich unsichtbar werden -
-  // dann auf einen immer sichtbaren Tab zurueckfallen statt eine leere Ansicht zu zeigen.
-  if (sheet && !isTabVisible(activeTab, sheet)) activeTab = 'Eigenschaft';
+  // Geweihte kann durch Ab-/Umwaehlen des Gate-Talents nachtraeglich unsichtbar werden.
+  // normalizeNavigation faellt dann innerhalb des aktiven Hauptbereichs kontrolliert zurueck.
+  const showGeweihte = sheet !== null && isGeweihterTalentSelectedInSheet(sheet);
+  navigationState = normalizeNavigation(navigationState, showGeweihte);
+  const visibleSubTabs = getVisibleSubTabs(navigationState.activeMainTab, showGeweihte);
 
   app.innerHTML = `
     <header class="app-header">
@@ -472,8 +462,14 @@ function render(): void {
         </div>` : ''}
       ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
       ${currentCharacter ? `
-        <nav class="tab-nav">
-          ${TABS.filter((tab) => isTabVisible(tab, sheet)).map((tab) => `<button type="button" class="tab-btn" data-tab="${tab}"${tooltipAttr(TAB_INTRO[tab])} ${activeTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
+        <nav class="app-navigation" aria-label="Charakterbereiche">
+          <div class="tab-nav main-tab-nav" role="tablist" aria-label="Hauptnavigation">
+            ${MAIN_TABS.map((tab) => `<button type="button" class="tab-btn main-tab-btn" data-main-tab="${tab}" role="tab" aria-selected="${navigationState.activeMainTab === tab}" ${navigationState.activeMainTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
+          </div>
+          ${visibleSubTabs.length > 0 ? `
+            <div class="tab-nav sub-tab-nav" role="tablist" aria-label="Unternavigation ${navigationState.activeMainTab}">
+              ${visibleSubTabs.map((tab) => `<button type="button" class="tab-btn sub-tab-btn" data-sub-tab="${tab}" role="tab" aria-selected="${navigationState.activeSubTab === tab}"${tooltipAttr(TAB_INTRO[tab])} ${navigationState.activeSubTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
+            </div>` : ''}
         </nav>` : ''}
     </header>
     <main id="view-container"></main>
@@ -483,6 +479,8 @@ function render(): void {
     const id = (e.target as HTMLSelectElement).value;
     currentCharacter = id ? loadCharacter(id) : null;
     setLastActiveCharacterId(id || null);
+    navigationState = { ...DEFAULT_NAVIGATION };
+    headerSectionOpen = true;
     errorMessage = '';
     confirmingDelete = false;
     render();
@@ -612,9 +610,10 @@ function render(): void {
     const startbudget = (document.querySelector<HTMLInputElement>('input[name="nc-startbudget"]:checked')!.value) as StartbudgetPreset;
     currentCharacter = createCharacter(name, header, startbudget, newCharacterBestehend);
     setLastActiveCharacterId(currentCharacter.id);
+    navigationState = { ...DEFAULT_NAVIGATION };
     showNewCharacterForm = false;
     newCharacterBestehend = false;
-    headerSectionOpen = false;
+    headerSectionOpen = true;
     render();
   });
 
@@ -637,10 +636,38 @@ function render(): void {
     render();
   });
 
-  document.querySelectorAll<HTMLButtonElement>('.tab-btn').forEach((btn) => {
+  document.querySelectorAll<HTMLButtonElement>('.main-tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      activeTab = btn.dataset.tab as Tab;
+      navigationState = normalizeNavigation({
+        activeMainTab: btn.dataset.mainTab as MainTab,
+        activeSubTab: null,
+      }, showGeweihte);
       render();
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.sub-tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      navigationState = {
+        activeMainTab: navigationState.activeMainTab,
+        activeSubTab: btn.dataset.subTab as SubTab,
+      };
+      render();
+    });
+  });
+
+  document.querySelectorAll<HTMLElement>('[role="tablist"]').forEach((tabList) => {
+    tabList.addEventListener('keydown', (event) => {
+      if (!(event instanceof KeyboardEvent) || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      const tabs = Array.from(tabList.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+      const currentIndex = tabs.indexOf(document.activeElement as HTMLButtonElement);
+      if (currentIndex < 0 || tabs.length === 0) return;
+      event.preventDefault();
+      const nextIndex = event.key === 'Home' ? 0
+        : event.key === 'End' ? tabs.length - 1
+          : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[nextIndex]?.focus();
+      tabs[nextIndex]?.click();
     });
   });
 
@@ -654,9 +681,10 @@ function render(): void {
 
   if (sheet && currentCharacter) {
     const viewContainer = document.querySelector<HTMLDivElement>('#view-container')!;
-    if (activeTab === 'Charakterbogen') {
+    const route = getViewRoute(navigationState.activeMainTab, navigationState.activeSubTab);
+    if (route.kind === 'charakterbogen') {
       renderCharakterbogen(viewContainer, sheet, currentCharacter);
-    } else if (activeTab === 'Ausrüstung') {
+    } else if (route.kind === 'ausruestung') {
       renderAusruestungView(viewContainer, sheet, currentCharacter, {
         onBuyPreisliste: handleBuyPreisliste,
         onBuyArtefakt: handleBuyArtefakt,
@@ -672,23 +700,38 @@ function render(): void {
         onBuyAlchemika: handleBuyAlchemika,
         onRemoveEquipment: handleRemoveEquipment,
       });
-    } else if (activeTab in AUSWAHL_TABS) {
-      renderAuswahlView(viewContainer, sheet, activeTab, AUSWAHL_TABS[activeTab]!, handleToggle, currentCharacter.religion);
-    } else if (activeTab === 'Kampf') {
+    } else if (route.kind === 'auswahl') {
+      renderAuswahlView(viewContainer, sheet, route.category, route.isTalent, handleToggle, currentCharacter.religion);
+    } else if (route.kind === 'kampf') {
       renderKampfView(
         viewContainer, sheet, currentCharacter, handleWaffenPoolChange,
         handleAddWaffenLoadout, handleRemoveWaffenLoadout, handleToggleWaffenLoadoutFavorite,
       );
-    } else if (activeTab === 'KI') {
+    } else if (route.kind === 'ki') {
       renderKiView(viewContainer, sheet, handleValueChange, currentCharacter.grundfertigkeitAuswahl, handleGrundfertigkeitPick);
-    } else if (activeTab === 'Spruchmagie') {
+    } else if (route.kind === 'spruchmagie') {
       renderSpruchmagieView(viewContainer, sheet, handleValueChange);
-    } else if (activeTab === 'Psi') {
+    } else if (route.kind === 'psi') {
       renderPsiView(viewContainer, sheet, handleValueChange);
-    } else if (activeTab === 'Geweihte') {
+    } else if (route.kind === 'geweihte') {
       renderGeweihteView(viewContainer, sheet, currentCharacter);
+    } else if (route.kind === 'category') {
+      viewContainer.innerHTML = route.categories.map((_, index) =>
+        `<section class="legacy-category-view" data-category-index="${index}"></section>`,
+      ).join('');
+      route.categories.forEach((category, index) => {
+        const categoryContainer = viewContainer.querySelector<HTMLDivElement>(`[data-category-index="${index}"]`);
+        if (categoryContainer) {
+          renderCategoryView(categoryContainer, sheet, category, handleValueChange, handlePoolChange, characterValues);
+        }
+      });
     } else {
-      renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange, characterValues);
+      // Session 2 verschiebt den bestehenden globalen Grunddaten-Editor in diese Route.
+      viewContainer.innerHTML = `
+        <section class="provisional-route" aria-labelledby="grunddaten-heading">
+          <h2 id="grunddaten-heading">Grunddaten</h2>
+          <p>Die Grunddaten werden in dieser ersten Umstrukturierungsstufe noch im aufgeklappten Bereich oberhalb der Navigation bearbeitet.</p>
+        </section>`;
     }
   }
 }

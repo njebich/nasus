@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_NAVIGATION, MAIN_TABS, getViewRoute, getVisibleSubTabs, normalizeNavigation,
+  DEFAULT_NAVIGATION, MAIN_TABS, getActiveNavigationTabId, getMainTabId, getSubTabId,
+  getViewRoute, getVisibleSubTabs, normalizeNavigation,
 } from './navigation';
 
 describe('zweistufige Navigation', () => {
@@ -63,6 +64,14 @@ describe('zweistufige Navigation', () => {
     expect(normalizeNavigation({ activeMainTab: 'Kampf', activeSubTab: 'Talente' }, true))
       .toEqual({ activeMainTab: 'Kampf', activeSubTab: null });
     expect(getViewRoute('Kampf', null)).toEqual({ kind: 'kampf' });
+  });
+
+  it('liefert stabile ARIA-Bezüge für Haupttabs, Untertabs und den Inhaltsbereich', () => {
+    expect(getMainTabId('Charakter')).toBe('main-tab-1');
+    expect(getSubTabId('Charakter', 'Grunddaten')).toBe('sub-tab-1-0');
+    expect(getActiveNavigationTabId(DEFAULT_NAVIGATION)).toBe('sub-tab-1-0');
+    expect(getActiveNavigationTabId({ activeMainTab: 'Kampf', activeSubTab: null }))
+      .toBe('main-tab-3');
   });
 
   it('fasst Charakterwerte, Bewegung und Gewichtsbelastung unter Berechnete Werte zusammen', () => {

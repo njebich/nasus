@@ -38,9 +38,10 @@ import {
 } from './data/orte';
 import { getReligionen, addReligion, addSekte, formatReligionLabel, combineReligionSekte } from './state/religionStore';
 import {
-  DEFAULT_NAVIGATION, MAIN_TABS, getViewRoute, getVisibleSubTabs, normalizeNavigation,
+  DEFAULT_NAVIGATION, getActiveNavigationTabId, getViewRoute, getVisibleSubTabs, normalizeNavigation,
   type MainTab, type NavigationState, type SubTab,
 } from './navigation';
+import { renderNavigationMarkup } from './navigationMarkup';
 
 declare const __LAST_UPDATED_AT__: string;
 
@@ -456,18 +457,11 @@ function render(): void {
           <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: ${formatDublonenNumber(sheet.dublonenBarRemaining)} bar / ${formatDublonenNumber(sheet.dublonenBankRemaining)} Bank</span>
         </div>` : ''}
       ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
-      ${currentCharacter ? `
-        <nav class="app-navigation" aria-label="Charakterbereiche">
-          <div class="tab-nav main-tab-nav" role="tablist" aria-label="Hauptnavigation">
-            ${MAIN_TABS.map((tab) => `<button type="button" class="tab-btn main-tab-btn" data-main-tab="${tab}" role="tab" aria-selected="${navigationState.activeMainTab === tab}" ${navigationState.activeMainTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
-          </div>
-          ${visibleSubTabs.length > 0 ? `
-            <div class="tab-nav sub-tab-nav" role="tablist" aria-label="Unternavigation ${navigationState.activeMainTab}">
-              ${visibleSubTabs.map((tab) => `<button type="button" class="tab-btn sub-tab-btn" data-sub-tab="${tab}" role="tab" aria-selected="${navigationState.activeSubTab === tab}"${tooltipAttr(TAB_INTRO[tab])} ${navigationState.activeSubTab === tab ? 'aria-current="page"' : ''}>${tab}</button>`).join('')}
-            </div>` : ''}
-        </nav>` : ''}
+      ${currentCharacter ? renderNavigationMarkup(
+        navigationState, visibleSubTabs, (tab) => tooltipAttr(TAB_INTRO[tab]),
+      ) : ''}
     </header>
-    <main id="view-container"></main>
+    <main id="view-container" role="tabpanel" aria-labelledby="${currentCharacter ? getActiveNavigationTabId(navigationState) : ''}" tabindex="0"></main>
   `;
 
   document.querySelector<HTMLSelectElement>('#character-select')?.addEventListener('change', (e) => {
@@ -659,8 +653,13 @@ function render(): void {
       const nextIndex = event.key === 'Home' ? 0
         : event.key === 'End' ? tabs.length - 1
           : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-      tabs[nextIndex]?.focus();
-      tabs[nextIndex]?.click();
+      const nextTab = tabs[nextIndex];
+      if (!nextTab) return;
+      const selectedTabSelector = tabList.classList.contains('main-tab-nav')
+        ? '.main-tab-nav [role="tab"][aria-selected="true"]'
+        : '.sub-tab-nav [role="tab"][aria-selected="true"]';
+      nextTab.click();
+      document.querySelector<HTMLButtonElement>(selectedTabSelector)?.focus();
     });
   });
 

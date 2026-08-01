@@ -41,6 +41,21 @@ export function getVisibleSubTabs(mainTab: MainTab, showGeweihte: boolean): read
   return SUB_TABS[mainTab].filter((tab) => tab !== 'Geweihte' || showGeweihte) as readonly SubTab[];
 }
 
+export function getMainTabId(tab: MainTab): string {
+  return `main-tab-${MAIN_TABS.indexOf(tab)}`;
+}
+
+export function getSubTabId(mainTab: MainTab, tab: SubTab): string {
+  return `sub-tab-${MAIN_TABS.indexOf(mainTab)}-${SUB_TABS[mainTab].indexOf(tab as never)}`;
+}
+
+/** Identifies the selected tab that labels the shared view panel. */
+export function getActiveNavigationTabId(state: NavigationState): string {
+  return state.activeSubTab === null
+    ? getMainTabId(state.activeMainTab)
+    : getSubTabId(state.activeMainTab, state.activeSubTab);
+}
+
 /** Keeps every navigation state on a visible route and supplies the default subtab for a main tab. */
 export function normalizeNavigation(
   state: NavigationState,

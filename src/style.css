@@ -153,7 +153,7 @@ body {
   font: inherit;
 }
 
-.tab-btn[aria-current='page'] {
+.tab-btn[aria-selected='true'] {
   border-bottom-color: currentColor;
   font-weight: 600;
 }
@@ -170,7 +170,7 @@ body {
   border-radius: 6px 6px 0 0;
 }
 
-.main-tab-btn[aria-current='page'] {
+.main-tab-btn[aria-selected='true'] {
   border-color: #8888;
   border-bottom-color: currentColor;
   background: #8882;
@@ -188,7 +188,7 @@ body {
   border-radius: 4px;
 }
 
-.sub-tab-btn[aria-current='page'] {
+.sub-tab-btn[aria-selected='true'] {
   background: #8883;
 }
 

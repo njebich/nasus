@@ -78,8 +78,8 @@ function renderCharakterwerteUndAttribute(sheet: ComputedSheet): string {
     .map((r) => `<tr><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${formatValue(r.computedValue)}</td></tr>`)
     .join('');
   const epSpRows = `
-    <tr><th>Erfahrungspkt.</th><td>${sheet.epGesamt}</td></tr>
-    <tr><th>Steigerungspkt.</th><td>${sheet.spRemaining} / ${sheet.spTotal}</td></tr>`;
+    <tr><th>Erfahrungspkt.</th><td><span class="numeric-field-output numeric-field-signed-five">${sheet.epGesamt}</span></td></tr>
+    <tr><th>Steigerungspkt.</th><td><span class="numeric-field-output numeric-field-signed-five">${sheet.spRemaining}</span> / <span class="numeric-field-output numeric-field-signed-five">${sheet.spTotal}</span></td></tr>`;
   // Nutzer 2026-07-24 (categoryView.ts's ATTRIBUTE_KLICKPREIS_TEXT): dieselbe vereinfachte
   // Klickpreis-Formel wie im editierbaren Attribute-Tab, hier auf den Zeilen des read-only
   // Charakterbogens gespiegelt ("wire same tooltips to same values/descriptions").

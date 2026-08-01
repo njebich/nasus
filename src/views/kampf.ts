@@ -1019,7 +1019,7 @@ function poolCell(field: PoolField, row: NahkampfRow): string {
     <td class="kampf-pool-cell" data-key="${escapeHtml(row.key)}" data-pool-referenz="${escapeHtml(row.poolReferenz)}" data-field="${field}">
       <div class="kampf-pool-cell-inner">
         <button type="button" class="stat-dec" aria-label="${field} verringern" ${state.allocated <= 0 ? 'disabled' : ''}>-</button>
-        <span class="kampf-pool-value">${state.value}</span>
+        <span class="kampf-pool-value numeric-field-output numeric-field-two">${state.value}</span>
         <button type="button" class="stat-inc" aria-label="${field} erhöhen" ${incrementDisabled ? 'disabled' : ''}>+</button>
       </div>
     </td>`;

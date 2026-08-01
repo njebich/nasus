@@ -17,9 +17,22 @@ import type { CharacterValueSource } from '../engine/rules';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
 import { EIGENSCHAFTEN_PAARE } from './charakterbogen';
+import { numericFieldWidthClass } from './numericFieldWidth';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
+
+const EINSTELLIGE_WERT_KATEGORIEN = new Set(['Sprache & Kultur']);
+const ZWEISTELLIGE_WERT_KATEGORIEN = new Set([
+  'Eigenschaft', 'Attribute', 'Grundfertigkeit', 'Sonderfertigkeit',
+  'Nahkampf', 'Fernkampf', 'WHK',
+]);
+
+function editableValueWidthClass(kategorie: string): string {
+  if (EINSTELLIGE_WERT_KATEGORIEN.has(kategorie)) return numericFieldWidthClass(9);
+  if (ZWEISTELLIGE_WERT_KATEGORIEN.has(kategorie)) return numericFieldWidthClass(99);
+  return numericFieldWidthClass(undefined);
+}
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -161,7 +174,7 @@ function renderEditableRow(r: ComputedRule, kategorie: string, maxValue?: number
     <div class="stat-row" data-referenz="${r.rule.referenz}"${rowTooltipForKategorie(r, kategorie)}>
       <span class="stat-label">${label}${infoIcon(r.rule.info)}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
-      <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
+      <input type="number" class="stat-value ${editableValueWidthClass(kategorie)}" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
       <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>
       <span class="stat-cost stat-cost-click">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext}</span>
     </div>`;
@@ -203,7 +216,7 @@ function renderReadOnlyRow(r: ComputedRule): string {
   return `
     <div class="stat-row stat-row-readonly"${rowTooltip}>
       <span class="stat-label">${label}${infoIcon(r.rule.info)}</span>
-      <span class="stat-value-readonly">${display}</span>
+      <span class="stat-value-readonly numeric-field-output numeric-field-signed-five">${display}</span>
     </div>`;
 }
 
@@ -288,7 +301,7 @@ function renderWaffenControlCells(r: ComputedRule, rowspan: number | undefined, 
     <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
       <div class="waffen-value-inner">
         <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
-        <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+        <input type="number" class="stat-value numeric-field-two" min="0"${maxAttr} value="${value}" aria-label="${label}" />
         <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>
         ${costNext ? `<span class="stat-cost">${costNext}</span>` : ''}
       </div>
@@ -341,7 +354,7 @@ function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number, 
   const tooltip = rule.rule.formelRaw
     ? tooltipAttr(prettyFormula(rule.rule.formelRaw, { [hauptfertigkeitReferenz]: 'TaW' }))
     : '';
-  return `<td${rowspanAttr} class="stat-value-readonly"${tooltip}>${escapeHtml(formatComputedValue(displayValue))}</td>`;
+  return `<td${rowspanAttr} class="stat-value-readonly numeric-field-output numeric-field-signed-two"${tooltip}>${escapeHtml(formatComputedValue(displayValue))}</td>`;
 }
 
 /** Klickpreis (Kosten fuer den naechsten Punkt) fuer eine Nahkampf-/Fernkampf-Zeile - sowohl
@@ -469,7 +482,7 @@ function renderEigenschaftsbonusCell(bonus: ComputedRule | undefined): string {
   if (bonus.error) {
     return `<td class="stat-eig-bonus-cell"><span class="stat-error" title="${escapeHtml(bonus.error)}">nicht definiert ⚠</span></td>`;
   }
-  return `<td class="stat-eig-bonus-cell stat-value-readonly"${formulaTooltip(bonus.rule.formelRaw)}>${escapeHtml(formatComputedValue(bonus.computedValue ?? '–'))}</td>`;
+  return `<td class="stat-eig-bonus-cell stat-value-readonly numeric-field-output numeric-field-signed-two"${formulaTooltip(bonus.rule.formelRaw)}>${escapeHtml(formatComputedValue(bonus.computedValue ?? '–'))}</td>`;
 }
 
 function renderEigenschaftenTable(editable: ComputedRule[], bonusRows: ComputedRule[], impactValues?: CharacterValueSource): string {

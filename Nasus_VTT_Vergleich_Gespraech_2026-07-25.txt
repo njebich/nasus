@@ -1,0 +1,458 @@
+NASUS PROJECT – FOUNDRY VTT VS. FANTASY GROUNDS
+Conversation transcript
+Date: 25 July 2026
+
+===============================================================================
+
+USER
+
+regarding nasus project, compare foundry vtt and fantasy grounds.
+
+-------------------------------------------------------------------------------
+
+ASSISTANT
+
+Recommendation: Foundry VTT
+
+For Nasus, I would choose Foundry VTT as the primary platform. Fantasy Grounds
+remains attractive for highly automated, combat-heavy play, but Foundry fits the
+project’s data, development workflow, and unusual rules substantially better.
+
+Nasus requirement                         Foundry VTT              Fantasy Grounds
+--------------------------------------------------------------------------------
+Custom rules implementation               Excellent                Good, but more
+                                                                   cumbersome
+Importing existing structured rule data   Excellent—JSON and       Requires
+                                           JavaScript fit naturally conversion into
+                                                                   FG XML database
+                                                                   structures
+Bespoke character sheets                  Broad HTML/CSS freedom   Possible, but
+                                                                   constrained by
+                                                                   FG XML interfaces
+Unusual dice such as W3/W15/W30/W50       Native arbitrary-sided   Custom dice or
+                                           formulas                 scripting
+Trefferzonen and zonal armour/damage      Straightforward custom   Achievable with
+                                           data models and UI       deeper integration
+Complex formulas and derived values       Natural in JavaScript    Lua required
+Combat automation                         Must be implemented      Strong inherited
+                                                                   CoreRPG framework
+Player onboarding                         Browser link; no player  Free desktop
+                                           purchase                 software required
+Hosting                                   Flexible; self-hosting   Easier cloud-lobby
+                                           may need setup           networking
+Commercial distribution                   Package browser          FG Forge supports
+                                                                   free/paid releases
+Long-term developer availability          Common web skills        Smaller XML/Lua
+                                                                   specialist pool
+
+Why Foundry fits Nasus
+
+Nasus is not merely a character sheet plus standard attack rolls. The existing
+material indicates:
+
+- a large, structured catalogue of properties, skills, talents, weapons, armour
+  and magic;
+- calculated and interdependent values;
+- unusual die sizes;
+- detailed Trefferzonen;
+- zonal armour, damage and secondary effects;
+- conditional modifiers and rerolls;
+- character-development and availability formulas.
+
+Foundry lets a custom system define its own Actors, Items, data models, documents
+and rule logic. Its official development model uses JavaScript, HTML, CSS and
+JSON, which maps cleanly onto the Nasus spreadsheet/data-pipeline work already
+underway. Systems can also ship compendiums for weapons, spells, talents and
+other structured records.
+
+Its roller supports arbitrary face counts and complex expressions, plus rerolls,
+success counting, keep/drop operations and dynamic variables. That should cover
+most Nasus rolls without fighting the platform.
+
+Fantasy Grounds rulesets, by comparison, are built from XML interfaces and Lua
+scripts, usually layered over CoreRPG. That provides valuable inherited
+machinery, but the learning curve and implementation friction are higher for a
+system whose source data and tooling already resemble a web application.
+
+Where Fantasy Grounds is stronger
+
+Fantasy Grounds becomes the better choice if the main objective is:
+
+- extremely deep combat automation from the beginning;
+- drag-and-drop targeting, effects and damage workflows patterned after
+  established commercial rulesets;
+- simple hosted connectivity without configuring a server;
+- selling Nasus content directly through an integrated VTT marketplace.
+
+Fantasy Grounds now makes its base VTT free for GMs and players, and FG Forge
+supports both free and paid community publishing with automatic updates. Its
+built-in combat and campaign tooling is a genuine strength.
+
+The catch is that those automation benefits are strongest in existing supported
+rulesets. A new Nasus ruleset would still need custom Lua/XML code to teach
+Fantasy Grounds about Trefferzonen, Nasus damage resolution, armour interactions
+and its special conditions.
+
+Cost
+
+- Foundry: currently US$50 once for the host; players connect free through a
+  browser. The licence includes future updates.
+- Fantasy Grounds: the core platform is currently free, including for GMs and
+  players; optional rules and content modules are sold separately.
+- For Nasus, the platform price is insignificant compared with custom-system
+  development and maintenance.
+
+Foundry hosting is flexible—local, cloud or partner-hosted—but local internet play
+can require port forwarding or an alternative host when the connection uses
+CGNAT.
+
+Practical decision
+
+I would use this direction:
+
+1. Foundry as the canonical Nasus implementation.
+2. Build a narrow first release containing:
+   - character and NPC sheets;
+   - properties, skills and derived values;
+   - weapons, armour and inventory;
+   - the Nasus roll engine;
+   - Trefferzonen and basic damage application.
+3. Add advanced combat automation, magic and character advancement incrementally.
+4. Keep the source rule data platform-neutral so a Fantasy Grounds export remains
+   possible later.
+
+My project-specific score is approximately Foundry 9/10 versus Fantasy Grounds
+6.5/10. Fantasy Grounds wins on marketplace infrastructure and mature combat
+conventions; Foundry wins on nearly everything that determines whether Nasus can
+be implemented cleanly and maintained over time.
+
+Sources consulted:
+
+https://foundryvtt.com/article/system-development/
+https://foundryvtt.com/article/dice/
+https://foundryvtt.com/article/dice-modifiers/
+https://fantasygroundsunity.atlassian.net/wiki/spaces/FGCP/pages/996644298/
+Developer+Guide+-+Overview
+https://fantasygroundsunity.atlassian.net/wiki/spaces/FGCP/pages/1845231641/
+Press+Kit+-+Fantasy+Grounds+Unity
+https://foundryvtt.com/purchase/
+https://foundryvtt.com/article/hosting/
+
+-------------------------------------------------------------------------------
+
+USER
+
+we have a complex combat round mechanic. damage is quite easy with roll damage,
+deduct tz armor, apply remaining damage, check for trefferschwelle, if SP>TS,
+roll Selbstbeherrschungsprobe, look up result, apply status.
+
+-------------------------------------------------------------------------------
+
+ASSISTANT
+
+That clarification makes the decision hinge almost entirely on the combat-round
+mechanic, not damage automation.
+
+Your damage pipeline is linear and straightforward to implement on either
+platform:
+
+Roll damage
+→ deduct armour of the Trefferzone
+→ apply remaining SP
+→ compare SP with Trefferschwelle
+→ if SP > TS: roll Selbstbeherrschung
+→ look up consequence
+→ apply status/effect
+
+This can be a single “Apply damage” workflow with optional GM confirmation before
+the resulting status is committed.
+
+The important question is how far the Nasus combat round differs from conventional
+initiative:
+
+- If it is essentially “sort combatants, take turns, advance round,” Fantasy
+  Grounds gains value because its Combat Tracker already provides a mature
+  foundation.
+- If it involves simultaneous declarations, variable action timing, multiple
+  phases, reactions, changing action costs, interruptions, or resolution at
+  different points within a round, Foundry becomes even more clearly preferable.
+  Its combat tracker and interface can be replaced or extended with a
+  Nasus-specific timeline rather than adapting Nasus to a pre-existing turn
+  structure.
+- Fantasy Grounds can also implement a custom round, but this means overriding or
+  carefully extending CoreRPG’s combat-management assumptions in Lua. That is
+  feasible, but likely to become the highest-maintenance part of the ruleset.
+
+My revised assessment:
+
+Area                                     Foundry          Fantasy Grounds
+-----------------------------------------------------------------------
+Nasus damage workflow                    9/10             9/10
+Trefferzonen and armour                  9/10             8/10
+Status lookup and application            9/10             9/10
+Conventional combat rounds               8/10            10/10
+Highly unconventional combat rounds     10/10             6–7/10
+
+So the simple damage procedure does not create a strong Fantasy Grounds
+advantage. The deciding artefact should be a prototype of one complete Nasus
+combat round—including declarations, ordering, interruptions and transition to
+the next round. If that works cleanly, the rest of the combat system is
+comparatively routine.
+
+-------------------------------------------------------------------------------
+
+USER
+
+all roll initiative.
+ini-last announces planned action. then others announce in sequence, until ini
+first declares and immediately carries out action. if 2 or more actors enter
+nahkampf, nahkampf initiative is decided. declare/action routine is applied
+again. depending on round outcome, initiative within this nk bubble may change.
+nk bubble is always with ini highest in the bubble. all actions are calculated
+action by action, and effect only take place when action has been made. if
+ini-lower actor declares to act on a target that is no longer available, it may
+modify the intended action in a small set of rules.
+
+-------------------------------------------------------------------------------
+
+ASSISTANT
+
+That is a nested combat scheduler, not a conventional initiative tracker. It
+strongly favors Foundry.
+
+Round flow:
+
+Roll global initiative
+→ Declare actions: lowest to highest
+→ Highest initiative declares
+→ Highest initiative acts immediately
+→ Resolve remaining actions: high to low
+→ If actors enter Nahkampf, create or update an NK bubble
+→ Determine NK initiative
+→ NK declarations: lowest to highest
+→ Resolve NK actions: highest to lowest
+→ Update NK initiative from the outcome
+→ Bubble remains scheduled at its highest initiative
+→ Continue the global sequence
+
+The important implementation details are:
+
+- Declaration and execution must be separate records. An actor first stores an
+  intended action; the action is only evaluated when its execution point arrives.
+- Game effects are transactional. Damage, movement, statuses and target
+  availability change only after an action has actually resolved.
+- A planned action is not simply discarded when invalidated. The system
+  determines why it became invalid and presents only the permitted modifications.
+- Nahkampf bubbles are first-class combat entities. Each bubble has members, its
+  own initiative order, declarations, current execution point and possibly
+  changing internal initiative.
+- The global scheduler treats a bubble as occupying the highest global initiative
+  currently present inside it.
+- Bubble membership and initiative may need recalculation after entry, withdrawal,
+  incapacitation, displacement or another combat outcome.
+
+A suitable internal model would be roughly:
+
+Combat
+├─ global initiative entries
+├─ current phase: declaration | resolution
+├─ pending actions
+└─ NK bubbles
+   ├─ members
+   ├─ highest global initiative
+   ├─ internal initiative order
+   ├─ declarations
+   └─ current action
+
+Each planned action should retain:
+
+actor
+declared target
+declared action
+declared parameters
+declaration timestamp/order
+current validity
+allowed modifications
+resolution result
+effects applied
+
+Platform consequence
+
+Foundry is now the clear choice:
+
+- Its combat interface can be replaced with a Nasus-specific declaration and
+  resolution tracker.
+- Nahkampf bubbles can have expandable sub-trackers.
+- The UI can reveal declarations according to Nasus rules.
+- Invalidated actions can open a restricted correction dialogue.
+- Every completed action can be logged as an event, making mistakes auditable and
+  potentially reversible.
+- The scheduler can be tested independently of maps and character sheets.
+
+Fantasy Grounds’ standard Combat Tracker assumes a comparatively flat list of
+initiative entries. Implementing Nasus would require replacing much of its
+sequencing behaviour while still working inside its CoreRPG framework. Its
+existing combat automation therefore offers less benefit than the earlier
+comparison suggested.
+
+Recommended prototype
+
+The first prototype should omit damage, armour and detailed character sheets. It
+should demonstrate only:
+
+1. Five actors roll initiative.
+2. Declarations proceed from lowest to highest.
+3. Actions resolve from highest downward.
+4. Two actors form a Nahkampf bubble.
+5. The bubble runs its own declaration/resolution sequence.
+6. Its internal initiative changes.
+7. A declared target becomes unavailable.
+8. The affected actor receives only the legally permitted alternatives.
+9. The round finishes without losing or duplicating an action.
+
+If that scheduler is reliable, the damage sequence you described can be added as
+a relatively contained action-resolution module. For Nasus, the scheduler is the
+real system core; the character sheet and damage automation should be built
+around it.
+
+-------------------------------------------------------------------------------
+
+USER
+
+For Nasus, the scheduler is the real system core; the character sheet and damage
+automation should be built around it.
+doubt it, without the character rules nothing would work as intended. damage
+outomation should be easy.
+
+oh i completely forgot damage mitigation, which is through nk action parade, for
+fernkampf it is either glück, ausweichen parieren or nothing. an actor has a max
+of 3 action points per round, can reduce cost of movement to 0 (only 1 movement
+allowed per round) and has to declare for all action points, unused is lost
+
+-------------------------------------------------------------------------------
+
+ASSISTANT
+
+You’re right. Calling the scheduler “the real system core” was too strong.
+
+The core is the Nasus character and rules engine. The scheduler controls when
+rules are invoked, but it cannot determine valid actions, costs, movement, Parade,
+Ausweichen, Trefferzonen or consequences without the character rules.
+
+A better architecture is:
+
+Nasus rules engine
+├─ Character values and derived statistics
+├─ Action validation and AP costs
+├─ Movement rules
+├─ Attack and defence rules
+├─ Damage, armour and mitigation
+├─ Trefferzonen, Trefferschwelle and statuses
+└─ Combat scheduler
+   ├─ Global initiative
+   ├─ Declaration/execution sequence
+   └─ Nahkampf bubbles
+
+Revised round model
+
+Each actor begins a round with up to three action points, as determined by the
+character rules.
+
+During declaration, the actor must account for all available AP:
+
+AP 1 → declared action
+AP 2 → declared action
+AP 3 → declared action
+
+Potentially:
+
+Movement → normally costs AP, but may be reduced to 0
+Movement limit → one movement per actor per round
+Undeclared/unused AP → lost
+
+The system therefore cannot store only one “planned action.” It needs an ordered
+action plan:
+
+Actor plan
+├─ available AP
+├─ Action 1: type, target, cost and parameters
+├─ Action 2: type, target, cost and parameters
+├─ Action 3: type, target, cost and parameters
+├─ movement already declared/performed
+└─ remaining or forfeited AP
+
+Cost must be validated by the character engine at declaration time and checked
+again at execution time. Zero-cost movement still consumes the once-per-round
+movement allowance even though it consumes no AP.
+
+Attack resolution
+
+Damage remains relatively simple, but the complete attack workflow is larger:
+
+Attack is executed
+→ determine attack result and Trefferzone
+→ offer or resolve permitted defence
+→ determine whether the attack still hits
+→ roll damage
+→ apply further mitigation
+→ deduct TZ armour
+→ apply remaining SP
+→ compare SP with Trefferschwelle
+→ if SP > TS, roll Selbstbeherrschung
+→ look up consequence
+→ apply status
+
+Defensive options depend on the attack context:
+
+Context       Possible mitigation
+----------------------------------------------
+Nahkampf      Parade through an NK action
+Fernkampf     Glück, Ausweichen, Parieren, or no defence
+No defence    Continue directly to damage
+
+This makes defence part of action resolution, not merely part of the damage
+formula. The system must ask the rules engine:
+
+What defensive options are legal for this defender right now?
+What do they cost?
+Were they declared or reserved?
+Has the required action/resource already been spent?
+Does the defence interrupt, oppose or replace the attack result?
+
+Whether Parade, Ausweichen and the other defences must be predeclared, consume an
+already-declared action, or can be selected reactively is especially important.
+The data model can support all three, but the scheduler behaviour differs.
+
+Platform consequence
+
+This still favors Foundry, but for a more accurate reason:
+
+- The character sheet and rules engine come first because they define AP, legal
+  actions, derived values and costs.
+- The scheduler then consumes that rules API instead of duplicating rules.
+- Damage is a contained resolution pipeline.
+- The custom initiative and Nahkampf-bubble interface is an important subsystem,
+  not the foundation of the entire implementation.
+
+A sensible build order would be:
+
+1. Character data model and derived values.
+2. Action catalogue, eligibility and AP-cost calculation.
+3. Attack and defence resolution.
+4. Damage, Trefferzonen, armour, TS and status consequences.
+5. Declaration and execution scheduler.
+6. Nahkampf bubbles and changing internal initiative.
+7. Restricted modification of invalidated plans.
+
+That avoids building an impressive scheduler whose action legality later
+conflicts with the actual character rules.
+
+-------------------------------------------------------------------------------
+
+USER
+
+print this conversation as a txt file in the llm folder
+
+===============================================================================
+
+End of transcript.

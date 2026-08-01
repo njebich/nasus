@@ -450,11 +450,11 @@ function render(): void {
         </div>` : ''}
       ${sheet ? `
         <div class="budget-bar">
-          <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: ${sheet.epGesamt}</span>
-          <span title="Steigerungspunkte (übrig): bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK – verbraucht ${sheet.spSpent} von ${sheet.spTotal}">SP: ${sheet.spRemaining}</span>
-          ${sheet.sskMinimumMet ? '' : `<span class="budget-invalid" title="Für einen gültigen Charakter müssen mindestens ${SSK_MINDEST_SP} SP in Sprache, Kultur und Schrift investiert sein. Muttersprache und Vaterland sind keine harten Einzelanforderungen.">SSK: ${sheet.sskSpent} / ${SSK_MINDEST_SP} SP ⚠</span>`}
-          <span title="Talentpunkte (übrig): bezahlt ausschließlich Talente, eigener Pool = 20+Stufe×5 – verbraucht ${sheet.tapSpent} von ${sheet.tapTotal}">TaP: ${sheet.tapRemaining}</span>
-          <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: ${formatDublonenNumber(sheet.dublonenBarRemaining)} bar / ${formatDublonenNumber(sheet.dublonenBankRemaining)} Bank</span>
+          <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: <span class="numeric-field-output numeric-field-signed-five">${sheet.epGesamt}</span></span>
+          <span title="Steigerungspunkte (übrig): bezahlt Eigenschaften/Attribute/Fertigkeiten/Vor-Nachteile/WHK – verbraucht ${sheet.spSpent} von ${sheet.spTotal}">SP: <span class="numeric-field-output numeric-field-signed-five">${sheet.spRemaining}</span></span>
+          ${sheet.sskMinimumMet ? '' : `<span class="budget-invalid" title="Für einen gültigen Charakter müssen mindestens ${SSK_MINDEST_SP} SP in Sprache, Kultur und Schrift investiert sein. Muttersprache und Vaterland sind keine harten Einzelanforderungen.">SSK: <span class="numeric-field-output numeric-field-two">${sheet.sskSpent}</span> / ${SSK_MINDEST_SP} SP ⚠</span>`}
+          <span title="Talentpunkte (übrig): bezahlt ausschließlich Talente, eigener Pool = 20+Stufe×5 – verbraucht ${sheet.tapSpent} von ${sheet.tapTotal}">TaP: <span class="numeric-field-output numeric-field-signed-five">${sheet.tapRemaining}</span></span>
+          <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: <span class="numeric-field-output numeric-field-formatted-five">${formatDublonenNumber(sheet.dublonenBarRemaining)}</span> bar / <span class="numeric-field-output numeric-field-formatted-five">${formatDublonenNumber(sheet.dublonenBankRemaining)}</span> Bank</span>
         </div>` : ''}
       ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
       ${currentCharacter ? renderNavigationMarkup(

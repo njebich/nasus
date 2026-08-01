@@ -204,7 +204,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
       <td>${escapeHtml(dauer?.wd ?? '–')}</td>
       <td class="ki-taw-cell">
         ${readOnly ? '' : `<button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>`}
-        <span class="kampf-pool-value">${currentValue}</span>
+        <span class="kampf-pool-value numeric-field-output numeric-field-two">${currentValue}</span>
         ${readOnly ? '' : `<button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>`}
       </td>

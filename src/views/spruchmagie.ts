@@ -289,7 +289,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
       <td>${escapeHtml(rule.grad ?? '–')}</td>
       <td class="spruchmagie-taw-cell"><div class="spruchmagie-taw-inner">
         ${readOnly ? '' : `<button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>`}
-        <span class="kampf-pool-value">${currentValue}</span>
+        <span class="kampf-pool-value numeric-field-output numeric-field-two">${currentValue}</span>
         ${readOnly ? '' : `<button type="button" class="stat-inc" aria-label="erhöhen" ${disabled ? 'disabled' : ''}${tooltipAttr(plusTitle)}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>`}
       </div></td>

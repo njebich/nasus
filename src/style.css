@@ -280,13 +280,55 @@ body {
 }
 
 .stat-value {
-  width: 5ch;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font: inherit;
   border: 1px solid #8888;
   border-radius: 4px;
   padding: 0.1rem 0.2rem;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+/* Zahlenfelder werden nach ihrem moeglichen Wertebereich dimensioniert, nicht nach dem gerade
+   sichtbaren Wert. Inputs erhalten zusaetzlich Platz fuer die nativen Number-Spinner. */
+.numeric-field-one {
+  --numeric-field-chars: 1;
+}
+
+.numeric-field-two {
+  --numeric-field-chars: 2;
+}
+
+.numeric-field-signed-two {
+  --numeric-field-chars: 3;
+}
+
+.numeric-field-signed-five {
+  --numeric-field-chars: 6;
+}
+
+.numeric-field-formatted-five {
+  /* -99.999,999: Vorzeichen + 5 Stellen + Tausenderpunkt + 3 Nachkommastellen. */
+  --numeric-field-chars: 11;
+}
+
+input.numeric-field-one,
+input.numeric-field-two,
+input.numeric-field-signed-two,
+input.numeric-field-signed-five,
+input.numeric-field-formatted-five {
+  width: calc(var(--numeric-field-chars) * 1ch + 2.4rem);
+  min-width: calc(var(--numeric-field-chars) * 1ch + 2.4rem);
+}
+
+.numeric-field-output {
+  display: inline-block;
+  width: calc(var(--numeric-field-chars) * 1ch);
+  min-width: calc(var(--numeric-field-chars) * 1ch);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-cost {
@@ -1246,8 +1288,11 @@ body {
 }
 
 .kampf-pool-value {
-  min-width: 1.4rem;
+  width: 2ch;
+  min-width: 2ch;
   display: inline-block;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .kampf-row-allocation-dirty {

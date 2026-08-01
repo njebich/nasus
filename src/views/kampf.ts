@@ -802,7 +802,15 @@ export type OnRemoveWaffenLoadout = (loadoutId: string) => void;
 export type OnToggleWaffenLoadoutFavorite = (loadoutId: string) => void;
 
 function loadoutOptionList(items: ReadonlyArray<{ equipmentId: string; label: string }>): string {
-  return items.map((i) => `<option value="${escapeHtml(i.equipmentId)}">${escapeHtml(i.label)}</option>`).join('');
+  const totals = new Map<string, number>();
+  const seen = new Map<string, number>();
+  for (const item of items) totals.set(item.label, (totals.get(item.label) ?? 0) + 1);
+  return items.map((item) => {
+    const copy = (seen.get(item.label) ?? 0) + 1;
+    seen.set(item.label, copy);
+    const label = (totals.get(item.label) ?? 0) > 1 ? `${item.label} (${copy})` : item.label;
+    return `<option value="${escapeHtml(item.equipmentId)}">${escapeHtml(label)}</option>`;
+  }).join('');
 }
 
 function renderLoadoutCombo(comboType: WaffenLoadoutComboType, hidden: boolean, primaryOptions: string, secondaryOptions: string, primaryLabel: string, secondaryLabel: string): string {
@@ -872,16 +880,22 @@ function renderLoadoutCreationForm(character: CharacterState): string {
     </div>`;
 }
 
-function renderLoadoutRow(row: LoadoutDisplayRow): string {
-  const cells = formatLoadoutCells(row.result);
+function renderLoadoutActions(row: LoadoutDisplayRow): { favoriteBtn: string; removeBtn: string } {
   const favoriteIcon = row.entry.favorite ? '★' : '☆';
-  const favoriteBtn = `<button type="button" class="loadout-favorite-toggle" data-loadout-id="${escapeHtml(row.entry.id)}" aria-label="Favorit umschalten">${favoriteIcon}</button>`;
-  const removeBtn = `<button type="button" class="loadout-remove" data-loadout-id="${escapeHtml(row.entry.id)}">Entfernen</button>`;
+  return {
+    favoriteBtn: `<button type="button" class="loadout-favorite-toggle" data-loadout-id="${escapeHtml(row.entry.id)}" aria-label="Favorit umschalten">${favoriteIcon}</button>`,
+    removeBtn: `<button type="button" class="loadout-remove" data-loadout-id="${escapeHtml(row.entry.id)}">Entfernen</button>`,
+  };
+}
+
+function renderNkLoadoutRow(row: LoadoutDisplayRow): string {
+  const cells = formatLoadoutCells(row.result);
+  const { favoriteBtn, removeBtn } = renderLoadoutActions(row);
   if ('error' in cells) {
     return `
       <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
         <td>${escapeHtml(row.displayName)}</td>
-        <td colspan="10">${escapeHtml(cells.error)}</td>
+        <td colspan="9">${escapeHtml(cells.error)}</td>
         <td>${favoriteBtn}</td>
         <td>${removeBtn}</td>
       </tr>`;
@@ -899,26 +913,70 @@ function renderLoadoutRow(row: LoadoutDisplayRow): string {
       <td>${escapeHtml(cells.npa)}</td>
       <td>${pool ? pool.gpa : '–'}</td>
       <td>${pool ? pool.mpa : '–'}</td>
+      <td>${favoriteBtn}</td>
+      <td>${removeBtn}</td>
+    </tr>`;
+}
+
+function renderFkLoadoutRow(row: LoadoutDisplayRow): string {
+  const cells = formatLoadoutCells(row.result);
+  const { favoriteBtn, removeBtn } = renderLoadoutActions(row);
+  if ('error' in cells) {
+    return `
+      <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
+        <td>${escapeHtml(row.displayName)}</td>
+        <td colspan="2">${escapeHtml(cells.error)}</td>
+        <td>${favoriteBtn}</td>
+        <td>${removeBtn}</td>
+      </tr>`;
+  }
+  return `
+    <tr>
+      <td>${escapeHtml(row.displayName)}</td>
+      <td>${escapeHtml(cells.typ)}</td>
       <td>${escapeHtml(cells.fkReichweiten)}</td>
       <td>${favoriteBtn}</td>
       <td>${removeBtn}</td>
     </tr>`;
 }
 
+function loadoutHasNk(row: LoadoutDisplayRow): boolean {
+  return row.entry.comboType !== 'pistole_pistole';
+}
+
+function loadoutHasFk(row: LoadoutDisplayRow): boolean {
+  return row.entry.comboType === 'nk1h_pistole'
+    || row.entry.comboType === 'schild_pistole'
+    || row.entry.comboType === 'pistole_pistole';
+}
+
 function renderWaffenLoadoutBlock(character: CharacterState, sheet: ComputedSheet): string {
   const rows = buildLoadoutDisplayRows(character, sheet);
+  const nkRows = rows.filter(loadoutHasNk);
+  const fkRows = rows.filter(loadoutHasFk);
   return `
     <h3 class="bogen-section-heading">Waffen-Loadout</h3>
     ${renderLoadoutCreationForm(character)}
-    ${rows.length > 0 ? `
+    ${nkRows.length > 0 ? `
     <div class="kampf-table-scroll">
-      <table class="bogen-table kampf-loadout-table">
+      <table class="bogen-table kampf-loadout-table" data-loadout-table="nk">
+        <caption class="loadout-table-heading">Nahkampf</caption>
         <thead><tr>
           <th>Loadout</th><th>Typ</th><th>Schaden</th><th>WK</th>
           <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
-          <th>FK-Reichweiten</th><th>Favorit</th><th></th>
+          <th>Favorit</th><th></th>
         </tr></thead>
-        <tbody>${rows.map(renderLoadoutRow).join('')}</tbody>
+        <tbody>${nkRows.map(renderNkLoadoutRow).join('')}</tbody>
+      </table>
+    </div>` : ''}
+    ${fkRows.length > 0 ? `
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-loadout-table" data-loadout-table="fk">
+        <caption class="loadout-table-heading">Fernkampf</caption>
+        <thead><tr>
+          <th>Loadout</th><th>Typ</th><th>FK-Reichweiten</th><th>Favorit</th><th></th>
+        </tr></thead>
+        <tbody>${fkRows.map(renderFkLoadoutRow).join('')}</tbody>
       </table>
     </div>` : ''}`;
 }

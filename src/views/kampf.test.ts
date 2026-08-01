@@ -464,6 +464,67 @@ describe('buildNahkampfRows: AT/PA-Balance-Regel (Nutzer-Diktat 2026-07-23)', ()
   });
 });
 
+describe('Waffen-Loadout-Auswahl und getrennte Tabellen', () => {
+  function buyAxt(character: ReturnType<typeof baseCharacter>) {
+    const axt = NK_WAFFEN_BASIS.find((row) => row.name === 'Axt')!;
+    const material = NK_MATERIAL.find((row) => row.name === 'Eisen')!;
+    const fertigung = NK_FERTIGUNG.find((row) => row.name === 'Gesellenarbeit')!;
+    const anpassung = NK_ANPASSUNG.find((row) => row.name === 'Von der Stange')!;
+    const schaftmaterial = NK_SCHAFTMATERIAL.find((row) => row.name === 'Standard')!;
+    return buyWeapon(
+      character, axt.sourceRow, material.sourceRow, fertigung.sourceRow,
+      anpassung.sourceRow, schaftmaterial.sourceRow,
+    );
+  }
+
+  it('macht zwei gleiche besessene Waffen als getrennte Exemplare auswählbar', () => {
+    let character = buyAxt(buyAxt(baseCharacter()));
+    const [axt1, axt2] = character.equipment;
+    const container = document.createElement('div');
+    let added = character;
+    renderKampfView(
+      container, computeSheet(character), character, () => {},
+      (comboType, primaryId, secondaryId) => {
+        added = addWaffenLoadout(character, comboType, primaryId, secondaryId);
+      },
+      () => {}, () => {},
+    );
+
+    const fieldset = container.querySelector<HTMLElement>('[data-combo-type="nk1h_nk1h"]')!;
+    const selects = fieldset.querySelectorAll<HTMLSelectElement>('select');
+    expect([...selects[0].options].map((option) => option.textContent)).toContain('Axt (1)');
+    expect([...selects[0].options].map((option) => option.textContent)).toContain('Axt (2)');
+
+    selects[0].value = axt1.id;
+    selects[1].value = axt2.id;
+    container.querySelector<HTMLButtonElement>('.loadout-add-btn')!.click();
+
+    expect(added.waffenLoadouts[0]).toMatchObject({
+      comboType: 'nk1h_nk1h', primaryEquipmentId: axt1.id, secondaryEquipmentId: axt2.id,
+    });
+  });
+
+  it('zeigt ein gemischtes NK/Pistolen-Loadout in getrennten NK- und FK-Tabellen', () => {
+    let character = buyAxt(baseCharacter());
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const [axt, pistoleEntry] = character.equipment;
+    character = addWaffenLoadout(character, 'nk1h_pistole', axt.id, pistoleEntry.id);
+
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+
+    const nkTable = container.querySelector<HTMLTableElement>('[data-loadout-table="nk"]')!;
+    const fkTable = container.querySelector<HTMLTableElement>('[data-loadout-table="fk"]')!;
+    expect(nkTable.caption?.textContent).toBe('Nahkampf');
+    expect(fkTable.caption?.textContent).toBe('Fernkampf');
+    expect(nkTable.textContent).toContain(`Axt+${pistole.name}`);
+    expect(fkTable.textContent).toContain(`Axt+${pistole.name}`);
+    expect(nkTable.textContent).not.toContain('FK-Reichweiten');
+    expect(fkTable.textContent).not.toContain('nAT');
+  });
+});
+
 describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool"-Seite', () => {
   function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
     const row = rows.find((r) => r.name === name);

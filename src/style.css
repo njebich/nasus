@@ -523,6 +523,11 @@ input.numeric-field-formatted-five {
   border-bottom: 1px solid #8882;
 }
 
+.auswahl-row-locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .besitz-entry > summary {
   display: flex;
   align-items: center;
@@ -1373,6 +1378,12 @@ input.numeric-field-formatted-five {
 .kampf-loadout-table th, .kampf-loadout-table td {
   text-align: center;
   white-space: nowrap;
+}
+
+.loadout-table-heading {
+  padding: 0.8rem 0 0.35rem;
+  text-align: left;
+  font-weight: 700;
 }
 
 .kampf-loadout-table td:first-child, .kampf-loadout-table th:first-child {

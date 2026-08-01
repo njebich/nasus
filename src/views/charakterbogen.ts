@@ -282,12 +282,12 @@ const FERNKAMPF_TABLE_HEAD = `
 
 /** Read-only Spiegelung NUR der favorisierten Waffen-Loadouts (2026-07-22) - gleiche Zellen wie
  *  die Kampf-Tab-Tabelle, ohne Favorit-/Entfernen-Steuerelemente. */
-function renderLoadoutMirrorRow(row: LoadoutDisplayRow): string {
+function renderNkLoadoutMirrorRow(row: LoadoutDisplayRow): string {
   const cells = formatLoadoutCells(row.result);
   if ('error' in cells) {
     return `
       <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
-        <td>${escapeHtml(row.displayName)}</td><td colspan="10">${escapeHtml(cells.error)}</td>
+        <td>${escapeHtml(row.displayName)}</td><td colspan="9">${escapeHtml(cells.error)}</td>
       </tr>`;
   }
   const pool = row.pool;
@@ -303,6 +303,21 @@ function renderLoadoutMirrorRow(row: LoadoutDisplayRow): string {
       <td>${escapeHtml(cells.npa)}</td>
       <td>${pool ? pool.gpa : '–'}</td>
       <td>${pool ? pool.mpa : '–'}</td>
+    </tr>`;
+}
+
+function renderFkLoadoutMirrorRow(row: LoadoutDisplayRow): string {
+  const cells = formatLoadoutCells(row.result);
+  if ('error' in cells) {
+    return `
+      <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
+        <td>${escapeHtml(row.displayName)}</td><td colspan="2">${escapeHtml(cells.error)}</td>
+      </tr>`;
+  }
+  return `
+    <tr>
+      <td>${escapeHtml(row.displayName)}</td>
+      <td>${escapeHtml(cells.typ)}</td>
       <td>${escapeHtml(cells.fkReichweiten)}</td>
     </tr>`;
 }
@@ -310,18 +325,30 @@ function renderLoadoutMirrorRow(row: LoadoutDisplayRow): string {
 function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterState): string {
   const favorites = buildLoadoutDisplayRows(character, sheet).filter((r) => r.entry.favorite);
   if (favorites.length === 0) return '';
+  const nkRows = favorites.filter((row) => row.entry.comboType !== 'pistole_pistole');
+  const fkRows = favorites.filter((row) => row.entry.comboType === 'nk1h_pistole'
+    || row.entry.comboType === 'schild_pistole' || row.entry.comboType === 'pistole_pistole');
   return `
     <h3 class="bogen-section-heading">Waffen-Loadout</h3>
+    ${nkRows.length > 0 ? `
     <div class="kampf-table-scroll">
-      <table class="bogen-table kampf-loadout-table">
+      <table class="bogen-table kampf-loadout-table" data-loadout-table="nk">
+        <caption class="loadout-table-heading">Nahkampf</caption>
         <thead><tr>
           <th>Loadout</th><th>Typ</th><th>Schaden</th><th>WK</th>
           <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
-          <th>FK-Reichweiten</th>
         </tr></thead>
-        <tbody>${favorites.map(renderLoadoutMirrorRow).join('')}</tbody>
+        <tbody>${nkRows.map(renderNkLoadoutMirrorRow).join('')}</tbody>
       </table>
-    </div>`;
+    </div>` : ''}
+    ${fkRows.length > 0 ? `
+    <div class="kampf-table-scroll">
+      <table class="bogen-table kampf-loadout-table" data-loadout-table="fk">
+        <caption class="loadout-table-heading">Fernkampf</caption>
+        <thead><tr><th>Loadout</th><th>Typ</th><th>FK-Reichweiten</th></tr></thead>
+        <tbody>${fkRows.map(renderFkLoadoutMirrorRow).join('')}</tbody>
+      </table>
+    </div>` : ''}`;
 }
 
 function renderKampfWaffenMirror(sheet: ComputedSheet, character: CharacterState): string {

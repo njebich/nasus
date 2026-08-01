@@ -15,7 +15,7 @@ import {
 } from '../engine/waffenPool';
 import { GUT_BASIS, MEISTERLICH_BASIS, gutBudget, meisterlichBudget, isPoolBalanceValid } from '../engine/poolCaps';
 import { getOwnedKampfmodulTalentInfo } from '../engine/talenteKampfmodulInfo';
-import { computeSchaden, formatSigned } from '../engine/waffenSchaden';
+import { combineDiceNotations, computeSchaden, formatSigned } from '../engine/waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from '../engine/fernkampfRange';
 import { withScrollAnchor } from './scrollAnchor';
 import {
@@ -528,7 +528,7 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
         rangedUsable,
         invalidReason: invalidReason ?? (!ammo ? `Keine kompatible Munition vom Typ '${requiredTypeId}' ausgewählt` : undefined),
         schaden: rangedUsable
-          ? `${basis['1.W'] ?? '–'}${snap.fixschaden ? ` ${formatSigned(snap.fixschaden)}` : ''}`
+          ? `${combineDiceNotations(basis['1.W'])}${snap.fixschaden ? ` ${formatSigned(snap.fixschaden)}` : ''}`
           : '–',
         rb: rangedUsable ? snap.rb ?? 0 : 0,
         munition: ammoRow ? `${ammoRow.label} (${ammo!.quantity} Stück)` : '–',
@@ -646,7 +646,7 @@ export function buildArmbrustBoegenRows(character: CharacterState, typ: 'boegen'
         invalidReason: invalidReason
           ?? (!ammo ? `Keine kompatible Munition vom Typ '${basis.ammunitionTypeId}' ausgewählt` : undefined),
         schaden: rangedUsable
-          ? `${basis.fernkampfWuerfel}${totalFix !== 0 ? ` ${formatSigned(totalFix)}` : ''}`
+          ? `${combineDiceNotations(basis.fernkampfWuerfel, ammoSnapshot.wuerfel)}${totalFix !== 0 ? ` ${formatSigned(totalFix)}` : ''}`
           : '–',
         rb: rangedUsable ? weaponRb + ammoRb : 0,
         munition: ammoSnapshot ? `${ammoSnapshot.name} (${ammo!.quantity} Stück)` : '–',

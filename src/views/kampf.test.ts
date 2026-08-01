@@ -199,6 +199,20 @@ describe('buildArmbrustBoegenRows: aufgeloestes Inventar', () => {
     expect(rows[0].munition).toBe(`${bolzen.name} (7 Stück)`);
   });
 
+  it('addiert den Schadenswuerfel des Bolzens zum Schadenswuerfel der Armbrust', () => {
+    const armbrust = ARMBRUST.find((row) => row.name === 'Mittelschwere Armbrust' && row['1.W'] === '1W10')!;
+    const stahlbolzen = BOLZEN.find((row) => row.name === 'Stahlspitzen-Bolzen')!;
+    const bronzebolzen = BOLZEN.find((row) => row.name === 'Bronzespitzen-Bolzen')!;
+
+    let mitStahl = buyFernkampfwaffe(baseCharacter(), 'armbrust', armbrust.sourceRow);
+    mitStahl = buyMunition(mitStahl, 'bolzen', stahlbolzen.sourceRow, null, 1);
+    expect(buildArmbrustBoegenRows(mitStahl, 'armbrust')[0].schaden).toBe('2W10');
+
+    let mitBronze = buyFernkampfwaffe(baseCharacter(), 'armbrust', armbrust.sourceRow);
+    mitBronze = buyMunition(mitBronze, 'bolzen', bronzebolzen.sourceRow, null, 1);
+    expect(buildArmbrustBoegenRows(mitBronze, 'armbrust')[0].schaden).toBe('W10+W8');
+  });
+
   it('liest im Kampf-Tab Namen und Fernkampfschaden aus dem Inventar-Snapshot statt erneut aus dem Katalog', () => {
     let character = buyFernkampfwaffe(baseCharacter(), 'boegen', bogen.sourceRow);
     character = buyMunition(character, 'pfeile', pfeil.sourceRow, null, 10);
@@ -209,7 +223,7 @@ describe('buildArmbrustBoegenRows: aufgeloestes Inventar', () => {
       bogen['1.W'] = 'W999';
       const [row] = buildArmbrustBoegenRows(character, 'boegen');
       expect(row.label).toBe(oldName);
-      expect(row.schaden).toBe(oldWuerfel);
+      expect(row.schaden).toBe('W4+W6');
     } finally {
       bogen.name = oldName;
       bogen['1.W'] = oldWuerfel;

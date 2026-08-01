@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { computeSchaden, computeStaerkeBonus } from './waffenSchaden';
+import { combineDiceNotations, computeSchaden, computeStaerkeBonus } from './waffenSchaden';
+
+describe('Schadenswuerfel-Anzeige', () => {
+  it('entfernt die fuehrende 1 bei einem einzelnen Wuerfel', () => {
+    expect(combineDiceNotations('1W10')).toBe('W10');
+  });
+
+  it('zieht gleiche Wuerfel zusammen', () => {
+    expect(combineDiceNotations('1W10', '1W10')).toBe('2W10');
+    expect(combineDiceNotations('W6+W6')).toBe('2W6');
+  });
+
+  it('zeigt unterschiedliche Wuerfel als Summe', () => {
+    expect(combineDiceNotations('1W10', '1W8')).toBe('W10+W8');
+  });
+});
 
 describe('Stä-Mod', () => {
   it('wertet :2-5 als Stärke durch 2, Division aufrunden, danach minus 5', () => {

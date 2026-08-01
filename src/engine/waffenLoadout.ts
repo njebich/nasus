@@ -9,10 +9,13 @@
 // Nutzer 2026-07-23 als komplettes Rework der 2026-07-22-Version dictiert. Alle Funktionen hier
 // sind reine Funktionen ueber CharacterState/ComputedSheet - keine Mutation, kein Seiteneffekt.
 
-import { isWaffenLoadoutSingleType, type CharacterState, type WaffenLoadoutEntry } from '../state/characterStore';
+import {
+  isWaffenLoadoutSingleType, type CharacterState, type PoolAllocation, type WaffenLoadoutEntry,
+} from '../state/characterStore';
 import type { ComputedSheet } from './characterSheet';
 import { evalReferenz, type CharacterValueSource } from './rules';
 import { computeWeaponAtPaOverflow, getKampfstilModifier, getZweiWaffenCap, resolveWaffenPoolReferenz } from './waffenPool';
+import { computeGutMax, computeMeisterlichMax, GUT_BASIS, MEISTERLICH_BASIS } from './poolCaps';
 import { combineDiceNotations, computeSchaden, averageSchadenValue, floorSigned, formatSigned } from './waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor, type RangeCellValues } from './fernkampfRange';
 import type { GenericRow as WeaponRow } from '../data/equipment/weapons';
@@ -134,31 +137,6 @@ export function isZweiWaffenTalentEligiblePair(character: CharacterState, wkA: n
 }
 
 // ---------------------------------------------------------------------------------------------
-// "Hoehere Pool"-Regel (gAT/gPA/mAT/mPA/PP fuer den ganzen Combo, siehe Plan) - vom Nutzer
-// 2026-07-22 nachtraeglich praezisiert: die Seite mit den meisten bereits investierten
-// Spezialisierungspunkten in ihrem eigenen Pool "gewinnt" und bestimmt gAT/gPA/mAT/mPA/PP fuer den
-// GANZEN Combo (nie gesplittet, nie gemittelt/summiert). Nur fuer nk1h_nk1h/nk1h_schild relevant -
-// die drei Pistolen-Combos (nk1h_pistole/schild_pistole/pistole_pistole) haben keine solche
-// Pool-Struktur (siehe engine.md-Kommentar in views/kampf.ts).
-// ---------------------------------------------------------------------------------------------
-
-export interface PoolSideRef {
-  equipmentId: string;
-  poolReferenz: string | null;
-}
-
-function poolInvestedPoints(sheet: ComputedSheet, poolReferenz: string | null): number {
-  if (!poolReferenz) return -Infinity; // kein aufloesbarer Pool -> gewinnt nie gegen eine echte Seite
-  const rule = sheet.byKategorie['Nahkampf']?.find((r) => r.rule.referenz === poolReferenz);
-  return Number(rule?.computedValue ?? 0);
-}
-
-/** Bei Gleichstand gewinnt `primary` (deterministisch, kein Zufall). */
-export function pickHigherPoolSide(sheet: ComputedSheet, primary: PoolSideRef, secondary: PoolSideRef): PoolSideRef {
-  return poolInvestedPoints(sheet, secondary.poolReferenz) > poolInvestedPoints(sheet, primary.poolReferenz) ? secondary : primary;
-}
-
-// ---------------------------------------------------------------------------------------------
 // Gemeinsame Bausteine
 // ---------------------------------------------------------------------------------------------
 
@@ -167,11 +145,8 @@ export interface LoadoutResolutionError {
   reason: string;
 }
 
-/** nAT/nPA fuer den Loadout-Combo IMMER mit Null Pool-Ueberschuss-Investition (Nutzer 2026-07-22
- *  bestaetigt: "always show a fresh, zero-investment number") - unabhaengig davon, was der
- *  Spieler fuer diese Waffe bereits in ihrer SOLO-Nahkampf-Zeile an nAT/nPA-Ueberschusspunkten
- *  investiert hat. gAT/gPA/mAT/mPA sind davon UNBERUEHRT (siehe pickHigherPoolSide/higherPoolSide -
- *  die werden vom Aufrufer (views/kampf.ts) separat aus der jeweils gewinnenden Seite gespiegelt). */
+/** Einfache nAT/nPA-Projektion fuer Misch-Loadouts ohne zwei vollstaendige Nahkampf-Poolzeilen
+ * (Nahkampfwaffe/Schild + Pistole). Zwei NK-Poolzeilen verwenden computeTwoHandPoolValues. */
 function cappedNat(
   hauptfertigkeit: string, atBonus: number, paBonus: number, values: CharacterValueSource,
   kampfstil: { at: number; pa: number },
@@ -248,6 +223,146 @@ function pistolenschiessenTalente(character: CharacterState): { linkshaendig: bo
   };
 }
 
+export interface LoadoutPoolValues {
+  nat: number;
+  gat: number;
+  mat: number;
+  npa: number;
+  gpa: number;
+  mpa: number;
+}
+
+type AtPaSide = 'at' | 'pa';
+
+interface ProjectedTierValues {
+  n: number;
+  g: number;
+  m: number;
+  gCap: number;
+  mCap: number;
+}
+
+interface ProjectedWeaponRow {
+  at: ProjectedTierValues;
+  pa: ProjectedTierValues;
+}
+
+const EMPTY_POOL_ALLOCATION: PoolAllocation = { nat: 0, gat: 0, mat: 0, npa: 0, gpa: 0, mpa: 0 };
+
+function clonePoolAllocation(allocation: PoolAllocation | undefined): PoolAllocation {
+  return { ...(allocation ?? EMPTY_POOL_ALLOCATION) };
+}
+
+function allocationSpent(allocation: PoolAllocation, side: AtPaSide): number {
+  return side === 'at'
+    ? allocation.nat + allocation.gat + allocation.mat
+    : allocation.npa + allocation.gpa + allocation.mpa;
+}
+
+function projectedTierValues(
+  overflow: ReturnType<typeof computeWeaponAtPaOverflow>, allocation: PoolAllocation,
+  side: AtPaSide, foreignNMod: number,
+): ProjectedTierValues {
+  const rawN = side === 'at'
+    ? overflow.uncAtWeapon + allocation.nat + foreignNMod
+    : overflow.uncPaWeapon + allocation.npa + foreignNMod;
+  // Ein positiver Zweithand-Mod endet bei 20 und erzeugt ausdruecklich keine neuen PP.
+  const n = Math.min(20, rawN);
+  const gCap = Math.max(GUT_BASIS, computeGutMax(n));
+  const mCap = Math.max(MEISTERLICH_BASIS, computeMeisterlichMax(gCap));
+  const gAllocated = side === 'at' ? allocation.gat : allocation.gpa;
+  const mAllocated = side === 'at' ? allocation.mat : allocation.mpa;
+  return {
+    n,
+    g: Math.min(gCap, GUT_BASIS + gAllocated),
+    m: Math.min(mCap, MEISTERLICH_BASIS + mAllocated),
+    gCap,
+    mCap,
+  };
+}
+
+function incrementFirstAvailableTier(
+  overflow: ReturnType<typeof computeWeaponAtPaOverflow>, allocation: PoolAllocation,
+  side: AtPaSide, foreignNMod: number,
+): boolean {
+  const values = projectedTierValues(overflow, allocation, side, foreignNMod);
+  if (values.n < 20) {
+    if (side === 'at') allocation.nat += 1;
+    else allocation.npa += 1;
+    return true;
+  }
+  const gField = side === 'at' ? 'gat' : 'gpa';
+  if (GUT_BASIS + allocation[gField] < values.gCap) {
+    allocation[gField] += 1;
+    return true;
+  }
+  const mField = side === 'at' ? 'mat' : 'mpa';
+  if (MEISTERLICH_BASIS + allocation[mField] < values.mCap) {
+    allocation[mField] += 1;
+    return true;
+  }
+  return false;
+}
+
+function projectWeaponRowWithRestPp(
+  character: CharacterState, sheet: ComputedSheet, values: CharacterValueSource,
+  item: LoadoutItemInfo, preferredSide: AtPaSide, foreignModSide: AtPaSide, foreignNMod: number,
+): ProjectedWeaponRow {
+  const allocationKey = item.poolReferenz ? `${item.poolReferenz}::${item.equipmentId}` : '';
+  const allocation = clonePoolAllocation(allocationKey ? character.poolAllocations[allocationKey] : undefined);
+  const kampfstil = getKampfstilModifier(character);
+  const overflow = computeWeaponAtPaOverflow(item.hauptfertigkeit, item.atBonus, item.paBonus, values, kampfstil);
+  const poolRule = item.poolReferenz
+    ? sheet.byKategorie['Nahkampf']?.find((row) => row.rule.referenz === item.poolReferenz)
+    : undefined;
+  const allocated = allocationSpent(allocation, 'at') + allocationSpent(allocation, 'pa');
+  // Nur der Ueberschuss der Ursprungswaffe gehoert zum Budget. Ein positiver Fremdmod im Loadout
+  // darf kein zusaetzliches Budget erzeugen.
+  let remaining = Math.max(0, Math.floor(
+    Number(poolRule?.computedValue ?? 0) + overflow.atOverflow + overflow.paOverflow - allocated,
+  ));
+  const modFor = (side: AtPaSide): number => side === foreignModSide ? foreignNMod : 0;
+
+  while (remaining > 0) {
+    const atSpent = allocationSpent(allocation, 'at');
+    const paSpent = allocationSpent(allocation, 'pa');
+    const first: AtPaSide = atSpent < paSpent ? 'at' : paSpent < atSpent ? 'pa' : preferredSide;
+    const second: AtPaSide = first === 'at' ? 'pa' : 'at';
+    if (!incrementFirstAvailableTier(overflow, allocation, first, modFor(first))
+      && !incrementFirstAvailableTier(overflow, allocation, second, modFor(second))) break;
+    remaining -= 1;
+  }
+
+  return {
+    at: projectedTierValues(overflow, allocation, 'at', modFor('at')),
+    pa: projectedTierValues(overflow, allocation, 'pa', modFor('pa')),
+  };
+}
+
+/**
+ * Kombi-Regel: Die rechte Hand reicht ihre komplette AT-Seite weiter, die linke Hand ihre
+ * komplette PA-Seite. Der jeweilige n-Mod der anderen Hand wird nur auf diese sichtbare Seite
+ * angewendet. Freie PP werden weiterhin innerhalb jeder Ursprungszeile balanciert verteilt;
+ * rechts gewinnt AT den Gleichstand, links PA. Ohne passendes Talent wird die linke PA-Seite
+ * erst nach der Projektion halbiert.
+ */
+function computeTwoHandPoolValues(
+  character: CharacterState, sheet: ComputedSheet, values: CharacterValueSource,
+  right: LoadoutItemInfo, left: LoadoutItemInfo, leftHalved: boolean,
+): { poolValues: LoadoutPoolValues; rightRow: ProjectedWeaponRow; leftRow: ProjectedWeaponRow } {
+  const rightRow = projectWeaponRowWithRestPp(character, sheet, values, right, 'at', 'at', left.atBonus);
+  const leftRow = projectWeaponRowWithRestPp(character, sheet, values, left, 'pa', 'pa', right.paBonus);
+  const halfLeft = (value: number): number => leftHalved ? floorSigned(value / 2) : value;
+  return {
+    poolValues: {
+      nat: rightRow.at.n, gat: rightRow.at.g, mat: rightRow.at.m,
+      npa: halfLeft(leftRow.pa.n), gpa: halfLeft(leftRow.pa.g), mpa: halfLeft(leftRow.pa.m),
+    },
+    rightRow,
+    leftRow,
+  };
+}
+
 // ---------------------------------------------------------------------------------------------
 // nk1h_nk1h - NK 1H + NK 1H (dual wield)
 // ---------------------------------------------------------------------------------------------
@@ -269,7 +384,9 @@ export interface DualWaffenNoTalentResult {
   talentActive: false;
   primary: DualWaffenSide;
   secondary: DualWaffenSide;
-  higherPoolSide: PoolSideRef;
+  nat: number;
+  npa: number;
+  poolValues: LoadoutPoolValues;
 }
 
 export interface DualWaffenTalentResult {
@@ -280,11 +397,11 @@ export interface DualWaffenTalentResult {
   secondaryEquipmentId: string;
   nat: number;
   npa: number;
+  poolValues: LoadoutPoolValues;
   atWk: string;
   paWk: string;
   minStaerke: number;
   schaden: string;
-  higherPoolSide: PoolSideRef;
 }
 
 export type Nk1hNk1hResult = LoadoutResolutionError | DualWaffenNoTalentResult | DualWaffenTalentResult;
@@ -301,17 +418,9 @@ export function resolveNk1hNk1h(
   }
 
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
-  const kampfstil = getKampfstilModifier(character);
-  const higherPoolSide = pickHigherPoolSide(
-    sheet,
-    { equipmentId: primary.equipmentId, poolReferenz: primary.poolReferenz },
-    { equipmentId: secondary.equipmentId, poolReferenz: secondary.poolReferenz },
-  );
-  const atBonusSum = primary.atBonus + secondary.atBonus;
-  const paBonusSum = primary.paBonus + secondary.paBonus;
-
   if (isZweiWaffenTalentEligiblePair(character, primary.wk, secondary.wk)) {
-    const { nat, npa } = cappedNat(primary.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
+    const projected = computeTwoHandPoolValues(character, sheet, values, primary, secondary, false);
+    const { nat, npa } = projected.poolValues;
     const primaryAvg = averageSchadenValue(primary.basis, primary.staerkeMalus, eigKStaerke);
     const secondaryAvg = averageSchadenValue(secondary.basis, secondary.staerkeMalus, eigKStaerke);
     const schaden = primaryAvg >= secondaryAvg
@@ -319,29 +428,28 @@ export function resolveNk1hNk1h(
       : computeSchaden(secondary.basis, secondary.staerkeMalus, eigKStaerke);
     return {
       ok: true, comboType: 'nk1h_nk1h', talentActive: true,
-      primaryEquipmentId, secondaryEquipmentId, nat, npa,
+      primaryEquipmentId, secondaryEquipmentId, nat, npa, poolValues: projected.poolValues,
       atWk: String(Math.max(primary.wk, secondary.wk) * 1.5),
       paWk: String(primary.wk + secondary.wk),
       minStaerke: primary.minStaerke + secondary.minStaerke,
-      schaden, higherPoolSide,
+      schaden,
     };
   }
 
-  const primaryNat = cappedNat(primary.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
-  const secondaryNat = cappedNat(secondary.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
+  const projected = computeTwoHandPoolValues(character, sheet, values, primary, secondary, true);
   return {
     ok: true, comboType: 'nk1h_nk1h', talentActive: false,
+    nat: projected.poolValues.nat, npa: projected.poolValues.npa, poolValues: projected.poolValues,
     primary: {
       equipmentId: primary.equipmentId, label: primary.label, isPrimary: true, halved: false,
-      nat: primaryNat.nat, npa: primaryNat.npa,
+      nat: projected.rightRow.at.n, npa: projected.rightRow.pa.n,
       schaden: computeSchaden(primary.basis, primary.staerkeMalus, eigKStaerke), wk: String(primary.wk),
     },
     secondary: {
       equipmentId: secondary.equipmentId, label: secondary.label, isPrimary: false, halved: true,
-      nat: floorSigned(secondaryNat.nat / 2), npa: floorSigned(secondaryNat.npa / 2),
+      nat: floorSigned(projected.leftRow.at.n / 2), npa: projected.poolValues.npa,
       schaden: computeSchaden(secondary.basis, secondary.staerkeMalus, eigKStaerke), wk: String(secondary.wk),
     },
-    higherPoolSide,
   };
 }
 
@@ -528,7 +636,9 @@ export interface SchildNoTalentResult {
   talentActive: false;
   primary: DualWaffenSide;
   secondary: DualWaffenSide;
-  higherPoolSide: PoolSideRef;
+  nat: number;
+  npa: number;
+  poolValues: LoadoutPoolValues;
 }
 
 export interface SchildTalentResult {
@@ -539,11 +649,11 @@ export interface SchildTalentResult {
   schildEquipmentId: string;
   nat: number;
   npa: number;
+  poolValues: LoadoutPoolValues;
   atWk: string;
   paWk: string;
   minStaerke: number;
   schaden: string;
-  higherPoolSide: PoolSideRef;
 }
 
 export type Nk1hSchildResult = LoadoutResolutionError | SchildNoTalentResult | SchildTalentResult;
@@ -563,58 +673,50 @@ export function resolveNk1hSchild(
   const schild = primarySchild ?? secondarySchild;
   if (!weapon || !schild) return { ok: false, reason: 'Waffe oder Schild sind nicht (mehr) besessen' };
   const weaponIsPrimary = primaryWeapon !== undefined;
+  const primaryItem = weaponIsPrimary ? weapon : schild;
+  const secondaryItem = weaponIsPrimary ? schild : weapon;
 
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
-  const kampfstil = getKampfstilModifier(character);
-  const higherPoolSide = pickHigherPoolSide(
-    sheet,
-    { equipmentId: weapon.equipmentId, poolReferenz: weapon.poolReferenz },
-    { equipmentId: schild.equipmentId, poolReferenz: schild.poolReferenz },
-  );
-  const atBonusSum = weapon.atBonus + schild.atBonus;
-  const paBonusSum = weapon.paBonus + schild.paBonus;
-
   if (isZweiWaffenTalentEligiblePair(character, weapon.wk, schild.wk)) {
     // Schild-WK wird VOR den AT/PA-WK-Formeln halbiert (aufgerundet auf 0.5 - gleiche Konvention
     // wie die bestehende 2H-WK-Anzeige in views/kampf.ts) - das Talent-GATE oben prueft aber
     // bewusst die RAW (nicht halbierte) Schild-WK, siehe isZweiWaffenTalentEligiblePair-Aufruf.
     const halvedSchildWk = Math.ceil((schild.wk / 2) * 2) / 2;
     const schaden = computeSchaden(weapon.basis, weapon.staerkeMalus, eigKStaerke);
-    const { nat, npa } = cappedNat(weapon.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
+    const projected = computeTwoHandPoolValues(character, sheet, values, primaryItem, secondaryItem, false);
+    const { nat, npa } = projected.poolValues;
     return {
       ok: true, comboType: 'nk1h_schild', talentActive: true,
-      weaponEquipmentId: weapon.equipmentId, schildEquipmentId: schild.equipmentId, nat, npa,
+      weaponEquipmentId: weapon.equipmentId, schildEquipmentId: schild.equipmentId,
+      nat, npa, poolValues: projected.poolValues,
       atWk: String(Math.max(weapon.wk, halvedSchildWk) * 1.5),
       paWk: String(weapon.wk + halvedSchildWk),
       minStaerke: weapon.minStaerke + schild.minStaerke,
-      schaden, higherPoolSide,
+      schaden,
     };
   }
 
   const schildkampfOwned = (character.selections['talente_schildkampf'] ?? 0) > 0;
-  const primaryItem = weaponIsPrimary ? weapon : schild;
-  const secondaryItem = weaponIsPrimary ? schild : weapon;
   // Die Halbierungs-Ausnahme durch "Schildkampf" greift nur, wenn das SCHILD tatsaechlich in der
   // Sekundaerhand ist - landet stattdessen die Waffe in der Sekundaerhand, gibt es dafuer kein
   // eigenes Talent (nicht dictiert), sie bleibt halbiert.
   const secondaryHalved = weaponIsPrimary ? !schildkampfOwned : true;
 
-  const primaryNat = cappedNat(primaryItem.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
-  const secondaryNat = cappedNat(secondaryItem.hauptfertigkeit, atBonusSum, paBonusSum, values, kampfstil);
+  const projected = computeTwoHandPoolValues(character, sheet, values, primaryItem, secondaryItem, secondaryHalved);
   return {
     ok: true, comboType: 'nk1h_schild', talentActive: false,
+    nat: projected.poolValues.nat, npa: projected.poolValues.npa, poolValues: projected.poolValues,
     primary: {
       equipmentId: primaryItem.equipmentId, label: primaryItem.label, isPrimary: true, halved: false,
-      nat: primaryNat.nat, npa: primaryNat.npa,
+      nat: projected.rightRow.at.n, npa: projected.rightRow.pa.n,
       schaden: computeSchaden(primaryItem.basis, primaryItem.staerkeMalus, eigKStaerke), wk: String(primaryItem.wk),
     },
     secondary: {
       equipmentId: secondaryItem.equipmentId, label: secondaryItem.label, isPrimary: false, halved: secondaryHalved,
-      nat: secondaryHalved ? floorSigned(secondaryNat.nat / 2) : secondaryNat.nat,
-      npa: secondaryHalved ? floorSigned(secondaryNat.npa / 2) : secondaryNat.npa,
+      nat: secondaryHalved ? floorSigned(projected.leftRow.at.n / 2) : projected.leftRow.at.n,
+      npa: projected.poolValues.npa,
       schaden: computeSchaden(secondaryItem.basis, secondaryItem.staerkeMalus, eigKStaerke), wk: String(secondaryItem.wk),
     },
-    higherPoolSide,
   };
 }
 

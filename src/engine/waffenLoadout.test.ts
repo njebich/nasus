@@ -14,7 +14,7 @@ import { computeRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from './f
 import {
   listEligibleNahkampf1HWaffen,
   resolveNk1hNk1h, resolveNk1hPistole, resolveNk1hSchild, resolveSchildPistole, resolvePistolePistole,
-  resolveLoadout, describeLoadout, pickHigherPoolSide,
+  resolveLoadout, describeLoadout,
 } from './waffenLoadout';
 
 function fkNum(row: Record<string, string>, header: string): number {
@@ -88,31 +88,50 @@ describe('Eignungslisten', () => {
 });
 
 describe('resolveNk1hNk1h: kein Talent (dual wield)', () => {
-  it('summiert das n-Mod beider Waffen in JEDE Hand, mit eigener Hauptfertigkeit pro Hand, und halbiert die Nebenhand (abgerundet)', () => {
+  it('reicht rechte AT und linke PA weiter; ein fremder AT-Mod -2 kaskadiert 20/10/26 zu 18/9/25', () => {
     let character = baseCharacter();
+    character.values['nk_hiebwaffen'] = 12; // ungekappte Hiebwaffen-AT/PA jeweils 24
     character = buyTestWeapon(character, 'Axt');
-    character = buyTestWeapon(character, 'Dolch');
+    character = buyTestWeapon(character, 'Dolch orkisch, breit'); // AT-Mod -2
     const [axt, dolch] = character.equipment;
+    character.values['nk_spez_hiebwaffen_aexte'] = 20;
+    // Axt solo: AT 20/10/26. Insgesamt sind genau alle 28 PP verteilt, damit die
+    // Loadout-Projektion den Zweithand-Malus nicht automatisch wieder auffuellen kann.
+    character.poolAllocations[`nk_pool_hiebwaffen_aexte::${axt.id}`] = {
+      nat: 0, gat: 9, mat: 5, npa: 1, gpa: 9, mpa: 4,
+    };
     const sheet = computeSheet(character);
     const values = makeValueSource(character);
-    const kampfstil = getKampfstilModifier(character);
-
-    const axtSnap = axt.computedStatsSnapshot!;
-    const dolchSnap = dolch.computedStatsSnapshot!;
-    const atSum = axtSnap.at + dolchSnap.at;
-    const paSum = axtSnap.pa + dolchSnap.pa;
-    const expectedPrimary = computeWeaponAtPaOverflow('Hiebwaffen', atSum, paSum, values, kampfstil);
-    const expectedSecondary = computeWeaponAtPaOverflow('Stichwaffen', atSum, paSum, values, kampfstil);
 
     const result = resolveNk1hNk1h(character, sheet, values, axt.id, dolch.id);
     if (!result.ok || result.talentActive) throw new Error('Erwartete no-talent Ergebnis');
-    expect(result.primary.nat).toBe(Math.min(20, expectedPrimary.uncAtWeapon));
-    expect(result.primary.npa).toBe(Math.min(20, expectedPrimary.uncPaWeapon));
-    expect(result.secondary.nat).toBe(Math.floor(Math.min(20, expectedSecondary.uncAtWeapon) / 2));
-    expect(result.secondary.npa).toBe(Math.floor(Math.min(20, expectedSecondary.uncPaWeapon) / 2));
-    expect(result.primary.schaden).toBe(computeSchaden(NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === axt.baseId), axtSnap.staerkeMalus, EIG_K_STAERKE));
+    expect(result.poolValues).toMatchObject({ nat: 18, gat: 9, mat: 25 });
+    expect(result.primary.schaden).toBe(computeSchaden(
+      NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === axt.baseId),
+      axt.computedStatsSnapshot!.staerkeMalus, EIG_K_STAERKE,
+    ));
     expect(result.secondary.halved).toBe(true);
     expect(result.primary.halved).toBe(false);
+  });
+
+  it('verteilt 5 Rest-PP bei AT 11 / PA 10 zuerst auf PA und danach mit AT-Praeferenz: 2 AT, 3 PA', () => {
+    let character = baseCharacter();
+    character.values['nk_stichwaffen'] = 6; // ungekappte Stichwaffen-Basis 22
+    character = buyTestWeapon(character, 'Degen'); // eigene AT -2 => solo nAT 20
+    character = buyTestWeapon(character, 'Axt'); // fremder AT-Mod -4 => Kombi nAT zunaechst 16
+    const [degen, axt] = character.equipment;
+    character.values['nk_spez_stichwaffen_fechtwaffen'] = 20;
+    character.poolAllocations[`nk_pool_stichwaffen_fechtwaffen::${degen.id}`] = {
+      nat: 0, gat: 7, mat: 4, // AT: 11 PP
+      npa: 0, gpa: 7, mpa: 3, // PA: 10 PP; vom Gesamtbudget bleiben 5 PP
+    };
+
+    const result = resolveNk1hNk1h(
+      character, computeSheet(character), makeValueSource(character), degen.id, axt.id,
+    );
+    if (!result.ok || result.talentActive) throw new Error('Erwartete no-talent Ergebnis');
+    // Von den 5 Rest-PP gehen nur 2 auf die sichtbare AT-Seite: 16 -> 18.
+    expect(result.nat).toBe(18);
   });
 
   it('deckelt nAT/nPA bei 20, selbst wenn die solo-Basis (ohne jede Investition) schon darueber liegt', () => {
@@ -126,8 +145,8 @@ describe('resolveNk1hNk1h: kein Talent (dual wield)', () => {
 
     const result = resolveNk1hNk1h(character, sheet, values, axt.id, dolch.id);
     if (!result.ok || result.talentActive) throw new Error('Erwartete no-talent Ergebnis');
-    expect(result.primary.nat).toBeLessThanOrEqual(20);
-    expect(result.primary.npa).toBeLessThanOrEqual(20);
+    expect(result.nat).toBeLessThanOrEqual(20);
+    expect(result.npa).toBeLessThanOrEqual(20);
   });
 
   it('meldet einen Fehler statt zu werfen, wenn eine referenzierte Waffe nicht mehr besessen wird', () => {
@@ -169,6 +188,26 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
     const result = resolveNk1hNk1h(character, computeSheet(character), makeValueSource(character), krummdolch.id, kriegsbeil.id);
     if (!result.ok) throw new Error('Erwartete ein Ergebnis');
     expect(result.talentActive).toBe(true);
+  });
+
+  it('halbiert ohne Talent die komplette linke PA-Seite erst nach der Projektion', () => {
+    let character = characterWithKrummdolchUndKriegsbeil();
+    const [rechts, links] = character.equipment;
+    const noTalent = resolveNk1hNk1h(
+      character, computeSheet(character), makeValueSource(character), rechts.id, links.id,
+    );
+    if (!noTalent.ok || noTalent.talentActive) throw new Error('Erwartete no-talent Ergebnis');
+
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_1');
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_2');
+    const withTalent = resolveNk1hNk1h(
+      character, computeSheet(character), makeValueSource(character), rechts.id, links.id,
+    );
+    if (!withTalent.ok || !withTalent.talentActive) throw new Error('Erwartete Talent-Ergebnis');
+
+    expect(noTalent.poolValues.npa).toBe(Math.floor(withTalent.poolValues.npa / 2));
+    expect(noTalent.poolValues.gpa).toBe(Math.floor(withTalent.poolValues.gpa / 2));
+    expect(noTalent.poolValues.mpa).toBe(Math.floor(withTalent.poolValues.mpa / 2));
   });
 
   it('berechnet AT-WK = hoehere WK * 1,5, PA-WK = Summe der WK, Mindeststaerke summiert', () => {
@@ -470,37 +509,6 @@ describe('resolvePistolePistole (NEU 2026-07-23: beide Haende standardmaessig ha
     const [p1, , axt] = character.equipment;
     const result = resolvePistolePistole(character, makeValueSource(character), p1.id, axt.id);
     expect(result.ok).toBe(false);
-  });
-});
-
-describe('pickHigherPoolSide', () => {
-  it('waehlt bei Gleichstand (keine Investition auf beiden Seiten) die Primaerseite', () => {
-    let character = baseCharacter();
-    character = buyTestWeapon(character, 'Axt');
-    character = buyTestWeapon(character, 'Dolch');
-    const [axt, dolch] = character.equipment;
-    const sheet = computeSheet(character);
-    const winner = pickHigherPoolSide(
-      sheet,
-      { equipmentId: axt.id, poolReferenz: 'nk_pool_hiebwaffen_aexte' },
-      { equipmentId: dolch.id, poolReferenz: 'nk_pool_stichwaffen_dolche' },
-    );
-    expect(winner.equipmentId).toBe(axt.id);
-  });
-
-  it('waehlt die Seite mit mehr investierten Spezialisierungspunkten, auch wenn sie die Sekundaerseite ist', () => {
-    let character = baseCharacter();
-    character = buyTestWeapon(character, 'Axt');
-    character = buyTestWeapon(character, 'Dolch');
-    character.values['nk_spez_stichwaffen_dolche'] = 50; // Dolche-Pool deutlich hoeher als Aexte-Pool (0)
-    const [axt, dolch] = character.equipment;
-    const sheet = computeSheet(character);
-    const winner = pickHigherPoolSide(
-      sheet,
-      { equipmentId: axt.id, poolReferenz: 'nk_pool_hiebwaffen_aexte' },
-      { equipmentId: dolch.id, poolReferenz: 'nk_pool_stichwaffen_dolche' },
-    );
-    expect(winner.equipmentId).toBe(dolch.id);
   });
 });
 

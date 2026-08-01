@@ -6,7 +6,7 @@ import {
 } from '../state/characterMutations';
 import {
   buildArmbrustBoegenRows, buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows,
-  previewWaffenPoolAllocation, renderKampfView,
+  formatLoadoutCells, previewWaffenPoolAllocation, renderKampfView,
 } from './kampf';
 import { ARMBRUST, BOEGEN, BOLZEN, FEUERWAFFEN, PFEILE } from '../data/equipment/fernkampf';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
@@ -623,7 +623,7 @@ describe('Waffen-Loadout-Auswahl und getrennte Tabellen', () => {
   });
 });
 
-describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool"-Seite', () => {
+describe('buildLoadoutDisplayRows: rechte AT-/linke PA-Projektion', () => {
   function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
     const row = rows.find((r) => r.name === name);
     if (!row) throw new Error(`Testfixtur '${name}' nicht gefunden`);
@@ -639,7 +639,7 @@ describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool
     return buyWeapon(character, row.sourceRow, material.sourceRow, fertigung.sourceRow, anpassung.sourceRow, schaftmaterial.sourceRow);
   }
 
-  it('spiegelt gAT/gPA/mAT/mPA/PP exakt von der gewinnenden Pool-Seite - identisch zu deren eigener Solo-Zeile', () => {
+  it('uebernimmt die projizierten g/m-Werte des Resolvers statt einer einzigen "hoeheren Pool"-Seite', () => {
     let character = baseCharacter();
     character = setValue(character, 'eig_k_staerke', 30);
     character = setValue(character, 'nk_hiebwaffen', 10);
@@ -647,21 +647,21 @@ describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool
     character = buyTestWeapon(character, 'Axt');
     character = buyTestWeapon(character, 'Dolch');
     const [axt, dolch] = character.equipment;
-    // Dolche-Pool deutlich hoeher investiert als Aexte-Pool -> Dolch (Sekundaerseite) gewinnt.
-    character.values['nk_spez_stichwaffen_dolche'] = 50;
     character = addWaffenLoadout(character, 'nk1h_nk1h', axt.id, dolch.id);
 
     const sheet = computeSheet(character);
-    const soloRows = buildNahkampfRows(character, sheet);
-    const dolchSoloRow = soloRows.find((r) => r.key === dolch.id && r.grip === '1H')!;
-
     const loadoutRows = buildLoadoutDisplayRows(character, sheet);
     expect(loadoutRows).toHaveLength(1);
+    const result = loadoutRows[0].result;
+    if (!result.ok || result.comboType !== 'nk1h_nk1h') throw new Error('Erwartete Zwei-Waffen-Ergebnis');
     const pool = loadoutRows[0].pool!;
-    expect(pool.gat).toBe(dolchSoloRow.gat.value);
-    expect(pool.gpa).toBe(dolchSoloRow.gpa.value);
-    expect(pool.mat).toBe(dolchSoloRow.mat.value);
-    expect(pool.mpa).toBe(dolchSoloRow.mpa.value);
-    expect(pool.pp).toBe(dolchSoloRow.pp);
+    expect(pool).toEqual({
+      gat: result.poolValues.gat, gpa: result.poolValues.gpa,
+      mat: result.poolValues.mat, mpa: result.poolValues.mpa,
+    });
+    const cells = formatLoadoutCells(result);
+    if ('error' in cells) throw new Error('Erwartete formatierte Loadout-Zellen');
+    expect(cells.nat).toBe(String(result.nat));
+    expect(cells.npa).toBe(String(result.npa));
   });
 });

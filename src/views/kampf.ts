@@ -27,7 +27,7 @@ import {
 } from '../engine/fernkampfLadezeit';
 import {
   listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen, resolveLoadout, describeLoadout,
-  type LoadoutResult, type PoolSideRef,
+  type LoadoutResult,
 } from '../engine/waffenLoadout';
 import { xKlingeTooltip, xKlingeWeaponName, xKlingeWirkungForEntry } from '../engine/xKlinge';
 import { tooltipAttr } from './tooltip';
@@ -702,18 +702,16 @@ export function buildAusweichenRow(character: CharacterState): AusweichenRow {
 // ---------------------------------------------------------------------------------------------
 // Waffen-Loadout (2026-07-22): abgeleitete Zwei-Item-Kombinationen aus bereits besessener
 // Ausruestung - siehe engine/waffenLoadout.ts fuer die Regelwerks-Mathematik. Reine Anzeige (keine
-// +/- Pool-Buttons): gAT/gPA/mAT/mPA/PP werden - wo ueberhaupt vorhanden (nicht bei nk1h_pistole,
-// das hat keine Pool-Struktur) - 1:1 von der "hoeheren Pool"-Seite gespiegelt (higherPoolSide),
-// indem hier exakt derselbe poolFieldsForRow-Aufruf wie fuer die Solo-Zeile dieser Waffe oben in
-// der Nahkampf-Tabelle gemacht wird - Spenden von Pool-Punkten passiert weiterhin ausschliesslich
-// dort, nicht in diesem Block.
+// +/- Pool-Buttons): Die rechte Ursprungszeile liefert ihre AT-Seite, die linke ihre PA-Seite.
+// Verbleibende PP werden nur fuer diese abgeleitete Sicht automatisch und innerhalb jeder
+// Ursprungszeile balanciert verteilt; der gespeicherte Charakterzustand bleibt unveraendert.
 // ---------------------------------------------------------------------------------------------
 
 export interface LoadoutDisplayRow {
   entry: WaffenLoadoutEntry;
   displayName: string;
   result: LoadoutResult | SingleLoadoutResult;
-  pool?: { gat: number; gpa: number; mat: number; mpa: number; pp: number };
+  pool?: { gat: number; gpa: number; mat: number; mpa: number; pp?: number };
 }
 
 export interface SingleLoadoutResult {
@@ -725,18 +723,6 @@ export interface SingleLoadoutResult {
   npa: string;
   fkSchaden: string;
   fkReichweiten: string;
-}
-
-function findLoadoutItemInfo(character: CharacterState, equipmentId: string): { hauptfertigkeit: string; atBonus: number; paBonus: number } | undefined {
-  return [...listEligibleNahkampf1HWaffen(character), ...listEligibleSchilde(character)].find((i) => i.equipmentId === equipmentId);
-}
-
-function poolMirrorFields(ctx: PoolContext, higherPoolSide: PoolSideRef): LoadoutDisplayRow['pool'] {
-  if (!higherPoolSide.poolReferenz) return undefined;
-  const info = findLoadoutItemInfo(ctx.character, higherPoolSide.equipmentId);
-  if (!info) return undefined;
-  const fields = poolFieldsForRow(ctx, higherPoolSide.poolReferenz, higherPoolSide.equipmentId, info.hauptfertigkeit, info.atBonus, info.paBonus);
-  return { gat: fields.gat.value, gpa: fields.gpa.value, mat: fields.mat.value, mpa: fields.mpa.value, pp: fields.pp };
 }
 
 export function buildLoadoutDisplayRows(character: CharacterState, sheet: ComputedSheet): LoadoutDisplayRow[] {
@@ -752,7 +738,10 @@ export function buildLoadoutDisplayRows(character: CharacterState, sheet: Comput
     }
     const result = resolveLoadout(character, sheet, ctx.values, entry);
     const pool = result.ok && (result.comboType === 'nk1h_nk1h' || result.comboType === 'nk1h_schild')
-      ? poolMirrorFields(ctx, result.higherPoolSide)
+      ? {
+          gat: result.poolValues.gat, gpa: result.poolValues.gpa,
+          mat: result.poolValues.mat, mpa: result.poolValues.mpa,
+        }
       : undefined;
     return { entry, displayName: describeLoadout(character, entry), result, pool };
   });
@@ -847,8 +836,7 @@ export function formatLoadoutCells(result: LoadoutResult | SingleLoadoutResult):
       return {
         schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
         wk: `${result.primary.wk} / ${result.secondary.wk}`,
-        nat: `${result.primary.nat} / ${result.secondary.nat}`,
-        npa: `${result.primary.npa} / ${result.secondary.npa}`,
+        nat: String(result.nat), npa: String(result.npa),
         fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
       };
     case 'nk1h_pistole':
@@ -869,8 +857,7 @@ export function formatLoadoutCells(result: LoadoutResult | SingleLoadoutResult):
       return {
         schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
         wk: `${result.primary.wk} / ${result.secondary.wk}`,
-        nat: `${result.primary.nat} / ${result.secondary.nat}`,
-        npa: `${result.primary.npa} / ${result.secondary.npa}`,
+        nat: String(result.nat), npa: String(result.npa),
         fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
       };
     case 'schild_pistole':

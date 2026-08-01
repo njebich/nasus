@@ -32,9 +32,62 @@ describe('renderReadOnlyBesitzView', () => {
   it('zeigt Ausrüstung und belegte Rüstungsslots anhand gespeicherter Werte', () => {
     renderReadOnlyBesitzView(container, characterWithBesitz());
     expect(container.textContent).toContain('Gespeicherter Pfeil');
-    expect(container.textContent).toContain('torso:2');
+    expect(container.textContent).toContain('Fernkampfwaffen');
+    expect(container.textContent).toContain('Torso');
+    expect(container.textContent).toContain('Lage 2:');
     expect(container.textContent).toContain('RS 3');
     expect(container.textContent).toContain('RH 2');
+  });
+
+  it('gruppiert Ausrüstung nach ihrem Herkunftskatalog', () => {
+    const character = createCharacter('Gruppentest');
+    character.equipment = [
+      { id: 'nk', family: 'weapon', baseTable: 'nk_waffen_basis', baseId: '1', selections: {}, quantity: 1 },
+      { id: 'fk', family: 'fernkampfwaffe', baseTable: 'boegen', baseId: '1', selections: {}, quantity: 1 },
+      { id: 'preis', family: 'preisliste', baseTable: 'preisliste', baseId: '1', selections: {}, quantity: 1 },
+      { id: 'artefakt', family: 'artefakt', baseTable: 'artefakt_kosten', baseId: '1', selections: {}, quantity: 1 },
+    ];
+
+    renderReadOnlyBesitzView(container, character);
+    expect([...container.querySelectorAll('.besitz-equipment-group > h4')].map((heading) => heading.textContent))
+      .toEqual(['Nahkampfwaffen', 'Fernkampfwaffen', 'Preisliste', 'Artefakte']);
+  });
+
+  it('zeigt Rüstung je Körperzone und Lage mit Katalognamen', () => {
+    const character = createCharacter('Rüstungstest');
+    character.ruestungSlots['kopf:1'] = {
+      basisSourceRow: 2, verarbeitungSourceRow: 2, anpassungSourceRow: 4,
+      computedPriceSnapshot: 28,
+      computedStatsSnapshot: { rs: 1, rh: 1, verfuegbarkeitNw: 3, verfuegbarkeitAw: 2 },
+    };
+
+    renderReadOnlyBesitzView(container, character);
+    const group = container.querySelector('[aria-label="Kopf"]')!;
+    expect(group.querySelector('h4')?.textContent).toContain('Kopf RS 1 · RH 1');
+    expect(group.textContent).toContain('Lage 1:');
+    expect(group.textContent).toContain('Leichte Stoffrüstung, Gesellenarbeit, angepasst');
+    expect(group.textContent).toContain('RS 1');
+    expect(group.textContent).toContain('RH 1');
+    expect(group.textContent).toContain('28 D');
+    expect(group.textContent).not.toContain('Basis #2');
+  });
+
+  it('blendet nicht genutzte Rüstungslagen aus', () => {
+    const character = createCharacter('Leere Lagen');
+    character.ruestungSlots['kopf:1'] = {
+      basisSourceRow: 2, verarbeitungSourceRow: 2, anpassungSourceRow: 4,
+      computedPriceSnapshot: 28,
+      computedStatsSnapshot: { rs: 1, rh: 1, verfuegbarkeitNw: 3, verfuegbarkeitAw: 2 },
+    };
+    character.ruestungSlots['kopf:2'] = {
+      basisSourceRow: -1, verarbeitungSourceRow: 2, anpassungSourceRow: 2,
+      computedPriceSnapshot: 0,
+      computedStatsSnapshot: { rs: 0, rh: 0, verfuegbarkeitNw: 0, verfuegbarkeitAw: 0 },
+    };
+
+    renderReadOnlyBesitzView(container, character);
+    expect(container.textContent).toContain('Lage 1:');
+    expect(container.textContent).not.toContain('Lage 2:');
   });
 
   it('legt Auswahl-, Mengen-, Preis- und sämtliche Snapshot-Felder im Detailblock offen', () => {

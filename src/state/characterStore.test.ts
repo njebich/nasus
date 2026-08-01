@@ -111,6 +111,19 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     });
   });
 
+  it('migriert Mit Zwei Pistolen schiessen zum zusammengefuehrten Beidhaendig-Talent', () => {
+    const id = 'alt-charakter-mit-zwei-pistolen';
+    const alterCharakter = {
+      id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '', values: {},
+      selections: { talente_mit_zwei_pistolen_schiessen: 1 },
+      poolAllocations: {}, equipment: [], ruestungSlots: {},
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
+
+    const loaded = loadCharacter(id);
+    expect(loaded?.selections).toEqual({ talente_beidhaendig_pistolenschiessen: 1 });
+  });
+
   it('migriert Heimat und das alte Welt-Feld verlustarm in den Herkunftssnapshot', () => {
     const id = 'alt-charakter-vor-herkunft';
     const alterCharakter = {

@@ -242,7 +242,9 @@ function computePistoleRanges(pistole: LoadoutPistoleInfo, values: CharacterValu
 function pistolenschiessenTalente(character: CharacterState): { linkshaendig: boolean; beidhaendig: boolean } {
   return {
     linkshaendig: (character.selections['talente_linkshaendig_pistolenschiessen'] ?? 0) > 0,
-    beidhaendig: (character.selections['talente_beidhaendig_pistolenschiessen'] ?? 0) > 0,
+    beidhaendig:
+      (character.selections['talente_mit_zwei_pistolen_schiessen'] ?? 0) > 0
+      || (character.selections['talente_beidhaendig_pistolenschiessen'] ?? 0) > 0,
   };
 }
 

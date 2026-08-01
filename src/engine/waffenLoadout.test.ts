@@ -454,6 +454,16 @@ describe('resolvePistolePistole (NEU 2026-07-23: beide Haende standardmaessig ha
     expect(result.secondary.halved).toBe(false);
   });
 
+  it('die alte Mit-Zwei-Pistolen-Auswahl bleibt bis zur CharacterStore-Migration kompatibel', () => {
+    let character = zweiPistolenCharacter();
+    character.selections['talente_mit_zwei_pistolen_schiessen'] = 1;
+    const [p1, p2] = character.equipment;
+    const result = resolvePistolePistole(character, makeValueSource(character), p1.id, p2.id);
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.primary.halved).toBe(false);
+    expect(result.secondary.halved).toBe(false);
+  });
+
   it('meldet einen Fehler, wenn eine der beiden IDs keine besessene Pistole ist', () => {
     let character = zweiPistolenCharacter();
     character = buyTestWeapon(character, 'Axt');

@@ -347,6 +347,14 @@ export function loadCharacter(id: string): CharacterState | null {
   const fearSelections = new Map<string, { reference: string; value: number }>();
   for (const [reference, selected] of Object.entries(parsed.selections ?? {})) {
     const normalized = reference.toLowerCase();
+    // Die fruehere Dublette "Mit Zwei Pistolen schiessen" wurde in das kanonische Talent
+    // "Beidhaendig Pistolenschiessen" zusammengefuehrt. Alte Charaktere behalten ihre Auswahl,
+    // bezahlen sie aber nur noch einmal und zeigen fortan den kanonischen Eintrag an.
+    if (normalized === 'talente_mit_zwei_pistolen_schiessen') {
+      const canonical = 'talente_beidhaendig_pistolenschiessen';
+      migratedSelections[canonical] = Math.max(migratedSelections[canonical] ?? 0, selected);
+      continue;
+    }
     const currentMatch = /^vn_angst_(.+)_(5|10|15|20|25|30)$/.exec(normalized);
     const oldMatch = /^vn_(unbehagen|nervositaet|furcht|angst|panik|phobie)_(.+)$/.exec(normalized);
     if (!currentMatch && !oldMatch) {

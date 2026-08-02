@@ -5,7 +5,10 @@
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import type { CharacterState, CharacterHeader } from '../state/characterStore';
 import { buildHierarchy, sortHierarchyByValue, type HierarchyNode } from '../engine/hierarchy';
+import { filterHoechsteStufeJeReihe } from '../engine/talenteStufenKette';
 import { describeSkillStufe } from '../engine/skillStufen';
+import { prettyFormula } from '../engine/formulaDisplay';
+import { RULES } from '../data/rules';
 import { tooltipAttr } from './tooltip';
 import { renderKampfLeRs } from './kampfLeRs';
 import {
@@ -24,6 +27,26 @@ function formatValue(value: unknown): string {
 
 function findRule(rows: ComputedRule[], referenz: string): ComputedRule | undefined {
   return rows.find((r) => r.rule.referenz === referenz);
+}
+
+/** Formel-Tooltip fuers read-only Charakterbogen (Nutzer-Ask "Tooltip on Hover Formel anzeigen") -
+ *  gleiches Muster wie categoryView.ts's formulaTooltip, hier fuer rein berechnete (Art=Formel)
+ *  Werte, die auf dem Charakterbogen bisher OHNE jeden Tooltip standen (Charakterwerte-Leiste,
+ *  Ausweichen/Bewegung-Spiegel). Bewusst NICHT auf den bereits mit Info-/Wirkung-Text belegten
+ *  Wert-Zeilen (Eigenschaft/Attribute/Grundfertigkeit/Talente/Vor-Nachteile) angewendet - das war
+ *  eine bestaetigte, spaetere Nutzer-Entscheidung (2026-07-24), keine Formel dort zu zeigen.
+ */
+function formulaTooltip(raw: string | undefined): string {
+  if (!raw) return '';
+  return tooltipAttr(prettyFormula(raw));
+}
+
+/** Wie formulaTooltip, aber per Referenz nachgeschlagen - fuer Werte, die (wie buildAusweichenRow
+ *  in kampf.ts) als reine Zahl statt als ComputedRule vorliegen und daher rule.formelRaw nicht
+ *  direkt mitbringen. */
+function formulaTooltipByReferenz(referenz: string): string {
+  const rule = RULES.find((r) => r.referenz === referenz);
+  return formulaTooltip(rule?.formelRaw);
 }
 
 type TextHeaderKey = Exclude<keyof CharacterHeader, 'herkunftSnapshot'>;
@@ -73,11 +96,12 @@ function renderCharakterwerteUndAttribute(sheet: ComputedSheet): string {
   const werteRows = CHARAKTERWERTE_LEISTE
     .map((ref) => findRule(charakterwerte, ref))
     .filter((r): r is ComputedRule => r !== undefined)
-    .map((r) => `<tr><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${formatValue(r.computedValue)}</td></tr>`)
+    .map((r) => `<tr${formulaTooltip(r.rule.formelRaw)}><th>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</th><td>${formatValue(r.computedValue)}</td></tr>`)
     .join('');
+  // Nutzer-Ask: statt "Erfahrungspkt. EP" und "Steigerungspkt. SP (verbraucht/gesamt)" hier nur
+  // die aktuell freien SP als einzelne Zeile.
   const epSpRows = `
-    <tr><th>Erfahrungspkt.</th><td><span class="numeric-field-output numeric-field-signed-five">${sheet.epGesamt}</span></td></tr>
-    <tr><th>Steigerungspkt.</th><td><span class="numeric-field-output numeric-field-signed-five">${sheet.spRemaining}</span> / <span class="numeric-field-output numeric-field-signed-five">${sheet.spTotal}</span></td></tr>`;
+    <tr><th>Freie SP</th><td><span class="numeric-field-output numeric-field-signed-five">${sheet.spRemaining}</span></td></tr>`;
   // Nutzer 2026-07-24 (categoryView.ts's ATTRIBUTE_KLICKPREIS_TEXT): dieselbe vereinfachte
   // Klickpreis-Formel wie im editierbaren Attribute-Tab, hier auf den Zeilen des read-only
   // Charakterbogens gespiegelt ("wire same tooltips to same values/descriptions").
@@ -128,9 +152,13 @@ function renderEigenschaften(sheet: ComputedSheet): string {
 function renderAuswahlListe(sheet: ComputedSheet, kategorie: string, ueberschrift: string): string {
   const gewaehlt = (sheet.byKategorie[kategorie] ?? []).filter((r) => r.selected);
   if (gewaehlt.length === 0) return `<h3 class="bogen-section-heading">${escapeHtml(ueberschrift)}</h3><p class="bogen-leer">– keine –</p>`;
+  // Nutzer-Ask: bei Talente-Stufen-Reihen (z.B. "Zäher Bursche Stufe 1-3") nur die hoechste
+  // gekaufte Stufe zeigen, nicht jede einzeln - gleiche Reduktion wie im editierbaren Talente-Tab
+  // (talenteVornachteile.ts's "Gekauft"-Sektion). Fuer Vor-/Nachteile ein No-Op (keine Ketten).
+  const sichtbar = filterHoechsteStufeJeReihe(gewaehlt);
   // Nutzer 2026-07-24 ("show Wirkung, not SP cost"): gleicher Tooltip-Inhalt wie im editierbaren
   // Talente-/Vor-Nachteile-Tab (talenteVornachteile.ts's wirkungTooltip/wirkungIcon), hier gespiegelt.
-  const items = gewaehlt.map((r) => `<li${tooltipAttr(r.rule.wirkung)}>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</li>`).join('');
+  const items = sichtbar.map((r) => `<li${tooltipAttr(r.rule.wirkung)}>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</li>`).join('');
   return `<h3 class="bogen-section-heading">${escapeHtml(ueberschrift)}</h3><ul class="bogen-liste">${items}</ul>`;
 }
 
@@ -146,7 +174,9 @@ function renderFertigkeitGruppe(node: HierarchyNode): string {
 function renderGrundfertigkeiten(sheet: ComputedSheet): string {
   // Nutzer 2026-07-24 ("show (i) text, not Wert*9"): gleicher Info-Text wie im editierbaren
   // Grundfertigkeit-Tab (categoryView.ts's INFO_STATT_KOSTEN_KATEGORIEN), hier gespiegelt.
+  // Nutzer-Ask: nur TaW>0 zeigen, ungelernte Grundfertigkeiten bleiben aus dieser Uebersicht weg.
   const rows = (sheet.byKategorie['Grundfertigkeit'] ?? [])
+    .filter((r) => (r.currentValue ?? 0) > 0)
     .map((r) => `<tr${tooltipAttr(r.rule.info)}><td>${escapeHtml(r.rule.beschreibung ?? r.rule.referenz)}</td><td>${r.currentValue ?? 0}</td></tr>`)
     .join('');
   return `
@@ -293,6 +323,23 @@ function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterSta
     </div>` : ''}`;
 }
 
+/** Weitsprung ist keine einzelne Referenz, sondern 3 kombinierte Formeln (siehe kampf.ts's
+ *  buildAusweichenRow) - Tooltip listet alle 3 statt nur einer. */
+function weitsprungTooltip(): string {
+  const referenzen = [
+    ['aus dem Stand', 'bewegung_f_weitsprung_aus_dem_stand'],
+    ['kurzer Anlauf', 'bewegung_f_weitsprung_kurzer_anlauf'],
+    ['optimaler Anlauf', 'bewegung_f_weitsprung_optimaler_anlauf'],
+  ] as const;
+  const lines = referenzen
+    .map(([label, referenz]) => {
+      const raw = RULES.find((r) => r.referenz === referenz)?.formelRaw;
+      return raw ? `${label}: ${prettyFormula(raw)}` : '';
+    })
+    .filter(Boolean);
+  return lines.length > 0 ? tooltipAttr(lines.join('\n')) : '';
+}
+
 function renderAusweichenMirror(character: CharacterState): string {
   const ausweichen = buildAusweichenRow(character);
 
@@ -301,9 +348,14 @@ function renderAusweichenMirror(character: CharacterState): string {
     <div class="kampf-table-scroll">
       <table class="bogen-table kampf-ausweichen-table">
         <thead><tr>
-          <th>n off AW</th><th>n def AW</th><th>g AW</th><th>m AW</th><th>Initiative</th>
-          <th>Ausdauer</th><th>Dauerlauf (m/KR)</th><th>Sprinten (m/KR)</th>
-          <th>Hochsprung (m)</th><th>Weitsprung (m)</th>
+          <th${formulaTooltipByReferenz('aw_off_normal')}>n off AW</th><th${formulaTooltipByReferenz('aw_def_normal')}>n def AW</th>
+          <th${formulaTooltipByReferenz('aw_gut')}>g AW</th><th${formulaTooltipByReferenz('aw_meisterlich')}>m AW</th>
+          <th${formulaTooltipByReferenz('ini')}>Initiative</th>
+          <th${formulaTooltipByReferenz('f_ausdauer')}>Ausdauer</th>
+          <th${formulaTooltipByReferenz('bewegung_f_dauerlauf')}>Dauerlauf (m/KR)</th>
+          <th${formulaTooltipByReferenz('bewegung_f_sprinten')}>Sprinten (m/KR)</th>
+          <th${formulaTooltipByReferenz('bewegung_f_hochsprung')}>Hochsprung (m)</th>
+          <th${weitsprungTooltip()}>Weitsprung (m)</th>
         </tr></thead>
         <tbody><tr>
           <td>${ausweichen.offAw}</td><td>${ausweichen.defAw}</td><td>${ausweichen.gutAw}</td><td>${ausweichen.meisterlichAw}</td>

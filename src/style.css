@@ -1002,6 +1002,14 @@ input.numeric-field-formatted-five {
   background: none;
 }
 
+/* Magus-Schule-Untergruppen (talenteVornachteile.ts) - verschachteltes <details> innerhalb
+   des "Magier"-Parents, gleiche Optik wie .stat-group, nur eingerueckt und mit Abstand nach
+   oben zur flachen Restliste darueber. */
+.stat-group-nested {
+  margin-top: 0.4rem;
+  margin-left: 0.9rem;
+}
+
 .stat-subgroup {
   display: flex;
   flex-direction: column;
@@ -1076,6 +1084,9 @@ input.numeric-field-formatted-five {
 .bogen-table-eigenschaften td:nth-child(5), .bogen-table-eigenschaften td:nth-child(6) {
   text-align: center;
   width: 3rem;
+  /* Nutzer-Ask: Wert + Artefakt-Klammer ("10 (13)") bleibt eine Zeile statt umzubrechen -
+     width bleibt nur ein Hint, die Spalte darf sich fuer den laengeren Fall verbreitern. */
+  white-space: nowrap;
 }
 
 /* Eigenschaften-Tab (categoryView.ts renderEigenschaftenTable): editierbares Pendant zur

@@ -162,8 +162,15 @@ function renderEditableRow(r: ComputedRule, kategorie: string, maxValue?: number
   // spSpent), nicht die Kosten des einzelnen Punkts - der Klick-Preis ist daher die Differenz
   // kostenNext-kostenCurrent (siehe formatKlickpreis).
   const costNext = formatKlickpreis(r.kostenCurrent, r.kostenNext);
-  const maxAttr = maxValue !== undefined ? ` max="${maxValue}"` : '';
-  const atMax = maxValue !== undefined && value >= maxValue;
+  // Kombiniert den aufrufer-spezifischen Deckel (z.B. Spezialisierung <= Hauptfertigkeit) mit dem
+  // generischen Kategorie-Maximum inkl. Talent-Bonus (r.fertigkeitMax, siehe characterSheet.ts) -
+  // z.B. Attribute duerfen ohne ein "Maximum"-Talent nicht ueber 7 hinaus gesteigert werden
+  // (Nutzer-Ask "nicht übersteigern ohne Talent"). Vorher war dieser Deckel nur im Mutations-Layer
+  // hart durchgesetzt (Fehlermeldung nach dem Klick), ohne dass der "+"-Button das vorher zeigte.
+  const combinedMax = [maxValue, r.fertigkeitMax].filter((v): v is number => v !== undefined);
+  const effectiveMax = combinedMax.length > 0 ? Math.min(...combinedMax) : undefined;
+  const maxAttr = effectiveMax !== undefined ? ` max="${effectiveMax}"` : '';
+  const atMax = effectiveMax !== undefined && value >= effectiveMax;
   const stufe = describeSkillStufe(r.rule.referenz, value);
   // Eigenschafts-/Attributs-Artefakt-Bonus (Nutzer 2026-07-19): Basiswert bleibt editierbar/
   // unveraendert im Input, der veraenderte Wert steht nur informativ daneben in Klammern -

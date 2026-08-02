@@ -8,13 +8,17 @@ import {
   GEWEIHTER_TALENT_PREFIX, GEWEIHTER_RELIGION_BY_REFERENZ, getGeweihtenGrad, getGeweihtenGradEintrag,
   isGeweihterReferenzErlaubt,
 } from '../engine/geweihte';
-import { getTalentStufeInfo, getVorstufeReferenz } from '../engine/talenteStufenKette';
+import { filterHoechsteStufeJeReihe, getTalentStufeInfo, getVorstufeReferenz } from '../engine/talenteStufenKette';
 
 export type OnToggle = (referenz: string, selected: boolean) => void;
 
 /** Aufgeklappte Talente-Gruppen (Parent/Charakterklasse) - Persistenz-Muster wie openSchulen in
  *  spruchmagie.ts/openGroupReferenzen in categoryView.ts. Alle standardmaessig zu. */
 const openParents = new Set<string>();
+
+/** Aufgeklappte Magus-Schule-Untergruppen innerhalb des "Magier"-Parents (Nutzer-Ask: "Magus
+ *  Stufe X nach Schule gruppieren") - eigenes Set, gleiches Persistenz-Muster wie openParents. */
+const openMagusSchulen = new Set<string>();
 
 /** Aufgeklappte Vor-/Nachteile-Gruppen ("Nachteile"/"Vorteile"/"Ängste") - eigenes Set statt
  *  openParents, damit ein gleichnamiger Talente-Parent nicht kollidiert. Gleiches Persistenz-
@@ -33,6 +37,52 @@ const nurKaufbareByKategorie = new Map<string, boolean>();
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/** Extrahiert den Schulnamen aus einer Magus-Talent-Beschreibung ("Magus Stufe 2:
+ *  Beherrschungs-Großmagus" -> "Beherrschung"). Die xlsx schreibt den Schulnamen uneinheitlich
+ *  mit/ohne Genitiv-"s" vor dem Suffix (siehe gleiche Beobachtung in talenteStufenKette.ts) -
+ *  das trailing "s" wird hier ebenso entfernt, damit "Antimagie"/"Antimagies" zur selben Gruppe
+ *  zusammenfallen. */
+const MAGUS_SCHULE_LABEL_RE = /^Magus Stufe \d+: (.+?)-(?:Gro(?:ß|ss)|Erz)?[Mm]agus$/;
+function magusSchuleLabel(beschreibung: string | undefined): string | undefined {
+  if (!beschreibung) return undefined;
+  const match = MAGUS_SCHULE_LABEL_RE.exec(beschreibung);
+  if (!match) return undefined;
+  const raw = match[1];
+  return raw.endsWith('s') ? raw.slice(0, -1) : raw;
+}
+
+/** Ist referenz eine der 36 "Magus Stufe X: <Schule>-(Groß|Erz)?magus"-Zeilen (siehe
+ *  talenteStufenKette.ts's MAGUS_STUFE_RE) - alle liegen im "Magier"-Parent, aber sollen dort
+ *  zusaetzlich je Schule gruppiert werden statt flach zu erscheinen. */
+function isMagusStufenTalent(r: ComputedRule): boolean {
+  return (getTalentStufeInfo(r.rule.referenz)?.family ?? '').startsWith('talente_magus_');
+}
+
+/** Rendert die 12 Magus-Schulen als verschachtelte, einzeln aufklappbare Untergruppen innerhalb
+ *  des "Magier"-Parents. */
+function renderMagusSchuleGruppen(
+  rows: ComputedRule[],
+  sheet: ComputedSheet,
+  characterReligion: string | undefined,
+  needle: string,
+): string {
+  const groups = new Map<string, ComputedRule[]>();
+  for (const r of rows) {
+    const schule = magusSchuleLabel(r.rule.beschreibung) ?? 'Sonstige';
+    (groups.get(schule) ?? groups.set(schule, []).get(schule)!).push(r);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([schule, schuleRows]) => {
+      const openAttr = needle || openMagusSchulen.has(schule) ? ' open' : '';
+      return `
+        <details class="stat-group stat-group-nested" data-magus-schule="${escapeHtml(schule)}"${openAttr}>
+          <summary>${escapeHtml(schule)} <span class="stat-group-count">(${schuleRows.length})</span></summary>
+          <div class="auswahl-category">${schuleRows.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+        </details>`;
+    }).join('');
 }
 
 // Nutzer-Direktive 2026-07-24: Talente/Vor-Nachteile sollen beim Hover ueber die ganze Zeile die
@@ -122,19 +172,7 @@ function renderGekauftSection(
   characterReligion: string | undefined,
 ): string {
   const gekauft = rows.filter((r) => r.selected);
-  const hoechsteStufeJeReihe = new Map<string, ComputedRule>();
-  const einzelne: ComputedRule[] = [];
-  for (const talent of gekauft) {
-    const info = talent.rule.kategorie === 'Talente' ? getTalentStufeInfo(talent.rule.referenz) : undefined;
-    if (!info) {
-      einzelne.push(talent);
-      continue;
-    }
-    const bisher = hoechsteStufeJeReihe.get(info.family);
-    const bisherInfo = bisher ? getTalentStufeInfo(bisher.rule.referenz) : undefined;
-    if (!bisher || info.stufe > (bisherInfo?.stufe ?? 0)) hoechsteStufeJeReihe.set(info.family, talent);
-  }
-  const sichtbar = [...einzelne, ...hoechsteStufeJeReihe.values()];
+  const sichtbar = filterHoechsteStufeJeReihe(gekauft);
   if (gekauft.length === 0) return '';
   return `
     <div class="stat-card">
@@ -242,11 +280,17 @@ export function renderAuswahlView(
         // manuellen Aufklapp-Zustand (openParents) zu ueberschreiben - nach Leeren des Suchfelds
         // erscheinen die Gruppen wieder so, wie der Nutzer sie zuletzt gelassen hat.
         const openAttr = needle || openParents.has(parent) ? ' open' : '';
+        // "Magier"-Parent enthaelt zusaetzlich die 36 Magus-Stufe-Zeilen (12 Schulen x 3 Stufen) -
+        // die werden aus der flachen Liste herausgezogen und als eigene Schule-Untergruppen
+        // gerendert, alle anderen Magier-Talente (Blutmagie, Konzentration, ...) bleiben flach.
+        const magusRows = parent === 'Magier' ? groupRows.filter(isMagusStufenTalent) : [];
+        const restRows = magusRows.length > 0 ? groupRows.filter((r) => !isMagusStufenTalent(r)) : groupRows;
         return `
           <div class="stat-card">
             <details class="stat-group" data-parent="${escapeHtml(parent)}"${openAttr}>
               <summary>${escapeHtml(parent)} <span class="stat-group-count">(${groupRows.length})</span></summary>
-              <div class="auswahl-category">${groupRows.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+              <div class="auswahl-category">${restRows.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+              ${magusRows.length > 0 ? renderMagusSchuleGruppen(magusRows, sheet, characterReligion, needle) : ''}
             </details>
           </div>`;
       }).join('');
@@ -283,6 +327,14 @@ export function renderAuswahlView(
     });
   });
 
+  container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-magus-schule]').forEach((details) => {
+    const schule = details.dataset.magusSchule!;
+    details.addEventListener('toggle', () => {
+      if (details.open) openMagusSchulen.add(schule);
+      else openMagusSchulen.delete(schule);
+    });
+  });
+
   container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-vn-group]').forEach((details) => {
     const group = details.dataset.vnGroup!;
     details.addEventListener('toggle', () => {
@@ -300,6 +352,11 @@ export function renderAuswahlView(
       const parent = details.dataset.parent!;
       if (details.open) openParents.add(parent);
       else openParents.delete(parent);
+    });
+    container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-magus-schule]').forEach((details) => {
+      const schule = details.dataset.magusSchule!;
+      if (details.open) openMagusSchulen.add(schule);
+      else openMagusSchulen.delete(schule);
     });
     container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-vn-group]').forEach((details) => {
       const group = details.dataset.vnGroup!;

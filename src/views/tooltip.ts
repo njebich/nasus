@@ -17,6 +17,9 @@ export function tooltipAttr(raw: string | undefined): string {
 
 let tooltipEl: HTMLDivElement | null = null;
 let currentTrigger: HTMLElement | null = null;
+let showTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingTrigger: HTMLElement | null = null;
+const TOOLTIP_DELAY_MS = 1000;
 
 function ensureTooltipEl(): HTMLDivElement {
   if (!tooltipEl) {
@@ -52,7 +55,16 @@ function showTooltip(trigger: HTMLElement): void {
   positionTooltip(trigger, el);
 }
 
+function cancelPending(): void {
+  if (showTimer) {
+    clearTimeout(showTimer);
+    showTimer = null;
+  }
+  pendingTrigger = null;
+}
+
 function hideTooltip(): void {
+  cancelPending();
   if (!tooltipEl) return;
   tooltipEl.style.display = 'none';
   currentTrigger = null;
@@ -64,16 +76,22 @@ function hideTooltip(): void {
 export function initTooltips(): void {
   document.body.addEventListener('mouseover', (e) => {
     const target = (e.target as HTMLElement).closest<HTMLElement>('[data-tooltip]');
-    if (!target || target === currentTrigger) return;
-    showTooltip(target);
+    if (!target || target === currentTrigger || target === pendingTrigger) return;
+    cancelPending();
+    pendingTrigger = target;
+    showTimer = setTimeout(() => {
+      showTimer = null;
+      pendingTrigger = null;
+      showTooltip(target);
+    }, TOOLTIP_DELAY_MS);
   });
   document.body.addEventListener('mouseout', (e) => {
-    if (!currentTrigger) return;
     const from = (e.target as HTMLElement).closest<HTMLElement>('[data-tooltip]');
-    if (from !== currentTrigger) return;
+    if (!from || (from !== currentTrigger && from !== pendingTrigger)) return;
     const to = (e.relatedTarget as HTMLElement | null)?.closest<HTMLElement>('[data-tooltip]');
     if (to === from) return;
-    hideTooltip();
+    if (from === pendingTrigger) cancelPending();
+    if (from === currentTrigger) hideTooltip();
   });
   // Sicherheitsnetz: bei Scroll (z.B. innerhalb eines aufgeklappten <details>) waere die
   // fixed-Position sonst falsch, bis die Maus sich erneut bewegt.

@@ -887,6 +887,9 @@ function renderInventar(character: CharacterState, category: KaufKategorie): str
         + `erwarteter Munitions-Typ '${e.baseTable === 'pfeile' ? 'pfeil' : 'bolzen'}', tatsächlicher Typ '<fehlt>'`;
     }
     let label = e.displayNameSnapshot ?? `${e.family} (${e.baseTable} #${e.baseId})`;
+    // Nur gesetzt fuer Faelle, die eigenes sicheres HTML brauchen (Material-/Fertigung-/Anpassung-
+    // Wertemodifikator-Tooltips, Nutzer-Ask) - sonst faellt der Renderer auf escapeHtml(label) zurueck.
+    let labelHtml: string | undefined;
     // Nutzer 2026-07-24: "Show full item stat block if Schilde, NK-Waffe or FK-Waffe or ammo or
     // Alchemika" - Ruestung/Preisliste/Artefakt bewusst aussen vor (nicht in der Nutzer-Aufzaehlung).
     let statTooltip = '';
@@ -903,9 +906,12 @@ function renderInventar(character: CharacterState, category: KaufKategorie): str
         : label;
       const basis = kostenRow ? ARTEFAKT_BASIS.find((row) => row.referenz === kostenRow.referenz) : undefined;
       if (basis && kostenRow) {
+        // Nutzer-Ask: volle Wirkung/Wirkungswert/ED/WD zeigen, wenn vorhanden - dieselbe Funktion
+        // wie die Kaufvorschau (siehe artefaktTooltip-Aufruf oben in renderArtefaktGradAuswahl),
+        // statt nur der rohen Basis-Beschreibung ohne ED/WD.
         const text = isXKlingeReferenz(basis.referenz)
           ? xKlingeTooltip(resolveXKlingeWirkung(basis.referenz, kostenRow.grad ?? ''))
-          : basis.beschreibung ?? '';
+          : artefaktTooltip(basis, kostenRow.grad ?? '');
         statTooltip = tooltipAttr(text);
       }
     } else if (e.family === 'shield') {
@@ -919,6 +925,8 @@ function renderInventar(character: CharacterState, category: KaufKategorie): str
       const row = MELEE_WEAPON_BY_SOURCE_ROW.get(e.baseId);
       const display = describeStoredWeapon(e);
       label = display ? `${display.title} — ${display.stats}` : row ? (xKlingeWeaponName(e) ?? row.name) : label;
+      // Nutzer-Ask: Material/Fertigung/Anpassung zeigen einzeln beim Hover ihren Wertemodifikator.
+      if (display) labelHtml = `${display.titleHtml ?? escapeHtml(display.title)} — ${escapeHtml(display.stats)}`;
       const wirkung = xKlingeWirkungForEntry(e);
       statTooltip = tooltipAttr([
         statSnapshotTooltipText(e.computedStatsSnapshot),
@@ -957,7 +965,7 @@ function renderInventar(character: CharacterState, category: KaufKategorie): str
     const total = (e.computedPriceSnapshot ?? 0) * e.quantity;
     return `
       <div class="inventar-row${invalidReason ? ' inventar-row-invalid' : ''}" data-equipment-id="${e.id}"${invalidReason ? ` title="${escapeHtml(invalidReason)}"` : statTooltip}>
-        <span class="stat-label">${escapeHtml(label)}${e.quantity > 1 ? ` ×${e.quantity}` : ''}${invalidReason ? `<span class="inventar-invalid-error">Ungültig: ${escapeHtml(invalidReason)}</span>` : ''}</span>
+        <span class="stat-label">${labelHtml ?? escapeHtml(label)}${e.quantity > 1 ? ` ×${e.quantity}` : ''}${invalidReason ? `<span class="inventar-invalid-error">Ungültig: ${escapeHtml(invalidReason)}</span>` : ''}</span>
         <span class="stat-cost">${formatDublonen(total)}</span>
         <button type="button" class="inventar-remove" data-equipment-id="${e.id}">Entfernen</button>
       </div>`;

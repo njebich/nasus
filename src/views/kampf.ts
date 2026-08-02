@@ -685,6 +685,10 @@ export interface AusweichenRow {
 export function buildAusweichenRow(character: CharacterState): AusweichenRow {
   const values = makeValueSource(character);
   const v = (referenz: string) => Math.round(Number(evalReferenz(referenz, values)));
+  // Hochsprung rundet in rules.ts bereits auf 0,25 (Nutzer-Ask) statt auf ganze Zahlen - der
+  // generische Math.round() hier wuerde das wieder auf eine Ganzzahl zurueckrunden (z.B. 0,75 -> 1),
+  // also fuer diese eine Referenz den bereits korrekt gerundeten Rohwert unveraendert lassen.
+  const vHochsprung = () => Number(evalReferenz('bewegung_f_hochsprung', values));
   return {
     offAw: v('aw_off_normal'),
     defAw: v('aw_def_normal'),
@@ -694,7 +698,7 @@ export function buildAusweichenRow(character: CharacterState): AusweichenRow {
     ausdauer: v('f_ausdauer'),
     dauerlauf: v('bewegung_f_dauerlauf'),
     sprinten: v('bewegung_f_sprinten'),
-    hochsprung: v('bewegung_f_hochsprung'),
+    hochsprung: vHochsprung(),
     weitsprung: `${v('bewegung_f_weitsprung_aus_dem_stand')}/${v('bewegung_f_weitsprung_kurzer_anlauf')}/${v('bewegung_f_weitsprung_optimaler_anlauf')}`,
   };
 }

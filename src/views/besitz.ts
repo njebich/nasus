@@ -1,14 +1,16 @@
 import type { CharacterState } from '../state/characterStore';
 import { formatDublonen } from '../utils/format';
 import { PREISLISTE } from '../data/equipment/preisliste';
-import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
+import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
 import { RUESTUNG_ANPASSUNG, RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG } from '../data/equipment/armor';
+import { SCHILD_BESPANNUNG, SCHILD_FERTIGUNG, SCHILD_MATERIAL } from '../data/equipment/shields';
 import {
   ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
   FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW,
 } from '../engine/weaponCatalog';
-import { describeStoredWeapon } from './weaponDisplay';
+import { artefaktTooltip } from '../engine/artefaktWirkung';
+import { describeStoredWeapon, wertemodifikatorSpan } from './weaponDisplay';
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -37,47 +39,71 @@ function renderDetailFields(value: unknown): string {
   </dl>`;
 }
 
-function equipmentLabel(entry: CharacterState['equipment'][number]): { title: string; stats?: string } {
+/** Rueckgabe-Titel ist immer bereits sicheres HTML (escapt bzw. ueber wertemodifikatorSpan
+ *  aufgebaut) - Aufrufer duerfen NICHT nochmal escapeHtml() darueber laufen lassen. */
+function equipmentLabel(entry: CharacterState['equipment'][number]): { titleHtml: string; stats?: string } {
   if (entry.family === 'weapon') {
     const display = describeStoredWeapon(entry);
-    if (display) return display;
+    if (display) return { titleHtml: display.titleHtml ?? escapeHtml(display.title), stats: display.stats };
   }
   if (entry.family === 'shield') {
     const row = MELEE_WEAPON_BY_SOURCE_ROW.get(entry.baseId);
-    if (row) return { title: row.name, stats: `RS ${entry.computedStatsSnapshot?.rs ?? '–'}, n-Mod ${entry.computedStatsSnapshot?.at ?? '–'}/${entry.computedStatsSnapshot?.pa ?? '–'}` };
+    if (row) {
+      const material = SCHILD_MATERIAL.find((r) => String(r.sourceRow) === entry.selections.material);
+      const fertigung = SCHILD_FERTIGUNG.find((r) => String(r.sourceRow) === entry.selections.fertigung);
+      const bespannung = SCHILD_BESPANNUNG.find((r) => String(r.sourceRow) === entry.selections.bespannung);
+      const titleHtml = [escapeHtml(row.name), wertemodifikatorSpan(material), wertemodifikatorSpan(fertigung), wertemodifikatorSpan(bespannung)]
+        .filter(Boolean).join(', ');
+      const snap = entry.computedStatsSnapshot ?? {};
+      // Nutzer-Ask: volle Schild-Werte statt nur RS/n-Mod - Klingenbrecher/Klingenschutz/WK/
+      // Stä-Malus/Mindest-Stärke sind bereits im computedStatsSnapshot vorhanden (siehe buyShield).
+      const stats = [
+        `RS ${snap.rs ?? '–'}`, `n-Mod ${snap.at ?? '–'}/${snap.pa ?? '–'}`, `WK ${snap.wk ?? '–'}`,
+        `Klingenbrecher ${snap.klingenbrecher ?? 0}`, `Klingenschutz ${snap.klingenschutz ?? 0}`,
+        `Stä-Malus ${snap.staerkeMalus ?? 0}`, `Mindest-Stärke ${snap.minStaerke ?? '–'}`,
+      ].join(', ');
+      return { titleHtml, stats };
+    }
   }
   if (entry.family === 'preisliste') {
     const row = PREISLISTE.find((item) => String(item.sourceRow) === entry.baseId);
-    if (row) return { title: row.name ?? entry.displayNameSnapshot ?? `Preisliste #${entry.baseId}` };
+    if (row) return { titleHtml: escapeHtml(row.name ?? entry.displayNameSnapshot ?? `Preisliste #${entry.baseId}`) };
   }
   if (entry.family === 'artefakt') {
-    const row = ARTEFAKT_KOSTEN.find((item) => String(item.sourceRow) === entry.baseId);
-    if (row) return { title: `${row.name} Grad ${row.grad} (${entry.selections.variant ?? 'Variante unbekannt'})` };
+    const kosten = ARTEFAKT_KOSTEN.find((item) => String(item.sourceRow) === entry.baseId);
+    if (kosten) {
+      const titleHtml = escapeHtml(`${kosten.name} Grad ${kosten.grad} (${entry.selections.variant ?? 'Variante unbekannt'})`);
+      // Nutzer-Ask: volle Wirkung/Wirkungswert/ED/WD anzeigen, wenn vorhanden - dieselbe Funktion,
+      // die die Kaufvorschau (ausruestung.ts) bereits als Tooltip nutzt, hier als sichtbare Zeile.
+      const basis = ARTEFAKT_BASIS.find((item) => item.referenz === kosten.referenz);
+      const stats = basis && kosten.grad ? artefaktTooltip(basis, kosten.grad).split('\n').join(' · ') : undefined;
+      return { titleHtml, stats };
+    }
   }
   if (entry.family === 'feuerwaffe') {
     const row = FIREARM_BY_SOURCE_ROW.get(entry.baseId);
-    if (row) return { title: row.name, stats: `Kaliber ${entry.computedStatsSnapshot?.kaliber ?? '–'}, RB ${entry.computedStatsSnapshot?.rb ?? '–'}` };
+    if (row) return { titleHtml: escapeHtml(row.name), stats: `Kaliber ${entry.computedStatsSnapshot?.kaliber ?? '–'}, RB ${entry.computedStatsSnapshot?.rb ?? '–'}` };
   }
   if (entry.family === 'fernkampfwaffe') {
     const row = (entry.baseTable === 'boegen' ? BOW_BY_SOURCE_ROW : CROSSBOW_BY_SOURCE_ROW).get(entry.baseId);
-    if (row) return { title: row.name };
+    if (row) return { titleHtml: escapeHtml(row.name) };
   }
   if (entry.family === 'ammo') {
     if (entry.baseTable === 'feuerwaffen-munition') {
       const row = FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${entry.baseId}:${entry.selections.kaliber}`);
-      if (row) return { title: `${row.label}, Kaliber ${row.kaliber}` };
+      if (row) return { titleHtml: escapeHtml(`${row.label}, Kaliber ${row.kaliber}`) };
     } else {
       const table = entry.baseTable === 'pfeile' ? ARROW_BY_SOURCE_ROW : BOLT_BY_SOURCE_ROW;
       const basis = table.get(entry.baseId);
       const mod = entry.selections.modifikator ? table.get(entry.selections.modifikator) : undefined;
-      if (basis) return { title: mod ? `${mod.name} (${basis.name})` : basis.name };
+      if (basis) return { titleHtml: escapeHtml(mod ? `${mod.name} (${basis.name})` : basis.name) };
     }
   }
   if (entry.family === 'alchemika') {
     const row = ALCHEMIKA.find((item) => String(item.sourceRow) === entry.baseId);
-    if (row) return { title: row.name, stats: row.wirkung };
+    if (row) return { titleHtml: escapeHtml(row.name), stats: row.wirkung };
   }
-  return { title: entry.displayNameSnapshot ?? `${entry.family} · ${entry.baseTable} #${entry.baseId}` };
+  return { titleHtml: escapeHtml(entry.displayNameSnapshot ?? `${entry.family} · ${entry.baseTable} #${entry.baseId}`) };
 }
 
 function renderEquipment(character: CharacterState): string {
@@ -108,7 +134,7 @@ function renderEquipment(character: CharacterState): string {
     return `
       <details class="besitz-entry" data-besitz-equipment-id="${escapeHtml(entry.id)}">
         <summary>
-          <span class="stat-label">${escapeHtml(display.title)}${quantity}${display.stats ? `<small class="besitz-summary-stats">${escapeHtml(display.stats)}</small>` : ''}</span>
+          <span class="stat-label">${display.titleHtml}${quantity}${display.stats ? `<small class="besitz-summary-stats">${escapeHtml(display.stats)}</small>` : ''}</span>
           ${price}
         </summary>
         ${renderDetailFields(entry)}
@@ -161,15 +187,17 @@ function renderRuestung(character: CharacterState): string {
     const verarbeitung = RUESTUNG_VERARBEITUNG.find((row) => row.sourceRow === entry.verarbeitungSourceRow);
     const anpassung = RUESTUNG_ANPASSUNG.find((row) => row.sourceRow === entry.anpassungSourceRow);
     const lageLabel = Number.isFinite(lage) ? `Lage ${lage}` : 'Lage unbekannt';
-    const description = [
-      basis?.name ?? `Unbekannte Rüstung (Basis #${entry.basisSourceRow})`,
-      verarbeitung?.name ?? `Verarbeitung #${entry.verarbeitungSourceRow}`,
-      anpassung?.name ?? `Anpassung #${entry.anpassungSourceRow}`,
+    // Nutzer-Ask: Verarbeitung/Anpassung zeigen beim Hover ihren Wertemodifikator (Basis hat keine
+    // eigene Modifikator-Spalte in dem Sinn, bleibt daher ohne Tooltip).
+    const descriptionHtml = [
+      basis ? escapeHtml(basis.name) : escapeHtml(`Unbekannte Rüstung (Basis #${entry.basisSourceRow})`),
+      verarbeitung ? wertemodifikatorSpan(verarbeitung) : escapeHtml(`Verarbeitung #${entry.verarbeitungSourceRow}`),
+      anpassung ? wertemodifikatorSpan(anpassung) : escapeHtml(`Anpassung #${entry.anpassungSourceRow}`),
     ].join(', ');
     return `
       <details class="besitz-entry" data-besitz-ruestung-slot="${escapeHtml(slotKey)}">
         <summary>
-          <span class="stat-label"><strong>${escapeHtml(lageLabel)}:</strong> ${escapeHtml(description)}</span>
+          <span class="stat-label"><strong>${escapeHtml(lageLabel)}:</strong> ${descriptionHtml}</span>
           <span class="stat-cost">RS ${entry.computedStatsSnapshot.rs} · RH ${entry.computedStatsSnapshot.rh} · ${formatDublonen(entry.computedPriceSnapshot)}</span>
         </summary>
         ${renderDetailFields({ slot: slotKey, ...entry })}

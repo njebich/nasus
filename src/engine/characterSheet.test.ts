@@ -249,9 +249,22 @@ describe('computeSheet', () => {
     character.values['eig_k_schnelligkeit'] = 5;
     character.values['gr_springen'] = 5;
     const sheet = computeSheet(character);
+    // Hochsprung ist eine Ausnahme von dieser generellen Regel (rundet auf 0,25, siehe Test
+    // unten) - Weitsprung testet hier stellvertretend die generelle Ganzzahl-Aufrundung.
+    const weitsprung = sheet.byKategorie['Bewegung']?.find((r) => r.rule.referenz === 'bewegung_f_weitsprung_aus_dem_stand');
+    // (5+5+5)/13+1 = 2,1538... -> aufgerundet = 3
+    expect(weitsprung?.computedValue).toBe(3);
+  });
+
+  it('Hochsprung rundet abweichend auf 0,25 auf statt auf ganze Zahlen (Nutzer-Ask)', () => {
+    const character = createCharacter('Test');
+    character.values['eig_k_staerke'] = 5;
+    character.values['eig_k_schnelligkeit'] = 5;
+    character.values['gr_springen'] = 5;
+    const sheet = computeSheet(character);
     const hochsprung = sheet.byKategorie['Bewegung']?.find((r) => r.rule.referenz === 'bewegung_f_hochsprung');
-    // (5+5+5)/40 = 0.375 -> aufgerundet = 1
-    expect(hochsprung?.computedValue).toBe(1);
+    // (5+5+5)/40 = 0.375 -> auf 0,25 aufgerundet = 0.5
+    expect(hochsprung?.computedValue).toBe(0.5);
   });
 
   describe('Talent-Modifikator (Nutzer 2026-07-18, Talente-Wirkung-Analyse: Zaeher Bursche addiert auf Selbstbeherrschung/Gesundheit/Trefferschwelle)', () => {

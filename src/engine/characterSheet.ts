@@ -19,6 +19,7 @@ import { getWaffenSpezKostenRate } from './waffenSpezKosten';
 import { getWhkHauptfertigkeitKosten, getWhkSpezialisierungKosten } from './whkCustomSpezialisierung';
 import { getEigenschaftGrenzen } from './eigenschaftenGrenzen';
 import { getTalentMaximumBonus } from './talenteMaximum';
+import { getFertigkeitBaseMax } from './fertigkeitenGrenzen';
 import { getSchlechteEigenschaftMax, hasSchlechteEigenschaft } from './schlechteEigenschaft';
 import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry, type CustomWhkEintrag } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
@@ -75,6 +76,12 @@ export interface ComputedRule {
    *  computeNkPoolOverflowBudget - AT/PA-Ueberschuss ueber 20 besessener Waffen dieses Pools,
    *  der on top von computedValue ins Budget einfliesst (siehe waffenPool.ts). */
   weaponOverflowBudget?: number;
+  /** Nur fuer Kategorien mit Basis-Maximalwert (siehe fertigkeitenGrenzen.ts, z.B. Attribute=7) -
+   *  Basiswert + etwaiger Talent-Maximum-Bonus (talenteMaximum.ts). Spiegelt exakt den Deckel, den
+   *  characterMutations.ts's setValue bereits hart durchsetzt (MutationError bei Ueberschreitung) -
+   *  hier zusaetzlich fuers UI (max-Attribut + deaktivierter "+"-Button), damit ein Nutzer nicht
+   *  erst auf eine Fehlermeldung stoesst, ohne vorher zu sehen, dass ein Talent noetig waere. */
+  fertigkeitMax?: number;
   error?: string;
 }
 
@@ -175,6 +182,10 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
   if (rule.art === 'Wert') {
     const currentValue = character.values[key] ?? 0;
     const result: ComputedRule = { rule, currentValue };
+    const fertigkeitBaseMax = getFertigkeitBaseMax(rule.kategorie);
+    if (fertigkeitBaseMax !== undefined) {
+      result.fertigkeitMax = fertigkeitBaseMax + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
+    }
     if (rule.kategorie === 'Eigenschaft') {
       let kreis = 0;
       try {

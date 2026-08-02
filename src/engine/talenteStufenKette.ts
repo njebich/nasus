@@ -14,6 +14,7 @@
 // entfernt (die xlsx schreibt uneinheitlich "antimagie_magus" vs. "antimagies_grossmagus").
 
 import { RULES } from '../data/rules';
+import type { ComputedRule } from './characterSheet';
 
 export interface TalentStufeInfo {
   family: string;
@@ -73,4 +74,24 @@ export function getHoehereStufenReferenzen(referenz: string): string[] {
   return [...stufeByReferenz.entries()]
     .filter(([, other]) => other.family === info.family && other.stufe > info.stufe)
     .map(([ref]) => ref);
+}
+
+/** Reduziert eine Liste von Talenten auf je Stufen-Reihe (Familie) nur die hoechste vertretene
+ *  Stufe - Talente ohne erkannte Stufen-Reihe bleiben unveraendert erhalten. Gemeinsam genutzt
+ *  von talenteVornachteile.ts's "Gekauft"-Sektion und dem Charakterbogen (beide sollen z.B. bei
+ *  "Zäher Bursche Stufe 1-3" nur Stufe 3 zeigen, nicht alle drei). */
+export function filterHoechsteStufeJeReihe(rows: ComputedRule[]): ComputedRule[] {
+  const hoechsteStufeJeReihe = new Map<string, ComputedRule>();
+  const einzelne: ComputedRule[] = [];
+  for (const row of rows) {
+    const info = row.rule.kategorie === 'Talente' ? getTalentStufeInfo(row.rule.referenz) : undefined;
+    if (!info) {
+      einzelne.push(row);
+      continue;
+    }
+    const bisher = hoechsteStufeJeReihe.get(info.family);
+    const bisherInfo = bisher ? getTalentStufeInfo(bisher.rule.referenz) : undefined;
+    if (!bisher || info.stufe > (bisherInfo?.stufe ?? 0)) hoechsteStufeJeReihe.set(info.family, row);
+  }
+  return [...einzelne, ...hoechsteStufeJeReihe.values()];
 }

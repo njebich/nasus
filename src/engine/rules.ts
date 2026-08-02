@@ -119,9 +119,16 @@ function isExemptFromRounding(rule: RuleEntry): boolean {
     || haystack.includes('waffenklasse') || /(^|[^a-z])wk([^a-z]|$)/.test(haystack);
 }
 
+// Nutzer-Ask: Hochsprung (Meter) rundet abweichend von der generellen Ganzzahl-Regel auf
+// 0,25 auf (z.B. 0,6 -> 0,75), da eine Ganzzahl-Rundung fuer einen Sprungweiten-Meterwert zu grob waere.
+const QUARTER_ROUNDED_REFERENZEN = new Set(['bewegung_f_hochsprung']);
+
 function applyRoundingRule(rule: RuleEntry, value: Value): Value {
   if (typeof value !== 'number') return value;
   if (isExemptFromRounding(rule)) return value;
+  if (QUARTER_ROUNDED_REFERENZEN.has(rule.referenz)) {
+    return Math.sign(value) * Math.ceil(Math.abs(value) / 0.25) * 0.25;
+  }
   // "aufgerundet" = vom Nullpunkt weg (wie die AUFRUNDEN()-Funktion/Excel ROUNDUP), nicht
   // Math.ceil (Richtung +Unendlich) - konsistent mit der expliziten AUFRUNDEN-Funktion in
   // der Formel-Sprache, die dieselbe Semantik nutzt.

@@ -210,22 +210,27 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
     }
     if (rule.kostenRaw) {
       try {
-        // WICHTIG: kostenCurrent als eigene Anweisung VOR kostenNext zuweisen - kostenNext kann
-        // am oberen Ende einer Kosten-Tabelle werfen (z.B. Wert 64->65 existiert nicht), und ein
-        // Wurf darf das bereits erfolgreich berechnete kostenCurrent nicht verwerfen.
         result.kostenCurrent = Number(evalKostenFor(rule.referenz, currentValue, values));
-        result.kostenNext = Number(evalKostenFor(rule.referenz, currentValue + 1, values));
-        if (currentValue > 0) {
-          try {
-            result.kostenPrev = Number(evalKostenFor(rule.referenz, currentValue - 1, values));
-          } catch {
-            // kein Rueckerstattungs-Tooltip, wenn currentValue-1 aus irgendeinem Grund nicht
-            // auswertbar ist (z.B. Tabellenrand) - kostenCurrent/kostenNext bleiben davon unberuehrt.
-          }
-        }
       } catch (err) {
         const kostenError = err instanceof Error ? err.message : String(err);
         result.error = result.error ? `${result.error}; ${kostenError}` : kostenError;
+      }
+      try {
+        result.kostenNext = Number(evalKostenFor(rule.referenz, currentValue + 1, values));
+      } catch {
+        // kein Preis-Tooltip fuer den naechsten Klick, wenn currentValue+1 nicht mehr in der
+        // Kosten-Tabelle steht (z.B. SSK-Stufen 0-4, Punkt 5) - kein echter Fehler: der Wert
+        // ist bereits am Maximum, der "+"-Button ist ohnehin per maxValue gesperrt (siehe
+        // categoryView.ts sskMaxValue). Frueher landete dieser Wurf faelschlich in result.error
+        // und zeigte ein Warn-Icon auf einer voellig gueltigen Stufe-4-Zeile.
+      }
+      if (currentValue > 0) {
+        try {
+          result.kostenPrev = Number(evalKostenFor(rule.referenz, currentValue - 1, values));
+        } catch {
+          // kein Rueckerstattungs-Tooltip, wenn currentValue-1 aus irgendeinem Grund nicht
+          // auswertbar ist (z.B. Tabellenrand) - kostenCurrent/kostenNext bleiben davon unberuehrt.
+        }
       }
     }
     return result;

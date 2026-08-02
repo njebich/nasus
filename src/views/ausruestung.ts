@@ -346,6 +346,23 @@ function grundfertigkeitZielOptionen(character: CharacterState): ArtefaktZielOpt
     .sort((a, b) => a.label.localeCompare(b.label, 'de'));
 }
 
+/** Fuer den Besitz-Eintrag eines bereits gekauften "WHK-Talentwert erhöhen"/"Grundfertigkeit
+ *  erhöhen"-Artefakts: loest die beim Kauf gespeicherte Ziel-Referenz (`selections.ziel`, siehe
+ *  characterMutations.ts buyArtefakt) auf einen Anzeigenamen auf. Bewusst OHNE den TaW>3-Filter
+ *  der obigen *ZielOptionen-Funktionen (die sind nur fuer die Kauf-Dropdown-Auswahl) - ein einmal
+ *  gekauftes Artefakt soll sein Ziel weiter anzeigen, auch wenn der TaW seither gesunken ist. */
+function resolveArtefaktZielLabel(character: CharacterState, artefaktReferenz: string, ziel: string): string | undefined {
+  if (artefaktReferenz === WHK_TALENTWERT_ARTEFAKT_REFERENZ) {
+    const custom = character.customWhkHauptfertigkeiten.find((h) => h.id === ziel);
+    if (custom) return custom.name;
+    return RULES.find((r) => r.kategorie === 'WHK' && r.referenz === ziel)?.beschreibung ?? ziel;
+  }
+  if (artefaktReferenz === GRUNDFERTIGKEIT_ARTEFAKT_REFERENZ) {
+    return RULES.find((r) => r.kategorie === 'Grundfertigkeit' && r.referenz === ziel)?.beschreibung ?? ziel;
+  }
+  return undefined;
+}
+
 function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: CharacterState): string {
   const kostenRows = ARTEFAKT_KOSTEN.filter((k) => k.referenz === basis.referenz);
   const xKlinge = isXKlingeReferenz(basis.referenz);
@@ -878,7 +895,12 @@ function renderInventar(character: CharacterState, category: KaufKategorie): str
       label = row?.name ?? label;
     } else if (e.family === 'artefakt') {
       const kostenRow = ARTEFAKT_KOSTEN.find((r) => String(r.sourceRow) === e.baseId);
-      label = kostenRow ? `${kostenRow.name} Grad ${kostenRow.grad} (${e.selections.variant})` : label;
+      const zielLabel = kostenRow && e.selections.ziel
+        ? resolveArtefaktZielLabel(character, kostenRow.referenz, String(e.selections.ziel))
+        : undefined;
+      label = kostenRow
+        ? `${kostenRow.name}${zielLabel ? ` – ${zielLabel}` : ''} Grad ${kostenRow.grad} (${e.selections.variant})`
+        : label;
       const basis = kostenRow ? ARTEFAKT_BASIS.find((row) => row.referenz === kostenRow.referenz) : undefined;
       if (basis && kostenRow) {
         const text = isXKlingeReferenz(basis.referenz)

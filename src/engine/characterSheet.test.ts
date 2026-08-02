@@ -60,6 +60,21 @@ describe('computeSheet', () => {
       expect(sheet.sskMinimumMet).toBe(false);
     });
 
+    it('zeigt keinen Fehler auf einer SSK-Zeile, die bereits auf Stufe 4 (Maximum) steht', () => {
+      // Regression: kostenNext wurde immer fuer currentValue+1 berechnet, auch am oberen Ende
+      // der Sprachstufe-Kosten-Tabelle (nur Stufen 0-4) - der Wurf bei Stufe 5 landete faelschlich
+      // in result.error statt (wie kostenPrev) stillschweigend zu scheitern.
+      const character = createCharacter('Test');
+      character.values['ssk_sprache_zwergisch'] = 4;
+
+      const sheet = computeSheet(character);
+      const row = sheet.byKategorie['Sprache & Kultur']?.find((r) => r.rule.referenz === 'ssk_sprache_zwergisch');
+
+      expect(row?.currentValue).toBe(4);
+      expect(row?.error).toBeUndefined();
+      expect(row?.kostenNext).toBeUndefined();
+    });
+
     it('verlangt auch bei mindestens 90 SSK-SP wenigstens eine Sprache auf Stufe 1+', () => {
       const character = createCharacter('Test');
       character.values['ssk_kultur_zwerge'] = 4;

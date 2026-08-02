@@ -25,7 +25,7 @@ import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import { canLearnSpell, canIncreaseSpell, getMaxLernbarerGrad } from '../engine/spruchmagieGating';
 import { SPRUCHMAGIE_DETAILS, type SpruchmagieDetail } from '../data/spruchmagieDetails';
 import { aufrunden } from '../engine/functions';
-import { resolveRw } from '../engine/spruchmagieRw';
+import { resolveRw, resolveWirkungText } from '../engine/spruchmagieRw';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
 import { formatKlickpreis, parseStatInputValue, type OnValueChange } from './categoryView';
@@ -311,7 +311,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
       <td class="spruchmagie-name-cell">${escapeHtml(name)}${probe ? `<div class="spruchmagie-probe"${tooltipAttr('Probe = TaW + Eig.Bon. + Magie − Erschwerung (je Zauberstufe)')}>Probe: ${probe}</div>` : ''}</td>
       <td>${escapeHtml(detail?.minInt ?? '–')}</td>
       <td>${escapeHtml(getEigBonusValue(sheet, rule.eigBonus)?.label ?? '–')}</td>
-      <td class="spruchmagie-wirkung-cell">${escapeHtml(rule.wirkung ?? '–')}</td>
+      <td class="spruchmagie-wirkung-cell"${rule.wirkung ? tooltipAttr(`Rohtext: ${rule.wirkung}`) : ''}>${escapeHtml(resolveWirkungText(rule.wirkung, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet)))}</td>
       <td class="spruchmagie-wirkung-cell">${escapeHtml(detail?.gegenprobe ?? '–')}</td>
       <td${detail?.rw ? tooltipAttr(`Formel: ${detail.rw}`) : ''}>${escapeHtml(resolveRw(detail?.rw, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet), getCharakterwertFormel(sheet, 'mana')))}</td>
       <td>${escapeHtml(detail?.ziel ?? '–')}</td>

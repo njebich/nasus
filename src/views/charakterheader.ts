@@ -1,5 +1,5 @@
-// Charakterheader: Werte, die den Charakter AUSMACHEN (Identitaet/Flavor), getrennt von den
-// Werten, die der Charakter HAT (Punktekauf-Stats in den Tabs). Immer sichtbar, editierbar.
+// Grunddaten: Werte, die den Charakter AUSMACHEN (Identitaet/Flavor), getrennt von den
+// Werten, die der Charakter HAT (Punktekauf-Stats in den anderen Charakter-Tabs).
 
 import type { CharacterState, CharacterHeader } from '../state/characterStore';
 import { VOELKER_NAMEN } from '../engine/voelker';
@@ -154,4 +154,19 @@ export function renderCharakterheader(container: HTMLElement, character: Charact
     addSekte(aktuelleReligionId, name);
     onChange({ religion: combineReligionSekte(religion.name, name) });
   });
+}
+
+/** Rendert den bisherigen Charakterheader als regulaere Ansicht unter Charakter -> Grunddaten. */
+export function renderGrunddatenView(
+  container: HTMLElement,
+  character: CharacterState,
+  onChange: OnHeaderChange,
+): void {
+  container.innerHTML = `
+    <section class="grunddaten-view" aria-labelledby="grunddaten-heading">
+      <h2 id="grunddaten-heading">Grunddaten</h2>
+      <div data-grunddaten-editor></div>
+    </section>`;
+  const editor = container.querySelector<HTMLElement>('[data-grunddaten-editor]');
+  if (editor) renderCharakterheader(editor, character, onChange);
 }

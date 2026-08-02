@@ -5,10 +5,9 @@
 
 import { getRule, findParentRule, findChildRules, evalReferenz } from '../engine/rules';
 import { computeSheet, makeValueSource } from '../engine/characterSheet';
-import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
 import { getTalentMaximumBonus } from '../engine/talenteMaximum';
-import { getSchlechteEigenschaftZielReferenz, hasSchlechteEigenschaft, getSchlechteEigenschaftMax } from '../engine/schlechteEigenschaft';
+import { getSchlechteEigenschaftZielReferenz, getSchlechteEigenschaftMax } from '../engine/schlechteEigenschaft';
 import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent, isGeweihterReferenzErlaubt } from '../engine/geweihte';
 import { getVorstufeReferenz, getHoehereStufenReferenzen } from '../engine/talenteStufenKette';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
@@ -19,20 +18,31 @@ import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
-import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
+import { NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { composeMunition } from '../engine/pfeilBolzenComposition';
+import {
+  createRangedAmmoInventorySnapshot, createRangedWeaponInventorySnapshot,
+} from '../engine/rangedInventorySnapshot';
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
 import { computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier } from '../engine/waffenPool';
 import { gutBudget, meisterlichBudget } from '../engine/poolCaps';
-import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
+import type { FernkampfRow } from '../data/equipment/fernkampf';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
-import { FEUERWAFFEN_MUNITION_PREISE, type FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
+import type { FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
 import type { RsGruppe } from '../data/trefferzonen';
 import { listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen } from '../engine/waffenLoadout';
 import { isXKlingeReferenz, resolveXKlingeWirkung } from '../engine/xKlinge';
 import {
+  ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
+  FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW,
+  weaponSpecializationForRow,
+} from '../engine/weaponCatalog';
+import {
+  firearmAmmunitionType, firearmAmmoTypeForArt, rangedWeaponAmmunitionType,
+} from '../engine/ammunitionTypes';
+import {
   ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry,
-  type WaffenLoadoutEntry, type WaffenLoadoutComboType,
+  type WaffenLoadoutEntry, type WaffenLoadoutComboType, isWaffenLoadoutSingleType,
 } from './characterStore';
 
 export class BudgetError extends Error {}
@@ -124,41 +134,12 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
     }
   }
 
-  // Regel (Nutzer 2026-07-17, werte 0.8 / Sheet "Voelker-Maxima"): Eigenschaften sind je nach
-  // Spezies auf ein Min/Max begrenzt - Max ist Erstellungs-Max bis Kreis 3, danach einheitlich
-  // 31 ("Max ab Kreis 3"). Unbekannte Spezies (z.B. Test-Fixtures) -> keine Einschraenkung.
-  if (rule.kategorie === 'Eigenschaft') {
-    let kreis = 0;
-    try {
-      kreis = Number(evalReferenz('kreis', makeValueSource(character)));
-    } catch {
-      // ep_gesamt noch nicht auswertbar (z.B. ganz frischer Charakter) -> Kreis 0 annehmen.
-    }
-    // Regel (Nutzer 2026-07-24, Nachteil "Schlechte Eigenschaft: X"): ersetzt die Voelker-Maxima-
-    // Tabelle fuer die betroffene Eigenschaft komplett durch ein festes, "grundsaetzlich nicht
-    // uebersteigerbares" Maximum - bewusst OHNE getTalentMaximumBonus obendrauf (siehe
-    // schlechteEigenschaft.ts), im Unterschied zum Normalfall unten.
-    if (hasSchlechteEigenschaft(character, rule.referenz)) {
-      const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
-      const min = grenzen?.min ?? 0;
-      const max = getSchlechteEigenschaftMax(Number.isFinite(kreis) ? kreis : 0);
-      if (wert < min || wert > max) {
-        throw new MutationError(
-          `'${rule.referenz}' ist durch den Nachteil "Schlechte Eigenschaft" auf ${max} gedeckelt (nicht übersteigerbar)`,
-        );
-      }
-    } else {
-      const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, Number.isFinite(kreis) ? kreis : 0);
-      if (grenzen) {
-        const effectiveMax = grenzen.max + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
-        if (wert < grenzen.min || wert > effectiveMax) {
-          throw new MutationError(
-            `'${rule.referenz}' muss für ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`,
-          );
-        }
-      }
-    }
-  }
+  // Eigenschafts-Minima/-Maxima sind keine harte Eingabesperre. Ein Charakter kann durch eine
+  // Regeländerung in einen ungültigen Zwischenstand geraten (z.B. Dalkini Ausstrahlung 7 nach
+  // Entfernen von "Schlechte Eigenschaft", obwohl das Spezies-Minimum 9 ist). Würde setValue
+  // jeden Zwischenwert unter 9 ablehnen, bliebe der +/- Regler bei 7 hängen, weil der notwendige
+  // Schritt auf 8 nie gespeichert werden könnte. computeSheet zeigt die Grenzverletzung als
+  // Warnung an; die Zahl bleibt zur Korrektur immer editierbar.
 
   // Regel (Nutzer 2026-07-18, im Zuge der Talente-Wirkung-Analyse): Grundfertigkeit/
   // Sonderfertigkeit/Nahkampf/Fernkampf/WHK/Spruchmagie/Attribute haben einen Basis-Maximalwert
@@ -442,10 +423,13 @@ export function setPoolAllocation(character: CharacterState, referenz: string, a
     if (computed?.poolCaps) {
       const { gatMax, gpaMax, matMax, mpaMax } = computed.poolCaps;
       const [gatBudget, gpaBudget, matBudget, mpaBudget] = [gutBudget(gatMax), gutBudget(gpaMax), meisterlichBudget(matMax), meisterlichBudget(mpaMax)];
-      if (allocation.gat > gatBudget) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
-      if (allocation.gpa > gpaBudget) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
-      if (allocation.mat > matBudget) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
-      if (allocation.mpa > mpaBudget) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
+      // Eine nachtraeglich gesunkene Feldgrenze darf eine unveraenderte Altzuteilung nicht zum
+      // Speicher-Blocker fuer ein anderes Feld machen. Nur eine weitere Erhoehung genau des
+      // bereits ueber der aktuellen Grenze liegenden Feldes wird abgelehnt.
+      if (allocation.gat > gatBudget && allocation.gat > previous.gat) throw new BudgetError(`gAT ueberschreitet die Obergrenze (max ${gatBudget} Pool-Punkte, Gesamt-Ziel ${gatMax})`);
+      if (allocation.gpa > gpaBudget && allocation.gpa > previous.gpa) throw new BudgetError(`gPA ueberschreitet die Obergrenze (max ${gpaBudget} Pool-Punkte, Gesamt-Ziel ${gpaMax})`);
+      if (allocation.mat > matBudget && allocation.mat > previous.mat) throw new BudgetError(`mAT ueberschreitet die Obergrenze (max ${matBudget} Pool-Punkte, Gesamt-Ziel ${matMax})`);
+      if (allocation.mpa > mpaBudget && allocation.mpa > previous.mpa) throw new BudgetError(`mPA ueberschreitet die Obergrenze (max ${mpaBudget} Pool-Punkte, Gesamt-Ziel ${mpaMax})`);
     }
   }
 
@@ -514,8 +498,8 @@ export function setWaffenPoolAllocation(
     }
 
     if (overflow) {
-      if (allocation.nat > overflow.natMax) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
-      if (allocation.npa > overflow.npaMax) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
+      if (allocation.nat > overflow.natMax && allocation.nat > previous.nat) throw new BudgetError(`nAT ueberschreitet die Obergrenze (max ${overflow.natMax})`);
+      if (allocation.npa > overflow.npaMax && allocation.npa > previous.npa) throw new BudgetError(`nPA ueberschreitet die Obergrenze (max ${overflow.npaMax})`);
     }
   }
 
@@ -710,7 +694,7 @@ export function buyShield(
   character: CharacterState, sourceRow: number,
   materialSourceRow: number, fertigungSourceRow: number, bespannungSourceRow: number,
 ): CharacterState {
-  const row = NK_WAFFEN_BASIS.find((r) => r.sourceRow === sourceRow);
+  const row = MELEE_WEAPON_BY_SOURCE_ROW.get(String(sourceRow));
   if (!row) throw new MutationError(`Schild (Zeile ${sourceRow}) existiert nicht`);
   if (row['Spezialisierung'] !== 'Schild') throw new MutationError(`'${row.name}' ist kein Schild`);
 
@@ -735,6 +719,8 @@ export function buyShield(
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'shield', baseTable: 'nk_waffen_basis', baseId: String(sourceRow),
+    displayNameSnapshot: row.name,
+    specializationId: weaponSpecializationForRow('NK-Waffen-Basis', row).id,
     selections: {
       material: String(materialSourceRow), fertigung: String(fertigungSourceRow), bespannung: String(bespannungSourceRow),
     },
@@ -760,7 +746,7 @@ export function buyWeapon(
   character: CharacterState, sourceRow: number,
   materialSourceRow: number, fertigungSourceRow: number, anpassungSourceRow: number, schaftmaterialSourceRow: number,
 ): CharacterState {
-  const row = NK_WAFFEN_BASIS.find((r) => r.sourceRow === sourceRow);
+  const row = MELEE_WEAPON_BY_SOURCE_ROW.get(String(sourceRow));
   if (!row) throw new MutationError(`Waffe (Zeile ${sourceRow}) existiert nicht`);
   if (row['Spezialisierung'] === 'Schild') throw new MutationError(`'${row.name}' ist ein Schild, siehe buyShield`);
 
@@ -793,6 +779,8 @@ export function buyWeapon(
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'weapon', baseTable: 'nk_waffen_basis', baseId: String(sourceRow),
+    displayNameSnapshot: row.name,
+    specializationId: weaponSpecializationForRow('NK-Waffen-Basis', row).id,
     selections: {
       material: String(materialSourceRow), fertigung: String(fertigungSourceRow),
       anpassung: String(anpassungSourceRow), schaftmaterial: String(schaftmaterialSourceRow),
@@ -817,8 +805,7 @@ export function buyWeapon(
  * System - siehe project-fk-waffen-erfassung memory).
  */
 export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'armbrust', sourceRow: number): CharacterState {
-  const table = typ === 'boegen' ? BOEGEN : ARMBRUST;
-  const row = table.find((r) => r.sourceRow === sourceRow);
+  const row = (typ === 'boegen' ? BOW_BY_SOURCE_ROW : CROSSBOW_BY_SOURCE_ROW).get(String(sourceRow));
   if (!row) throw new MutationError(`${typ === 'boegen' ? 'Bogen' : 'Armbrust'} (Zeile ${sourceRow}) existiert nicht`);
   assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name, character.bestehenderCharakter);
   if (row.preisDublonen === undefined) {
@@ -828,7 +815,11 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'fernkampfwaffe', baseTable: typ, baseId: String(sourceRow),
+    displayNameSnapshot: row.name,
+    specializationId: weaponSpecializationForRow(typ === 'boegen' ? 'Bögen-Basis' : 'Armbrust-Basis', row).id,
+    ammunitionTypeId: rangedWeaponAmmunitionType(typ),
     selections: {}, quantity: 1, computedPriceSnapshot: row.preisDublonen,
+    rangedSnapshot: createRangedWeaponInventorySnapshot(typ, row),
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);
@@ -841,7 +832,7 @@ export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'ar
 export function buyFeuerwaffe(
   character: CharacterState, sourceRow: number, selections: FeuerwaffenSelections,
 ): CharacterState {
-  const basis = FEUERWAFFEN.find((row) => row.sourceRow === sourceRow);
+  const basis = FIREARM_BY_SOURCE_ROW.get(String(sourceRow));
   if (!basis) throw new MutationError(`Feuerwaffe (Zeile ${sourceRow}) existiert nicht`);
 
   let composed;
@@ -855,6 +846,9 @@ export function buyFeuerwaffe(
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'feuerwaffe', baseTable: 'feuerwaffen', baseId: String(sourceRow),
+    displayNameSnapshot: basis.name,
+    specializationId: weaponSpecializationForRow('Feuerwaffen', basis).id,
+    ammunitionTypeId: firearmAmmunitionType(basis['Lademechanik'] ?? '', composed.munition),
     selections: {
       verarbeitung: String(selections.verarbeitungSourceRow), anpassung: String(selections.anpassungSourceRow),
     },
@@ -885,15 +879,15 @@ export function buyMunition(
   basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number,
 ): CharacterState {
   if (quantity <= 0) throw new MutationError('Anzahl muss größer als 0 sein');
-  const table = typ === 'pfeile' ? PFEILE : BOLZEN;
-  const basis = table.find((r) => r.sourceRow === basisSourceRow);
+  const table = typ === 'pfeile' ? ARROW_BY_SOURCE_ROW : BOLT_BY_SOURCE_ROW;
+  const basis = table.get(String(basisSourceRow));
   if (!basis) throw new MutationError(`${typ === 'pfeile' ? 'Pfeil' : 'Bolzen'} (Zeile ${basisSourceRow}) existiert nicht`);
   if (basis['Kategorie'] === 'Spitzen-Modifikator') {
     throw new MutationError(`'${basis.name}' ist ein Spitzen-Modifikator, keine eigenstaendige Munition`);
   }
   let modifikator: FernkampfRow | null = null;
   if (modifikatorSourceRow !== null) {
-    modifikator = table.find((r) => r.sourceRow === modifikatorSourceRow) ?? null;
+    modifikator = table.get(String(modifikatorSourceRow)) ?? null;
     if (!modifikator) throw new MutationError(`Modifikator (Zeile ${modifikatorSourceRow}) existiert nicht`);
     if (modifikator['Kategorie'] !== 'Spitzen-Modifikator') {
       throw new MutationError(`'${modifikator.name}' ist kein Spitzen-Modifikator`);
@@ -910,9 +904,12 @@ export function buyMunition(
   const candidate = clone(character);
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'ammo', baseTable: typ, baseId: String(basisSourceRow),
+    displayNameSnapshot: anzeigeName,
+    ammunitionTypeId: typ === 'pfeile' ? 'pfeil' : 'bolzen',
     selections: modifikator ? { modifikator: String(modifikator.sourceRow) } : {},
     quantity, computedPriceSnapshot: composed.preisDublonen,
     computedStatsSnapshot: { fixschaden: composed.fixschaden, rb: composed.rb, rwModMeter: composed.rwModMeter, be: composed.be },
+    rangedSnapshot: createRangedAmmoInventorySnapshot(typ, basis, modifikator),
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);
@@ -924,7 +921,7 @@ export function buyFeuerwaffenMunition(
   character: CharacterState, art: FeuerwaffenMunitionArt, kaliber: number, quantity: number,
 ): CharacterState {
   if (![1, 10, 100].includes(quantity)) throw new MutationError('Anzahl muss 1, 10 oder 100 sein');
-  const ammo = FEUERWAFFEN_MUNITION_PREISE.find((row) => row.art === art && row.kaliber === kaliber);
+  const ammo = FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${art}:${kaliber}`);
   if (!ammo) throw new MutationError(`Keine passende Feuerwaffenmunition für Kaliber ${kaliber}`);
 
   const candidate = clone(character);
@@ -933,6 +930,8 @@ export function buyFeuerwaffenMunition(
     family: 'ammo',
     baseTable: 'feuerwaffen-munition',
     baseId: art,
+    displayNameSnapshot: ammo.label,
+    ammunitionTypeId: firearmAmmoTypeForArt(art),
     selections: { kaliber: String(kaliber) },
     quantity,
     computedPriceSnapshot: ammo.preisDublonen,
@@ -989,11 +988,26 @@ function newLoadoutId(): string {
 export function addWaffenLoadout(
   character: CharacterState, comboType: WaffenLoadoutComboType, primaryEquipmentId: string, secondaryEquipmentId: string,
 ): CharacterState {
-  if (primaryEquipmentId === secondaryEquipmentId) {
+  if (!isWaffenLoadoutSingleType(comboType) && primaryEquipmentId === secondaryEquipmentId) {
     throw new MutationError('Ein Loadout braucht zwei verschiedene Gegenstände');
   }
 
-  if (comboType === 'nk1h_nk1h') {
+  if (isWaffenLoadoutSingleType(comboType)) {
+    const equipment = character.equipment.find((entry) => entry.id === primaryEquipmentId);
+    const basis = equipment?.family === 'feuerwaffe' ? FIREARM_BY_SOURCE_ROW.get(equipment.baseId) : undefined;
+    const valid = comboType === 'nk1h'
+      ? equipment?.family === 'weapon' && equipment.computedStatsSnapshot?.minStaerke1H !== undefined
+      : comboType === 'nk2h'
+        ? equipment?.family === 'weapon' && equipment.computedStatsSnapshot?.minStaerke2H !== undefined
+        : comboType === 'pistole'
+          ? equipment?.family === 'feuerwaffe' && basis?.['Typ'] === 'Pistole'
+          : comboType === 'muskete'
+            ? equipment?.family === 'feuerwaffe' && basis?.['Typ'] === 'Gewehr'
+            : comboType === 'armbrust'
+              ? equipment?.family === 'fernkampfwaffe' && equipment.baseTable === 'armbrust'
+              : equipment?.family === 'fernkampfwaffe' && equipment.baseTable === 'boegen';
+    if (!valid) throw new MutationError(`Benötigt eine besessene Waffe der Loadout-Art '${comboType}'`);
+  } else if (comboType === 'nk1h_nk1h') {
     const ids = new Set(listEligibleNahkampf1HWaffen(character).map((i) => i.equipmentId));
     if (!ids.has(primaryEquipmentId) || !ids.has(secondaryEquipmentId)) {
       throw new MutationError('Benötigt zwei besessene, 1H-fähige Nahkampfwaffen');

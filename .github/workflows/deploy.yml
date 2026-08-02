@@ -23,6 +23,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm install
+      - name: Record push build time
+        run: echo "VITE_LAST_UPDATED_AT=$(date -u -d '@${{ github.event.repository.pushed_at }}' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

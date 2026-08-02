@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { createCharacter, loadCharacter, STARTBUDGET_PRESETS, getLastActiveCharacterId, setLastActiveCharacterId } from './characterStore';
-import { updateHeader } from './characterMutations';
+import { buyFernkampfwaffe, updateHeader } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
+import { BOEGEN } from '../data/equipment/fernkampf';
 
 describe('createCharacter mit Charakterheader + Startbudget', () => {
   it('legt einen Charakter mit vollem Header an', () => {
@@ -17,24 +18,24 @@ describe('createCharacter mit Charakterheader + Startbudget', () => {
     expect(character.alter).toBeUndefined();
   });
 
-  it('Startbudget normal: EP=0 (Stufe 0), SP automatisch 6490+0=6490, 5000 Dublonen', () => {
+  it('Startbudget normal: EP=0 (Stufe 0), SP automatisch 6400+0=6400, 5000 Dublonen', () => {
     const character = createCharacter('Test', { spezies: 'Mensch' }, 'normal');
     expect(character.values['ep_gesamt']).toBe(STARTBUDGET_PRESETS.normal.epGesamt);
     expect(character.values['ep_gesamt']).toBe(0);
     expect(character.values['dublonen_bank']).toBe(5000);
     const sheet = computeSheet(character);
     expect(sheet.epGesamt).toBe(0);
-    expect(sheet.spTotal).toBe(6490); // SP = 6490 + EP, NICHT SP = EP
+    expect(sheet.spTotal).toBe(6400); // SP = 6400 + EP, NICHT SP = EP
     expect(sheet.dublonenTotal).toBe(5000);
   });
 
-  it('Startbudget gehoben: EP=1600 (Stufe 15), SP automatisch 6490+1600=8090, 6000 Dublonen', () => {
+  it('Startbudget gehoben: EP=1600 (Stufe 15), SP automatisch 6400+1600=8000, 6000 Dublonen', () => {
     const character = createCharacter('Test', { spezies: 'Mensch' }, 'gehoben');
     expect(character.values['ep_gesamt']).toBe(1600);
     expect(character.values['dublonen_bank']).toBe(6000);
     const sheet = computeSheet(character);
     expect(sheet.epGesamt).toBe(1600);
-    expect(sheet.spTotal).toBe(8090);
+    expect(sheet.spTotal).toBe(8000);
   });
 
   it('ohne Startbudget bleiben ep_gesamt/dublonen_bank ungesetzt (0)', () => {
@@ -58,7 +59,7 @@ describe('createCharacter mit Charakterheader + Startbudget', () => {
     // 1->2 = 100 usw., Nutzer-Bestaetigung 2026-07-24) = 3080 SP.
     const sheet = computeSheet(character);
     expect(sheet.spSpent).toBe(3080);
-    expect(sheet.spRemaining).toBe(6490 - 3080);
+    expect(sheet.spRemaining).toBe(6400 - 3080);
   });
 
   it('ohne Startbudget bleibt der Durchschnittscharakter-Ausgangswert aus (reine Test-Fixtures bleiben leer)', () => {
@@ -110,6 +111,19 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     });
   });
 
+  it('migriert Mit Zwei Pistolen schiessen zum zusammengefuehrten Beidhaendig-Talent', () => {
+    const id = 'alt-charakter-mit-zwei-pistolen';
+    const alterCharakter = {
+      id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '', values: {},
+      selections: { talente_mit_zwei_pistolen_schiessen: 1 },
+      poolAllocations: {}, equipment: [], ruestungSlots: {},
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
+
+    const loaded = loadCharacter(id);
+    expect(loaded?.selections).toEqual({ talente_beidhaendig_pistolenschiessen: 1 });
+  });
+
   it('migriert Heimat und das alte Welt-Feld verlustarm in den Herkunftssnapshot', () => {
     const id = 'alt-charakter-vor-herkunft';
     const alterCharakter = {
@@ -123,6 +137,61 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     expect(loaded.herkunftSnapshot).toEqual({ name: 'Altdorf', region: '', welt: 'NW' });
     expect('heimat' in loaded).toBe(false);
     expect('region' in loaded).toBe(false);
+  });
+
+  it('migriert alte Bogen-/Pfeil-Eintraege ohne Snapshot, wenn der Katalogeintrag noch existiert', () => {
+    const id = 'alt-charakter-vor-ranged-snapshot';
+    const alterCharakter = {
+      id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {}, selections: {}, poolAllocations: {}, ruestungSlots: {},
+      equipment: [{
+        id: 'alter-bogen', family: 'fernkampfwaffe', baseTable: 'boegen', baseId: '2',
+        selections: {}, quantity: 1, computedPriceSnapshot: 0.001,
+      }, {
+        id: 'alte-pfeile', family: 'ammo', baseTable: 'pfeile', baseId: '3',
+        selections: {}, quantity: 10, computedPriceSnapshot: 0.05,
+      }],
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
+    const loaded = loadCharacter(id)!;
+    expect(loaded.equipment).toHaveLength(2);
+    expect(loaded.equipment[0].rangedSnapshot?.kind).toBe('ranged-weapon');
+    expect(loaded.equipment[1].rangedSnapshot?.kind).toBe('ranged-ammo');
+  });
+
+  it('behaelt nicht mehr aufloesbare Fernkampf-Eintraege und markiert sie detailliert als ungueltig', () => {
+    const id = 'stale-ranged-catalog-entry';
+    const staleCharacter = {
+      id, name: 'Stale', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {}, selections: {}, poolAllocations: {}, ruestungSlots: {},
+      equipment: [{
+        id: 'fehlender-bogen', family: 'fernkampfwaffe', baseTable: 'boegen', baseId: '99999',
+        selections: {}, quantity: 1,
+        rangedSnapshot: {
+          kind: 'ranged-weapon', table: 'boegen', name: 'Alter Bogen',
+          spezialisierung: 'Improvisierte Stangenwaffen',
+        },
+      }],
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(staleCharacter));
+
+    const loaded = loadCharacter(id)!;
+    expect(loaded.equipment).toHaveLength(1);
+    expect(loaded.equipment[0].invalidReason).toMatch(
+      /Ungültige Waffe.*boegen.*99999.*Alter Bogen.*Improvisierte Stangenwaffen.*Katalogeintrag fehlt/,
+    );
+  });
+
+  it('regeneriert vorhandene aufgeloeste Snapshots beim Laden aus den aktuellen Katalogdaten', () => {
+    const bogen = BOEGEN.find((row) => row.name === 'Improvisierter Bogen')!;
+    let character = createCharacter('Snapshot', {}, undefined, true);
+    character.values['dublonen_bank'] = 100;
+    character = buyFernkampfwaffe(character, 'boegen', bogen.sourceRow);
+    character.equipment[0].rangedSnapshot!.name = 'Veralteter Name';
+    localStorage.setItem(`nasus:character:${character.id}`, JSON.stringify(character));
+
+    const loaded = loadCharacter(character.id)!;
+    expect(loaded.equipment[0].rangedSnapshot?.name).toBe(bogen.name);
   });
 });
 

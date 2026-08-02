@@ -28,7 +28,7 @@ export const TALENTE_KAMPFMODUL: readonly string[] = [
   "talente_mehrfachschuss_stufe_2_tripelschuss",
   "talente_meuchler",
   "talente_mit_schild_umwerfen",
-  "talente_mit_zwei_pistolen_schiessen",
+  "talente_beidhaendig_pistolenschiessen",
   "talente_point_blank_shot",
   "talente_schnell_schiessen",
   "talente_schnell_ziehen_armbrust",

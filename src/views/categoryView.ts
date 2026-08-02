@@ -18,6 +18,7 @@ import type { CharacterValueSource } from '../engine/rules';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
 import { EIGENSCHAFTEN_PAARE } from './charakterbogen';
+import { numericFieldWidthClass } from './numericFieldWidth';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
@@ -33,6 +34,18 @@ export type WhkCustomAction =
   | { type: 'rename-spezialisierung'; hauptfertigkeitKey: string; id: string; name: string }
   | { type: 'set-spezialisierung-wert'; hauptfertigkeitKey: string; id: string; wert: number };
 export type OnWhkCustomChange = (action: WhkCustomAction) => void;
+
+const EINSTELLIGE_WERT_KATEGORIEN = new Set(['Sprache & Kultur']);
+const ZWEISTELLIGE_WERT_KATEGORIEN = new Set([
+  'Eigenschaft', 'Attribute', 'Grundfertigkeit', 'Sonderfertigkeit',
+  'Nahkampf', 'Fernkampf', 'WHK',
+]);
+
+function editableValueWidthClass(kategorie: string): string {
+  if (EINSTELLIGE_WERT_KATEGORIEN.has(kategorie)) return numericFieldWidthClass(9);
+  if (ZWEISTELLIGE_WERT_KATEGORIEN.has(kategorie)) return numericFieldWidthClass(99);
+  return numericFieldWidthClass(undefined);
+}
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -174,10 +187,56 @@ function renderEditableRow(r: ComputedRule, kategorie: string, maxValue?: number
     <div class="stat-row" data-referenz="${r.rule.referenz}"${rowTooltipForKategorie(r, kategorie)}>
       <span class="stat-label">${label}${infoIcon(r.rule.info)}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
-      <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
+      <input type="number" class="stat-value ${editableValueWidthClass(kategorie)}" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
       <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>
       <span class="stat-cost stat-cost-click">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext}</span>
     </div>`;
+}
+
+const SSK_VOLKS_GRUPPEN = [
+  { title: 'Dalkini', tokens: ['dalkini', 'dalkin'] },
+  { title: 'Draw', tokens: ['draw', 'drow'] },
+  { title: 'Elfen', tokens: ['elfen', 'elfisch'] },
+  { title: 'Gnome', tokens: ['gnome', 'gnomisch'] },
+  { title: 'Goblins', tokens: ['goblins', 'goblinisch'] },
+  { title: 'Indianer', tokens: ['indian'] },
+  { title: 'Katzen', tokens: ['katzen', 'felinisch'] },
+  { title: 'Orks', tokens: ['orks', 'orkisch'] },
+  { title: 'Trolle', tokens: ['trolle', 'trollisch'] },
+  { title: 'Zentauren', tokens: ['zentaur'] },
+  { title: 'Zwerge', tokens: ['zwerge', 'zwergisch'] },
+] as const;
+
+function sskArtRang(referenz: string): number {
+  if (referenz.startsWith('ssk_kultur_')) return 0;
+  if (referenz.startsWith('ssk_sprache_')) return 1;
+  return 2;
+}
+
+/** SSK-Zeilen (Kultur/Sprache/Schrift) sind alle ueber "Sprachstufe-Kosten"/"Kulturstufe-Kosten"
+ *  bepreist (lookups.json), die beide nur Stufen 0-4 kennen - ein Klick ueber Stufe 4 hinaus liess
+ *  die SVERWEIS-Exact-Match-Lookup werfen (Punkt 5). Ohne maxValue-Cap fehlte diese Grenze bislang. */
+function sskMaxValue(referenz: string): number | undefined {
+  return referenz.startsWith('ssk_') ? 4 : undefined;
+}
+
+/** SSK besitzt in den Quelldaten keine Parent-Hierarchie. Deshalb ordnet diese kuratierte
+ * Zuordnung Kultur, Sprachen und Schriften jeweils ihrem spielbaren Volk zu. */
+function renderSskGroups(rows: ComputedRule[]): string {
+  return SSK_VOLKS_GRUPPEN.map(({ title, tokens }) => {
+    const matching = rows
+      .filter((row) => tokens.some((token) => row.rule.referenz.includes(token)))
+      .sort((a, b) => sskArtRang(a.rule.referenz) - sskArtRang(b.rule.referenz)
+        || (a.rule.beschreibung ?? a.rule.referenz).localeCompare(
+          b.rule.beschreibung ?? b.rule.referenz, 'de', { numeric: true },
+        ));
+    if (matching.length === 0) return '';
+    return `
+      <section class="ssk-people-group" data-ssk-volk="${title}">
+        <h3 class="stat-section-heading">${title}</h3>
+        <div class="stat-card">${matching.map((row) => renderEditableRow(row, 'Sprache & Kultur', sskMaxValue(row.rule.referenz))).join('')}</div>
+      </section>`;
+  }).join('');
 }
 
 /** SF "Ladeschuetze": eigene Gruppe (kein Hauptfertigkeit/Spezialisierung-Verhaeltnis, daher
@@ -225,7 +284,7 @@ function renderReadOnlyRow(r: ComputedRule): string {
   return `
     <div class="stat-row stat-row-readonly"${rowTooltip}>
       <span class="stat-label">${label}${infoIcon(r.rule.info)}</span>
-      <span class="stat-value-readonly">${display}</span>
+      <span class="stat-value-readonly numeric-field-output numeric-field-signed-five">${display}</span>
     </div>`;
 }
 
@@ -429,7 +488,7 @@ function renderWaffenControlCells(r: ComputedRule, rowspan: number | undefined, 
     <td class="stat-row waffen-ctrl-cell"${rowspanAttr} data-referenz="${r.rule.referenz}">
       <div class="waffen-value-inner">
         <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
-        <input type="number" class="stat-value" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+        <input type="number" class="stat-value numeric-field-two" min="0"${maxAttr} value="${value}" aria-label="${label}" />
         <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>
         ${costNext ? `<span class="stat-cost">${costNext}</span>` : ''}
       </div>
@@ -482,7 +541,7 @@ function renderWaffenBasisCell(rule: ComputedRule | undefined, rowspan: number, 
   const tooltip = rule.rule.formelRaw
     ? tooltipAttr(prettyFormula(rule.rule.formelRaw, { [hauptfertigkeitReferenz]: 'TaW' }))
     : '';
-  return `<td${rowspanAttr} class="stat-value-readonly"${tooltip}>${escapeHtml(formatComputedValue(displayValue))}</td>`;
+  return `<td${rowspanAttr} class="stat-value-readonly numeric-field-output numeric-field-signed-two"${tooltip}>${escapeHtml(formatComputedValue(displayValue))}</td>`;
 }
 
 /** Klickpreis (Kosten fuer den naechsten Punkt) fuer eine Nahkampf-/Fernkampf-Zeile - sowohl
@@ -610,7 +669,7 @@ function renderEigenschaftsbonusCell(bonus: ComputedRule | undefined): string {
   if (bonus.error) {
     return `<td class="stat-eig-bonus-cell"><span class="stat-error" title="${escapeHtml(bonus.error)}">nicht definiert ⚠</span></td>`;
   }
-  return `<td class="stat-eig-bonus-cell stat-value-readonly"${formulaTooltip(bonus.rule.formelRaw)}>${escapeHtml(formatComputedValue(bonus.computedValue ?? '–'))}</td>`;
+  return `<td class="stat-eig-bonus-cell stat-value-readonly numeric-field-output numeric-field-signed-two"${formulaTooltip(bonus.rule.formelRaw)}>${escapeHtml(formatComputedValue(bonus.computedValue ?? '–'))}</td>`;
 }
 
 function renderEigenschaftenTable(editable: ComputedRule[], bonusRows: ComputedRule[], impactValues?: CharacterValueSource): string {
@@ -704,6 +763,7 @@ export function renderCategoryView(
   // Punkt 4a/4b: nur fuer WHK genutzt (freie Hauptfertigkeiten/Spezialisierungen) - optional,
   // damit andere Kategorien/Aufrufer unveraendert bleiben.
   onWhkCustomChange?: OnWhkCustomChange,
+  showReadOnlyHeading = true,
 ): void {
   // att_karma bleibt aus dem Attribute-Tab ausgeblendet, solange kein Geweihte-Gate-Talent
   // gewaehlt ist (Nutzer 2026-07-22, "rang 0" = "hiding of att_karma from the app").
@@ -735,6 +795,7 @@ export function renderCategoryView(
   const isNahkampf = kategorie === 'Nahkampf';
   const isFernkampf = kategorie === 'Fernkampf';
   const isEigenschaft = kategorie === 'Eigenschaft';
+  const isSsk = kategorie === 'Sprache & Kultur';
   // Die "Attacke-/Parade-Basis-Wert"- (Nahkampf) bzw. "Fernkampf-(Spezialisierungs-)Basis-Wert"-
   // Formelzeilen (Fernkampf) stehen jetzt live in den Basis-Spalten der Waffentabelle
   // (renderWaffenBasisCell/renderFernkampfBasisCell) - aus "Berechnete Werte" ausgeblendet, sonst
@@ -774,13 +835,15 @@ export function renderCategoryView(
       </table>`
       : isEigenschaft
         ? renderEigenschaftenTable(restEditable, sheet.byKategorie['Eigenschaftsbonus'] ?? [], formulaImpactValues)
-        : editableHierarchy.map((n) => renderEditableGroup(n, kategorie, formulaImpactValues, isWhk && !!whkNeedle, isWhk ? sheet.customWhkSpezialisierungen : undefined)).join('')
-          // Punkt 4a/4b: frei angelegte Hauptfertigkeiten stehen unterhalb der festen Liste, plus
-          // eine Leerzeile zum Anlegen weiterer - beides unabhaengig von der Suche immer sichtbar,
-          // freie Hauptfertigkeiten aber bei aktiver Suche auf Treffer (eigener oder Spez-Name) reduziert.
-          + (isWhk ? whkCustomHauptfertigkeitenList(sheet, whkNeedle)
-              .map((h) => renderCustomWhkHauptfertigkeitGroup(h, sheet.customWhkSpezialisierungen[h.id] ?? [], !!whkNeedle))
-              .join('') + renderCustomWhkHauptfertigkeitAddRow() : '');
+        : isSsk
+          ? renderSskGroups(restEditable)
+          : editableHierarchy.map((n) => renderEditableGroup(n, kategorie, formulaImpactValues, isWhk && !!whkNeedle, isWhk ? sheet.customWhkSpezialisierungen : undefined)).join('')
+            // Punkt 4a/4b: frei angelegte Hauptfertigkeiten stehen unterhalb der festen Liste, plus
+            // eine Leerzeile zum Anlegen weiterer - beides unabhaengig von der Suche immer sichtbar,
+            // freie Hauptfertigkeiten aber bei aktiver Suche auf Treffer (eigener oder Spez-Name) reduziert.
+            + (isWhk ? whkCustomHauptfertigkeitenList(sheet, whkNeedle)
+                .map((h) => renderCustomWhkHauptfertigkeitGroup(h, sheet.customWhkSpezialisierungen[h.id] ?? [], !!whkNeedle))
+                .join('') + renderCustomWhkHauptfertigkeitAddRow() : '');
 
   const whkSearchHtml = isWhk ? `
     <div class="ausruestung-filters">
@@ -799,7 +862,7 @@ export function renderCategoryView(
     ${whkSearchHtml}
     <div class="stat-category">${whkEmptyHtml}${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet, kategorie)}</div>
     ${readOnlyForBerechneteWerte.length > 0 ? `
-      <h3 class="stat-section-heading">Berechnete Werte</h3>
+      ${showReadOnlyHeading ? '<h3 class="stat-section-heading">Berechnete Werte</h3>' : ''}
       <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>
     ` : ''}
     ${!isNahkampf && pools.length > 0 ? `
@@ -818,7 +881,7 @@ export function renderCategoryView(
       }
       searchInput.addEventListener('input', (e) => {
         categorySearchText.set(kategorie, (e.target as HTMLInputElement).value);
-        renderCategoryView(container, sheet, kategorie, onChange, _onPoolChange, impactValues, onWhkCustomChange);
+        renderCategoryView(container, sheet, kategorie, onChange, _onPoolChange, impactValues, onWhkCustomChange, showReadOnlyHeading);
       });
     }
   }
@@ -932,4 +995,61 @@ export function renderCategoryView(
   // Pool-Zuteilung ist hier seit dem Kampf-Tab (2026-07-20) reine Anzeige (renderPoolRow) - keine
   // Eingabefelder mehr, daher keine Event-Wiring noetig (Verteilung passiert jetzt pro Waffe auf
   // dem Kampf-Tab, siehe views/kampf.ts).
+}
+
+const COMBINED_CATEGORY_SECTION_TITLES: Readonly<Record<string, string>> = {
+  Charakterwerte: 'Allgemeine berechnete Werte',
+  Bewegung: 'Bewegung',
+  Gewichtsbelastung: 'Gewichtsbelastung',
+};
+
+/**
+ * Rendert einen sichtbaren Charakterwerte-Untertab aus einer oder mehreren internen
+ * Regelkategorien. Die internen Kategorienamen bleiben dabei unveraendert; insbesondere fasst
+ * "Berechnete Werte" Charakterwerte, Bewegung und Gewichtsbelastung in einer Ansicht zusammen.
+ */
+export function renderCategoryRouteView(
+  container: HTMLElement,
+  sheet: ComputedSheet,
+  title: string,
+  categories: readonly string[],
+  onChange: OnValueChange,
+  onPoolChange: OnPoolChange,
+  impactValues?: CharacterValueSource,
+  // Punkt 4a/4b: nur fuer die WHK-Route relevant (renderCategoryView filtert selbst auf
+  // kategorie === 'WHK') - optional, damit andere Routen unveraendert bleiben.
+  onWhkCustomChange?: OnWhkCustomChange,
+): void {
+  const combined = categories.length > 1;
+  container.innerHTML = `
+    <section class="category-route-view" aria-labelledby="category-route-heading">
+      <h2 id="category-route-heading">${escapeHtml(title)}</h2>
+      <div data-category-route-sections></div>
+    </section>`;
+
+  const sections = container.querySelector<HTMLElement>('[data-category-route-sections]');
+  if (!sections) return;
+
+  categories.forEach((category, index) => {
+    const section = document.createElement('section');
+    section.className = 'category-route-section';
+    section.dataset.category = category;
+    if (combined) {
+      const headingId = `category-route-section-${index}`;
+      section.setAttribute('aria-labelledby', headingId);
+      section.innerHTML = `
+        <h3 id="${headingId}" class="category-route-section-heading">${escapeHtml(COMBINED_CATEGORY_SECTION_TITLES[category] ?? category)}</h3>
+        <div data-category-content></div>`;
+    } else {
+      section.innerHTML = '<div data-category-content></div>';
+    }
+    sections.append(section);
+    const content = section.querySelector<HTMLElement>('[data-category-content]');
+    if (content) {
+      const showReadOnlyHeading = !combined || category === 'Charakterwerte';
+      renderCategoryView(
+        content, sheet, category, onChange, onPoolChange, impactValues, onWhkCustomChange, showReadOnlyHeading,
+      );
+    }
+  });
 }

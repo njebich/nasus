@@ -191,7 +191,7 @@ function evalReferenzInternal(referenz: string, state: EvalRunState): Value {
         // Eigenschafts-/Attributs-Artefakt-Bonus (Nutzer 2026-07-19): wirkt hier, NICHT in
         // evalKostenFor - jede Formel, die diese Referenz als Variable nutzt, bekommt so
         // automatisch den veraenderten Wert, waehrend die SP-Kosten (evalKostenFor bindet
-        // "wert"/"grad" direkt an candidateWert) unveraendert bleiben.
+        // "wert" direkt an candidateWert) unveraendert bleiben.
         const artefaktBonus = state.values.getArtefaktBonus?.(rule.referenz) ?? 0;
         result = state.values.getWert(rule.referenz) + artefaktBonus;
         break;
@@ -306,17 +306,18 @@ export function evalExpression(source: string, values: CharacterValueSource): Va
 }
 
 /**
- * Wertet die Kosten-Formel einer Regel fuer einen Kandidatwert aus (Pseudo-Variablen
- * `wert`/`grad` sind waehrend dieser Auswertung an candidateWert gebunden).
+ * Wertet die Kosten-Formel einer Regel fuer einen Kandidatwert aus. Die Pseudo-Variable
+ * `wert` ist an candidateWert gebunden; `grad` bezeichnet den festen Grad der Regel.
  */
 export function evalKostenFor(referenz: string, candidateWert: number, values: CharacterValueSource): Value {
   const rule = getRule(referenz);
   if (!rule) throw new EvalError(`Referenz '${referenz}' existiert nicht im Regelwerk`);
   if (!rule.kostenRaw) throw new EvalError(`Regel '${referenz}' hat keine Kosten-Formel`);
 
+  const ruleGrad = Number(rule.grad);
   const state: EvalRunState = { memo: new Map(), inProgress: new Set(), values };
   return evalFormulaWith(rule.kostenRaw, `kosten::${referenz.toLowerCase()}`, state, {
     wert: candidateWert,
-    grad: candidateWert,
+    grad: Number.isFinite(ruleGrad) ? ruleGrad : candidateWert,
   });
 }

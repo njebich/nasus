@@ -54,6 +54,16 @@ describe('rules.ts gegen echte Werte-Daten (werte 0.7-claude.xlsx)', () => {
     expect(result).toBe(363);
   });
 
+  it('Spruchmagie: erster Punkt kostet 10 SP, weitere Punkte kosten jeweils den Zaubergrad', () => {
+    const grad1 = 'spruchmagie_veraenderung_1_magisches_makeover';
+    const grad7 = 'spruchmagie_veraenderung_7_stillstand';
+
+    expect(evalKostenFor(grad1, 1, values({}))).toBe(10);
+    expect(evalKostenFor(grad1, 5, values({}))).toBe(14);
+    expect(evalKostenFor(grad7, 1, values({}))).toBe(10);
+    expect(evalKostenFor(grad7, 5, values({}))).toBe(38);
+  });
+
   it('wirft einen klaren Fehler fuer eine nicht existierende Referenz', () => {
     expect(() => evalReferenz('does_not_exist', values({}))).toThrow(/existiert nicht/);
   });

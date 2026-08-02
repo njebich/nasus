@@ -5,7 +5,6 @@
 // Features (Talent "Kampf mit zwei Waffen"): dort reicht der reine Flachbonus-Vergleich nicht,
 // der Nutzer wollte explizit den vollen Erwartungswert (Wuerfeldurchschnitt + Flachbonus).
 
-import type { GenericRow as WeaponRow } from '../data/equipment/weapons';
 import { aufrunden } from './functions';
 
 export function num(row: Record<string, string> | undefined, header: string): number {
@@ -34,27 +33,56 @@ export function formatSigned(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
 }
 
+/** Vereinheitlicht additive Schadenswuerfel fuer die Anzeige:
+ *  - ein einzelner Wuerfel wird ohne fuehrende 1 geschrieben (1W10 -> W10)
+ *  - gleiche Wuerfel werden zusammengezogen (W6+W6 -> 2W6)
+ *  Nicht als reine additive Wuerfel lesbare Ausdruecke bleiben bis auf die fuehrende 1 erhalten. */
+export function combineDiceNotations(...notations: Array<string | undefined>): string {
+  const rawTerms = notations
+    .flatMap((notation) => notation?.trim() ? notation.trim().split(/\s*\+\s*/) : [])
+    .filter(Boolean);
+  if (rawTerms.length === 0) return '–';
+
+  const parsed = rawTerms.map((term) => /^(\d*)W(\d+)$/i.exec(term));
+  if (parsed.some((match) => !match)) {
+    return rawTerms.map((term) => term.replace(/\b1W(?=\d)/gi, 'W')).join('+');
+  }
+
+  const counts = new Map<string, number>();
+  for (const match of parsed) {
+    const sides = match![2];
+    const count = match![1] ? Number(match![1]) : 1;
+    counts.set(sides, (counts.get(sides) ?? 0) + count);
+  }
+  return [...counts].map(([sides, count]) => `${count === 1 ? '' : count}W${sides}`).join('+');
+}
+
 /** "W10+W6" bei zwei Wuerfeln, sonst nur der eine - identische Anzeige-Konvention wie
  *  ausruestung.ts's (dort modul-privates) formatSchadenswuerfel. */
 export function formatSchadenswuerfel(row: Record<string, string> | undefined): string {
   const sw1 = row?.['Schadenswuerfel-1']?.trim();
   const sw2 = row?.['Schadenswuerfel-2']?.trim();
-  if (sw1 && sw2) return `${sw1}+${sw2}`;
-  return sw1 || sw2 || '–';
+  return combineDiceNotations(sw1, sw2);
 }
 
-/** Schaden = Wuerfelnotation + Flachbonus (eig_k_staerke/Staerke-Teiler + Stä-Malus, ABGERUNDET -
- *  siehe Plan-Kommentar zur Rundung). Nutzt den KOMPONIERTEN Stä-Malus aus dem Snapshot (Basis +
+/** Stä-Mod-Schreibweise ":2-5": Stärke durch 2 teilen, DIE DIVISION aufrunden, danach 5
+ *  abziehen (Nutzerpräzisierung 2026-08-01). */
+export function computeStaerkeBonus(staerke: number, staerkeTeiler: number, staerkeMalus: number): number {
+  return staerkeTeiler !== 0 ? Math.ceil(staerke / staerkeTeiler) + staerkeMalus : staerkeMalus;
+}
+
+/** Schaden = Wuerfelnotation + Flachbonus aus dem Stä-Mod. Nutzt den KOMPONIERTEN Stä-Malus aus dem Snapshot (Basis +
  *  Material), nicht nur die rohe Basis-Spalte - konsistent mit jeder anderen Zahl in dieser
  *  Tabelle (die kommen alle aus dem Snapshot, nicht aus der rohen Basiszeile). */
 export function computeSchaden(
-  basis: WeaponRow | undefined, staerkeMalus: number, eigKStaerke: number,
+  basis: Record<string, string> | undefined, staerkeMalus: number, eigKStaerke: number,
   element?: { schadenswuerfel: string; schadenselement: string },
 ): string {
   const staerkeTeiler = num(basis, 'Staerke-Teiler');
-  const flatBonus = staerkeTeiler !== 0 ? floorSigned(eigKStaerke / staerkeTeiler + staerkeMalus) : floorSigned(staerkeMalus);
+  const flatBonus = computeStaerkeBonus(eigKStaerke, staerkeTeiler, staerkeMalus);
   const basisDice = formatSchadenswuerfel(basis);
-  const dice = element ? `${basisDice}+(${element.schadenswuerfel} ${element.schadenselement})` : basisDice;
+  const elementDice = element ? combineDiceNotations(element.schadenswuerfel) : '';
+  const dice = element ? `${basisDice}+(${elementDice} ${element.schadenselement})` : basisDice;
   return flatBonus !== 0 ? `${dice} ${formatSigned(flatBonus)}` : dice;
 }
 
@@ -93,12 +121,12 @@ function averageMaxOfNDice(n: number, sides: number): number {
 }
 
 /** Durchschnittlicher Gesamtschaden (Wuerfeldurchschnitt beider Schadenswuerfel-Spalten plus
- *  dem selben geflooreten Flachbonus wie computeSchaden) - NUR fuer den "besseres Waffe"-
+ *  demselben Stä-Mod-Flachbonus wie computeSchaden) - NUR fuer den "besseres Waffe"-
  *  Vergleich des Kampf-mit-zwei-Waffen-Talents (Waffen-Loadout-Feature), die Anzeige selbst nutzt
  *  weiterhin computeSchaden's formatierten String. */
-export function averageSchadenValue(basis: WeaponRow | undefined, staerkeMalus: number, eigKStaerke: number): number {
+export function averageSchadenValue(basis: Record<string, string> | undefined, staerkeMalus: number, eigKStaerke: number): number {
   const staerkeTeiler = num(basis, 'Staerke-Teiler');
-  const flatBonus = staerkeTeiler !== 0 ? floorSigned(eigKStaerke / staerkeTeiler + staerkeMalus) : floorSigned(staerkeMalus);
+  const flatBonus = computeStaerkeBonus(eigKStaerke, staerkeTeiler, staerkeMalus);
   const diceAverage = parseDiceAverage(basis?.['Schadenswuerfel-1']) + parseDiceAverage(basis?.['Schadenswuerfel-2']);
   return diceAverage + flatBonus;
 }

@@ -5,6 +5,11 @@ import { getEigenschaftGrenzen } from '../engine/eigenschaftenGrenzen';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Welt } from '../data/orte';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
+import {
+  resolveRangedAmmoInventorySnapshot, resolveRangedWeaponInventorySnapshot,
+  type RangedInventorySnapshot,
+} from '../engine/rangedInventorySnapshot';
+import type { AmmunitionTypeId } from '../engine/ammunitionTypes';
 
 export interface XKlingeVerzauberung {
   artefaktReferenz: string;
@@ -33,6 +38,17 @@ export interface EquipmentEntry {
   quantity: number;
   computedPriceSnapshot?: number;
   computedStatsSnapshot?: Record<string, number>;
+  /** Beim Bestätigen stabil gespeicherte Katalog-Identität; Anzeigenamen sind keine Lookup-Keys. */
+  displayNameSnapshot?: string;
+  specializationId?: string;
+  ammunitionTypeId?: AmmunitionTypeId;
+  /** Vollstaendig aufgeloester, bei jedem Laden aus den aktuellen Katalogdaten regenerierter
+   * Kampf-Snapshot fuer Boegen/Armbrueste bzw. Pfeile/Bolzen. Der Kampf-Tab greift danach nicht
+   * mehr auf die grossen Katalogtabellen zurueck. */
+  rangedSnapshot?: RangedInventorySnapshot;
+  /** Persistenter Diagnosehinweis fuer einen nicht mehr aufloesbaren Katalogeintrag. Der Eintrag
+   *  bleibt im Inventar und kann entfernt werden, ist im Kampf aber vollstaendig deaktiviert. */
+  invalidReason?: string;
   /** Unsichtbares Inventar-Flag. Fehlend = profan; nur nicht-profane Gegenstaende tragen true. */
   magisch?: true;
   /** Nur bei einer aus profaner NK-Waffe + X-Klinge amalgamierten Artefakt-Waffe. */
@@ -59,7 +75,14 @@ export function ruestungSlotKey(gruppe: RsGruppe, lage: number): string {
   return `${gruppe}:${lage}`;
 }
 
-export type WaffenLoadoutComboType = 'nk1h_nk1h' | 'nk1h_pistole' | 'nk1h_schild' | 'schild_pistole' | 'pistole_pistole';
+export type WaffenLoadoutSingleType = 'nk1h' | 'nk2h' | 'pistole' | 'muskete' | 'armbrust' | 'bogen';
+export type WaffenLoadoutComboType = WaffenLoadoutSingleType
+  | 'nk1h_nk1h' | 'nk1h_pistole' | 'nk1h_schild' | 'schild_pistole' | 'pistole_pistole';
+
+export function isWaffenLoadoutSingleType(type: WaffenLoadoutComboType): type is WaffenLoadoutSingleType {
+  return type === 'nk1h' || type === 'nk2h' || type === 'pistole'
+    || type === 'muskete' || type === 'armbrust' || type === 'bogen';
+}
 
 /**
  * Ein gespeichertes Waffen-Loadout (Kampf-Tab, "Waffen-Loadout"-Feature, 2026-07-22, REWORKED
@@ -79,6 +102,8 @@ export interface WaffenLoadoutEntry {
   id: string;
   comboType: WaffenLoadoutComboType;
   primaryEquipmentId: string;
+  /** Bei Einzelwaffen-Loadouts identisch mit primaryEquipmentId; dadurch bleiben ältere
+   *  gespeicherte Zwei-Waffen-Loadouts ohne Schema-Migration kompatibel. */
   secondaryEquipmentId: string;
   /** Mehrere Loadouts duerfen gleichzeitig favorisiert sein - steuert nur, ob das Loadout
    *  zusaetzlich read-only auf den Charakterbogen-Tab gespiegelt wird, analog zur bestehenden
@@ -176,11 +201,11 @@ export interface CustomWhkEintrag {
 /**
  * Start-Budget-Pakete bei Charaktererstellung (mit Nutzer 2026-07-17 geklaert, nach
  * anfaenglicher Verwechslung von EP und SP korrigiert):
- * SP wird IMMER als 6490+EP-ausgegebeneSP berechnet (siehe characterSheet.ts) - die 6490
- * sind KEIN separater Startwert hier, sondern stecken schon in der SP-Formel selbst (davon
- * 90 SP fuer Muttersprache+Kultur, die nicht mehr als Sonderfall kostenlos sind, siehe dort).
- * - normal: EP=0 (Stufe 0, SP daher automatisch 6490), 5000 Dublonen.
- * - gehoben: EP=1600 (Stufe 15, SP daher automatisch 8090), 6000 Dublonen.
+ * SP wird IMMER als 6400+EP-ausgegebeneSP berechnet (siehe characterSheet.ts) - die 6400
+ * sind KEIN separater Startwert hier, sondern stecken schon in der SP-Formel selbst.
+ * Fuer einen gueltigen Charakter muessen davon mindestens 90 SP in SSK investiert werden.
+ * - normal: EP=0 (Stufe 0, SP daher automatisch 6400), 5000 Dublonen.
+ * - gehoben: EP=1600 (Stufe 15, SP daher automatisch 8000), 6000 Dublonen.
  */
 export const STARTBUDGET_PRESETS = {
   normal: { epGesamt: 0, dublonen: 5000 },
@@ -271,6 +296,58 @@ export function loadCharacter(id: string): CharacterState | null {
   // Magisch/profan ist ein unsichtbares Positiv-Flag: fehlend bedeutet profan. Artefakte sind
   // immer magisch; bei Alchemika ist Spalte B des SPOT-Sheets die alleinige Quelle.
   parsed.equipment = (parsed.equipment ?? []).map((entry) => {
+    delete entry.invalidReason;
+    if (entry.family === 'fernkampfwaffe' && (entry.baseTable === 'boegen' || entry.baseTable === 'armbrust')) {
+      const rangedSnapshot = resolveRangedWeaponInventorySnapshot(entry.baseTable, entry.baseId);
+      if (!rangedSnapshot) {
+        const previousWeaponSnapshot = entry.rangedSnapshot?.kind === 'ranged-weapon'
+          ? entry.rangedSnapshot
+          : undefined;
+        entry.invalidReason = `Ungültige Waffe: Tabelle '${entry.baseTable}', sourceRow ${entry.baseId}, `
+          + `Waffe '${previousWeaponSnapshot?.name ?? '<unbekannt>'}', `
+          + `Spezialisierung '${previousWeaponSnapshot?.spezialisierung ?? '<fehlt>'}': Katalogeintrag fehlt`;
+      } else {
+        entry = {
+          ...entry,
+          rangedSnapshot,
+          displayNameSnapshot: rangedSnapshot.name,
+          specializationId: rangedSnapshot.specializationId,
+          ammunitionTypeId: rangedSnapshot.ammunitionTypeId,
+          ...(rangedSnapshot.preisDublonen !== undefined
+            ? { computedPriceSnapshot: rangedSnapshot.preisDublonen }
+            : {}),
+        };
+      }
+    } else if (entry.family === 'ammo' && (entry.baseTable === 'pfeile' || entry.baseTable === 'bolzen')) {
+      const rangedSnapshot = resolveRangedAmmoInventorySnapshot(
+        entry.baseTable, entry.baseId, entry.selections?.modifikator,
+      );
+      if (!rangedSnapshot) {
+        const expectedType = entry.baseTable === 'pfeile' ? 'pfeil' : 'bolzen';
+        const actualType = entry.rangedSnapshot?.kind === 'ranged-ammo'
+          ? entry.rangedSnapshot.ammunitionTypeId ?? '<fehlt>'
+          : '<fehlt>';
+        entry.invalidReason = `Ungültige Munition: Tabelle '${entry.baseTable}', sourceRow ${entry.baseId}, `
+          + `Eintrag '${entry.rangedSnapshot?.name ?? '<unbekannt>'}', `
+          + `erwarteter Munitions-Typ '${expectedType}', tatsächlicher Typ '${actualType}': Katalogeintrag fehlt`;
+      } else {
+        entry = {
+          ...entry,
+          rangedSnapshot,
+          displayNameSnapshot: rangedSnapshot.name,
+          ammunitionTypeId: rangedSnapshot.ammunitionTypeId,
+          ...(rangedSnapshot.preisDublonen !== null
+            ? { computedPriceSnapshot: rangedSnapshot.preisDublonen }
+            : {}),
+          computedStatsSnapshot: {
+            fixschaden: rangedSnapshot.fixschaden,
+            rb: rangedSnapshot.rb,
+            rwModMeter: rangedSnapshot.rwModMeter,
+            be: rangedSnapshot.be,
+          },
+        };
+      }
+    }
     const alchemika = entry.family === 'alchemika'
       ? ALCHEMIKA.find((row) => String(row.sourceRow) === entry.baseId)
       : undefined;
@@ -296,6 +373,14 @@ export function loadCharacter(id: string): CharacterState | null {
   const fearSelections = new Map<string, { reference: string; value: number }>();
   for (const [reference, selected] of Object.entries(parsed.selections ?? {})) {
     const normalized = reference.toLowerCase();
+    // Die fruehere Dublette "Mit Zwei Pistolen schiessen" wurde in das kanonische Talent
+    // "Beidhaendig Pistolenschiessen" zusammengefuehrt. Alte Charaktere behalten ihre Auswahl,
+    // bezahlen sie aber nur noch einmal und zeigen fortan den kanonischen Eintrag an.
+    if (normalized === 'talente_mit_zwei_pistolen_schiessen') {
+      const canonical = 'talente_beidhaendig_pistolenschiessen';
+      migratedSelections[canonical] = Math.max(migratedSelections[canonical] ?? 0, selected);
+      continue;
+    }
     const currentMatch = /^vn_angst_(.+)_(5|10|15|20|25|30)$/.exec(normalized);
     const oldMatch = /^vn_(unbehagen|nervositaet|furcht|angst|panik|phobie)_(.+)$/.exec(normalized);
     if (!currentMatch && !oldMatch) {

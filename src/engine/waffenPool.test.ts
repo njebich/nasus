@@ -18,9 +18,9 @@ describe('resolveWaffenPoolReferenz', () => {
     expect(resolveWaffenPoolReferenz('Unbewaffnet', 'Boxen')).toBe('nk_pool_unbewaffnet_boxen');
   });
 
-  it('faellt auf den Hauptfertigkeit-Pool zurueck, wenn keine Spezialisierung existiert', () => {
-    // "Biss/Huftritt" hat keinen eigenen "Pool Biss/Huftritt"-Eintrag in den Regeldaten.
-    expect(resolveWaffenPoolReferenz('Unbewaffnet', 'Biss/Huftritt')).toBe('nk_pool_unbewaffnet');
+  it('faellt nicht auf die Hauptfertigkeit zurueck, wenn die Spezialisierung unbekannt ist', () => {
+    expect(() => resolveWaffenPoolReferenz('Unbewaffnet', 'Biss/Huftritt'))
+      .toThrow(/Ungültige Waffe.*Biss\/Huftritt/);
   });
 
   it('wirft, wenn weder Spezialisierungs- noch Hauptfertigkeit-Pool existiert', () => {
@@ -29,6 +29,13 @@ describe('resolveWaffenPoolReferenz', () => {
 
   it('findet die dedizierte Spezialisierungs-Zeile, auch wenn ihr Name dem der Hauptfertigkeit gleicht (Spezialisierung "Unbewaffnet" unter Hauptfertigkeit "Unbewaffnet", vormals "Ruestung")', () => {
     expect(resolveWaffenPoolReferenz('Unbewaffnet', 'Unbewaffnet')).toBe('nk_pool_unbewaffnet_unbewaffnet');
+  });
+
+  it('ordnet nicht skillbare improvisierte Spezialisierungen ihrem reinen Ueberlauf-Pool zu', () => {
+    expect(resolveWaffenPoolReferenz('Stangenwaffen', 'Improvisierte Stangenwaffen'))
+      .toBe('nk_pool_stangenwaffen');
+    expect(resolveWaffenPoolReferenz('Hiebwaffen', 'Improvisierte Hiebwaffen'))
+      .toBe('nk_pool_hiebwaffen');
   });
 });
 

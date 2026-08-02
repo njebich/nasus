@@ -8,6 +8,7 @@ import {
   GEWEIHTER_TALENT_PREFIX, GEWEIHTER_RELIGION_BY_REFERENZ, getGeweihtenGrad, getGeweihtenGradEintrag,
   isGeweihterReferenzErlaubt,
 } from '../engine/geweihte';
+import { getTalentStufeInfo, getVorstufeReferenz } from '../engine/talenteStufenKette';
 
 export type OnToggle = (referenz: string, selected: boolean) => void;
 
@@ -77,15 +78,30 @@ function renderRow(r: ComputedRule, sheet: ComputedSheet, characterReligion: str
   const waehrung = r.rule.kategorie === 'Talente' ? 'TaP' : 'SP';
   const cost = r.kostenSelect !== undefined ? `${r.kostenSelect > 0 ? '-' : '+'}${Math.abs(r.kostenSelect)} ${waehrung}` : '';
   const errorNote = r.error ? `<span class="stat-error" title="${escapeHtml(r.error)}">⚠</span>` : '';
-  const erlaubt = isGeweihterReferenzErlaubt(r.rule.referenz, characterReligion);
-  // Analog zu ki-row-locked/ki-row-invalid (views/ki.ts): gesperrt (nicht gewaehlt) wird gedimmt,
-  // eine bereits gewaehlte aber nicht mehr passende Auswahl (Religion nachtraeglich geaendert)
-  // bleibt sichtbar/abwaehlbar, aber rot markiert statt stillschweigend entfernt zu werden.
-  const rowClass = erlaubt ? '' : r.selected ? 'ki-row-invalid' : 'ki-row-locked';
-  const sperrTitle = erlaubt ? '' : ` title="${escapeHtml(geweihterSperrTitle(r.rule.referenz))}"`;
+  const religionErlaubt = isGeweihterReferenzErlaubt(r.rule.referenz, characterReligion);
+  const vorstufe = r.rule.kategorie === 'Talente' ? getVorstufeReferenz(r.rule.referenz) : undefined;
+  const vorstufeGekauft = !vorstufe || (sheet.byKategorie['Talente'] ?? [])
+    .some((talent) => talent.rule.referenz.toLowerCase() === vorstufe && talent.selected);
+  const bezahlbar = r.rule.kategorie !== 'Talente'
+    || r.kostenSelect === undefined
+    || r.kostenSelect <= sheet.tapRemaining;
+  // Gekaufte Einträge bleiben stets aktiv, damit sie auch bei inzwischen fehlendem Budget oder
+  // einer weggefallenen Voraussetzung wieder abgewählt werden können.
+  const waehlbar = r.selected || (religionErlaubt && vorstufeGekauft && bezahlbar);
+  // Nicht wählbare Einträge bleiben vollständig sichtbar, werden aber gedimmt und deaktiviert.
+  // Bereits gekaufte Einträge bleiben abwählbar, auch wenn eine Voraussetzung später wegfällt.
+  const rowClass = waehlbar ? '' : 'auswahl-row-locked';
+  let sperrgrund = '';
+  if (!religionErlaubt) sperrgrund = geweihterSperrTitle(r.rule.referenz);
+  else if (!vorstufeGekauft && vorstufe) {
+    const vorstufeRule = (sheet.byKategorie['Talente'] ?? [])
+      .find((talent) => talent.rule.referenz.toLowerCase() === vorstufe)?.rule;
+    sperrgrund = `Erfordert zuerst "${vorstufeRule?.beschreibung ?? vorstufe}"`;
+  } else if (!bezahlbar) sperrgrund = `Nicht genügend TaP (benötigt ${r.kostenSelect}, verfügbar ${sheet.tapRemaining})`;
+  const sperrTitle = sperrgrund ? ` title="${escapeHtml(sperrgrund)}"` : '';
   return `
     <label class="auswahl-row${rowClass ? ` ${rowClass}` : ''}" data-referenz="${r.rule.referenz}"${wirkungTooltip(r.rule.wirkung)}${sperrTitle}>
-      <input type="checkbox" class="auswahl-checkbox" ${r.selected ? 'checked' : ''} ${!erlaubt && !r.selected ? 'disabled' : ''} />
+      <input type="checkbox" class="auswahl-checkbox" ${r.selected ? 'checked' : ''} ${!waehlbar ? 'disabled' : ''} />
       <span class="stat-label">${label}${wirkungIcon(r.rule.wirkung)}${errorNote}</span>
       <span class="stat-cost">${cost}</span>
     </label>`;
@@ -106,12 +122,25 @@ function renderGekauftSection(
   characterReligion: string | undefined,
 ): string {
   const gekauft = rows.filter((r) => r.selected);
+  const hoechsteStufeJeReihe = new Map<string, ComputedRule>();
+  const einzelne: ComputedRule[] = [];
+  for (const talent of gekauft) {
+    const info = talent.rule.kategorie === 'Talente' ? getTalentStufeInfo(talent.rule.referenz) : undefined;
+    if (!info) {
+      einzelne.push(talent);
+      continue;
+    }
+    const bisher = hoechsteStufeJeReihe.get(info.family);
+    const bisherInfo = bisher ? getTalentStufeInfo(bisher.rule.referenz) : undefined;
+    if (!bisher || info.stufe > (bisherInfo?.stufe ?? 0)) hoechsteStufeJeReihe.set(info.family, talent);
+  }
+  const sichtbar = [...einzelne, ...hoechsteStufeJeReihe.values()];
   if (gekauft.length === 0) return '';
   return `
     <div class="stat-card">
       <div class="stat-group gekauft-group">
-        <div class="gekauft-header">Gekauft <span class="stat-group-count">(${gekauft.length})</span></div>
-        <div class="auswahl-category">${gekauft.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+        <div class="gekauft-header">Gekauft <span class="stat-group-count">(${sichtbar.length})</span></div>
+        <div class="auswahl-category">${sichtbar.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
       </div>
     </div>`;
 }
@@ -176,7 +205,7 @@ export function renderAuswahlView(
   // Talente kosten TaP, Vor-/Nachteile kosten SP (siehe waehrung in renderRow) - der Filter
   // vergleicht kostenSelect jeweils gegen den passenden verbleibenden Pool.
   const budgetRemaining = kategorie === 'Talente' ? sheet.tapRemaining : sheet.spRemaining;
-  const nurKaufbare = nurKaufbareByKategorie.get(kategorie) ?? false;
+  const nurKaufbare = kategorie !== 'Talente' && (nurKaufbareByKategorie.get(kategorie) ?? false);
 
   const allRows = (sheet.byKategorie[kategorie] ?? []).filter((r) => r.rule.art === 'Auswahl');
   const searchText = searchTextByKategorie.get(kategorie) ?? '';
@@ -189,10 +218,10 @@ export function renderAuswahlView(
   const filtersHtml = `
     <div class="ausruestung-filters">
       <input type="text" id="auswahl-search" placeholder="Suche..." value="${escapeHtml(searchText)}" />
-      <label class="auswahl-filter-checkbox">
+      ${kategorie !== 'Talente' ? `<label class="auswahl-filter-checkbox">
         <input type="checkbox" id="auswahl-nur-kaufbare" ${nurKaufbare ? 'checked' : ''} />
         Nur kaufbare zeigen
-      </label>
+      </label>` : ''}
     </div>`;
 
   let listHtml: string;

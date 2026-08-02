@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { createCharacter } from '../state/characterStore';
 import {
-  buyFeuerwaffe, buyFeuerwaffenMunition, buyWeapon, setValue, setWaffenPoolAllocation, addWaffenLoadout, BudgetError,
+  buyFernkampfwaffe, buyFeuerwaffe, buyFeuerwaffenMunition, buyMunition, buyWeapon, setValue,
+  setWaffenPoolAllocation, addWaffenLoadout, BudgetError,
 } from '../state/characterMutations';
-import { buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows } from './kampf';
-import { FEUERWAFFEN } from '../data/equipment/fernkampf';
+import {
+  buildArmbrustBoegenRows, buildFeuerwaffenRows, buildNahkampfRows, buildLoadoutDisplayRows,
+  formatLoadoutCells, previewWaffenPoolAllocation, renderKampfView,
+} from './kampf';
+import { ARMBRUST, BOEGEN, BOLZEN, FEUERWAFFEN, PFEILE } from '../data/equipment/fernkampf';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { feuerwaffenStandardauswahl, composeFeuerwaffe } from '../engine/feuerwaffenComposition';
 import { computeSheet } from '../engine/characterSheet';
+import { TALENTE_KAMPFMODUL } from '../data/talenteKampfmodul';
 
 function findFeuerwaffe(name: string) {
   const row = FEUERWAFFEN.find((r) => r.name === name);
@@ -22,6 +27,67 @@ function baseCharacter() {
   return character;
 }
 
+describe('vollstaendiger Kampfbereich mit gemeinsamer LE/RS-Zustandsanzeige', () => {
+  it('stellt den identischen Zustandsblock vor alle bestehenden Kampfsektionen', () => {
+    const character = baseCharacter();
+    character.selections[TALENTE_KAMPFMODUL[0].toLowerCase()] = 1;
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+
+    expect(container.querySelector('h3')?.textContent).toBe('Lebensenergie & Rüstungsschutz');
+    expect([...container.querySelectorAll('.kampf-tz-rechts-label')].map((node) => node.textContent)).toEqual([
+      'Gesundheit', 'Trefferschwelle', 'Selbstbeherrschung', 'Rüstungshinderlichkeit', 'RBE',
+    ]);
+    const headings = [...container.querySelectorAll('h3')].map((heading) => heading.textContent);
+    expect(headings).toEqual(expect.arrayContaining([
+      'Nahkampf', 'Waffen-Loadout', 'Ausweichen / Bewegung', 'Talent-Effekte (Kampfmodul)',
+    ]));
+  });
+
+  it('behaelt geoeffnete Trefferzonen beim Neurendern nach bestaetigter Poolaenderung', () => {
+    let character = baseCharacter();
+    character = setValue(character, 'eig_g_mut', 30);
+    character = setValue(character, 'eig_k_athletik', 30);
+    character = setValue(character, 'eig_k_schnelligkeit', 30);
+    character = setValue(character, 'eig_k_staerke', 30);
+    character = setValue(character, 'nk_hiebwaffen', 10);
+    const axt = NK_WAFFEN_BASIS.find((row) => row.name === 'Axt')!;
+    const material = NK_MATERIAL.find((row) => row.name === 'Eisen')!;
+    const fertigung = NK_FERTIGUNG.find((row) => row.name === 'Gesellenarbeit')!;
+    const anpassung = NK_ANPASSUNG.find((row) => row.name === 'Von der Stange')!;
+    const schaftmaterial = NK_SCHAFTMATERIAL.find((row) => row.name === 'Standard')!;
+    character = buyWeapon(
+      character, axt.sourceRow, material.sourceRow, fertigung.sourceRow,
+      anpassung.sourceRow, schaftmaterial.sourceRow,
+    );
+
+    const container = document.createElement('div');
+    document.body.append(container);
+    const render = () => renderKampfView(
+      container, computeSheet(character), character,
+      (referenz, equipmentId, allocation) => {
+        character = setWaffenPoolAllocation(character, referenz, equipmentId, allocation);
+        render();
+      },
+      () => {}, () => {}, () => {},
+    );
+
+    try {
+      render();
+      const torso = container.querySelector<HTMLDetailsElement>('[data-kampf-tz-gruppe="torso"]')!;
+      torso.open = true;
+      const increment = container.querySelector<HTMLButtonElement>('.kampf-pool-cell .stat-inc:not([disabled])')!;
+      expect(increment).toBeTruthy();
+      increment.click();
+      container.querySelector<HTMLButtonElement>('.kampf-allocation-apply')!.click();
+
+      expect(container.querySelector<HTMLDetailsElement>('[data-kampf-tz-gruppe="torso"]')?.open).toBe(true);
+    } finally {
+      container.remove();
+    }
+  });
+});
+
 describe('buildFeuerwaffenRows', () => {
   it('zeigt eine leere Munition-Zelle, wenn keine passende Feuerwaffen-Munition besessen wird', () => {
     const muskete = findFeuerwaffe('Muskete'); // Typ='Gewehr'
@@ -32,6 +98,9 @@ describe('buildFeuerwaffenRows', () => {
     const rows = buildFeuerwaffenRows(character);
     expect(rows).toHaveLength(1);
     expect(rows[0].munition).toBe('–');
+    expect(rows[0].rangedUsable).toBe(false);
+    expect(rows[0].ranges).toEqual(['x', 'x', 'x', 'x', 'x', 'x']);
+    expect(rows[0].nk).not.toBeNull();
   });
 
   it('Kreuzprodukt: eine Feuerwaffe + passend besessene Feuerwaffen-Munition (nach Kaliber) ergibt die Munition-Zelle', () => {
@@ -45,14 +114,38 @@ describe('buildFeuerwaffenRows', () => {
     const rows = buildFeuerwaffenRows(character);
     expect(rows).toHaveLength(1);
     expect(rows[0].munition).toContain('10 Stück');
+    expect(rows[0].rangedUsable).toBe(true);
+  });
+
+  it('dupliziert eine Feuerwaffe fuer jeden kompatiblen Munitionsstapel', () => {
+    const muskete = findFeuerwaffe('Muskete');
+    const selections = feuerwaffenStandardauswahl(muskete);
+    const composed = composeFeuerwaffe(muskete, selections);
+    let character = baseCharacter();
+    character = buyFeuerwaffe(character, muskete.sourceRow, selections);
+    character = buyFeuerwaffenMunition(character, 'blei_pulver', composed.kaliber, 10);
+    character = buyFeuerwaffenMunition(character, 'papierpatrone_vl', composed.kaliber, 1);
+
+    const rows = buildFeuerwaffenRows(character);
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.munition)).toEqual([
+      expect.stringContaining('10 Stück'),
+      expect.stringContaining('1 Stück'),
+    ]);
   });
 
   it('Typ="Gewehr" nutzt die Musketen-Pool-Familie, Typ="Pistole" die Pistolen-Familie (unterschiedliche Reichweiten-Basiswerte)', () => {
     const muskete = findFeuerwaffe('Muskete'); // Typ='Gewehr'
     const pistole = findFeuerwaffe('Pistole'); // Typ='Pistole', Verfuegbarkeit-Stufe < 5 (Kaufsperre)
     let character = baseCharacter();
-    character = buyFeuerwaffe(character, muskete.sourceRow, feuerwaffenStandardauswahl(muskete));
-    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const musketeSelections = feuerwaffenStandardauswahl(muskete);
+    const pistoleSelections = feuerwaffenStandardauswahl(pistole);
+    const musketeComposed = composeFeuerwaffe(muskete, musketeSelections);
+    const pistoleComposed = composeFeuerwaffe(pistole, pistoleSelections);
+    character = buyFeuerwaffe(character, muskete.sourceRow, musketeSelections);
+    character = buyFeuerwaffe(character, pistole.sourceRow, pistoleSelections);
+    character = buyFeuerwaffenMunition(character, 'blei_pulver', musketeComposed.kaliber, 10);
+    character = buyFeuerwaffenMunition(character, 'blei_pulver', pistoleComposed.kaliber, 10);
 
     const rows = buildFeuerwaffenRows(character);
     expect(rows).toHaveLength(2);
@@ -61,6 +154,79 @@ describe('buildFeuerwaffenRows', () => {
     // ueberhaupt eine reale Zahl (nicht durchgehend "x") liefern.
     for (const row of rows) {
       expect(row.ranges.some((cell) => cell !== 'x')).toBe(true);
+    }
+  });
+});
+
+describe('buildArmbrustBoegenRows: aufgeloestes Inventar', () => {
+  const bogen = BOEGEN.find((row) => row.name === 'Improvisierter Bogen')!;
+  const pfeil = PFEILE.find((row) => row.name === 'Holzspitzen-Pfeil')!;
+  const spitze = PFEILE.find((row) => row.name === 'Breitkopfspitzen-Pfeil')!;
+
+  it('dupliziert die Waffenzeile fuer jeden besessenen kompatiblen Munitionsstapel', () => {
+    let character = baseCharacter();
+    character = buyFernkampfwaffe(character, 'boegen', bogen.sourceRow);
+    character = buyMunition(character, 'pfeile', pfeil.sourceRow, null, 10);
+    character = buyMunition(character, 'pfeile', pfeil.sourceRow, spitze.sourceRow, 5);
+
+    const rows = buildArmbrustBoegenRows(character, 'boegen');
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.munition)).toEqual([
+      'Holzspitzen-Pfeil (10 Stück)',
+      'Breitkopfspitzen-Pfeil (Holzspitzen-Pfeil) (5 Stück)',
+    ]);
+  });
+
+  it('zeigt die bestaetigte Waffe auch ohne kompatible Munition', () => {
+    const character = buyFernkampfwaffe(baseCharacter(), 'boegen', bogen.sourceRow);
+    const rows = buildArmbrustBoegenRows(character, 'boegen');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].munition).toBe('–');
+    expect(rows[0].rangedUsable).toBe(false);
+    expect(rows[0].nk).not.toBeNull();
+  });
+
+  it('wendet denselben Snapshot-/Duplikationspfad auf Armbrust und Bolzen an', () => {
+    const armbrust = ARMBRUST.find((row) => row.name === 'Improvisierte Armbrust')!;
+    const bolzen = BOLZEN.find((row) => row['Kategorie'] !== 'Spitzen-Modifikator' && row.preisDublonen !== undefined)!;
+    let character = baseCharacter();
+    character = buyFernkampfwaffe(character, 'armbrust', armbrust.sourceRow);
+    character = buyMunition(character, 'bolzen', bolzen.sourceRow, null, 7);
+
+    const rows = buildArmbrustBoegenRows(character, 'armbrust');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].label).toBe(armbrust.name);
+    expect(rows[0].munition).toBe(`${bolzen.name} (7 Stück)`);
+  });
+
+  it('addiert den Schadenswuerfel des Bolzens zum Schadenswuerfel der Armbrust', () => {
+    const armbrust = ARMBRUST.find((row) => row.name === 'Mittelschwere Armbrust' && row['1.W'] === '1W10')!;
+    const stahlbolzen = BOLZEN.find((row) => row.name === 'Stahlspitzen-Bolzen')!;
+    const bronzebolzen = BOLZEN.find((row) => row.name === 'Bronzespitzen-Bolzen')!;
+
+    let mitStahl = buyFernkampfwaffe(baseCharacter(), 'armbrust', armbrust.sourceRow);
+    mitStahl = buyMunition(mitStahl, 'bolzen', stahlbolzen.sourceRow, null, 1);
+    expect(buildArmbrustBoegenRows(mitStahl, 'armbrust')[0].schaden).toBe('2W10');
+
+    let mitBronze = buyFernkampfwaffe(baseCharacter(), 'armbrust', armbrust.sourceRow);
+    mitBronze = buyMunition(mitBronze, 'bolzen', bronzebolzen.sourceRow, null, 1);
+    expect(buildArmbrustBoegenRows(mitBronze, 'armbrust')[0].schaden).toBe('W10+W8');
+  });
+
+  it('liest im Kampf-Tab Namen und Fernkampfschaden aus dem Inventar-Snapshot statt erneut aus dem Katalog', () => {
+    let character = buyFernkampfwaffe(baseCharacter(), 'boegen', bogen.sourceRow);
+    character = buyMunition(character, 'pfeile', pfeil.sourceRow, null, 10);
+    const oldName = bogen.name;
+    const oldWuerfel = bogen['1.W'];
+    try {
+      bogen.name = 'Katalog wurde nach Kauf geaendert';
+      bogen['1.W'] = 'W999';
+      const [row] = buildArmbrustBoegenRows(character, 'boegen');
+      expect(row.label).toBe(oldName);
+      expect(row.schaden).toBe('W4+W6');
+    } finally {
+      bogen.name = oldName;
+      bogen['1.W'] = oldWuerfel;
     }
   });
 });
@@ -106,6 +272,43 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
     // 7 - 2 (nur die eigene Zuteilung) = 5 fuer JEDE Zeile, nicht 7 - 4 (Summe beider Waffen) = 3.
     expect(row1.pp).toBe(5);
     expect(row2.pp).toBe(5);
+  });
+
+  it('berechnet eine lokale Zuteilungsvorschau, ohne den persistierten Charakter zu verändern', () => {
+    const character = characterWithZweiAexten();
+    const [w1] = character.equipment;
+    const sheet = computeSheet(character);
+    const row = buildNahkampfRows(character, sheet).find((candidate) => candidate.key === w1.id && candidate.grip === '1H')!;
+    const originalPp = row.pp;
+
+    const preview = previewWaffenPoolAllocation(row, {
+      gat: 2, gpa: 1, mat: 0, mpa: 0, nat: 0, npa: 0,
+    });
+
+    expect(preview.gat.allocated).toBe(2);
+    expect(preview.gat.value).toBe(row.gat.value + 2);
+    expect(preview.gpa.value).toBe(row.gpa.value + 1);
+    expect(preview.pp).toBe(originalPp - 3);
+    expect(row.gat.allocated).toBe(0);
+    expect(character.poolAllocations).toEqual({});
+  });
+
+  it('laesst einen auf 20 gedeckelten N-Wert beim Minus-Klick nicht faelschlich auf 19 fallen', () => {
+    const character = characterWithZweiAexten();
+    const [w1] = character.equipment;
+    // Simuliert eine aeltere Zuteilung: Die aktuelle Waffenbasis erreicht bereits allein 20,
+    // daher ist natMax=0; der alte Punkt ist wirkungslos, aber noch gespeichert.
+    character.poolAllocations[`nk_pool_hiebwaffen_aexte::${w1.id}`] = {
+      gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 1, npa: 0,
+    };
+    const row = buildNahkampfRows(character, computeSheet(character))
+      .find((candidate) => candidate.key === w1.id && candidate.grip === '1H')!;
+    expect(row.nat).toMatchObject({ value: 20, allocated: 1, max: 0 });
+
+    const preview = previewWaffenPoolAllocation(row, {
+      gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 0, npa: 0,
+    });
+    expect(preview.nat.value).toBe(20);
   });
 
   it('addiert den eigenen AT/PA-Ueberschuss ueber 20 dieser Zeile zum Budget, bevor die eigene Zuteilung abgezogen wird', () => {
@@ -166,6 +369,49 @@ describe('buildNahkampfRows: PP-Spalte (Poolpunkte)', () => {
     const rows = buildNahkampfRows(updated, sheet);
     const row2 = rows.find((r) => r.key === w2.id && r.grip === '1H')!;
     expect(row2.pp).toBe(0);
+  });
+});
+
+describe('buildNahkampfRows: ungueltige gespeicherte Waffen', () => {
+  it('behaelt einen fehlenden Katalogeintrag sichtbar und deaktiviert alle Kampfwerte', () => {
+    const character = baseCharacter();
+    character.equipment.push({
+      id: 'stale-waffe',
+      family: 'weapon',
+      baseTable: 'nk_waffen_basis',
+      baseId: '99999',
+      selections: {},
+      quantity: 1,
+      displayNameSnapshot: 'Alte Waffe',
+      invalidReason: "Ungültige Waffe: Tabelle 'NK-Waffen-Basis', sourceRow 99999: Katalogeintrag fehlt",
+    });
+
+    const row = buildNahkampfRows(character, computeSheet(character))
+      .find((candidate) => candidate.key === 'stale-waffe')!;
+    expect(row.usable).toBe(false);
+    expect(row.poolReferenz).toBeNull();
+    expect(row.schaden).toBe('–');
+    expect(row.unusableReason).toContain('Katalogeintrag fehlt');
+  });
+
+  it('deaktiviert eine Waffe mit unbekannter stabiler Spezialisierungs-ID detailliert', () => {
+    let character = baseCharacter();
+    const axt = NK_WAFFEN_BASIS.find((row) => row.name === 'Axt')!;
+    const material = NK_MATERIAL.find((row) => row.name === 'Eisen')!;
+    const fertigung = NK_FERTIGUNG.find((row) => row.name === 'Gesellenarbeit')!;
+    const anpassung = NK_ANPASSUNG.find((row) => row.name === 'Von der Stange')!;
+    const schaftmaterial = NK_SCHAFTMATERIAL.find((row) => row.name === 'Standard')!;
+    character = buyWeapon(
+      character, axt.sourceRow, material.sourceRow, fertigung.sourceRow,
+      anpassung.sourceRow, schaftmaterial.sourceRow,
+    );
+    character.equipment[0].specializationId = 'nk_spez_fehlt';
+
+    const row = buildNahkampfRows(character, computeSheet(character))
+      .find((candidate) => candidate.key === character.equipment[0].id)!;
+    expect(row.usable).toBe(false);
+    expect(row.poolReferenz).toBeNull();
+    expect(row.unusableReason).toMatch(/Spezialisierungs-ID 'nk_spez_fehlt'.*Referenz fehlt/);
   });
 });
 
@@ -236,7 +482,166 @@ describe('buildNahkampfRows: AT/PA-Balance-Regel (Nutzer-Diktat 2026-07-23)', ()
   });
 });
 
-describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool"-Seite', () => {
+describe('Waffen-Loadout-Auswahl und getrennte Tabellen', () => {
+  function buyAxt(character: ReturnType<typeof baseCharacter>) {
+    const axt = NK_WAFFEN_BASIS.find((row) => row.name === 'Axt')!;
+    const material = NK_MATERIAL.find((row) => row.name === 'Eisen')!;
+    const fertigung = NK_FERTIGUNG.find((row) => row.name === 'Gesellenarbeit')!;
+    const anpassung = NK_ANPASSUNG.find((row) => row.name === 'Von der Stange')!;
+    const schaftmaterial = NK_SCHAFTMATERIAL.find((row) => row.name === 'Standard')!;
+    return buyWeapon(
+      character, axt.sourceRow, material.sourceRow, fertigung.sourceRow,
+      anpassung.sourceRow, schaftmaterial.sourceRow,
+    );
+  }
+
+  it('macht zwei gleiche besessene Waffen als getrennte Exemplare auswählbar', () => {
+    let character = buyAxt(buyAxt(baseCharacter()));
+    const [axt1, axt2] = character.equipment;
+    const container = document.createElement('div');
+    let added = character;
+    renderKampfView(
+      container, computeSheet(character), character, () => {},
+      (comboType, primaryId, secondaryId) => {
+        added = addWaffenLoadout(character, comboType, primaryId, secondaryId);
+      },
+      () => {}, () => {},
+    );
+
+    const typeSelect = container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')!;
+    typeSelect.value = 'nk1h_nk1h';
+    typeSelect.dispatchEvent(new Event('change'));
+    const fieldset = container.querySelector<HTMLElement>('[data-combo-type="nk1h_nk1h"]')!;
+    const selects = fieldset.querySelectorAll<HTMLSelectElement>('select');
+    expect([...selects[0].options].map((option) => option.textContent)).toContain('Axt (1)');
+    expect([...selects[0].options].map((option) => option.textContent)).toContain('Axt (2)');
+
+    selects[0].value = axt1.id;
+    selects[1].value = axt2.id;
+    container.querySelector<HTMLButtonElement>('.loadout-add-btn')!.click();
+
+    expect(added.waffenLoadouts[0]).toMatchObject({
+      comboType: 'nk1h_nk1h', primaryEquipmentId: axt1.id, secondaryEquipmentId: axt2.id,
+    });
+  });
+
+  it('zeigt ein gemischtes NK/Pistolen-Loadout in getrennten NK- und FK-Tabellen', () => {
+    let character = buyAxt(baseCharacter());
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const [axt, pistoleEntry] = character.equipment;
+    character = addWaffenLoadout(character, 'nk1h_pistole', axt.id, pistoleEntry.id);
+
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+
+    const nkTable = container.querySelector<HTMLTableElement>('[data-loadout-table="nk"]')!;
+    const fkTable = container.querySelector<HTMLTableElement>('[data-loadout-table="fk"]')!;
+    expect(nkTable.caption?.textContent).toBe('Nahkampf');
+    expect(fkTable.caption?.textContent).toBe('Fernkampf');
+    expect(nkTable.textContent).toContain(`Axt+${pistole.name}`);
+    expect(fkTable.textContent).toContain(`Axt+${pistole.name}`);
+    expect(nkTable.textContent).not.toContain('FK-Reichweiten');
+    expect(fkTable.textContent).not.toContain('nAT');
+    expect([...nkTable.querySelectorAll('th')].map((th) => th.textContent)).not.toContain('Typ');
+    expect([...fkTable.querySelectorAll('th')].map((th) => th.textContent)).toEqual([
+      'Loadout', 'Schaden L', 'FK-Reichweiten L', 'Favorit', '',
+    ]);
+    expect(fkTable.querySelector('tbody tr')!.children[1].textContent).not.toBe('');
+    expect(fkTable.querySelector('tbody tr')!.children[2].textContent).not.toBe('');
+  });
+
+  it('zeigt die Reichweiten zweier Pistolen getrennt in R und L', () => {
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    let character = baseCharacter();
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const [rechts, links] = character.equipment;
+    character = addWaffenLoadout(character, 'pistole_pistole', rechts.id, links.id);
+
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+    const cells = container.querySelectorAll('[data-loadout-table="fk"] tbody td');
+    expect(cells[3].textContent).not.toBe('–');
+    expect(cells[4].textContent).not.toBe('–');
+    expect(cells[3].textContent).not.toContain('—');
+    expect(cells[4].textContent).not.toContain('—');
+  });
+
+  it('zeigt nur die Waffen-Dropdowns der aktuell gewählten Kombination', () => {
+    let character = buyAxt(buyAxt(baseCharacter()));
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+
+    const first = container.querySelector<HTMLElement>('[data-combo-type="nk1h"]')!;
+    const mixed = container.querySelector<HTMLElement>('[data-combo-type="nk1h_pistole"]')!;
+    expect(first.hidden).toBe(false);
+    expect(mixed.hidden).toBe(true);
+
+    const typeSelect = container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')!;
+    typeSelect.value = 'nk1h_pistole';
+    typeSelect.dispatchEvent(new Event('change'));
+    expect(first.hidden).toBe(true);
+    expect(mixed.hidden).toBe(false);
+  });
+
+  it('legt eine 1H-Waffe als einzelnes Loadout an', () => {
+    const character = buyAxt(baseCharacter());
+    const [axt] = character.equipment;
+    const container = document.createElement('div');
+    let added = character;
+    renderKampfView(
+      container, computeSheet(character), character, () => {},
+      (comboType, primaryId, secondaryId) => {
+        added = addWaffenLoadout(character, comboType, primaryId, secondaryId);
+      },
+      () => {}, () => {},
+    );
+
+    const typeSelect = container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')!;
+    expect([...typeSelect.options].map((option) => option.textContent)).toContain('1H');
+    const fieldset = container.querySelector<HTMLElement>('[data-combo-type="nk1h"]')!;
+    fieldset.querySelector<HTMLSelectElement>('[data-role="primary"]')!.value = axt.id;
+    container.querySelector<HTMLButtonElement>('.loadout-add-btn')!.click();
+
+    expect(added.waffenLoadouts[0]).toMatchObject({
+      comboType: 'nk1h', primaryEquipmentId: axt.id, secondaryEquipmentId: axt.id,
+    });
+  });
+
+  it('blendet bei einer einzelnen Pistole alle linken FK-Spalten aus', () => {
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    let character = buyFeuerwaffe(baseCharacter(), pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    const [pistoleEntry] = character.equipment;
+    character = addWaffenLoadout(character, 'pistole', pistoleEntry.id, pistoleEntry.id);
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+
+    expect([...container.querySelectorAll('[data-loadout-table="fk"] th')].map((th) => th.textContent)).toEqual([
+      'Loadout', 'Schaden R', 'FK-Reichweiten R', 'Favorit', '',
+    ]);
+  });
+
+  it('bietet alle sechs Einzelwaffenarten an, wenn passende Waffen besessen werden', () => {
+    let character = buyAxt(baseCharacter());
+    const pistole = FEUERWAFFEN.find((row) => row['Typ'] === 'Pistole' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    const muskete = FEUERWAFFEN.find((row) => row['Typ'] === 'Gewehr' && (row.verfuegbarkeitStufe ?? 1) < 5)!;
+    character = buyFeuerwaffe(character, pistole.sourceRow, feuerwaffenStandardauswahl(pistole));
+    character = buyFeuerwaffe(character, muskete.sourceRow, feuerwaffenStandardauswahl(muskete));
+    character = buyFernkampfwaffe(character, 'armbrust', ARMBRUST.find((row) => row.name === 'Improvisierte Armbrust')!.sourceRow);
+    character = buyFernkampfwaffe(character, 'boegen', BOEGEN.find((row) => row.name === 'Improvisierter Bogen')!.sourceRow);
+
+    const container = document.createElement('div');
+    renderKampfView(container, computeSheet(character), character, () => {}, () => {}, () => {}, () => {});
+    const labels = [...container.querySelector<HTMLSelectElement>('select[name="loadout-combo-type"]')!.options]
+      .map((option) => option.textContent);
+    expect(labels).toEqual(expect.arrayContaining(['1H', '2H', 'Pistole', 'Muskete', 'Armbrust', 'Bogen']));
+  });
+});
+
+describe('buildLoadoutDisplayRows: rechte AT-/linke PA-Projektion', () => {
   function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
     const row = rows.find((r) => r.name === name);
     if (!row) throw new Error(`Testfixtur '${name}' nicht gefunden`);
@@ -252,7 +657,7 @@ describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool
     return buyWeapon(character, row.sourceRow, material.sourceRow, fertigung.sourceRow, anpassung.sourceRow, schaftmaterial.sourceRow);
   }
 
-  it('spiegelt gAT/gPA/mAT/mPA/PP exakt von der gewinnenden Pool-Seite - identisch zu deren eigener Solo-Zeile', () => {
+  it('uebernimmt die projizierten g/m-Werte des Resolvers statt einer einzigen "hoeheren Pool"-Seite', () => {
     let character = baseCharacter();
     character = setValue(character, 'eig_k_staerke', 30);
     character = setValue(character, 'nk_hiebwaffen', 10);
@@ -260,21 +665,21 @@ describe('buildLoadoutDisplayRows: gAT/gPA/mAT/mPA-Spiegelung der "hoeheren Pool
     character = buyTestWeapon(character, 'Axt');
     character = buyTestWeapon(character, 'Dolch');
     const [axt, dolch] = character.equipment;
-    // Dolche-Pool deutlich hoeher investiert als Aexte-Pool -> Dolch (Sekundaerseite) gewinnt.
-    character.values['nk_spez_stichwaffen_dolche'] = 50;
     character = addWaffenLoadout(character, 'nk1h_nk1h', axt.id, dolch.id);
 
     const sheet = computeSheet(character);
-    const soloRows = buildNahkampfRows(character, sheet);
-    const dolchSoloRow = soloRows.find((r) => r.key === dolch.id && r.grip === '1H')!;
-
     const loadoutRows = buildLoadoutDisplayRows(character, sheet);
     expect(loadoutRows).toHaveLength(1);
+    const result = loadoutRows[0].result;
+    if (!result.ok || result.comboType !== 'nk1h_nk1h') throw new Error('Erwartete Zwei-Waffen-Ergebnis');
     const pool = loadoutRows[0].pool!;
-    expect(pool.gat).toBe(dolchSoloRow.gat.value);
-    expect(pool.gpa).toBe(dolchSoloRow.gpa.value);
-    expect(pool.mat).toBe(dolchSoloRow.mat.value);
-    expect(pool.mpa).toBe(dolchSoloRow.mpa.value);
-    expect(pool.pp).toBe(dolchSoloRow.pp);
+    expect(pool).toEqual({
+      gat: result.poolValues.gat, gpa: result.poolValues.gpa,
+      mat: result.poolValues.mat, mpa: result.poolValues.mpa,
+    });
+    const cells = formatLoadoutCells(result);
+    if ('error' in cells) throw new Error('Erwartete formatierte Loadout-Zellen');
+    expect(cells.nat).toBe(String(result.nat));
+    expect(cells.npa).toBe(String(result.npa));
   });
 });

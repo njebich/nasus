@@ -3,7 +3,7 @@
 //
 // Drei getrennte Waehrungen (mit Nutzer 2026-07-17 geklaert):
 // - EP (Erfahrungspunkte): Lebenszeit-Gesamtsumme, speist die Stufe/Kreis-Tabelle.
-// - SP (Steigerungspunkte) = ep_gesamt - (SP-Ausgaben). Bezahlt Eigenschaft, Attribute,
+// - SP (Steigerungspunkte) = 6400 + ep_gesamt - (SP-Ausgaben). Bezahlt Eigenschaft, Attribute,
 //   Grundfertigkeit, Sonderfertigkeit, WHK, Vor-/Nachteile.
 // - TaP (Talentpunkte) = 20 + Stufe*5 (Referenz "talentpunkte"). Bezahlt AUSSCHLIESSLICH
 //   die Kategorie "Talente" - komplett getrennter Pool von SP, waechst nur mit der Stufe.
@@ -17,6 +17,9 @@ import { getTalentFaktorBonus as talentFaktorBonus } from './talenteFaktor';
 import { getArtefaktBonus as artefaktBonus } from './artefaktBonus';
 import { getWaffenSpezKostenRate } from './waffenSpezKosten';
 import { getWhkHauptfertigkeitKosten, getWhkSpezialisierungKosten } from './whkCustomSpezialisierung';
+import { getEigenschaftGrenzen } from './eigenschaftenGrenzen';
+import { getTalentMaximumBonus } from './talenteMaximum';
+import { getSchlechteEigenschaftMax, hasSchlechteEigenschaft } from './schlechteEigenschaft';
 import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry, type CustomWhkEintrag } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
@@ -24,6 +27,14 @@ import type { Value } from './evaluator';
 const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
 
 const TAP_KATEGORIE = 'Talente';
+const SSK_KATEGORIE = 'Sprache & Kultur';
+export const SSK_MINDEST_SP = 90;
+
+export interface CharacterValidationIssue {
+  /** Bereich bzw. konkrete Regel, in der der Fehler behoben werden kann. */
+  source: string;
+  message: string;
+}
 
 export interface PoolCaps {
   gatMax: number;
@@ -77,6 +88,12 @@ export interface ComputedSheet {
   spTotal: number;
   spSpent: number;
   spRemaining: number;
+  /** In Sprache, Kultur und Schrift investierte SP. Fuer einen gueltigen Charakter muessen
+   *  mindestens SSK_MINDEST_SP ausgegeben sein; bestimmte Stufen sind nicht vorgeschrieben. */
+  sskSpent: number;
+  sskMinimumMet: boolean;
+  /** Neben den 90 SSK-SP muss mindestens eine echte Sprache auf Stufe 1+ beherrscht werden. */
+  sskLanguageMinimumMet: boolean;
   tapTotal: number;
   tapSpent: number;
   tapRemaining: number;
@@ -94,6 +111,8 @@ export interface ComputedSheet {
    *  ohne zusaetzlich zum ComputedSheet auch noch das rohe CharacterState zu bekommen. */
   customWhkHauptfertigkeiten: CustomWhkEintrag[];
   customWhkSpezialisierungen: Record<string, CustomWhkEintrag[]>;
+  /** Zentrale, fuer die Kopfzeilen-Warnung bestimmte Liste aller bekannten Regelverstoesse. */
+  validationIssues: CharacterValidationIssue[];
 }
 
 /** Kleinste "EP ab"-Schwelle oberhalb von epGesamt (naechste Stufe), oder undefined am Anschlag. */
@@ -156,6 +175,27 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
   if (rule.art === 'Wert') {
     const currentValue = character.values[key] ?? 0;
     const result: ComputedRule = { rule, currentValue };
+    if (rule.kategorie === 'Eigenschaft') {
+      let kreis = 0;
+      try {
+        kreis = Number(evalReferenz('kreis', values));
+      } catch {
+        // ep_gesamt noch nicht auswertbar (z.B. ganz frischer Charakter) -> Kreis 0 annehmen.
+      }
+      const safeKreis = Number.isFinite(kreis) ? kreis : 0;
+      const grenzen = getEigenschaftGrenzen(character.spezies, rule.referenz, safeKreis);
+      if (hasSchlechteEigenschaft(character, rule.referenz)) {
+        const max = getSchlechteEigenschaftMax(safeKreis);
+        if (currentValue > max) {
+          result.error = `'${rule.referenz}' ist durch den Nachteil "Schlechte Eigenschaft" auf ${max} gedeckelt (nicht übersteigerbar)`;
+        }
+      } else if (grenzen) {
+        const effectiveMax = grenzen.max + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
+        if (currentValue < grenzen.min || currentValue > effectiveMax) {
+          result.error = `'${rule.referenz}' muss für ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`;
+        }
+      }
+    }
     const artefaktBonusValue = values.getArtefaktBonus?.(rule.referenz) ?? 0;
     if (artefaktBonusValue > 0) result.alteredValue = currentValue + artefaktBonusValue;
     // Nahkampf-/Fernkampf-Spezialisierungen tragen keine eigene Kosten-Formel in der xlsx (siehe
@@ -184,7 +224,8 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
           }
         }
       } catch (err) {
-        result.error = err instanceof Error ? err.message : String(err);
+        const kostenError = err instanceof Error ? err.message : String(err);
+        result.error = result.error ? `${result.error}; ${kostenError}` : kostenError;
       }
     }
     return result;
@@ -273,6 +314,7 @@ export function computeSheet(character: CharacterState): ComputedSheet {
   const byKategorie: Record<string, ComputedRule[]> = {};
 
   let spSpent = 0;
+  let sskSpent = 0;
   let tapSpent = 0;
   for (const rule of RULES) {
     const computed = computeRule(rule, character, values);
@@ -283,7 +325,12 @@ export function computeSheet(character: CharacterState): ComputedSheet {
       ? computed.kostenCurrent
       : (computed.selected && computed.kostenSelect !== undefined ? computed.kostenSelect : undefined);
     if (kosten !== undefined) {
-      if (isTap) tapSpent += kosten; else spSpent += kosten;
+      if (isTap) {
+        tapSpent += kosten;
+      } else {
+        spSpent += kosten;
+        if (rule.kategorie === SSK_KATEGORIE) sskSpent += kosten;
+      }
     }
   }
 
@@ -304,15 +351,13 @@ export function computeSheet(character: CharacterState): ComputedSheet {
   const dublonenBarRemaining = Math.max(0, dublonenBar - dublonenSpent);
   const dublonenBankRemaining = dublonenBank - Math.max(0, dublonenSpent - dublonenBar);
   const epGesamt = character.values['ep_gesamt'] ?? 0;
-  // SP = 6490 + EP - ausgegebene SP. Die 6490 ist eine feste Konstante IN DER FORMEL SELBST
+  // SP = 6400 + EP - ausgegebene SP. Die 6400 ist eine feste Konstante IN DER FORMEL SELBST
   // (jeder Charakter bekommt sie, unabhaengig vom Startbudget-Preset), NICHT nur ein
   // Startwert - bestaetigt mit Nutzer 2026-07-17 nach anfaenglich falscher Gleichsetzung
-  // SP=EP. War urspruenglich 6400; per Nutzer-Entscheidung 2026-07-17 um 90 SP erhoeht
-  // (Kosten fuer Muttersprache=Stufe3/50 SP + Kultur=Stufe3/40 SP), im Gegenzug wurde der
-  // vorherige Sonderfall "erste Sprache/Kultur kostenlos" (freieSpracheReferenz/
-  // freieKulturReferenz) komplett entfernt - jede Sprache/Kultur wird jetzt normal bezahlt,
-  // die erste ist implizit ueber die hoehere SP-Basis abgedeckt statt per Ausnahme.
-  const spTotal = 6490 + epGesamt;
+  // SP=EP. Sprache und Kultur bleiben regulär kostenpflichtig; statt Muttersprache und
+  // Vaterland als harte Einzelanforderungen vorzuschreiben, wird weiter unten die Summe aller
+  // SSK-Ausgaben gegen ein Mindestinvestment von 90 SP geprueft.
+  const spTotal = 6400 + epGesamt;
   const dublonenTotal = (character.values['dublonen_bank'] ?? 0) + (character.values['dublonen_bar'] ?? 0);
 
   let tapTotal = 0;
@@ -323,6 +368,55 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     // z.B. bei einem ganz frischen Charakter ohne ep_gesamt. TaP bleibt dann 0.
   }
 
+  const sskLanguageMinimumMet = Object.entries(character.values)
+    .some(([referenz, value]) => referenz.toLowerCase().startsWith('ssk_sprache_') && value > 0);
+  const validationIssues: CharacterValidationIssue[] = [];
+  if (spTotal - spSpent < 0) {
+    validationIssues.push({ source: 'SP-Budget', message: `${spSpent - spTotal} SP zu viel ausgegeben` });
+  }
+  if (tapTotal - tapSpent < 0) {
+    validationIssues.push({ source: 'TaP-Budget', message: `${tapSpent - tapTotal} TaP zu viel ausgegeben` });
+  }
+  if (dublonenTotal - dublonenSpent < 0) {
+    validationIssues.push({
+      source: 'Dublonen-Budget',
+      message: `${Math.round((dublonenSpent - dublonenTotal) * 100) / 100} Dublonen zu viel ausgegeben`,
+    });
+  }
+  if (sskSpent < SSK_MINDEST_SP) {
+    validationIssues.push({
+      source: 'SSK',
+      message: `nur ${sskSpent} von mindestens ${SSK_MINDEST_SP} SP investiert`,
+    });
+  }
+  if (!sskLanguageMinimumMet) {
+    validationIssues.push({ source: 'SSK › Sprachen', message: 'keine Sprache auf Stufe 1 oder höher' });
+  }
+  for (const rows of Object.values(byKategorie)) {
+    for (const row of rows) {
+      if (row.rule.art === 'Pool' && row.poolRemaining !== undefined && row.poolRemaining < 0) {
+        validationIssues.push({
+          source: `${row.rule.kategorie} › ${row.rule.beschreibung ?? row.rule.referenz}`,
+          message: `${Math.abs(row.poolRemaining)} Poolpunkte zu viel verteilt`,
+        });
+      }
+      // Formel-/Lookup-Fehler sind technische Datenfehler. Charakterkonformität betrifft hier
+      // die vom Spieler gesetzten Werte und Auswahlen; deren Fehler werden bereits an der Zeile gezeigt.
+      if (!row.error || (row.rule.art !== 'Wert' && row.rule.art !== 'Auswahl')) continue;
+      validationIssues.push({
+        source: `${row.rule.kategorie} › ${row.rule.beschreibung ?? row.rule.referenz}`,
+        message: row.error,
+      });
+    }
+  }
+  for (const entry of character.equipment) {
+    if (!entry.invalidReason) continue;
+    validationIssues.push({
+      source: `Inventar › ${entry.displayNameSnapshot ?? entry.baseId}`,
+      message: entry.invalidReason,
+    });
+  }
+
   return {
     characterId: character.id,
     byKategorie,
@@ -331,6 +425,9 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     spTotal,
     spSpent,
     spRemaining: spTotal - spSpent,
+    sskSpent,
+    sskMinimumMet: sskSpent >= SSK_MINDEST_SP,
+    sskLanguageMinimumMet,
     tapTotal,
     tapSpent,
     tapRemaining: tapTotal - tapSpent,
@@ -341,5 +438,6 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     dublonenBankRemaining,
     customWhkHauptfertigkeiten: character.customWhkHauptfertigkeiten,
     customWhkSpezialisierungen: character.customWhkSpezialisierungen,
+    validationIssues,
   };
 }

@@ -66,9 +66,37 @@ body {
   text-align: left;
 }
 
+.app-header {
+  position: relative;
+}
+
 .app-header h1 {
   font-size: calc(1.4rem + 2pt);
   margin: 0 0 0.75rem;
+  padding-right: 12rem;
+}
+
+.last-updated {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: #777;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .app-header h1 {
+    padding-right: 0;
+  }
+
+  .last-updated {
+    position: static;
+    display: block;
+    margin-bottom: 0.25rem;
+    text-align: right;
+  }
 }
 
 .character-bar {
@@ -92,6 +120,23 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.character-conformity-warning {
+  color: #a33;
+  cursor: help;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ssk-people-group + .ssk-people-group {
+  margin-top: 1rem;
+}
+
+.budget-invalid {
+  color: #a33;
+  font-weight: 700;
+}
+
 .error-message {
   color: #b00020;
   background: #ffe4e6;
@@ -101,12 +146,14 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.app-navigation {
+  margin: 0.75rem 0;
+}
+
 .tab-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
-  border-bottom: 1px solid #8884;
-  margin-bottom: 0.75rem;
 }
 
 .tab-btn {
@@ -118,9 +165,94 @@ body {
   font: inherit;
 }
 
-.tab-btn[aria-current='page'] {
+.tab-btn[aria-selected='true'] {
   border-bottom-color: currentColor;
   font-weight: 600;
+}
+
+.main-tab-nav {
+  gap: 0.35rem;
+  border-bottom: 2px solid #8888;
+}
+
+.main-tab-btn {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-radius: 6px 6px 0 0;
+}
+
+.main-tab-btn[aria-selected='true'] {
+  border-color: #8888;
+  border-bottom-color: currentColor;
+  background: #8882;
+}
+
+.sub-tab-nav {
+  gap: 0.2rem;
+  padding: 0.45rem 0.35rem 0.35rem;
+  border-bottom: 1px solid #8885;
+  background: #8881;
+}
+
+.sub-tab-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+}
+
+.sub-tab-btn[aria-selected='true'] {
+  background: #8883;
+}
+
+.tab-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.category-route-view {
+  padding: 0.75rem 1rem;
+}
+
+.category-route-view > h2 {
+  margin-block: 0 0.75rem;
+}
+
+.category-route-section + .category-route-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #8884;
+}
+
+.category-route-section-heading {
+  margin-block: 0 0.65rem;
+}
+
+.grunddaten-view {
+  padding: 0.75rem 1rem;
+  border: 1px solid #8884;
+  border-radius: 6px;
+  background: #8881;
+}
+
+.grunddaten-view h2 {
+  margin-block: 0 0.4rem;
+}
+
+@media (max-width: 700px) {
+  .character-bar,
+  .budget-bar {
+    flex-wrap: wrap;
+  }
+
+  .sub-tab-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .sub-tab-btn {
+    flex: 0 0 auto;
+  }
 }
 
 /* Karteikarten-Optik, aber Listenanordnung (Nutzer 2026-07-17: "innerhalb der Karten, zurueck
@@ -160,13 +292,55 @@ body {
 }
 
 .stat-value {
-  width: 5ch;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font: inherit;
   border: 1px solid #8888;
   border-radius: 4px;
   padding: 0.1rem 0.2rem;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+/* Zahlenfelder werden nach ihrem moeglichen Wertebereich dimensioniert, nicht nach dem gerade
+   sichtbaren Wert. Inputs erhalten zusaetzlich Platz fuer die nativen Number-Spinner. */
+.numeric-field-one {
+  --numeric-field-chars: 1;
+}
+
+.numeric-field-two {
+  --numeric-field-chars: 2;
+}
+
+.numeric-field-signed-two {
+  --numeric-field-chars: 3;
+}
+
+.numeric-field-signed-five {
+  --numeric-field-chars: 6;
+}
+
+.numeric-field-formatted-five {
+  /* -99.999,999: Vorzeichen + 5 Stellen + Tausenderpunkt + 3 Nachkommastellen. */
+  --numeric-field-chars: 11;
+}
+
+input.numeric-field-one,
+input.numeric-field-two,
+input.numeric-field-signed-two,
+input.numeric-field-signed-five,
+input.numeric-field-formatted-five {
+  width: calc(var(--numeric-field-chars) * 1ch + 2.4rem);
+  min-width: calc(var(--numeric-field-chars) * 1ch + 2.4rem);
+}
+
+.numeric-field-output {
+  display: inline-block;
+  width: calc(var(--numeric-field-chars) * 1ch);
+  min-width: calc(var(--numeric-field-chars) * 1ch);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-cost {
@@ -359,6 +533,47 @@ body {
   opacity: 0.65;
   padding: 0 0 0.3rem;
   border-bottom: 1px solid #8882;
+}
+
+.auswahl-row-locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.besitz-entry > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+}
+
+.besitz-entry > summary > .stat-label {
+  flex: 1 1 auto;
+}
+
+.besitz-summary-stats {
+  display: block;
+  margin-top: 0.15rem;
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+.besitz-equipment-group, .besitz-ruestung-group {
+  padding: 0.25rem 0 0.45rem;
+  border-bottom: 1px solid #8882;
+}
+
+.besitz-equipment-group:last-child, .besitz-ruestung-group:last-child {
+  border-bottom: 0;
+}
+
+.besitz-equipment-group > h4, .besitz-ruestung-group > h4 {
+  margin: 0 0 0.15rem;
+}
+
+.besitz-ruestung-total {
+  margin-left: 0.4rem;
+  font-weight: 400;
 }
 
 .ausruestung-row.feuerwaffe-row {
@@ -577,6 +792,19 @@ body {
 
 .artefakt-grad-row > .artefakt-grad-label {
   flex: 1;
+}
+
+.inventar-row.inventar-row-invalid {
+  border-color: #b42318;
+  background: #fff2f0;
+}
+
+.inventar-invalid-error {
+  display: block;
+  margin-top: 0.25rem;
+  color: #b42318;
+  font-size: 0.78rem;
+  white-space: normal;
 }
 
 .artefakt-waffen-ziel-label {
@@ -1113,8 +1341,28 @@ body {
 }
 
 .kampf-pool-value {
-  min-width: 1.4rem;
+  width: 2ch;
+  min-width: 2ch;
   display: inline-block;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.kampf-row-allocation-dirty {
+  box-shadow: inset 3px 0 0 #b7791f;
+}
+
+.kampf-allocation-actions {
+  white-space: nowrap;
+}
+
+.kampf-allocation-actions button + button {
+  margin-left: 0.25rem;
+}
+
+.kampf-allocation-saved {
+  color: #6b7280;
+  font-size: 0.85em;
 }
 
 .kampf-pp-invalid {
@@ -1149,6 +1397,10 @@ body {
   gap: 0.75rem;
 }
 
+.loadout-combo-fieldset[hidden] {
+  display: none;
+}
+
 .loadout-combo-fieldset label,
 .loadout-creation-form > label {
   display: flex;
@@ -1160,6 +1412,12 @@ body {
 .kampf-loadout-table th, .kampf-loadout-table td {
   text-align: center;
   white-space: nowrap;
+}
+
+.loadout-table-heading {
+  padding: 0.8rem 0 0.35rem;
+  text-align: left;
+  font-weight: 700;
 }
 
 .kampf-loadout-table td:first-child, .kampf-loadout-table th:first-child {

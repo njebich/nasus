@@ -6,22 +6,22 @@ import { createCharacter } from '../state/characterStore';
 // vitest.config.ts) ist das verfuegbar; wir nutzen nur die zurueckgegebene In-Memory-Instanz.
 
 describe('computeSheet', () => {
-  it('SP = 6490 + EP fuer einen frischen Charakter (ep_gesamt=0 -> SP=6490, feste Konstante in der Formel)', () => {
+  it('SP = 6400 + EP fuer einen frischen Charakter (ep_gesamt=0 -> SP=6400, feste Konstante in der Formel)', () => {
     const character = createCharacter('Test');
     const sheet = computeSheet(character);
     expect(sheet.epGesamt).toBe(0);
-    expect(sheet.spTotal).toBe(6490);
+    expect(sheet.spTotal).toBe(6400);
     expect(sheet.spSpent).toBe(0);
-    expect(sheet.spRemaining).toBe(6490);
+    expect(sheet.spRemaining).toBe(6400);
   });
 
-  it('spTotal = 6490 + ep_gesamt, NICHT spTotal = ep_gesamt (mit Nutzer 2026-07-17 korrigiert)', () => {
+  it('spTotal = 6400 + ep_gesamt, NICHT spTotal = ep_gesamt', () => {
     const character = createCharacter('Test');
     character.values['ep_gesamt'] = 1000;
     const sheet = computeSheet(character);
     expect(sheet.epGesamt).toBe(1000);
-    expect(sheet.spTotal).toBe(7490);
-    expect(sheet.spRemaining).toBe(7490);
+    expect(sheet.spTotal).toBe(7400);
+    expect(sheet.spRemaining).toBe(7400);
   });
 
   it('berechnet SP-Kosten fuer eine gesetzte Eigenschaft ueber SVERWEIS', () => {
@@ -33,7 +33,46 @@ describe('computeSheet', () => {
     expect(mutRule?.currentValue).toBe(5);
     expect(mutRule?.kostenCurrent).toBe(150);
     expect(sheet.spSpent).toBe(150);
-    expect(sheet.spRemaining).toBe(7340); // spTotal(6490+1000=7490) - 150
+    expect(sheet.spRemaining).toBe(7250); // spTotal(6400+1000=7400) - 150
+  });
+
+  describe('SSK-Mindestinvestment', () => {
+    it('macht Muttersprache und Vaterland nicht einzeln zu harten Anforderungen', () => {
+      const character = createCharacter('Test');
+      character.values['ssk_sprache_zwergisch'] = 4; // 75 SP, keine Muttersprache-Stufe 3
+      character.values['ssk_sprache_drow'] = 1; // weitere 15 SP, keine Kultur
+
+      const sheet = computeSheet(character);
+
+      expect(sheet.sskSpent).toBe(90);
+      expect(sheet.sskMinimumMet).toBe(true);
+      expect(sheet.sskLanguageMinimumMet).toBe(true);
+    });
+
+    it('markiert einen Charakter unter 90 SSK-SP als noch nicht gueltig', () => {
+      const character = createCharacter('Test');
+      character.values['ssk_sprache_zwergisch'] = 3; // Muttersprache, aber nur 50 SP
+      character.values['ssk_kultur_zwerge'] = 2; // 25 SP, zusammen 75 SP
+
+      const sheet = computeSheet(character);
+
+      expect(sheet.sskSpent).toBe(75);
+      expect(sheet.sskMinimumMet).toBe(false);
+    });
+
+    it('verlangt auch bei mindestens 90 SSK-SP wenigstens eine Sprache auf Stufe 1+', () => {
+      const character = createCharacter('Test');
+      character.values['ssk_kultur_zwerge'] = 4;
+      character.values['ssk_kultur_elfen'] = 4; // zusammen 110 SP, aber keine Sprache
+
+      const sheet = computeSheet(character);
+
+      expect(sheet.sskMinimumMet).toBe(true);
+      expect(sheet.sskLanguageMinimumMet).toBe(false);
+      expect(sheet.validationIssues).toContainEqual({
+        source: 'SSK › Sprachen', message: 'keine Sprache auf Stufe 1 oder höher',
+      });
+    });
   });
 
   describe('Nahkampf-/Fernkampf-TaW-Kosten (Nutzer-Bugreport 2026-07-24: Hauptfertigkeit und Spezialisierung zogen kein SP ab)', () => {

@@ -24,11 +24,11 @@ describe('characterMutations', () => {
   });
 
   it('setValue lehnt ab, wenn nicht genug SP vorhanden sind', () => {
-    // SP = 6490 + ep_gesamt (feste Konstante in der Formel) - selbst bei ep_gesamt=0 hat man
-    // also 6490 SP, und eine einzelne Eigenschaft kostet maximal 6213 (Wert 64, Tabellenende) -
+    // SP = 6400 + ep_gesamt (feste Konstante in der Formel) - selbst bei ep_gesamt=0 hat man
+    // also 6400 SP, und eine einzelne Eigenschaft kostet maximal 6213 (Wert 64, Tabellenende) -
     // daher zwei Eigenschaften kombinieren, um das Budget sicher zu ueberschreiten.
     const character = withEpGesamt(0);
-    const afterFirst = setValue(character, 'eig_g_mut', 64); // kostet 6213 von 6490 SP
+    const afterFirst = setValue(character, 'eig_g_mut', 64); // kostet 6213 von 6400 SP
     expect(() => setValue(afterFirst, 'eig_k_athletik', 10)).toThrow(BudgetError); // weitere 300 SP -> ueber Budget
   });
 
@@ -125,7 +125,7 @@ describe('characterMutations', () => {
     expect(withoutStufe1.selections['talente_grundfertigkeiten_stufe_2']).toBeUndefined();
   });
 
-  describe('ssk_sprache_*/ssk_kultur_* (Regel Nutzer 2026-07-17: keine Freibetrag-Ausnahme mehr, SP-Basis stattdessen erhoeht)', () => {
+  describe('ssk_sprache_*/ssk_kultur_* (keine Freibetrag-Ausnahme, mindestens 90 SSK-SP insgesamt)', () => {
     it('Muttersprache (Stufe 3) kostet ganz normal 50 SP, keine Ausnahme', () => {
       const character = withEpGesamt(0);
       const updated = setValue(character, 'ssk_sprache_zwergisch', 3);
@@ -141,13 +141,14 @@ describe('characterMutations', () => {
       expect(sheet.spSpent).toBe(40);
     });
 
-    it('Muttersprache + Kultur zusammen kosten 90 SP - genau der Betrag, um den die SP-Basis erhoeht wurde', () => {
+    it('Muttersprache + Kultur zusammen kosten 90 SP und erfuellen damit das SSK-Minimum', () => {
       const character = withEpGesamt(0);
       const mitSprache = setValue(character, 'ssk_sprache_zwergisch', 3);
       const mitBeidem = setValue(mitSprache, 'ssk_kultur_zwerge', 3);
       const sheet = computeSheet(mitBeidem);
       expect(sheet.spSpent).toBe(90);
-      expect(sheet.spRemaining).toBe(6490 - 90);
+      expect(sheet.sskMinimumMet).toBe(true);
+      expect(sheet.spRemaining).toBe(6400 - 90);
     });
   });
 
@@ -205,21 +206,32 @@ describe('characterMutations', () => {
       expect(updated.values['eig_k_staerke']).toBe(15);
     });
 
-    it('lehnt einen Wert unterhalb des Erstellungs-Min ab', () => {
+    it('erlaubt einen Wert unterhalb des Erstellungs-Min als korrigierbaren Zwischenstand und markiert ihn als ungültig', () => {
       const character = withSpezies('Dalkini', 500);
-      expect(() => setValue(character, 'eig_k_staerke', 10)).toThrow(MutationError);
+      const updated = setValue(character, 'eig_k_staerke', 10);
+      expect(updated.values['eig_k_staerke']).toBe(10);
+      const row = computeSheet(updated).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_staerke');
+      expect(row?.error).toContain('zwischen 11 und 23');
     });
 
-    it('lehnt einen Wert oberhalb des Erstellungs-Max ab, solange Kreis < 3', () => {
+    it('erlaubt einen Wert oberhalb des Erstellungs-Max als korrigierbaren Zwischenstand und markiert ihn als ungültig', () => {
       const character = withSpezies('Dalkini', 500); // ep_gesamt=500 -> Kreis 2 (< 3)
-      expect(() => setValue(character, 'eig_k_staerke', 24)).toThrow(MutationError);
+      const updated = setValue(character, 'eig_k_staerke', 24);
+      expect(updated.values['eig_k_staerke']).toBe(24);
+      const row = computeSheet(updated).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_staerke');
+      expect(row?.error).toContain('zwischen 11 und 23');
     });
 
     it('erlaubt bis zu 31 ("Max ab Kreis 3"), sobald der Charakter Kreis 3 erreicht hat', () => {
       const character = withSpezies('Dalkini', 1600); // ep_gesamt=1600 -> Stufe 15 -> Kreis 3
       const updated = setValue(character, 'eig_k_staerke', 31);
       expect(updated.values['eig_k_staerke']).toBe(31);
-      expect(() => setValue(character, 'eig_k_staerke', 32)).toThrow(MutationError);
+      const aboveMax = setValue(character, 'eig_k_staerke', 32);
+      const row = computeSheet(aboveMax).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_staerke');
+      expect(row?.error).toContain('zwischen 11 und 31');
     });
 
     it('unbekannte Spezies bleibt uneingeschraenkt (z.B. leere Test-Fixtures)', () => {
@@ -385,6 +397,28 @@ describe('setWaffenPoolAllocation', () => {
       .toThrow(BudgetError);
   });
 
+  it('eine unveraenderte alte nAT-Zuteilung ueber einer nachtraeglich gesunkenen Grenze blockiert keine andere Erhoehung', () => {
+    let character = characterWithZweiAexten(0);
+    const [w1] = character.equipment;
+    character.values['nk_spez_hiebwaffen_aexte'] = 2;
+    // Bei nk_hiebwaffen=0 liegt die Axt-AT bei 16; ein nAT-Punkt ist zulaessig.
+    character = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, {
+      gat: 0, gpa: 0, mat: 0, mpa: 0, nat: 1, npa: 0,
+    });
+
+    // Der gestiegene Skill bringt die Axt ohne Zuteilung auf nAT 20: aktuelle natMax ist jetzt 0.
+    character = setValue(character, 'nk_hiebwaffen', 10);
+    // Der unveraenderte alte nat=1 darf das Erhoehen eines anderen Feldes nicht mit "max 0"
+    // blockieren; eine weitere nAT-Erhoehung bleibt dagegen verboten.
+    const updated = setWaffenPoolAllocation(character, 'nk_pool_hiebwaffen_aexte', w1.id, {
+      gat: 1, gpa: 0, mat: 0, mpa: 0, nat: 1, npa: 0,
+    });
+    expect(updated.poolAllocations[`nk_pool_hiebwaffen_aexte::${w1.id}`]).toMatchObject({ gat: 1, nat: 1 });
+    expect(() => setWaffenPoolAllocation(updated, 'nk_pool_hiebwaffen_aexte', w1.id, {
+      gat: 1, gpa: 0, mat: 0, mpa: 0, nat: 2, npa: 0,
+    })).toThrow(/nAT ueberschreitet die Obergrenze \(max 0\)/);
+  });
+
   it('Budget beruecksichtigt den eigenen Waffen-Ueberschuss ueber 20 unbefoerderter AT/PA-Basis - und NUR den eigenen, nicht den einer Geschwister-Waffe', () => {
     // w1 wird kuenstlich auf AT/PA=+10 gesetzt (simuliert eine seltene Waffe mit positivem
     // AT/PA-Bonus, siehe Plan-Kommentar "gelegentlich positiv") - uncAtWeapon/uncPaWeapon =
@@ -511,6 +545,25 @@ describe('Waffen-Loadout-Mutationen', () => {
     expect(updated.waffenLoadouts[0]).toMatchObject({ comboType: 'nk1h_nk1h', primaryEquipmentId: axt.id, secondaryEquipmentId: dolch.id, favorite: false });
   });
 
+  it('legt 1H und 2H als einzelne Waffen-Loadouts an', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const [axt] = character.equipment;
+    character = addWaffenLoadout(character, 'nk1h', axt.id, axt.id);
+    character = addWaffenLoadout(character, 'nk2h', axt.id, axt.id);
+    expect(character.waffenLoadouts).toMatchObject([
+      { comboType: 'nk1h', primaryEquipmentId: axt.id, secondaryEquipmentId: axt.id, favorite: false },
+      { comboType: 'nk2h', primaryEquipmentId: axt.id, secondaryEquipmentId: axt.id, favorite: false },
+    ]);
+  });
+
+  it('lehnt eine Waffe in der falschen Einzelwaffen-Art ab', () => {
+    let character = loadoutBaseCharacter();
+    character = buyTestWeapon(character, 'Axt');
+    const [axt] = character.equipment;
+    expect(() => addWaffenLoadout(character, 'pistole', axt.id, axt.id)).toThrow(MutationError);
+  });
+
   it('lehnt ab, wenn beide Seiten dieselbe Ausruestung referenzieren', () => {
     let character = loadoutBaseCharacter();
     character = buyTestWeapon(character, 'Axt');
@@ -631,7 +684,10 @@ describe('Waffen-Loadout-Mutationen', () => {
       const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
       const at7 = setValue(withNachteil, 'eig_k_ausstrahlung', 7);
       expect(at7.values['eig_k_ausstrahlung']).toBe(7);
-      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 8)).toThrow(MutationError);
+      const aboveMax = setValue(withNachteil, 'eig_k_ausstrahlung', 8);
+      const row = computeSheet(aboveMax).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(row?.error).toContain('auf 7 gedeckelt');
     });
 
     it('erlaubt bis 9 ab Kreis 3', () => {
@@ -639,7 +695,10 @@ describe('Waffen-Loadout-Mutationen', () => {
       const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
       const at9 = setValue(withNachteil, 'eig_k_ausstrahlung', 9);
       expect(at9.values['eig_k_ausstrahlung']).toBe(9);
-      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 10)).toThrow(MutationError);
+      const aboveMax = setValue(withNachteil, 'eig_k_ausstrahlung', 10);
+      const row = computeSheet(aboveMax).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(row?.error).toContain('auf 9 gedeckelt');
     });
 
     it('andere Eigenschaften bleiben von der Deckelung unberuehrt', () => {
@@ -672,7 +731,33 @@ describe('Waffen-Loadout-Mutationen', () => {
       const withNachteil = addSelection(withTalent, 'vn_schlechte_eigenschaft_ausstrahlung');
       const at9 = setValue(withNachteil, 'eig_k_ausstrahlung', 9);
       expect(at9.values['eig_k_ausstrahlung']).toBe(9);
-      expect(() => setValue(withNachteil, 'eig_k_ausstrahlung', 10)).toThrow(MutationError);
+      const aboveMax = setValue(withNachteil, 'eig_k_ausstrahlung', 10);
+      const row = computeSheet(aboveMax).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(row?.error).toContain('auf 9 gedeckelt');
+    });
+
+    it('kann nach dem Abwählen bei Dalkini schrittweise von 7 über 8 auf das Minimum 9 korrigiert werden', () => {
+      const character = createCharacter('Test', { spezies: 'Dalkini' });
+      character.values['ep_gesamt'] = 0;
+      const withNachteil = addSelection(character, 'vn_schlechte_eigenschaft_ausstrahlung');
+      const at7 = setValue(withNachteil, 'eig_k_ausstrahlung', 7);
+      const withoutNachteil = removeSelection(at7, 'vn_schlechte_eigenschaft_ausstrahlung');
+
+      const at8 = setValue(withoutNachteil, 'eig_k_ausstrahlung', 8);
+      expect(at8.values['eig_k_ausstrahlung']).toBe(8);
+      const invalidRow = computeSheet(at8).byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(invalidRow?.error).toContain('zwischen 9 und');
+
+      const at9 = setValue(at8, 'eig_k_ausstrahlung', 9);
+      const correctedSheet = computeSheet(at9);
+      const validRow = correctedSheet.byKategorie['Eigenschaft']
+        .find((entry) => entry.rule.referenz === 'eig_k_ausstrahlung');
+      expect(validRow?.error).toBeUndefined();
+      const bonusRow = correctedSheet.byKategorie['Eigenschaftsbonus']
+        .find((entry) => entry.rule.referenz === 'eig_bonus_k_ausstrahlung');
+      expect(bonusRow?.computedValue).toBe(0);
     });
   });
 });

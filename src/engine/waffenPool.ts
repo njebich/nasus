@@ -7,33 +7,26 @@
 //    Pool-Punkte schon ueber 20 tragen wuerde, fliesst stattdessen als zusaetzliches Budget in
 //    den Pool (siehe characterSheet.ts's Pool-Zweig).
 
-import { RULES } from '../data/rules';
 import { getRule, evalExpression, type CharacterValueSource } from './rules';
 import { aufrunden } from './functions';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 import type { CharacterState } from '../state/characterStore';
+import {
+  MELEE_WEAPON_BY_SOURCE_ROW, weaponSpecializationForLabel,
+} from './weaponCatalog';
 
-/** Text-Match gegen die Pool-Beschreibung: erst die Spezialisierung ("Pool Aexte"), sonst die
- *  Hauptfertigkeit ("Pool Hiebwaffen") - bestaetigt gegen die reale nahkampf.jsonl-Datenlage
- *  (z.B. "Pool Aexte", "Pool Armklingen"). Wirft, wenn keins von beidem existiert (klarer Fehler
- *  statt eines stillschweigend falschen Budgets).
- *  Sonderfall seit 2026-07-22: die Spezialisierung "Unbewaffnet" (frueher "Ruestung", Nutzer-
- *  Umbenennung) ist textgleich mit ihrer eigenen Hauptfertigkeit "Unbewaffnet" - der Hauptfertigkeit-
- *  Match (`nk_pool_unbewaffnet`) wird deshalb explizit aus der Spezialisierung-Suche ausgeschlossen,
- *  sonst wuerde die dedizierte Zeile `nk_pool_unbewaffnet_unbewaffnet` (mit ihrem eigenen TaW-Term)
- *  nie gefunden und die 17 Ruestungs-Faustwaffen/Naturwaffen wuerden stillschweigend auf den
- *  generischen Fallback zurueckfallen. */
+/** Kanonische Spezialisierungs-Aufloesung. Die Hauptfertigkeit bleibt nur fuer die detaillierte
+ *  Fehlermeldung im Funktionsvertrag; sie ist ausdruecklich KEIN Fallback mehr. */
 export function resolveWaffenPoolReferenz(hauptfertigkeit: string, spezialisierung: string): string {
-  const pools = RULES.filter((r) => r.art === 'Pool' && r.kategorie === 'Nahkampf');
-  const hauptMatch = pools.find((r) => r.beschreibung === `Pool ${hauptfertigkeit}`);
-  const spezMatch = pools.find(
-    (r) => r.beschreibung === `Pool ${spezialisierung}` && r.referenz !== hauptMatch?.referenz,
-  );
-  if (spezMatch) return spezMatch.referenz;
-  if (hauptMatch) return hauptMatch.referenz;
-  throw new Error(
-    `Kein Pool fuer Hauptfertigkeit '${hauptfertigkeit}' / Spezialisierung '${spezialisierung}' gefunden`,
-  );
+  try {
+    return weaponSpecializationForLabel(spezialisierung).poolReferenz;
+  } catch (error) {
+    const shortcoming = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Ungültige Waffe: Hauptfertigkeit '${hauptfertigkeit}', `
+      + `Spezialisierung '${spezialisierung || '<fehlt>'}': ${shortcoming}`,
+    );
+  }
 }
 
 /** Streift die aeussere "MIN(20;...)"-Huelle von at_X/pa_X-Formeln ab, um an die ungedeckelte
@@ -213,7 +206,7 @@ export function resolveWaffenRowBasis(character: CharacterState, equipmentId: st
   }
   const entry = character.equipment.find((e) => e.id === equipmentId && (e.family === 'weapon' || e.family === 'shield'));
   if (!entry) return undefined;
-  const basis = NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === entry.baseId);
+  const basis = MELEE_WEAPON_BY_SOURCE_ROW.get(entry.baseId);
   if (!basis) return undefined;
   return {
     hauptfertigkeit: basis['Hauptfertigkeit'], spezialisierung: basis['Spezialisierung'] ?? '',

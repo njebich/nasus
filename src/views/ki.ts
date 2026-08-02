@@ -157,7 +157,20 @@ function renderGrundfertigkeitPicksRow(currentValue: number, gewaehlt: string[])
     </tr>`;
 }
 
-function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet, gewaehlt: string[]): string {
+function renderReadOnlyGrundfertigkeitPicksRow(currentValue: number, gewaehlt: string[]): string {
+  if (grundfertigkeitSlotCount(currentValue) === 0) return '';
+  const namen = new Map(getGrundfertigkeitOptionen().map((option) => [option.referenz, option.name]));
+  const auswahl = gewaehlt.map((referenz) => namen.get(referenz) ?? referenz);
+  return `
+    <tr class="ki-grundfertigkeit-picks-row" data-referenz="${MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ}-picks">
+      <td colspan="7">
+        <span class="ki-grundfertigkeit-picks-label">Gewählte Grundfertigkeiten:</span>
+        ${auswahl.length > 0 ? auswahl.map(escapeHtml).join(', ') : '–'}
+      </td>
+    </tr>`;
+}
+
+function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet, gewaehlt: string[], readOnly = false): string {
   const { referenz, name, currentValue, kostenNext, kostenCurrent, wirkung, unlocked } = r;
   const eigBon = getEigBonusValue(sheet, r.eigBonusReferenz);
   // Probe ist nur sinnvoll, sobald die Faehigkeit ueberhaupt gelernt ist (Nutzer 2026-07-20).
@@ -177,7 +190,9 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   // Gleiches Format wie categoryView.ts (Nutzer 2026-07-24, "same currency" wie Eigenschaft/
   // Attribute usw.): kostenRaw ist kumulativ, Klickpreis = kostenNext-kostenCurrent.
   const costLabel = formatKlickpreis(kostenCurrent, kostenNext);
-  const picksRow = referenz === MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ ? renderGrundfertigkeitPicksRow(currentValue, gewaehlt) : '';
+  const picksRow = referenz === MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ
+    ? readOnly ? renderReadOnlyGrundfertigkeitPicksRow(currentValue, gewaehlt) : renderGrundfertigkeitPicksRow(currentValue, gewaehlt)
+    : '';
 
   return `
     <tr class="${rowClass}" data-referenz="${referenz}">
@@ -188,10 +203,12 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
       <td>${escapeHtml(dauer?.vd ?? '–')}</td>
       <td>${escapeHtml(dauer?.wd ?? '–')}</td>
       <td class="ki-taw-cell">
+        ${readOnly ? `
+        <span class="kampf-pool-value numeric-field-output numeric-field-two">${currentValue}</span>` : `
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
         <input type="number" class="stat-value kampf-taw-input" min="0" value="${currentValue}" ${!unlocked && currentValue <= 0 ? 'disabled' : ''} aria-label="TaW ${escapeHtml(name)}" />
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
-        <span class="stat-cost stat-cost-click">${costLabel}</span>
+        <span class="stat-cost stat-cost-click">${costLabel}</span>`}
       </td>
     </tr>${picksRow}`;
 }
@@ -236,15 +253,16 @@ function buildRows(sheet: ComputedSheet) {
     });
 }
 
-export function renderKiView(
+function renderKiContent(
   container: HTMLElement,
   sheet: ComputedSheet,
-  onChange: OnValueChange,
   grundfertigkeitAuswahl: Record<string, string[]>,
-  onGrundfertigkeitPick: OnGrundfertigkeitPick,
+  onChange?: OnValueChange,
+  onGrundfertigkeitPick?: OnGrundfertigkeitPick,
 ): void {
   const rows = buildRows(sheet);
   const gewaehlt = grundfertigkeitAuswahl[MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ] ?? [];
+  const readOnly = onChange === undefined;
 
   container.innerHTML = `
     ${renderInfoBlock(sheet)}
@@ -253,10 +271,11 @@ export function renderKiView(
         <thead><tr>
           <th>Probe</th><th>Name</th><th>Wirkung</th><th>Eig.Bon</th><th>VD</th><th>WD</th><th>TaW</th>
         </tr></thead>
-        <tbody>${rows.map((r) => renderRow(r, sheet, gewaehlt)).join('')}</tbody>
+        <tbody>${rows.map((r) => renderRow(r, sheet, gewaehlt, readOnly)).join('')}</tbody>
       </table>
     </div>`;
 
+  if (!onChange || !onGrundfertigkeitPick) return;
   container.querySelectorAll<HTMLTableRowElement>('tr[data-referenz]').forEach((tr) => {
     const referenz = tr.dataset.referenz!;
     const row = rows.find((r) => r.referenz === referenz);
@@ -282,4 +301,22 @@ export function renderKiView(
       onGrundfertigkeitPick(MEISTER_DER_GRUNDFERTIGKEITEN_REFERENZ, slotIndex, select.value);
     });
   });
+}
+
+export function renderKiView(
+  container: HTMLElement,
+  sheet: ComputedSheet,
+  onChange: OnValueChange,
+  grundfertigkeitAuswahl: Record<string, string[]>,
+  onGrundfertigkeitPick: OnGrundfertigkeitPick,
+): void {
+  renderKiContent(container, sheet, grundfertigkeitAuswahl, onChange, onGrundfertigkeitPick);
+}
+
+export function renderReadOnlyKiView(
+  container: HTMLElement,
+  sheet: ComputedSheet,
+  grundfertigkeitAuswahl: Record<string, string[]>,
+): void {
+  renderKiContent(container, sheet, grundfertigkeitAuswahl);
 }

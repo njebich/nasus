@@ -85,13 +85,52 @@ function replaceToken(text: string, token: string, exclusions: TokenExclusion[],
   );
 }
 
+// Nach dem Token-Ersetzen bleiben reine Zahlenketten wie "6 + 1*2" stehen (Nutzer-Feedback:
+// "sowas muss fertig gerechnet werden") - diese werden hier ausgewertet (*, / vor +, -). Ein
+// Kettenstart darf nicht direkt hinter einem Buchstaben oder einer Ziffer liegen, sonst wuerde
+// z.B. aus "2W6 + 8" faelschlich die "6" von "W6" als Kettenanfang gegriffen ("6 + 8" -> "14"
+// statt "2W6 + 8"). Ketten mit 2+ "/" werden NICHT ausgewertet, weil "/" in diesen Texten auch als
+// Listen-Trenner vorkommt (z.B. "AW= Magie/1/21" - keine verschachtelte Division, sondern drei
+// getrennte Werte) - ein einzelnes "/" (z.B. "Magie/2", "(M)/2") ist dagegen durchgaengig Division
+// und wird ausgewertet. ":" wird bewusst NICHT als Division behandelt (kommt in diesen Texten weit
+// haeufiger als reine Interpunktion vor, z.B. "Schaden: 2W6" - waere nicht sicher unterscheidbar).
+const ARITH_CHAIN = /(?<![\p{L}\d])\d+(?:[.,]\d+)?(?:\s*[+\-*/]\s*\d+(?:[.,]\d+)?)+/gu;
+
+function evaluateChain(chain: string): number {
+  const parts = chain.split(/\s*([+\-*/])\s*/);
+  const nums = parts.filter((_, i) => i % 2 === 0).map((s) => Number(s.replace(',', '.')));
+  const ops = parts.filter((_, i) => i % 2 === 1);
+  // Erster Durchgang: * und / (hoehere Prioritaet), zweiter Durchgang: + und -.
+  const reduced: number[] = [nums[0]];
+  const addOps: string[] = [];
+  for (let i = 0; i < ops.length; i++) {
+    if (ops[i] === '*' || ops[i] === '/') {
+      const prev = reduced.pop()!;
+      reduced.push(ops[i] === '*' ? prev * nums[i + 1] : prev / nums[i + 1]);
+    } else {
+      reduced.push(nums[i + 1]);
+      addOps.push(ops[i]);
+    }
+  }
+  return addOps.reduce((acc, op, i) => (op === '+' ? acc + reduced[i + 1] : acc - reduced[i + 1]), reduced[0]);
+}
+
+function evaluateArithmeticChains(text: string): string {
+  return text.replace(ARITH_CHAIN, (chain) => {
+    const slashCount = (chain.match(/\//g) ?? []).length;
+    if (slashCount >= 2) return chain; // vermutlich Listen-Notation, keine verschachtelte Division
+    return String(aufrunden(evaluateChain(chain), 0));
+  });
+}
+
 /** Loest "(M)", "Magie" und "Aura" im Wirkungstext eines Spruchzaubers zu den aktuellen
  *  Charakterwerten auf (Macht/att_magie/att_aura) - unveraendert, wo die Ausnahmelisten oben eine
- *  beschreibende statt formelhafte Verwendung erkennen. */
+ *  beschreibende statt formelhafte Verwendung erkennen - und rechnet anschliessend verbleibende
+ *  reine Zahlenformeln (z.B. "6 + 1*2") zu einem fertigen Wert zusammen. */
 export function resolveWirkungText(raw: string | undefined, macht: number, magie: number, aura: number): string {
   if (!raw) return '–';
   let result = raw.replace(/\(M\)/g, String(macht));
   result = replaceToken(result, 'Magie', MAGIE_EXCLUSIONS, magie);
   result = replaceToken(result, 'Aura', AURA_EXCLUSIONS, aura);
-  return result;
+  return evaluateArithmeticChains(result);
 }

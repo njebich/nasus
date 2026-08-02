@@ -49,11 +49,26 @@ describe('resolveWirkungText', () => {
       .toBe('Wurde mehr als 12 % der Kleidung zerstört, werden maximal 12 % wiederhergestellt.');
   });
 
-  it('ersetzt Magie in Formel-Kontexten', () => {
+  it('ersetzt Magie in Formel-Kontexten und rechnet die Formel fertig', () => {
     expect(resolveWirkungText('Die Ausstrahlung des Magus erhöht sich um Magie * 2.', macht, magie, aura))
-      .toBe('Die Ausstrahlung des Magus erhöht sich um 8 * 2.');
+      .toBe('Die Ausstrahlung des Magus erhöht sich um 16.');
     expect(resolveWirkungText('Schaden: 2W6 + Magie, RB Magie*2', macht, magie, aura))
-      .toBe('Schaden: 2W6 + 8, RB 8*2');
+      .toBe('Schaden: 2W6 + 8, RB 16');
+  });
+
+  it('rechnet gemischte +/*-Formeln fertig (Steinschuss-Fall, Nutzer-Feedback)', () => {
+    expect(resolveWirkungText('Schaden: 2W6 + Magie; RB: 6 + Magie*2', macht, magie, aura))
+      .toBe('Schaden: 2W6 + 8; RB: 22');
+  });
+
+  it('startet keine Zahlenkette mitten in einem Wuerfel-Term (2W6)', () => {
+    expect(resolveWirkungText('Schaden: 2W6 + Magie auf jede TZ.', macht, magie, aura))
+      .toBe('Schaden: 2W6 + 8 auf jede TZ.');
+  });
+
+  it('wertet Ketten mit 2+ "/" nicht aus (Listen-Notation, keine Division)', () => {
+    expect(resolveWirkungText('NK-AT/PA von (M)/1/21 mit 2W8+Aura Schaden, AW= Magie/1/21.', macht, magie, aura))
+      .toBe('NK-AT/PA von 12/1/21 mit 2W8+5 Schaden, AW= 8/1/21.');
   });
 
   it('laesst "Magie" als Material/Tabellenkopf/Konzept unveraendert', () => {
@@ -69,16 +84,16 @@ describe('resolveWirkungText', () => {
 
   it('trennt zwei Magie-Vorkommen im selben Satz korrekt (Formel vs. Material)', () => {
     expect(resolveWirkungText('Der Magus erschafft Magie/2 Bälle aus Magie.', macht, magie, aura))
-      .toBe('Der Magus erschafft 8/2 Bälle aus Magie.');
+      .toBe('Der Magus erschafft 4 Bälle aus Magie.');
   });
 
-  it('ersetzt Aura in Formel-Kontexten', () => {
+  it('ersetzt Aura in Formel-Kontexten und rechnet fertig', () => {
     expect(resolveWirkungText('RS=Aura und LE von 4*(M).', macht, magie, aura))
-      .toBe('RS=5 und LE von 4*12.');
+      .toBe('RS=5 und LE von 48.');
     expect(resolveWirkungText('Golems haben einen Wert von (Magie+Aura), außer Intelligenz = (Magie) und Stärke = (M).', macht, magie, aura))
-      .toBe('Golems haben einen Wert von (8+5), außer Intelligenz = (8) und Stärke = 12.');
+      .toBe('Golems haben einen Wert von (13), außer Intelligenz = (8) und Stärke = 12.');
     expect(resolveWirkungText('FK-Angriffe sind um Aura*2 erschwert.', macht, magie, aura))
-      .toBe('FK-Angriffe sind um 5*2 erschwert.');
+      .toBe('FK-Angriffe sind um 10 erschwert.');
   });
 
   it('laesst "Aura" als Wirkzone/Ziel-Attribut/Zaubername unveraendert', () => {

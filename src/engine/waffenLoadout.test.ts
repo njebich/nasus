@@ -9,7 +9,7 @@ import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/eq
 import { FEUERWAFFEN } from '../data/equipment/fernkampf';
 import { feuerwaffenStandardauswahl } from './feuerwaffenComposition';
 import { computeWeaponAtPaOverflow, getKampfstilModifier } from './waffenPool';
-import { computeSchaden, averageSchadenValue, parseDiceAverage } from './waffenSchaden';
+import { computeSchaden, averageSchadenValue, parseDiceAverage, ceilAwayFromZero } from './waffenSchaden';
 import { computeRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from './fernkampfRange';
 import {
   listEligibleNahkampf1HWaffen,
@@ -88,7 +88,7 @@ describe('Eignungslisten', () => {
 });
 
 describe('resolveNk1hNk1h: kein Talent (dual wield)', () => {
-  it('summiert das n-Mod beider Waffen in JEDE Hand, mit eigener Hauptfertigkeit pro Hand, und halbiert die Nebenhand (abgerundet)', () => {
+  it('summiert das n-Mod beider Waffen in JEDE Hand, mit eigener Hauptfertigkeit pro Hand, und halbiert die Nebenhand (aufgerundet weg von Null)', () => {
     let character = baseCharacter();
     character = buyTestWeapon(character, 'Axt');
     character = buyTestWeapon(character, 'Dolch');
@@ -108,8 +108,8 @@ describe('resolveNk1hNk1h: kein Talent (dual wield)', () => {
     if (!result.ok || result.talentActive) throw new Error('Erwartete no-talent Ergebnis');
     expect(result.primary.nat).toBe(Math.min(20, expectedPrimary.uncAtWeapon));
     expect(result.primary.npa).toBe(Math.min(20, expectedPrimary.uncPaWeapon));
-    expect(result.secondary.nat).toBe(Math.floor(Math.min(20, expectedSecondary.uncAtWeapon) / 2));
-    expect(result.secondary.npa).toBe(Math.floor(Math.min(20, expectedSecondary.uncPaWeapon) / 2));
+    expect(result.secondary.nat).toBe(ceilAwayFromZero(Math.min(20, expectedSecondary.uncAtWeapon) / 2));
+    expect(result.secondary.npa).toBe(ceilAwayFromZero(Math.min(20, expectedSecondary.uncPaWeapon) / 2));
     expect(result.primary.schaden).toBe(computeSchaden(NK_WAFFEN_BASIS.find((r) => String(r.sourceRow) === axt.baseId), axtSnap.staerkeMalus, EIG_K_STAERKE));
     expect(result.secondary.halved).toBe(true);
     expect(result.primary.halved).toBe(false);
@@ -340,7 +340,7 @@ describe('resolveNk1hPistole (REWORKED 2026-07-23: NK-Waffe immer primaer, n-Mod
     const values = makeValueSource(character);
     const gutDivisor = fkGuteDivisor(values);
     const meisterlichDivisor = fkMeisterlichDivisor(values);
-    const basisWert = Number(evalReferenz('fk_basis_spez_schusswaffen_pistolen', values));
+    const basisWert = Number(evalReferenz('fk_basis_spez_feuerwaffen_pistolen', values));
     const snap = pistole.computedStatsSnapshot ?? {};
     const rawCell = computeRangeCellValues(snap.rw10m ?? 0, basisWert, gutDivisor, meisterlichDivisor);
 
@@ -349,7 +349,7 @@ describe('resolveNk1hPistole (REWORKED 2026-07-23: NK-Waffe immer primaer, n-Mod
     if (rawCell === 'x') {
       expect(result.pistole.ranges[0]).toBe('x');
     } else {
-      const expectedNormal = Math.floor(rawCell.normal / 2);
+      const expectedNormal = ceilAwayFromZero(rawCell.normal / 2);
       expect(result.pistole.ranges[0]).toContain(String(expectedNormal));
     }
   });

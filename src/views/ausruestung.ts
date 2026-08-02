@@ -5,6 +5,7 @@
 
 import type { ComputedSheet } from '../engine/characterSheet';
 import { formatDublonen } from '../utils/format';
+import { RULES } from '../data/rules';
 import { ruestungSlotKey, type CharacterState } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import { PREISLISTE } from '../data/equipment/preisliste';
@@ -42,7 +43,7 @@ export interface RuestungGruppenSelection {
 
 export interface AusruestungCallbacks {
   onBuyPreisliste: (sourceRow: number, quantity: number) => void;
-  onBuyArtefakt: (referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string) => void;
+  onBuyArtefakt: (referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string, targetReferenz?: string) => void;
   onEquipRuestung: (
     gruppe: RsGruppe, lage: number, basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number,
   ) => void;
@@ -239,6 +240,29 @@ function renderPreislisteRow(row: (typeof PREISLISTE)[number]): string {
     </div>`;
 }
 
+/** Punkt 6: Artefakte "WHK-Talentwert erhöhen"/"Grundfertigkeit erhöhen" - der Beschreibungstext
+ *  beider Artefakte verlangt "Wert muss vorher mindestens 4 betragen haben" (TaW>3). Befristete
+ *  Zaubereffekte (WD 7h/40min, kein "immer aktiv"-Artefakt wie Eigenschaft/Attribut, siehe
+ *  artefaktBonus.ts) - hier daher NUR Zielauswahl + Speicherung, keine automatische Bonuswirkung. */
+const WHK_TALENTWERT_ARTEFAKT_REFERENZ = 'artefakt_whk_talentwert_erhoehen';
+const GRUNDFERTIGKEIT_ARTEFAKT_REFERENZ = 'artefakt_grundfertigkeit_erhoehen';
+
+interface ArtefaktZielOption { value: string; label: string; wert: number; }
+
+function whkZielOptionen(character: CharacterState): ArtefaktZielOption[] {
+  const feste = RULES.filter((r) => r.kategorie === 'WHK' && r.art === 'Wert' && !r.parent)
+    .map((r) => ({ value: r.referenz, label: r.beschreibung ?? r.referenz, wert: character.values[r.referenz] ?? 0 }));
+  const freie = character.customWhkHauptfertigkeiten.map((h) => ({ value: h.id, label: h.name, wert: h.wert }));
+  return [...feste, ...freie].filter((o) => o.wert > 3).sort((a, b) => a.label.localeCompare(b.label, 'de'));
+}
+
+function grundfertigkeitZielOptionen(character: CharacterState): ArtefaktZielOption[] {
+  return RULES.filter((r) => r.kategorie === 'Grundfertigkeit' && r.art === 'Wert')
+    .map((r) => ({ value: r.referenz, label: r.beschreibung ?? r.referenz, wert: character.values[r.referenz] ?? 0 }))
+    .filter((o) => o.wert > 3)
+    .sort((a, b) => a.label.localeCompare(b.label, 'de'));
+}
+
 function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: CharacterState): string {
   const kostenRows = ARTEFAKT_KOSTEN.filter((k) => k.referenz === basis.referenz);
   const xKlinge = isXKlingeReferenz(basis.referenz);
@@ -258,6 +282,20 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: Ch
     </label>
     ${keineProfaneWaffe ? '<p class="artefakt-waffen-hinweis">Benötigt mindestens eine profane NK-Waffe.</p>' : ''}
   ` : '';
+  const istWhkZiel = basis.referenz === WHK_TALENTWERT_ARTEFAKT_REFERENZ;
+  const istGrundfertigkeitZiel = basis.referenz === GRUNDFERTIGKEIT_ARTEFAKT_REFERENZ;
+  const zielOptionen = istWhkZiel ? whkZielOptionen(character) : istGrundfertigkeitZiel ? grundfertigkeitZielOptionen(character) : undefined;
+  const keinZiel = zielOptionen !== undefined && zielOptionen.length === 0;
+  const zielPicker = zielOptionen ? `
+    <label class="artefakt-waffen-ziel-label">
+      Ziel-${istWhkZiel ? 'WHK' : 'Grundfertigkeit'}
+      <select class="artefakt-ziel-auswahl" ${keinZiel ? 'disabled' : ''}>
+        ${zielOptionen.map((o) => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)} (TaW ${o.wert})</option>`).join('')}
+      </select>
+    </label>
+    ${keinZiel ? `<p class="artefakt-waffen-hinweis">Benötigt eine ${istWhkZiel ? 'WHK-Fertigkeit' : 'Grundfertigkeit'} mit TaW über 3.</p>` : ''}
+  ` : '';
+  const keinKaufZiel = keineProfaneWaffe || keinZiel;
   const options = kostenRows.map((k) => {
     const einmalig = previewArtefaktPrice(k, 'einmalig');
     const permanent = previewArtefaktPrice(k, 'permanent');
@@ -265,8 +303,8 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: Ch
     const verfuegbarkeitPermanent = Number(k.verfuegbarkeitPermanent);
     const einmaligGesperrt = !bestehenderCharakterMode && Number.isFinite(verfuegbarkeitEinmalig) && verfuegbarkeitEinmalig >= 5;
     const permanentGesperrt = !bestehenderCharakterMode && Number.isFinite(verfuegbarkeitPermanent) && verfuegbarkeitPermanent >= 5;
-    const einmaligDisabled = einmaligGesperrt || keineProfaneWaffe;
-    const permanentDisabled = permanentGesperrt || keineProfaneWaffe;
+    const einmaligDisabled = einmaligGesperrt || keinKaufZiel;
+    const permanentDisabled = permanentGesperrt || keinKaufZiel;
     const wirkung = xKlinge ? resolveXKlingeWirkung(basis.referenz, k.grad ?? '') : undefined;
     const wirkungText = wirkung
       ? xKlingeTooltip(wirkung)
@@ -274,11 +312,12 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: Ch
         basis.beschreibung ? `Wirkung: ${basis.beschreibung}` : '',
         basis.wirkungBasis ? `Wirkungswert: ${basis.wirkungBasis}${basis.wirkungEinheit ? ` ${basis.wirkungEinheit}` : ''}` : '',
       ].filter(Boolean).join('\n');
+    const zielFehltLabel = istWhkZiel ? 'Ziel-WHK benötigt' : 'Ziel-Grundfertigkeit benötigt';
     return `
       <div class="artefakt-grad-row"${tooltipAttr(wirkungText)}>
         <span class="artefakt-grad-label">Grad ${escapeHtml(k.grad ?? '?')}</span>
-        ${einmalig !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${einmaligDisabled ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="einmalig" data-artefakt-preis="${einmalig}" ${einmaligDisabled ? 'disabled' : ''}>${einmaligGesperrt ? gesperrtLabel(verfuegbarkeitEinmalig) : keineProfaneWaffe ? 'Profane NK-Waffe benötigt' : `Einmalig kaufen (${formatDublonen(einmalig)})`}</button>` : ''}
-        ${permanent !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${permanentDisabled ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="permanent" data-artefakt-preis="${permanent}" ${permanentDisabled ? 'disabled' : ''}>${permanentGesperrt ? gesperrtLabel(verfuegbarkeitPermanent) : keineProfaneWaffe ? 'Profane NK-Waffe benötigt' : `Permanent kaufen (${formatDublonen(permanent)})`}</button>` : ''}
+        ${einmalig !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${einmaligDisabled ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="einmalig" data-artefakt-preis="${einmalig}" ${einmaligDisabled ? 'disabled' : ''}>${einmaligGesperrt ? gesperrtLabel(verfuegbarkeitEinmalig) : keineProfaneWaffe ? 'Profane NK-Waffe benötigt' : keinZiel ? zielFehltLabel : `Einmalig kaufen (${formatDublonen(einmalig)})`}</button>` : ''}
+        ${permanent !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${permanentDisabled ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="permanent" data-artefakt-preis="${permanent}" ${permanentDisabled ? 'disabled' : ''}>${permanentGesperrt ? gesperrtLabel(verfuegbarkeitPermanent) : keineProfaneWaffe ? 'Profane NK-Waffe benötigt' : keinZiel ? zielFehltLabel : `Permanent kaufen (${formatDublonen(permanent)})`}</button>` : ''}
       </div>`;
   }).join('');
   // <details> als direktes Flex-Item hat einen Chromium-Renderbug (open=false im DOM, Inhalt
@@ -289,6 +328,7 @@ function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: Ch
         <summary>${escapeHtml(basis.name ?? basis.referenz)}</summary>
         <p class="artefakt-beschreibung">${escapeHtml(basis.beschreibung ?? '')}</p>
         ${waffenPicker}
+        ${zielPicker}
         ${options}
       </details>
     </div>`;
@@ -773,7 +813,12 @@ function renderInventar(character: CharacterState): string {
         const basis = table.find((r) => String(r.sourceRow) === e.baseId);
         const modRow = e.selections.modifikator ? table.find((r) => String(r.sourceRow) === e.selections.modifikator) : undefined;
         const fixschaden = e.computedStatsSnapshot?.fixschaden;
-        label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${fixschaden ? ` (Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden})` : ''}` : label;
+        const rwMod = e.computedStatsSnapshot?.rwModMeter;
+        const details = [
+          fixschaden ? `Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden}` : '',
+          rwMod ? `RW-Mod ${rwMod >= 0 ? '+' : ''}${rwMod}m` : '',
+        ].filter(Boolean).join(', ');
+        label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${details ? ` (${details})` : ''}` : label;
       }
       statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
     } else if (e.family === 'alchemika') {
@@ -1076,6 +1121,10 @@ export function renderAusruestungView(
       const grad = btn.dataset.grad!;
       const variant = btn.dataset.variant as ArtefaktVariant;
       let targetWeaponId: string | undefined;
+      let targetReferenz: string | undefined;
+      if (referenz === WHK_TALENTWERT_ARTEFAKT_REFERENZ || referenz === GRUNDFERTIGKEIT_ARTEFAKT_REFERENZ) {
+        targetReferenz = btn.closest('.artefakt-card')?.querySelector<HTMLSelectElement>('.artefakt-ziel-auswahl')?.value;
+      }
       if (isXKlingeReferenz(referenz)) {
         targetWeaponId = btn.closest('.artefakt-card')?.querySelector<HTMLSelectElement>('.artefakt-waffen-ziel')?.value;
         const weapon = character.equipment.find((entry) => entry.id === targetWeaponId);
@@ -1094,7 +1143,7 @@ export function renderAusruestungView(
         ].join('\n'));
         if (!confirmed) return;
       }
-      callbacks.onBuyArtefakt(referenz, grad, variant, targetWeaponId);
+      callbacks.onBuyArtefakt(referenz, grad, variant, targetWeaponId, targetReferenz);
     });
   });
   function updateShieldPicker(shieldSourceRow: number, patch: Partial<{ materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>): void {

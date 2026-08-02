@@ -60,6 +60,10 @@ function clone(character: CharacterState): CharacterState {
       Object.entries(character.grundfertigkeitAuswahl ?? {}).map(([k, v]) => [k, [...v]]),
     ),
     waffenLoadouts: character.waffenLoadouts.map((l) => ({ ...l })),
+    customWhkHauptfertigkeiten: character.customWhkHauptfertigkeiten.map((h) => ({ ...h })),
+    customWhkSpezialisierungen: Object.fromEntries(
+      Object.entries(character.customWhkSpezialisierungen ?? {}).map(([k, list]) => [k, list.map((s) => ({ ...s }))]),
+    ),
   };
 }
 
@@ -183,6 +187,92 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
   } else {
     candidate.values[rule.referenz.toLowerCase()] = wert;
   }
+  assertBudgetOk(candidate);
+  return candidate;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Freie WHK-Hauptfertigkeiten/-Spezialisierungen (Punkt 4a/4b, z.B. Hauptfertigkeit "Fußball" mit
+// Spezialisierung "Freistöße") - zusaetzlich zum festen Katalog in whk.jsonl. Haben keine eigene
+// RuleEntry (siehe whkCustomSpezialisierung.ts fuer die Kostenformeln), daher eigene, zu setValue
+// parallele Mutationsfunktionen statt Wiederverwendung von setValue/getRule.
+// ---------------------------------------------------------------------------------------------
+
+/** hauptwert einer WHK-Hauptfertigkeit, egal ob fest (character.values) oder frei angelegt
+ *  (customWhkHauptfertigkeiten) - Spezialisierungen (fest wie frei) nutzen denselben Deckel. */
+function resolveWhkHauptwert(character: CharacterState, hauptfertigkeitKey: string): number {
+  const custom = character.customWhkHauptfertigkeiten.find((h) => h.id === hauptfertigkeitKey);
+  if (custom) return custom.wert;
+  return character.values[hauptfertigkeitKey] ?? 0;
+}
+
+/** Neue freie Hauptfertigkeit, startet bei wert=0 (kostet noch nichts). */
+export function addCustomWhkHauptfertigkeit(character: CharacterState, name: string): CharacterState {
+  const trimmed = name.trim();
+  if (!trimmed) throw new MutationError('Name darf nicht leer sein');
+  const candidate = clone(character);
+  candidate.customWhkHauptfertigkeiten.push({ id: crypto.randomUUID(), name: trimmed, wert: 0 });
+  return candidate;
+}
+
+export function renameCustomWhkHauptfertigkeit(character: CharacterState, id: string, name: string): CharacterState {
+  const trimmed = name.trim();
+  if (!trimmed) throw new MutationError('Name darf nicht leer sein');
+  const candidate = clone(character);
+  const entry = candidate.customWhkHauptfertigkeiten.find((h) => h.id === id);
+  if (!entry) throw new MutationError(`Freie WHK-Hauptfertigkeit '${id}' existiert nicht`);
+  entry.name = trimmed;
+  return candidate;
+}
+
+export function setCustomWhkHauptfertigkeitWert(character: CharacterState, id: string, wert: number): CharacterState {
+  if (wert < 0) throw new MutationError('Wert darf nicht negativ sein');
+  if (!character.customWhkHauptfertigkeiten.some((h) => h.id === id)) {
+    throw new MutationError(`Freie WHK-Hauptfertigkeit '${id}' existiert nicht`);
+  }
+  // Gleiche Regel wie bei festen WHK-Hauptfertigkeiten (setValue oben): darf nicht unter den TaW
+  // einer bereits gesetzten Spezialisierung gesenkt werden.
+  const maxSpezWert = (character.customWhkSpezialisierungen[id] ?? []).reduce((max, s) => Math.max(max, s.wert), 0);
+  if (wert < maxSpezWert) {
+    throw new MutationError(`Darf nicht unter den TaW der Spezialisierung (${maxSpezWert}) gesenkt werden`);
+  }
+  const candidate = clone(character);
+  candidate.customWhkHauptfertigkeiten.find((h) => h.id === id)!.wert = wert;
+  assertBudgetOk(candidate);
+  return candidate;
+}
+
+/** Neue freie Spezialisierung unter einer (festen oder freien) Hauptfertigkeit. */
+export function addCustomWhkSpezialisierung(character: CharacterState, hauptfertigkeitKey: string, name: string): CharacterState {
+  const trimmed = name.trim();
+  if (!trimmed) throw new MutationError('Name darf nicht leer sein');
+  const candidate = clone(character);
+  const list = candidate.customWhkSpezialisierungen[hauptfertigkeitKey] ?? [];
+  candidate.customWhkSpezialisierungen[hauptfertigkeitKey] = [...list, { id: crypto.randomUUID(), name: trimmed, wert: 0 }];
+  return candidate;
+}
+
+export function renameCustomWhkSpezialisierung(character: CharacterState, hauptfertigkeitKey: string, id: string, name: string): CharacterState {
+  const trimmed = name.trim();
+  if (!trimmed) throw new MutationError('Name darf nicht leer sein');
+  const candidate = clone(character);
+  const entry = (candidate.customWhkSpezialisierungen[hauptfertigkeitKey] ?? []).find((s) => s.id === id);
+  if (!entry) throw new MutationError(`Freie WHK-Spezialisierung '${id}' existiert nicht`);
+  entry.name = trimmed;
+  return candidate;
+}
+
+export function setCustomWhkSpezialisierungWert(character: CharacterState, hauptfertigkeitKey: string, id: string, wert: number): CharacterState {
+  if (wert < 0) throw new MutationError('Wert darf nicht negativ sein');
+  if (!(character.customWhkSpezialisierungen[hauptfertigkeitKey] ?? []).some((s) => s.id === id)) {
+    throw new MutationError(`Freie WHK-Spezialisierung '${id}' existiert nicht`);
+  }
+  const hauptwert = resolveWhkHauptwert(character, hauptfertigkeitKey);
+  if (wert > hauptwert) {
+    throw new MutationError(`Darf nicht hoeher sein als die Hauptfertigkeit (TaW ${hauptwert})`);
+  }
+  const candidate = clone(character);
+  candidate.customWhkSpezialisierungen[hauptfertigkeitKey].find((s) => s.id === id)!.wert = wert;
   assertBudgetOk(candidate);
   return candidate;
 }
@@ -456,8 +546,16 @@ export function buyPreislisteItem(character: CharacterState, sourceRow: number, 
   return candidate;
 }
 
+/** Punkt 6: die beiden befristeten "X erhöhen"-Artefakte (WHK-Talentwert/Grundfertigkeit) haben
+ *  KEINE feste Ziel-Referenz auf Katalogebene (im Unterschied zu Eigenschaft-/Attributs-Artefakten)
+ *  - der Nutzer waehlt das Ziel beim Kauf per Dropdown (siehe ausruestung.ts). Bewusst KEINE
+ *  automatische Bonuswirkung (siehe artefaktBonus.ts-Kommentar): beide sind befristete
+ *  Zaubereffekte (WD 7h/40min), keine dauerhaften "immer aktiv"-Artefakte - nur Zielauswahl wird
+ *  gespeichert, kein automatischer TaW-Bonus. */
+const DYNAMISCHES_ZIEL_ARTEFAKT_REFERENZEN = new Set(['artefakt_whk_talentwert_erhoehen', 'artefakt_grundfertigkeit_erhoehen']);
+
 export function buyArtefakt(
-  character: CharacterState, referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string,
+  character: CharacterState, referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string, targetReferenz?: string,
 ): CharacterState {
   const kostenRow = ARTEFAKT_KOSTEN.find((r) => r.referenz === referenz && r.grad === grad);
   if (!kostenRow) throw new MutationError(`Artefakt '${referenz}' Grad ${grad} existiert nicht`);
@@ -498,9 +596,19 @@ export function buyArtefakt(
     return candidate;
   }
 
+  if (DYNAMISCHES_ZIEL_ARTEFAKT_REFERENZEN.has(referenz)) {
+    if (!targetReferenz) throw new MutationError('Bitte ein Ziel (WHK/Grundfertigkeit) auswählen');
+    const customHaupt = character.customWhkHauptfertigkeiten.find((h) => h.id === targetReferenz);
+    const zielWert = customHaupt ? customHaupt.wert : (character.values[targetReferenz] ?? 0);
+    if (zielWert <= 3) {
+      throw new MutationError(`Das gewählte Ziel muss einen TaW über 3 haben (aktuell ${zielWert})`);
+    }
+  }
+
   const entry: EquipmentEntry = {
     id: newEquipmentId(), family: 'artefakt', baseTable: 'artefakt_kosten', baseId: String(kostenRow.sourceRow),
-    selections: { variant }, quantity: 1, computedPriceSnapshot: price, magisch: true,
+    selections: DYNAMISCHES_ZIEL_ARTEFAKT_REFERENZEN.has(referenz) ? { variant, ziel: targetReferenz! } : { variant },
+    quantity: 1, computedPriceSnapshot: price, magisch: true,
   };
   candidate.equipment = [...candidate.equipment, entry];
   assertBudgetOk(candidate);

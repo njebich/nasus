@@ -25,9 +25,10 @@ import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import { canLearnSpell, canIncreaseSpell, getMaxLernbarerGrad } from '../engine/spruchmagieGating';
 import { SPRUCHMAGIE_DETAILS, type SpruchmagieDetail } from '../data/spruchmagieDetails';
 import { aufrunden } from '../engine/functions';
+import { resolveRw } from '../engine/spruchmagieRw';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
-import { formatKlickpreis, type OnValueChange } from './categoryView';
+import { formatKlickpreis, parseStatInputValue, type OnValueChange } from './categoryView';
 
 const STUFE_2_TALENT_REFERENZ = 'talente_spruchmagie_stufe_2_zaubern';
 const STUFE_3_TALENT_REFERENZ = 'talente_spruchmagie_stufe_3_zaubern';
@@ -72,6 +73,18 @@ function getAttWert(sheet: ComputedSheet, referenz: string): number {
 
 function getAttMagie(sheet: ComputedSheet): number {
   return getAttWert(sheet, 'att_magie');
+}
+
+function getAttAura(sheet: ComputedSheet): number {
+  return getAttWert(sheet, 'att_aura');
+}
+
+/** "Macht"/"Mana" sind Formel-Zeilen (Kategorie "Charakterwerte") - Wert kommt ueber
+ *  computedValue, NICHT currentValue (letzteres ist bei Formel-Zeilen immer 0, siehe der
+ *  bekannte Spruchmagie-Weisheit-Bug). */
+function getCharakterwertFormel(sheet: ComputedSheet, referenz: string): number {
+  const row = (sheet.byKategorie['Charakterwerte'] ?? []).find((r) => r.rule.referenz === referenz);
+  return Number(row?.computedValue ?? 0);
 }
 
 function getEigBonusValue(sheet: ComputedSheet, eigBonusReferenz: string | undefined): { label: string; value: number } | undefined {
@@ -232,7 +245,7 @@ function renderZauberprobeCell(sheet: ComputedSheet, row: Row, stufen: Array<{ l
   const werte = stufen.map((s) => {
     const normale = row.currentValue + eigBon + magie - s.erschwerung;
     const gute = getGuteProbe(sheet, normale, eigBon);
-    return gute !== undefined ? `${normale}/G${gute}` : `${normale}`;
+    return gute !== undefined ? `${normale}/g${gute}` : `${normale}`;
   });
   return escapeHtml(werte.join(' / '));
 }
@@ -288,7 +301,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
       <td>${escapeHtml(rule.grad ?? '–')}</td>
       <td class="spruchmagie-taw-cell"><div class="spruchmagie-taw-inner">
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
-        <span class="kampf-pool-value">${currentValue}</span>
+        <input type="number" class="stat-value kampf-taw-input" min="0" value="${currentValue}" ${disabled && currentValue <= 0 ? 'disabled' : ''} aria-label="TaW ${escapeHtml(name)}" />
         <button type="button" class="stat-inc" aria-label="erhöhen" ${disabled ? 'disabled' : ''}${tooltipAttr(plusTitle)}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>
       </div></td>
@@ -297,7 +310,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
       <td>${escapeHtml(getEigBonusValue(sheet, rule.eigBonus)?.label ?? '–')}</td>
       <td class="spruchmagie-wirkung-cell">${escapeHtml(rule.wirkung ?? '–')}</td>
       <td class="spruchmagie-wirkung-cell">${escapeHtml(detail?.gegenprobe ?? '–')}</td>
-      <td>${escapeHtml(detail?.rw ?? '–')}</td>
+      <td${detail?.rw ? tooltipAttr(`Formel: ${detail.rw}`) : ''}>${escapeHtml(resolveRw(detail?.rw, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet), getCharakterwertFormel(sheet, 'mana')))}</td>
       <td>${escapeHtml(detail?.ziel ?? '–')}</td>
       <td>${escapeHtml(detail?.form ?? '–')}</td>
       <td>${escapeHtml(detail?.zauberArt ?? '–')}</td>
@@ -466,8 +479,8 @@ export function renderSpruchmagieView(container: HTMLElement, sheet: ComputedShe
     const rowKey = tr.dataset.rowKey!;
     const decBtn = tr.querySelector<HTMLButtonElement>('.stat-dec');
     const incBtn = tr.querySelector<HTMLButtonElement>('.stat-inc');
-    const valueSpan = tr.querySelector<HTMLSpanElement>('.kampf-pool-value');
-    const currentValue = Number(valueSpan?.textContent ?? 0);
+    const valueInput = tr.querySelector<HTMLInputElement>('.stat-value');
+    const currentValue = Number(valueInput?.value ?? 0);
     const rowSelector = `tr[data-row-key="${CSS.escape(rowKey)}"]`;
     decBtn?.addEventListener('click', () => {
       if (decBtn.disabled) return;
@@ -476,6 +489,9 @@ export function renderSpruchmagieView(container: HTMLElement, sheet: ComputedShe
     incBtn?.addEventListener('click', () => {
       if (incBtn.disabled) return;
       withScrollAnchor(rowSelector, () => onChange(referenz, currentValue + 1));
+    });
+    valueInput?.addEventListener('change', () => {
+      withScrollAnchor(rowSelector, () => onChange(referenz, parseStatInputValue(valueInput.value, currentValue)));
     });
   });
 }

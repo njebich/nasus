@@ -6,6 +6,7 @@
 // der Nutzer wollte explizit den vollen Erwartungswert (Wuerfeldurchschnitt + Flachbonus).
 
 import type { GenericRow as WeaponRow } from '../data/equipment/weapons';
+import { aufrunden } from './functions';
 
 export function num(row: Record<string, string> | undefined, header: string): number {
   const raw = row?.[header];
@@ -20,6 +21,13 @@ export function num(row: Record<string, string> | undefined, header: string): nu
  *  spezifiziert, siehe Plan-Kommentar "Rounding is still unspecified"). */
 export function floorSigned(x: number): number {
   return Math.floor(x);
+}
+
+/** App-weite "aufrunden weg von Null"-Konvention (siehe engine/rules.ts applyRoundingRule), fuer
+ *  die Nebenhand-Halbierungen in waffenLoadout.ts (AT/PA sowie Pistole-Pistole-Reichweite) - im
+ *  Unterschied zu floorSigned oben, das bewusst nur fuer die Schaden-Formel abrundet. */
+export function ceilAwayFromZero(x: number): number {
+  return aufrunden(x, 0);
 }
 
 export function formatSigned(n: number): string {

@@ -157,6 +157,20 @@ export interface CharacterState extends CharacterHeader {
    *  bereits besessener Ausruestung (dual-wield NK, NK+Pistole, NK+Schild) - siehe
    *  engine/waffenLoadout.ts. Reine abgeleitete Anzeige, kein eigenes Pool-Budget. */
   waffenLoadouts: WaffenLoadoutEntry[];
+  /** Frei benannte WHK-Hauptfertigkeiten (Punkt 4a/4b, z.B. "Fußball") - zusaetzlich zum festen
+   *  Katalog in whk.jsonl, gleiche Kostenformel wie feste WHK-Hauptfertigkeiten (siehe
+   *  engine/whkCustomSpezialisierung.ts). */
+  customWhkHauptfertigkeiten: CustomWhkEintrag[];
+  /** Frei benannte WHK-Spezialisierungen (Punkt 4a/4b) - Key ist entweder die feste
+   *  Hauptfertigkeit-Referenz (z.B. "whk_kaufmann") oder die `id` eines Eintrags aus
+   *  customWhkHauptfertigkeiten oben; funktioniert fuer beide identisch. */
+  customWhkSpezialisierungen: Record<string, CustomWhkEintrag[]>;
+}
+
+export interface CustomWhkEintrag {
+  id: string;
+  name: string;
+  wert: number;
 }
 
 /**
@@ -251,6 +265,9 @@ export function loadCharacter(id: string): CharacterState | null {
   if (!parsed.grundfertigkeitAuswahl) parsed.grundfertigkeitAuswahl = {};
   // Migrations-Fallback fuer Charaktere von vor dem waffenLoadouts-Feld (2026-07-22).
   if (!parsed.waffenLoadouts) parsed.waffenLoadouts = [];
+  // Migrations-Fallback fuer Charaktere von vor den customWhk*-Feldern (Punkt 4a/4b).
+  if (!parsed.customWhkHauptfertigkeiten) parsed.customWhkHauptfertigkeiten = [];
+  if (!parsed.customWhkSpezialisierungen) parsed.customWhkSpezialisierungen = {};
   // Magisch/profan ist ein unsichtbares Positiv-Flag: fehlend bedeutet profan. Artefakte sind
   // immer magisch; bei Alchemika ist Spalte B des SPOT-Sheets die alleinige Quelle.
   parsed.equipment = (parsed.equipment ?? []).map((entry) => {
@@ -342,6 +359,8 @@ export function createCharacter(
     ruestungSlots: {},
     grundfertigkeitAuswahl: {},
     waffenLoadouts: [],
+    customWhkHauptfertigkeiten: [],
+    customWhkSpezialisierungen: {},
   };
   if (startbudget) {
     const preset = STARTBUDGET_PRESETS[startbudget];

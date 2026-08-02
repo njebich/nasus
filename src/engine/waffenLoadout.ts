@@ -13,7 +13,7 @@ import type { CharacterState, WaffenLoadoutEntry } from '../state/characterStore
 import type { ComputedSheet } from './characterSheet';
 import { evalReferenz, type CharacterValueSource } from './rules';
 import { computeWeaponAtPaOverflow, getKampfstilModifier, getZweiWaffenCap, resolveWaffenPoolReferenz } from './waffenPool';
-import { computeSchaden, averageSchadenValue, floorSigned } from './waffenSchaden';
+import { computeSchaden, averageSchadenValue, ceilAwayFromZero } from './waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor, type RangeCellValues } from './fernkampfRange';
 import { NK_WAFFEN_BASIS, type GenericRow as WeaponRow } from '../data/equipment/weapons';
 import { FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
@@ -204,16 +204,16 @@ function pistoleNkMod(basis: FernkampfRow): PistoleNkMod | null {
 }
 
 const FEUERWAFFEN_TYP_BASIS_REF: Record<string, string> = {
-  Gewehr: 'fk_basis_spez_schusswaffen_musketen',
-  Pistole: 'fk_basis_spez_schusswaffen_pistolen',
+  Gewehr: 'fk_basis_spez_feuerwaffen_musketen',
+  Pistole: 'fk_basis_spez_feuerwaffen_pistolen',
 };
 const RANGE_KEYS = ['rw10m', 'rw30m', 'rw60m', 'rw100m', 'rw150m', 'rw210m'] as const;
 
 function halveRangeCellValues(v: RangeCellValues | 'x'): RangeCellValues | 'x' {
   if (v === 'x') return 'x';
-  const halved: RangeCellValues = { normal: floorSigned(v.normal / 2) };
-  if (v.gut !== undefined) halved.gut = floorSigned(v.gut / 2);
-  if (v.meisterlich !== undefined) halved.meisterlich = floorSigned(v.meisterlich / 2);
+  const halved: RangeCellValues = { normal: ceilAwayFromZero(v.normal / 2) };
+  if (v.gut !== undefined) halved.gut = ceilAwayFromZero(v.gut / 2);
+  if (v.meisterlich !== undefined) halved.meisterlich = ceilAwayFromZero(v.meisterlich / 2);
   return halved;
 }
 
@@ -335,7 +335,7 @@ export function resolveNk1hNk1h(
     },
     secondary: {
       equipmentId: secondary.equipmentId, label: secondary.label, isPrimary: false, halved: true,
-      nat: floorSigned(secondaryNat.nat / 2), npa: floorSigned(secondaryNat.npa / 2),
+      nat: ceilAwayFromZero(secondaryNat.nat / 2), npa: ceilAwayFromZero(secondaryNat.npa / 2),
       schaden: computeSchaden(secondary.basis, secondary.staerkeMalus, eigKStaerke), wk: String(secondary.wk),
     },
     higherPoolSide,
@@ -596,8 +596,8 @@ export function resolveNk1hSchild(
     },
     secondary: {
       equipmentId: secondaryItem.equipmentId, label: secondaryItem.label, isPrimary: false, halved: secondaryHalved,
-      nat: secondaryHalved ? floorSigned(secondaryNat.nat / 2) : secondaryNat.nat,
-      npa: secondaryHalved ? floorSigned(secondaryNat.npa / 2) : secondaryNat.npa,
+      nat: secondaryHalved ? ceilAwayFromZero(secondaryNat.nat / 2) : secondaryNat.nat,
+      npa: secondaryHalved ? ceilAwayFromZero(secondaryNat.npa / 2) : secondaryNat.npa,
       schaden: computeSchaden(secondaryItem.basis, secondaryItem.staerkeMalus, eigKStaerke), wk: String(secondaryItem.wk),
     },
     higherPoolSide,

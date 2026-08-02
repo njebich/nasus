@@ -9,11 +9,13 @@ import {
   buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
   buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyFeuerwaffenMunition, buyAlchemika, removeEquipment,
   setGrundfertigkeitPick, addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite,
+  addCustomWhkHauptfertigkeit, renameCustomWhkHauptfertigkeit, setCustomWhkHauptfertigkeitWert,
+  addCustomWhkSpezialisierung, renameCustomWhkSpezialisierung, setCustomWhkSpezialisierungWert,
   BudgetError, MutationError,
 } from './state/characterMutations';
 import { computeSheet, makeValueSource, type ComputedSheet } from './engine/characterSheet';
 import { formatDublonenNumber } from './utils/format';
-import { renderCategoryView } from './views/categoryView';
+import { renderCategoryView, type WhkCustomAction } from './views/categoryView';
 import { renderAuswahlView } from './views/talenteVornachteile';
 import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
 import { renderCharakterheader } from './views/charakterheader';
@@ -91,6 +93,40 @@ function handleValueChange(referenz: string, newValue: number): void {
   render();
 }
 
+/** Punkt 4a/4b: dispatcht die WhkCustomAction-Varianten aus categoryView.ts auf die passende
+ *  state/characterMutations.ts-Funktion - gleiches Fehler-/Speicher-/Render-Muster wie
+ *  handleValueChange oben, nur mit einer eigenen Aktionsform statt (referenz, wert). */
+function handleWhkCustomChange(action: WhkCustomAction): void {
+  if (!currentCharacter) return;
+  try {
+    switch (action.type) {
+      case 'add-hauptfertigkeit':
+        currentCharacter = addCustomWhkHauptfertigkeit(currentCharacter, action.name);
+        break;
+      case 'rename-hauptfertigkeit':
+        currentCharacter = renameCustomWhkHauptfertigkeit(currentCharacter, action.id, action.name);
+        break;
+      case 'set-hauptfertigkeit-wert':
+        currentCharacter = setCustomWhkHauptfertigkeitWert(currentCharacter, action.id, action.wert);
+        break;
+      case 'add-spezialisierung':
+        currentCharacter = addCustomWhkSpezialisierung(currentCharacter, action.hauptfertigkeitKey, action.name);
+        break;
+      case 'rename-spezialisierung':
+        currentCharacter = renameCustomWhkSpezialisierung(currentCharacter, action.hauptfertigkeitKey, action.id, action.name);
+        break;
+      case 'set-spezialisierung-wert':
+        currentCharacter = setCustomWhkSpezialisierungWert(currentCharacter, action.hauptfertigkeitKey, action.id, action.wert);
+        break;
+    }
+    saveCharacter(currentCharacter);
+    errorMessage = '';
+  } catch (err) {
+    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
+  }
+  render();
+}
+
 function handleHeaderChange(updates: Partial<CharacterHeader>): void {
   if (!currentCharacter) return;
   currentCharacter = updateHeader(currentCharacter, updates);
@@ -158,10 +194,10 @@ function handleBuyPreisliste(sourceRow: number, quantity: number): void {
   render();
 }
 
-function handleBuyArtefakt(referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string): void {
+function handleBuyArtefakt(referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string, targetReferenz?: string): void {
   if (!currentCharacter) return;
   try {
-    currentCharacter = buyArtefakt(currentCharacter, referenz, grad, variant, targetWeaponId);
+    currentCharacter = buyArtefakt(currentCharacter, referenz, grad, variant, targetWeaponId, targetReferenz);
     saveCharacter(currentCharacter);
     errorMessage = '';
   } catch (err) {
@@ -668,7 +704,7 @@ function render(): void {
     } else if (activeTab === 'Geweihte') {
       renderGeweihteView(viewContainer, sheet, currentCharacter);
     } else {
-      renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange, characterValues);
+      renderCategoryView(viewContainer, sheet, activeTab, handleValueChange, handlePoolChange, characterValues, handleWhkCustomChange);
     }
   }
 }

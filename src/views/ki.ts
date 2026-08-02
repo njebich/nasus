@@ -22,7 +22,7 @@ import {
 } from '../engine/grundfertigkeitAuswahl';
 import { KI_DAUER } from '../data/kiFaehigkeiten';
 import { withScrollAnchor } from './scrollAnchor';
-import { formatKlickpreis, type OnValueChange } from './categoryView';
+import { formatKlickpreis, parseStatInputValue, type OnValueChange } from './categoryView';
 import { tooltipAttr } from './tooltip';
 
 export type OnGrundfertigkeitPick = (talentReferenz: string, slotIndex: number, grundfertigkeitReferenz: string) => void;
@@ -189,7 +189,7 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
       <td>${escapeHtml(dauer?.wd ?? '–')}</td>
       <td class="ki-taw-cell">
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
-        <span class="kampf-pool-value">${currentValue}</span>
+        <input type="number" class="stat-value kampf-taw-input" min="0" value="${currentValue}" ${!unlocked && currentValue <= 0 ? 'disabled' : ''} aria-label="TaW ${escapeHtml(name)}" />
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>
       </td>
@@ -269,6 +269,10 @@ export function renderKiView(
     tr.querySelector('.stat-dec')?.addEventListener('click', () => {
       if (row.currentValue <= 0) return;
       withScrollAnchor(rowSelector, () => onChange(referenz, Math.max(0, row.currentValue - 1)));
+    });
+    const valueInput = tr.querySelector<HTMLInputElement>('.stat-value');
+    valueInput?.addEventListener('change', () => {
+      withScrollAnchor(rowSelector, () => onChange(referenz, parseStatInputValue(valueInput.value, row.currentValue)));
     });
   });
 

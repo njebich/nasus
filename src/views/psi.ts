@@ -21,7 +21,7 @@ import {
 import { PSI_ZAUBERTABELLE } from '../data/psiZaubertabelle';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
-import { formatKlickpreis, type OnValueChange } from './categoryView';
+import { formatKlickpreis, parseStatInputValue, type OnValueChange } from './categoryView';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -162,7 +162,7 @@ function renderRow(r: Row, sheet: ComputedSheet): string {
     <tr class="${rowClass}" data-referenz="${referenz}">
       <td class="ki-taw-cell">
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
-        <span class="kampf-pool-value">${currentValue}</span>
+        <input type="number" class="stat-value kampf-taw-input" min="0" value="${currentValue}" ${!unlocked && currentValue <= 0 ? 'disabled' : ''} aria-label="TaW ${escapeHtml(name)}" />
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>
       </td>
@@ -211,6 +211,10 @@ export function renderPsiView(container: HTMLElement, sheet: ComputedSheet, onCh
     tr.querySelector('.stat-dec')?.addEventListener('click', () => {
       if (row.currentValue <= 0) return;
       withScrollAnchor(rowSelector, () => onChange(referenz, Math.max(0, row.currentValue - 1)));
+    });
+    const valueInput = tr.querySelector<HTMLInputElement>('.stat-value');
+    valueInput?.addEventListener('change', () => {
+      withScrollAnchor(rowSelector, () => onChange(referenz, parseStatInputValue(valueInput.value, row.currentValue)));
     });
   });
 }

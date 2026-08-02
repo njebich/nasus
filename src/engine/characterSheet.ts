@@ -16,7 +16,8 @@ import { getTalentModifikatorBonus as talentModifikatorBonus } from './talenteMo
 import { getTalentFaktorBonus as talentFaktorBonus } from './talenteFaktor';
 import { getArtefaktBonus as artefaktBonus } from './artefaktBonus';
 import { getWaffenSpezKostenRate } from './waffenSpezKosten';
-import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry } from '../state/characterStore';
+import { getWhkHauptfertigkeitKosten, getWhkSpezialisierungKosten } from './whkCustomSpezialisierung';
+import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry, type CustomWhkEintrag } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
 
@@ -88,6 +89,11 @@ export interface ComputedSheet {
    *  Quelle der Wahrheit fuer "ausgegeben", siehe dublonenSpent oben). */
   dublonenBarRemaining: number;
   dublonenBankRemaining: number;
+  /** Freie WHK-Hauptfertigkeiten/-Spezialisierungen (Punkt 4a/4b) - unveraendert aus character
+   *  durchgereicht (keine eigene Berechnung noetig), damit views/categoryView.ts sie rendern kann,
+   *  ohne zusaetzlich zum ComputedSheet auch noch das rohe CharacterState zu bekommen. */
+  customWhkHauptfertigkeiten: CustomWhkEintrag[];
+  customWhkSpezialisierungen: Record<string, CustomWhkEintrag[]>;
 }
 
 /** Kleinste "EP ab"-Schwelle oberhalb von epGesamt (naechste Stufe), oder undefined am Anschlag. */
@@ -281,6 +287,15 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     }
   }
 
+  // Frei benannte WHK-Hauptfertigkeiten/-Spezialisierungen (Punkt 4a/4b) haben keine eigene
+  // RuleEntry und wurden daher von der RULES-Schleife oben nicht erfasst - separat aufaddieren.
+  for (const h of character.customWhkHauptfertigkeiten ?? []) {
+    spSpent += getWhkHauptfertigkeitKosten(h.wert);
+  }
+  for (const list of Object.values(character.customWhkSpezialisierungen ?? {})) {
+    for (const s of list) spSpent += getWhkSpezialisierungKosten(s.wert);
+  }
+
   const dublonenSpent = character.equipment.reduce(
     (sum, e) => sum + (e.computedPriceSnapshot ?? 0) * e.quantity, 0,
   ) + ruestungSlotEntries(character).reduce((sum, e) => sum + e.computedPriceSnapshot, 0);
@@ -324,5 +339,7 @@ export function computeSheet(character: CharacterState): ComputedSheet {
     dublonenRemaining: dublonenTotal - dublonenSpent,
     dublonenBarRemaining,
     dublonenBankRemaining,
+    customWhkHauptfertigkeiten: character.customWhkHauptfertigkeiten,
+    customWhkSpezialisierungen: character.customWhkSpezialisierungen,
   };
 }

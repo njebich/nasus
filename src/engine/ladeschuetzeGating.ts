@@ -16,13 +16,16 @@ import type { ComputedSheet } from './characterSheet';
 /** referenz -> fk_*-Referenz, die > 0 sein muss, damit die Zeile ueberhaupt angezeigt wird.
  *  `undefined` heisst: dauerhaft ausgeblendet (keine passende Fernkampf-Kategorie vorhanden). */
 export const LADESCHUETZE_SF_FK_GATE: Record<string, string | undefined> = {
+  // Schusswaffen-Split (Punkt 1+2+3): "fk_schusswaffen" ist jetzt effektiv nur noch Armbrust
+  // (Feuerwaffen wurden nach "fk_feuerwaffen" ausgelagert) - der Armbrust-Lademechanismus bleibt
+  // daher auf fk_schusswaffen, die beiden Schwarzpulver-Mechanismen wechseln auf fk_feuerwaffen.
   sf_ladeschuetze_armbrust: 'fk_schusswaffen',
   sf_ladeschuetze_blasrohr: 'fk_blasrohre',
   sf_ladeschuetze_bogen: 'fk_boegen',
   sf_ladeschuetze_kanone: undefined,
-  sf_ladeschuetze_patrone: 'fk_schusswaffen',
+  sf_ladeschuetze_patrone: 'fk_feuerwaffen',
   sf_ladeschuetze_rune: undefined,
-  sf_ladeschuetze_vorderlader: 'fk_schusswaffen',
+  sf_ladeschuetze_vorderlader: 'fk_feuerwaffen',
   sf_ladeschuetze_wurfmesser: 'fk_wurfwaffen',
 };
 

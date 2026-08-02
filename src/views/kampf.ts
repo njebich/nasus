@@ -392,8 +392,8 @@ export interface FeuerwaffenRow {
 }
 
 const FEUERWAFFEN_TYP_BASIS_REF: Record<string, string> = {
-  Gewehr: 'fk_basis_spez_schusswaffen_musketen',
-  Pistole: 'fk_basis_spez_schusswaffen_pistolen',
+  Gewehr: 'fk_basis_spez_feuerwaffen_musketen',
+  Pistole: 'fk_basis_spez_feuerwaffen_pistolen',
 };
 
 export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[] {
@@ -471,7 +471,7 @@ export interface ArmbrustBogenRow {
 
 const ARMBRUST_BOEGEN_BASIS_REF: Record<'boegen' | 'armbrust', string> = {
   boegen: 'fk_basis_spez_boegen_boegen',
-  armbrust: 'fk_basis_spez_schusswaffen_armbrust',
+  armbrust: 'fk_basis_spez_schusswaffen_armbrueste',
 };
 
 const ARMBRUST_BOEGEN_LADESCHUETZE_REF: Record<'boegen' | 'armbrust', string> = {

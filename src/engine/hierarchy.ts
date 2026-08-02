@@ -39,3 +39,12 @@ export function sortHierarchyByValue(nodes: HierarchyNode[]): HierarchyNode[] {
     .sort((a, b) => valueOf(b.row) - valueOf(a.row))
     .map((n) => ({ row: n.row, children: [...n.children].sort((a, b) => valueOf(b) - valueOf(a)) }));
 }
+
+/** Sortiert Gruppen UND ihre Spezialisierungen alphabetisch nach Anzeigename (Punkt 4c: WHK-Liste
+ *  soll alphabetisch sortiert sein, im Unterschied zur wert-basierten Sortierung oben). */
+export function sortHierarchyByBeschreibung(nodes: HierarchyNode[]): HierarchyNode[] {
+  const labelOf = (r: ComputedRule) => r.rule.beschreibung ?? r.rule.referenz;
+  return [...nodes]
+    .sort((a, b) => labelOf(a.row).localeCompare(labelOf(b.row), 'de'))
+    .map((n) => ({ row: n.row, children: [...n.children].sort((a, b) => labelOf(a).localeCompare(labelOf(b), 'de')) }));
+}

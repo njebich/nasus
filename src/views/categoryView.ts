@@ -4,15 +4,16 @@
 // Art='Auswahl' wird hier NICHT gerendert (siehe views/talenteVornachteile.ts).
 
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
-import type { PoolAllocation } from '../state/characterStore';
+import type { PoolAllocation, CustomWhkEintrag } from '../state/characterStore';
 import { prettyFormula } from '../engine/formulaDisplay';
-import { buildHierarchy, type HierarchyNode } from '../engine/hierarchy';
+import { buildHierarchy, sortHierarchyByBeschreibung, type HierarchyNode } from '../engine/hierarchy';
 import { describeSkillStufe } from '../engine/skillStufen';
 import { LADESCHUETZE_SF_FK_GATE, isLadeschuetzeSfVisible } from '../engine/ladeschuetzeGating';
 import { GUT_BASIS, MEISTERLICH_BASIS } from '../engine/poolCaps';
 import { uncappedBasisByReferenz } from '../engine/waffenPool';
 import { isGeweihterTalentSelectedInSheet } from '../engine/geweihte';
 import { computeFormulaImpact } from '../engine/formulaImpact';
+import { getWhkHauptfertigkeitKosten, getWhkSpezialisierungKosten } from '../engine/whkCustomSpezialisierung';
 import type { CharacterValueSource } from '../engine/rules';
 import { tooltipAttr } from './tooltip';
 import { withScrollAnchor } from './scrollAnchor';
@@ -20,6 +21,18 @@ import { EIGENSCHAFTEN_PAARE } from './charakterbogen';
 
 export type OnValueChange = (referenz: string, newValue: number) => void;
 export type OnPoolChange = (referenz: string, allocation: PoolAllocation) => void;
+
+/** Punkt 4a/4b: Aktionen fuer frei benannte WHK-Hauptfertigkeiten/-Spezialisierungen. Getrennt
+ *  von OnValueChange, da diese Eintraege keine RuleEntry/Referenz haben und stattdessen ueber
+ *  state/characterMutations.ts's eigene Custom-WHK-Funktionen laufen (siehe main.ts). */
+export type WhkCustomAction =
+  | { type: 'add-hauptfertigkeit'; name: string }
+  | { type: 'rename-hauptfertigkeit'; id: string; name: string }
+  | { type: 'set-hauptfertigkeit-wert'; id: string; wert: number }
+  | { type: 'add-spezialisierung'; hauptfertigkeitKey: string; name: string }
+  | { type: 'rename-spezialisierung'; hauptfertigkeitKey: string; id: string; name: string }
+  | { type: 'set-spezialisierung-wert'; hauptfertigkeitKey: string; id: string; wert: number };
+export type OnWhkCustomChange = (action: WhkCustomAction) => void;
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -186,6 +199,15 @@ function renderLadeschuetzeGroup(rows: ComputedRule[], sheet: ComputedSheet, kat
     </div>`;
 }
 
+/** Parst/klemmt den Wert eines editierbaren TaW-Zahlenfelds - geteilt zwischen der generischen
+ *  ".stat-value"-Verdrahtung hier unten und den analogen Eingabefeldern in spruchmagie.ts/ki.ts/
+ *  psi.ts (Punkt 12: die drei hatten bisher nur +/- ohne echtes Eingabefeld). */
+export function parseStatInputValue(rawValue: string, fallback: number, max?: number): number {
+  let parsed = Math.max(0, Math.floor(Number(rawValue)));
+  if (max !== undefined) parsed = Math.min(parsed, max);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 function formatComputedValue(value: unknown): string {
   if (typeof value === 'number') {
     // Auf max. 2 Nachkommastellen runden, aber "1" statt "1.00" fuer glatte Zahlen zeigen.
@@ -213,6 +235,40 @@ function renderReadOnlyRow(r: ComputedRule): string {
 // zuklappte - frustrierend beim Verteilen mehrerer Spezialisierungspunkte in Folge).
 const openGroupReferenzen = new Set<string>();
 
+/** Suchtext je Kategorie (Punkt 4c: aktuell nur fuer WHK genutzt) - gleiches Persistenz-Muster
+ *  wie searchTextByKategorie in talenteVornachteile.ts. */
+const categorySearchText = new Map<string, string>();
+
+/** Filtert eine bereits gebaute Hierarchie nach einem Suchbegriff: eine Hauptfertigkeit bleibt
+ *  komplett (mit allen Kindern) erhalten, wenn ihr eigener Name matcht; matcht nur eine ihrer
+ *  Spezialisierungen, bleibt die Hauptfertigkeits-Zeile trotzdem sichtbar (sonst verliert die
+ *  Spezialisierung ihr maxValue-Cap, siehe renderEditableGroup) und nur die Kinder werden auf die
+ *  Treffer reduziert. Ohne jeden Treffer faellt die Gruppe komplett weg. */
+function filterHierarchyForSearch(nodes: HierarchyNode[], needle: string): HierarchyNode[] {
+  if (!needle) return nodes;
+  const labelOf = (r: ComputedRule) => (r.rule.beschreibung ?? r.rule.referenz).toLowerCase();
+  const matches = (r: ComputedRule) => labelOf(r).includes(needle);
+  const result: HierarchyNode[] = [];
+  for (const node of nodes) {
+    if (matches(node.row)) {
+      result.push(node);
+      continue;
+    }
+    const matchingChildren = node.children.filter(matches);
+    if (matchingChildren.length > 0) result.push({ row: node.row, children: matchingChildren });
+  }
+  return result;
+}
+
+/** Freie WHK-Hauptfertigkeiten, optional auf eine Suche gefiltert (eigener Name ODER Name einer
+ *  ihrer freien Spezialisierungen matcht) - ungefiltert (needle="") immer alle. */
+function whkCustomHauptfertigkeitenList(sheet: ComputedSheet, needle: string): CustomWhkEintrag[] {
+  if (!needle) return sheet.customWhkHauptfertigkeiten;
+  return sheet.customWhkHauptfertigkeiten.filter((h) =>
+    h.name.toLowerCase().includes(needle)
+    || (sheet.customWhkSpezialisierungen[h.id] ?? []).some((s) => s.name.toLowerCase().includes(needle)));
+}
+
 /** Rendert eine Hauptfertigkeit + ihre Spezialisierungen als aufklappbare Gruppe (0 Kinder = flach).
  *  Das <details> steckt in einer nicht-grid/flex "stat-card"-Huelle: <details> als DIREKTES
  *  Grid-Item hat einen bekannten Chromium-Renderbug, bei dem der geschlossene Zustand (open=false)
@@ -231,22 +287,107 @@ function renderGroup(node: HierarchyNode, renderRow: (r: ComputedRule) => string
     </div>`;
 }
 
+/** Punkt 4a/4b: Freie WHK-Spezialisierung unter einer (festen oder frei angelegten) Hauptfertigkeit
+ *  - Name-Freitextfeld + Stepper, gleiche Kostenformel wie feste WHK-Spezialisierungen (siehe
+ *  whkCustomSpezialisierung.ts). Nutzt bewusst die "stat-*"-Klassen fuer die CSS-Optik, aber NICHT
+ *  fuer die generische Klick-/Change-Verdrahtung unten (die schliesst .custom-whk-row explizit
+ *  aus) - eigene Verdrahtung folgt weiter unten in renderCategoryView. */
+function renderCustomWhkSpezRow(hauptfertigkeitKey: string, entry: CustomWhkEintrag, hauptwert: number): string {
+  const costLabel = formatKlickpreis(getWhkSpezialisierungKosten(entry.wert), getWhkSpezialisierungKosten(entry.wert + 1));
+  const atMax = entry.wert >= hauptwert;
+  return `
+    <div class="stat-row custom-whk-row" data-custom-whk-haupt="${escapeHtml(hauptfertigkeitKey)}" data-custom-whk-id="${escapeHtml(entry.id)}">
+      <input type="text" class="custom-whk-name" value="${escapeHtml(entry.name)}" aria-label="Name der Spezialisierung" />
+      <button type="button" class="stat-dec" aria-label="verringern" ${entry.wert <= 0 ? 'disabled' : ''}>-</button>
+      <input type="number" class="stat-value" min="0" max="${hauptwert}" value="${entry.wert}" aria-label="TaW ${escapeHtml(entry.name)}" />
+      <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}>+</button>
+      <span class="stat-cost stat-cost-click">${costLabel}</span>
+    </div>`;
+}
+
+/** Trailing Leerzeile fuer eine neue freie Spezialisierung (Nutzer: "wenn eine freie Zeile
+ *  gefuellt wird, eine neue anbieten") - wird beim Ausfuellen zu einem echten Eintrag, wonach
+ *  renderCustomWhkSpezRow-Zeilen plus eine neue Leerzeile erscheinen. */
+function renderCustomWhkSpezAddRow(hauptfertigkeitKey: string): string {
+  return `
+    <div class="stat-row custom-whk-row custom-whk-add-row" data-custom-whk-haupt="${escapeHtml(hauptfertigkeitKey)}">
+      <input type="text" class="custom-whk-name-new" placeholder="Neue Spezialisierung..." aria-label="Neue Spezialisierung anlegen" />
+    </div>`;
+}
+
+/** Punkt 4a/4b: Frei angelegte WHK-Hauptfertigkeit (z.B. "Fußball") als eigene Gruppe, gleiches
+ *  Grundlayout wie renderEditableGroup fuer feste Hauptfertigkeiten, aber mit editierbarem Namen
+ *  statt festem Label (kein RuleEntry vorhanden). */
+function renderCustomWhkHauptfertigkeitGroup(entry: CustomWhkEintrag, spezList: CustomWhkEintrag[], forceOpen: boolean): string {
+  const costLabel = formatKlickpreis(getWhkHauptfertigkeitKosten(entry.wert), getWhkHauptfertigkeitKosten(entry.wert + 1));
+  const groupKey = `custom::${entry.id}`;
+  const openAttr = forceOpen || openGroupReferenzen.has(groupKey) ? ' open' : '';
+  const kinder = entry.wert > 0
+    ? spezList.map((s) => renderCustomWhkSpezRow(entry.id, s, entry.wert)).join('') + renderCustomWhkSpezAddRow(entry.id)
+    : '<p class="stat-subgroup-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</p>';
+  return `
+    <div class="stat-card">
+      <details class="stat-group" data-referenz="${groupKey}"${openAttr}>
+        <summary>${escapeHtml(entry.name)} <span class="stat-group-count">(${spezList.length} Spezialisierungen)</span></summary>
+        <div class="stat-row custom-whk-row" data-custom-whk-id="${escapeHtml(entry.id)}">
+          <input type="text" class="custom-whk-name" value="${escapeHtml(entry.name)}" aria-label="Name der Hauptfertigkeit" />
+          <button type="button" class="stat-dec" aria-label="verringern" ${entry.wert <= 0 ? 'disabled' : ''}>-</button>
+          <input type="number" class="stat-value" min="0" value="${entry.wert}" aria-label="TaW ${escapeHtml(entry.name)}" />
+          <button type="button" class="stat-inc" aria-label="erhöhen">+</button>
+          <span class="stat-cost stat-cost-click">${costLabel}</span>
+        </div>
+        <div class="stat-subgroup">${kinder}</div>
+      </details>
+    </div>`;
+}
+
+/** Trailing Leerzeile fuer eine neue freie Hauptfertigkeit (gleiches "eine neue anbieten"-Muster
+ *  wie renderCustomWhkSpezAddRow), immer ganz unten in der WHK-Liste. */
+function renderCustomWhkHauptfertigkeitAddRow(): string {
+  return `
+    <div class="stat-card">
+      <div class="stat-row custom-whk-row custom-whk-add-row">
+        <input type="text" class="custom-whk-name-new-haupt" placeholder="Neue Hauptfertigkeit..." aria-label="Neue Hauptfertigkeit anlegen" />
+      </div>
+    </div>`;
+}
+
 /** Editierbare Gruppe: Spezialisierungen sind erst ab TaW>0 der Hauptfertigkeit "angeboten"
  *  (Regel Nutzer 2026-07-17) - solange die Hauptfertigkeit 0 ist, zeigt die Gruppe nur einen
  *  Hinweis statt der Steuerelemente. Danach ist jede Spezialisierung durch den TaW gedeckelt
- *  (siehe renderEditableRow maxValue + characterMutations.ts setValue). */
-function renderEditableGroup(node: HierarchyNode, kategorie: string, impactValues?: CharacterValueSource): string {
-  if (node.children.length === 0) return renderEditableRow(node.row, kategorie, undefined, impactValues);
+ *  (siehe renderEditableRow maxValue + characterMutations.ts setValue). forceOpen (Punkt 4c,
+ *  WHK-Suche) klappt Treffer-Gruppen waehrend einer aktiven Suche zwangsweise auf, OHNE den
+ *  manuellen openGroupReferenzen-Zustand zu ueberschreiben (gleiches Muster wie openParents in
+ *  talenteVornachteile.ts). */
+function renderEditableGroup(
+  node: HierarchyNode,
+  kategorie: string,
+  impactValues?: CharacterValueSource,
+  forceOpen = false,
+  customSpezByHauptfertigkeit?: Record<string, CustomWhkEintrag[]>,
+): string {
+  const isWhk = kategorie === 'WHK';
+  // WHK-Hauptfertigkeiten durchlaufen NIE den flachen Fruehausstieg, selbst ohne feste
+  // Katalog-Spezialisierungen (node.children.length===0) - sie koennen trotzdem freie
+  // Spezialisierungen bekommen (Punkt 4a/4b) und brauchen dafuer die Gruppen-Huelle.
+  if (node.children.length === 0 && !isWhk) {
+    return renderEditableRow(node.row, kategorie, undefined, impactValues);
+  }
   const label = escapeHtml(node.row.rule.beschreibung ?? node.row.rule.referenz);
-  const openAttr = openGroupReferenzen.has(node.row.rule.referenz) ? ' open' : '';
+  const openAttr = forceOpen || openGroupReferenzen.has(node.row.rule.referenz) ? ' open' : '';
   const hauptwert = node.row.currentValue ?? 0;
+  const customSpezList = customSpezByHauptfertigkeit?.[node.row.rule.referenz] ?? [];
+  const fixedKinderHtml = node.children.map((r) => renderEditableRow(r, kategorie, hauptwert)).join('');
+  const customKinderHtml = isWhk
+    ? customSpezList.map((s) => renderCustomWhkSpezRow(node.row.rule.referenz, s, hauptwert)).join('') + renderCustomWhkSpezAddRow(node.row.rule.referenz)
+    : '';
   const kinder = hauptwert > 0
-    ? node.children.map((r) => renderEditableRow(r, kategorie, hauptwert)).join('')
+    ? fixedKinderHtml + customKinderHtml
     : '<p class="stat-subgroup-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</p>';
   return `
     <div class="stat-card">
       <details class="stat-group" data-referenz="${node.row.rule.referenz}"${openAttr}>
-        <summary>${label} <span class="stat-group-count">(${node.children.length} Spezialisierungen)</span></summary>
+        <summary>${label} <span class="stat-group-count">(${node.children.length + customSpezList.length} Spezialisierungen)</span></summary>
         ${renderEditableRow(node.row, kategorie, undefined, impactValues)}
         <div class="stat-subgroup">${kinder}</div>
       </details>
@@ -395,12 +536,12 @@ function findFernkampfBasisRule(hauptfertigkeitReferenz: string, prefix: 'fk_bas
  *  Schreibweisen-Abweichung in der Quelldaten (nahkampf.jsonl las verzeihend das GLEICHE nk_->at_/
  *  pa_-Muster durchgehend; hier verifiziert per grep in fernkampf.jsonl, kein Zufall/Tippfehler
  *  meinerseits). */
-const FERNKAMPF_SPEZ_ARMBRUST_REFERENZ = 'fk_spez_schusswaffen_armbrueste';
-
+/** Punkt 1+2+3 (Schusswaffen-Split): die Formel-Zeilen fuer Armbrust hiessen frueher singular
+ *  ("..._armbrust"), obwohl die Wert-Zeile "fk_spez_schusswaffen_armbrueste" (Plural) heisst -
+ *  in der xlsx angeglichen (Formel-Zeilen jetzt ebenfalls Plural), daher reicht hier jetzt das
+ *  Standard-Muster ohne Sonderfall. */
 function findFernkampfSpezBasisRule(spezReferenz: string, prefix: 'fk_basis_spez_' | 'fk_gute_spez_' | 'fk_meisterlich_spez_', readOnly: ComputedRule[]): ComputedRule | undefined {
-  const referenz = spezReferenz === FERNKAMPF_SPEZ_ARMBRUST_REFERENZ
-    ? `${prefix}schusswaffen_armbrust`
-    : spezReferenz.replace(/^fk_spez_/, prefix);
+  const referenz = spezReferenz.replace(/^fk_spez_/, prefix);
   return readOnly.find((r) => r.rule.referenz === referenz);
 }
 
@@ -560,6 +701,9 @@ export function renderCategoryView(
   // deshalb hier optional statt bei jedem Aufruf Pflicht - main.ts uebergibt sie trotzdem immer
   // mit (billig zu bauen, siehe makeValueSource), die Kategorie-Gate entscheidet hier.
   impactValues?: CharacterValueSource,
+  // Punkt 4a/4b: nur fuer WHK genutzt (freie Hauptfertigkeiten/Spezialisierungen) - optional,
+  // damit andere Kategorien/Aufrufer unveraendert bleiben.
+  onWhkCustomChange?: OnWhkCustomChange,
 ): void {
   // att_karma bleibt aus dem Attribute-Tab ausgeblendet, solange kein Geweihte-Gate-Talent
   // gewaehlt ist (Nutzer 2026-07-22, "rang 0" = "hiding of att_karma from the app").
@@ -572,7 +716,17 @@ export function renderCategoryView(
 
   const ladeschuetzeRows = editable.filter((r) => r.rule.referenz in LADESCHUETZE_SF_FK_GATE);
   const restEditable = editable.filter((r) => !(r.rule.referenz in LADESCHUETZE_SF_FK_GATE));
-  const editableHierarchy = buildHierarchy(restEditable);
+  // WHK-Liste (Punkt 4c): alphabetisch statt in roher JSONL-Reihenfolge, plus Suchfeld - beides
+  // bewusst auf WHK beschraenkt, damit Sprache & Kultur (teilt sich denselben generischen
+  // Rendering-Pfad weiter unten) unveraendert bleibt.
+  const isWhk = kategorie === 'WHK';
+  const whkSearchText = isWhk ? (categorySearchText.get(kategorie) ?? '') : '';
+  const whkNeedle = whkSearchText.trim().toLowerCase();
+  let editableHierarchy = buildHierarchy(restEditable);
+  if (isWhk) {
+    editableHierarchy = sortHierarchyByBeschreibung(editableHierarchy);
+    if (whkNeedle) editableHierarchy = filterHierarchyForSearch(editableHierarchy, whkNeedle);
+  }
   // Nahkampf-/Fernkampf-Tab (Nutzer-Mockup 2026-07-22): Waffengruppen als feste Tabelle statt
   // aufklappbarer Karte (siehe renderNahkampfWaffenGroup/renderFernkampfWaffenGroup), und die
   // Kampf-Pools-Sektion faellt fuer Nahkampf komplett weg - die AT-Basis-Spalte in der neuen
@@ -620,10 +774,30 @@ export function renderCategoryView(
       </table>`
       : isEigenschaft
         ? renderEigenschaftenTable(restEditable, sheet.byKategorie['Eigenschaftsbonus'] ?? [], formulaImpactValues)
-        : editableHierarchy.map((n) => renderEditableGroup(n, kategorie, formulaImpactValues)).join('');
+        : editableHierarchy.map((n) => renderEditableGroup(n, kategorie, formulaImpactValues, isWhk && !!whkNeedle, isWhk ? sheet.customWhkSpezialisierungen : undefined)).join('')
+          // Punkt 4a/4b: frei angelegte Hauptfertigkeiten stehen unterhalb der festen Liste, plus
+          // eine Leerzeile zum Anlegen weiterer - beides unabhaengig von der Suche immer sichtbar,
+          // freie Hauptfertigkeiten aber bei aktiver Suche auf Treffer (eigener oder Spez-Name) reduziert.
+          + (isWhk ? whkCustomHauptfertigkeitenList(sheet, whkNeedle)
+              .map((h) => renderCustomWhkHauptfertigkeitGroup(h, sheet.customWhkSpezialisierungen[h.id] ?? [], !!whkNeedle))
+              .join('') + renderCustomWhkHauptfertigkeitAddRow() : '');
+
+  const whkSearchHtml = isWhk ? `
+    <div class="ausruestung-filters">
+      <input type="text" id="whk-search" placeholder="Suche..." value="${escapeHtml(whkSearchText)}" />
+    </div>` : '';
+  const whkEmptyHtml = isWhk && whkNeedle && editableHierarchy.length === 0 && whkCustomHauptfertigkeitenList(sheet, whkNeedle).length === 0
+    ? `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(whkSearchText)}".</p>` : '';
+
+  // VOR dem innerHTML-Ersatz sichern, ob das Suchfeld gerade fokussiert war (sonst wuerde jeder
+  // Tastendruck den Fokus verlieren) - gleiches Muster wie talenteVornachteile.ts's Suchfeld.
+  const prevSearchInput = isWhk ? container.querySelector<HTMLInputElement>('#whk-search') : null;
+  const searchWasFocused = prevSearchInput !== null && document.activeElement === prevSearchInput;
+  const prevSelectionStart = prevSearchInput?.selectionStart ?? null;
 
   container.innerHTML = `
-    <div class="stat-category">${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet, kategorie)}</div>
+    ${whkSearchHtml}
+    <div class="stat-category">${whkEmptyHtml}${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet, kategorie)}</div>
     ${readOnlyForBerechneteWerte.length > 0 ? `
       <h3 class="stat-section-heading">Berechnete Werte</h3>
       <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>
@@ -633,6 +807,21 @@ export function renderCategoryView(
       <div class="pool-category">${pools.map(renderPoolRow).join('')}</div>
     ` : ''}
   `;
+
+  if (isWhk) {
+    const searchInput = container.querySelector<HTMLInputElement>('#whk-search');
+    if (searchInput) {
+      if (searchWasFocused) {
+        searchInput.focus();
+        const pos = prevSelectionStart ?? searchInput.value.length;
+        searchInput.setSelectionRange(pos, pos);
+      }
+      searchInput.addEventListener('input', (e) => {
+        categorySearchText.set(kategorie, (e.target as HTMLInputElement).value);
+        renderCategoryView(container, sheet, kategorie, onChange, _onPoolChange, impactValues, onWhkCustomChange);
+      });
+    }
+  }
 
   const findCurrent = (referenz: string) => editable.find((r) => r.rule.referenz === referenz)?.currentValue ?? 0;
 
@@ -648,7 +837,11 @@ export function renderCategoryView(
     });
   }
 
+  // .custom-whk-row (Punkt 4a/4b) teilt sich die "stat-*"-CSS-Klassen mit den generischen Zeilen
+  // hier, hat aber kein data-referenz (kein RuleEntry) und eigene Verdrahtung weiter unten -
+  // deshalb hier explizit ausgeschlossen (sonst wuerde onChange(undefined, ...) aufgerufen).
   container.querySelectorAll<HTMLButtonElement>('.stat-inc').forEach((btn) => {
+    if (btn.closest('.custom-whk-row')) return;
     btn.addEventListener('click', () => {
       const row = btn.closest<HTMLElement>('.stat-row')!;
       const referenz = row.dataset.referenz!;
@@ -657,6 +850,7 @@ export function renderCategoryView(
     });
   });
   container.querySelectorAll<HTMLButtonElement>('.stat-dec').forEach((btn) => {
+    if (btn.closest('.custom-whk-row')) return;
     btn.addEventListener('click', () => {
       const row = btn.closest<HTMLElement>('.stat-row')!;
       const referenz = row.dataset.referenz!;
@@ -665,16 +859,75 @@ export function renderCategoryView(
     });
   });
   container.querySelectorAll<HTMLInputElement>('.stat-value').forEach((input) => {
+    if (input.closest('.custom-whk-row')) return;
     input.addEventListener('change', () => {
       const row = input.closest<HTMLElement>('.stat-row')!;
       const referenz = row.dataset.referenz!;
-      let parsed = Math.max(0, Math.floor(Number(input.value)));
-      if (input.max) parsed = Math.min(parsed, Number(input.max));
+      const max = input.max ? Number(input.max) : undefined;
       syncOpenGroups();
       const rowSelector = `.stat-row[data-referenz="${CSS.escape(referenz)}"]`;
-      withScrollAnchor(rowSelector, () => onChange(referenz, Number.isFinite(parsed) ? parsed : findCurrent(referenz)));
+      withScrollAnchor(rowSelector, () => onChange(referenz, parseStatInputValue(input.value, findCurrent(referenz), max)));
     });
   });
+
+  // Punkt 4a/4b: eigene Verdrahtung fuer freie WHK-Hauptfertigkeiten/-Spezialisierungen - gleiche
+  // stat-dec/stat-inc/stat-value-Steuerelemente wie oben, aber ueber onWhkCustomChange statt
+  // onChange (kein RuleEntry/Referenz vorhanden).
+  if (isWhk) {
+    container.querySelectorAll<HTMLElement>('.custom-whk-row[data-custom-whk-id]').forEach((row) => {
+      const hauptKey = row.dataset.customWhkHaupt;
+      const id = row.dataset.customWhkId!;
+      const decBtn = row.querySelector<HTMLButtonElement>('.stat-dec');
+      const incBtn = row.querySelector<HTMLButtonElement>('.stat-inc');
+      const valueInput = row.querySelector<HTMLInputElement>('.stat-value');
+      const nameInput = row.querySelector<HTMLInputElement>('.custom-whk-name');
+      const currentWert = Number(valueInput?.value ?? 0);
+      const dispatchWert = (wert: number) => {
+        syncOpenGroups();
+        onWhkCustomChange?.(hauptKey
+          ? { type: 'set-spezialisierung-wert', hauptfertigkeitKey: hauptKey, id, wert }
+          : { type: 'set-hauptfertigkeit-wert', id, wert });
+      };
+      decBtn?.addEventListener('click', () => dispatchWert(Math.max(0, currentWert - 1)));
+      incBtn?.addEventListener('click', () => dispatchWert(currentWert + 1));
+      valueInput?.addEventListener('change', () => dispatchWert(parseStatInputValue(valueInput.value, currentWert, valueInput.max ? Number(valueInput.max) : undefined)));
+      nameInput?.addEventListener('change', () => {
+        const name = nameInput.value;
+        // Leerer Name wird ignoriert (kein Umbenennen auf "") - der Input zeigt bis zum naechsten
+        // Re-Render weiter den zuletzt getippten (leeren) Text, snapt danach auf den echten Namen.
+        if (!name.trim()) return;
+        syncOpenGroups();
+        onWhkCustomChange?.(hauptKey
+          ? { type: 'rename-spezialisierung', hauptfertigkeitKey: hauptKey, id, name }
+          : { type: 'rename-hauptfertigkeit', id, name });
+      });
+    });
+
+    container.querySelectorAll<HTMLInputElement>('.custom-whk-name-new').forEach((input) => {
+      const row = input.closest<HTMLElement>('.custom-whk-add-row')!;
+      const hauptfertigkeitKey = row.dataset.customWhkHaupt!;
+      input.addEventListener('change', () => {
+        const name = input.value.trim();
+        if (!name) return;
+        syncOpenGroups();
+        // Elterngruppe (fest ODER frei angelegt) nach dem Hinzufuegen offen halten, sonst
+        // "verschwindet" die eben angelegte Spezialisierung optisch hinter einem zugeklappten
+        // <details>, obwohl sie im State bereits existiert.
+        const isCustomHaupt = sheet.customWhkHauptfertigkeiten.some((h) => h.id === hauptfertigkeitKey);
+        openGroupReferenzen.add(isCustomHaupt ? `custom::${hauptfertigkeitKey}` : hauptfertigkeitKey);
+        onWhkCustomChange?.({ type: 'add-spezialisierung', hauptfertigkeitKey, name });
+      });
+    });
+
+    container.querySelectorAll<HTMLInputElement>('.custom-whk-name-new-haupt').forEach((input) => {
+      input.addEventListener('change', () => {
+        const name = input.value.trim();
+        if (!name) return;
+        syncOpenGroups();
+        onWhkCustomChange?.({ type: 'add-hauptfertigkeit', name });
+      });
+    });
+  }
 
   // Pool-Zuteilung ist hier seit dem Kampf-Tab (2026-07-20) reine Anzeige (renderPoolRow) - keine
   // Eingabefelder mehr, daher keine Event-Wiring noetig (Verteilung passiert jetzt pro Waffe auf

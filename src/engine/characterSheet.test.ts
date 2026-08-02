@@ -74,10 +74,10 @@ describe('computeSheet', () => {
     it('Fernkampf-Spezialisierung kostet 10/5/3 SP/Punkt je Investitions-Rang', () => {
       const character = createCharacter('Test');
       character.values['ep_gesamt'] = 1000;
-      character.values['fk_schusswaffen'] = 5;
-      character.values['fk_spez_schusswaffen_pistolen'] = 3; // Rang 0 -> 10/Punkt
+      character.values['fk_feuerwaffen'] = 5;
+      character.values['fk_spez_feuerwaffen_pistolen'] = 3; // Rang 0 -> 10/Punkt
       const sheet = computeSheet(character);
-      const rule = sheet.byKategorie['Fernkampf']?.find((r) => r.rule.referenz === 'fk_spez_schusswaffen_pistolen');
+      const rule = sheet.byKategorie['Fernkampf']?.find((r) => r.rule.referenz === 'fk_spez_feuerwaffen_pistolen');
       expect(rule?.kostenCurrent).toBe(3 * 10);
     });
   });

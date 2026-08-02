@@ -197,6 +197,14 @@ export const TALENT_MAXIMUM_BONUSES: TalentMaximumBonus[] = [
     "zielReferenz": "fk_schusswaffen",
     "bonus": 6
   },
+  // Manueller Eintrag (nicht aus Talente-Wirkung-chatgpt.xlsx generiert, siehe
+  // MANUAL_MAXIMUM_OVERRIDES-Konvention oben) - zweites Kampffertigkeit-erhoehen-Talent fuer die
+  // per Schusswaffen-Split (Punkt 1+2+3) neu ausgelagerte Hauptfertigkeit fk_feuerwaffen.
+  {
+    "talentReferenz": "talente_kampffertigkeit_erhoehen_feuerwaffen",
+    "zielReferenz": "fk_feuerwaffen",
+    "bonus": 6
+  },
   {
     "talentReferenz": "talente_kampffertigkeit_erhoehen_stangenwaffen",
     "zielReferenz": "nk_stangenwaffen",

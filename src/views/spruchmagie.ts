@@ -226,6 +226,15 @@ export function renderStufenCell(stufen: Array<{ label: string; erschwerung: num
   return escapeHtml(stufen.map((s) => s.erschwerung).join(' / '));
 }
 
+/** Blendet Stufen aus, deren Probe (TaW+Eig.Bon+Magie-Erschwerung) <1 waere - eine nicht
+ *  bestehbare Probe ist keine sinnvolle Option (Nutzer 2026-08-03). */
+export function filterProbableStufen(sheet: ComputedSheet, row: Row, stufen: Array<{ label: string; erschwerung: number }>): Array<{ label: string; erschwerung: number }> {
+  if (row.currentValue <= 0) return stufen;
+  const eigBon = getEigBonusValue(sheet, row.rule.eigBonus)?.value ?? 0;
+  const magie = getAttMagie(sheet);
+  return stufen.filter((s) => row.currentValue + eigBon + magie - s.erschwerung >= 1);
+}
+
 /** Gute Spruchzauberprobe (talente_spruchgute_stufe_1/2, schulen-uebergreifend): Stufe 1 =
  *  Weisheit, Stufe 2 = Weisheit + Eigenschaftsbonus, gedeckelt auf Normale:2 pro Zauberstufe
  *  (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt"). */
@@ -281,7 +290,7 @@ function gateTitle(row: Row): string {
 function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean; readOnly?: boolean }): string {
   const { rule, currentValue, detail } = row;
   const name = rule.beschreibung ?? rule.referenz;
-  const stufen = unlockedStufen(sheet, detail);
+  const stufen = filterProbableStufen(sheet, row, unlockedStufen(sheet, detail));
   const rowClass = row.unlocked ? '' : currentValue > 0 ? 'spruchmagie-row-invalid' : 'spruchmagie-row-locked';
   const disabled = !row.unlocked;
   const plusTitle = gateTitle(row);

@@ -1844,7 +1844,7 @@ input.numeric-field-formatted-five {
 }
 
 .grimoire-page {
-  width: 340px;
+  width: 510px;
   min-height: 480px;
   background: #f4ecd8;
   color: #2b1d0e;
@@ -1951,6 +1951,7 @@ input.numeric-field-formatted-five {
 
 .grimoire-facts, .grimoire-stufen {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.85rem;
   margin: 6px 0;
@@ -1962,9 +1963,10 @@ input.numeric-field-formatted-five {
   padding: 2px 4px;
   border-bottom: 1px dotted #2b1d0e33;
   vertical-align: top;
+  white-space: nowrap;
 }
 
 .grimoire-facts th, .grimoire-stufen th {
   font-weight: 600;
-  width: 45%;
+  width: 150px;
 }

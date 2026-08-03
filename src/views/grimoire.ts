@@ -20,8 +20,8 @@
 import type { ComputedSheet } from '../engine/characterSheet';
 import type { CharacterState } from '../state/characterStore';
 import {
-  buildAllGewaehlteRows, getAttAura, getAttMagie, getCharakterwertFormel, getEigBonusValue,
-  renderStufenCell, renderVzCell, renderZauberprobeCell, unlockedStufen, type Row,
+  buildAllGewaehlteRows, filterProbableStufen, getAttAura, getAttMagie, getCharakterwertFormel,
+  getEigBonusValue, renderStufenCell, renderVzCell, renderZauberprobeCell, unlockedStufen, type Row,
 } from './spruchmagie';
 import { resolveRw, resolveWirkungText } from '../engine/spruchmagieRw';
 
@@ -105,7 +105,7 @@ function renderSpellPage(row: Row | null, sheet: ComputedSheet): string {
   if (!row) return renderBlankPage();
   const { rule, currentValue, detail } = row;
   const name = rule.beschreibung ?? rule.referenz;
-  const stufen = unlockedStufen(sheet, detail);
+  const stufen = filterProbableStufen(sheet, row, unlockedStufen(sheet, detail));
   const macht = getCharakterwertFormel(sheet, 'macht');
   const magie = getAttMagie(sheet);
   const aura = getAttAura(sheet);

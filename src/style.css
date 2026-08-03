@@ -1845,7 +1845,7 @@ input.numeric-field-formatted-five {
 
 .grimoire-page {
   width: 510px;
-  min-height: 480px;
+  height: 740px;
   background: #f4ecd8;
   color: #2b1d0e;
   padding: 20px;

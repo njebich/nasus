@@ -92,12 +92,25 @@ function renderSpTable(sheet: ComputedSheet, character: CharacterState): string 
     </table>`;
 }
 
+/** Talente werden - wie im Talente-Tab selbst (talenteVornachteile.ts) - nach Charakterklasse
+ *  (rule.parent) gruppiert statt als ein einzelner Topf gezeigt: "Magier"/"Krieger"/"Schütze"/
+ *  "Abenteurer"/"KI-Adept"/"PSI-Magier"/"Geweihte", Rest ohne Parent unter "Sonstige". */
+function tapByChararakterklasse(sheet: ComputedSheet): Array<readonly [string, number]> {
+  const groups = new Map<string, number>();
+  for (const row of sheet.byKategorie['Talente'] ?? []) {
+    const key = row.rule.parent ?? 'Sonstige';
+    groups.set(key, (groups.get(key) ?? 0) + rowKosten(row));
+  }
+  return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+}
+
 function renderTapTable(sheet: ComputedSheet): string {
+  const zeilen = tapByChararakterklasse(sheet);
   return `
     <table class="bogen-table verteilung-table">
       <thead><tr><th>Kategorie</th><th>Ausgegeben (TaP)</th><th>Anteil</th></tr></thead>
       <tbody>
-        ${renderTableRow('Talente', sheet.tapSpent, 'TaP', sheet.tapSpent)}
+        ${zeilen.map(([label, betrag]) => renderTableRow(label, betrag, 'TaP', sheet.tapSpent)).join('')}
       </tbody>
       <tfoot>
         <tr>

@@ -12,7 +12,7 @@ describe('zweistufige Navigation', () => {
 
   it('zeigt ausschließlich die Untertabs des gewählten Haupttabs', () => {
     expect(getVisibleSubTabs('Charakter', false)).toEqual([
-      'Grunddaten', 'Talente', 'Vor- und Nachteile',
+      'Grunddaten', 'Talente', 'Vor- und Nachteile', 'Verteilung',
     ]);
     expect(getVisibleSubTabs('Inventar', false)).toHaveLength(10);
   });

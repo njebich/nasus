@@ -213,6 +213,28 @@ body {
   padding: 0.75rem 1rem;
 }
 
+.verteilung-view {
+  padding: 0.75rem 1rem;
+}
+
+.verteilung-view > h2 {
+  margin-block: 0 0.75rem;
+}
+
+.verteilung-table {
+  margin-bottom: 1rem;
+}
+
+.verteilung-table td:nth-child(2), .verteilung-table td:nth-child(3) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.verteilung-table tfoot td, .verteilung-sonstige td {
+  font-weight: 600;
+  background: #8881;
+}
+
 .category-route-view > h2 {
   margin-block: 0 0.75rem;
 }

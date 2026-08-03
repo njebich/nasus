@@ -844,7 +844,7 @@ function renderMunitionGruppe(typ: 'pfeile' | 'bolzen', label: string): string {
     </div>`;
 }
 
-function equipmentInKategorie(entry: CharacterState['equipment'][number], category: KaufKategorie): boolean {
+export function equipmentInKategorie(entry: CharacterState['equipment'][number], category: KaufKategorie): boolean {
   if (category === 'Schilde') return entry.family === 'shield';
   if (category === 'Waffen') return entry.family === 'weapon';
   if (category === 'Bögen') return (entry.family === 'fernkampfwaffe' && entry.baseTable === 'boegen')

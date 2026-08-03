@@ -27,6 +27,7 @@ import { renderReadOnlySpruchmagieView, renderSpruchmagieView } from './views/sp
 import { renderGrimoireView } from './views/grimoire';
 import { renderPsiView, renderReadOnlyPsiView } from './views/psi';
 import { renderGeweihteView } from './views/geweihte';
+import { renderVerteilungView } from './views/verteilung';
 import { isGeweihterTalentSelectedInSheet } from './engine/geweihte';
 import { initTooltips, tooltipAttr } from './views/tooltip';
 import { VOELKER_NAMEN } from './engine/voelker';
@@ -755,6 +756,8 @@ function render(): void {
         onBuyAlchemika: handleBuyAlchemika,
         onRemoveEquipment: handleRemoveEquipment,
       }, route.category);
+    } else if (route.kind === 'verteilung') {
+      renderVerteilungView(viewContainer, sheet, currentCharacter);
     } else if (route.kind === 'auswahl') {
       renderAuswahlView(viewContainer, sheet, route.category, route.isTalent, handleToggle, currentCharacter.religion);
     } else if (route.kind === 'kampf') {

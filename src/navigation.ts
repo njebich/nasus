@@ -10,7 +10,7 @@ export const MAIN_TABS = [
 export type MainTab = (typeof MAIN_TABS)[number];
 
 export const SUB_TABS = {
-  Charakterbogen: ['Übersicht', 'Spruchmagie', 'KI', 'PSI', 'Geweihte', 'Inventar'],
+  Charakterbogen: ['Übersicht', 'Spruchmagie', 'Grimoire', 'KI', 'PSI', 'Geweihte', 'Inventar'],
   Charakter: ['Grunddaten', 'Talente', 'Vor- und Nachteile'],
   Charakterwerte: [
     'Eigenschaft', 'Attribute', 'Berechnete Werte', 'Sonderfertigkeiten',
@@ -72,7 +72,7 @@ export function normalizeNavigation(
 export type ViewRoute =
   | { kind: 'grunddaten' }
   | { kind: 'charakterbogen' }
-  | { kind: 'charakterbogen-spruchmagie' | 'charakterbogen-ki' | 'charakterbogen-psi' | 'charakterbogen-geweihte' | 'charakterbogen-inventar' }
+  | { kind: 'charakterbogen-spruchmagie' | 'charakterbogen-grimoire' | 'charakterbogen-ki' | 'charakterbogen-psi' | 'charakterbogen-geweihte' | 'charakterbogen-inventar' }
   | { kind: 'category'; title: CharacterValuesSubTab; categories: readonly string[] }
   | { kind: 'auswahl'; category: 'Talente' | 'Vor- und Nachteile'; isTalent: boolean }
   | { kind: 'kampf' }
@@ -98,6 +98,7 @@ export function getViewRoute(mainTab: MainTab, subTab: SubTab | null): ViewRoute
   if (mainTab === 'Kampf') return { kind: 'kampf' };
   if (mainTab === 'Charakterbogen') {
     if (subTab === 'Spruchmagie') return { kind: 'charakterbogen-spruchmagie' };
+    if (subTab === 'Grimoire') return { kind: 'charakterbogen-grimoire' };
     if (subTab === 'KI') return { kind: 'charakterbogen-ki' };
     if (subTab === 'PSI') return { kind: 'charakterbogen-psi' };
     if (subTab === 'Geweihte') return { kind: 'charakterbogen-geweihte' };

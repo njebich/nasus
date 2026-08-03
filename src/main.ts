@@ -24,6 +24,7 @@ import { renderCharakterbogen } from './views/charakterbogen';
 import { buildNahkampfRows, renderKampfView } from './views/kampf';
 import { renderKiView, renderReadOnlyKiView } from './views/ki';
 import { renderReadOnlySpruchmagieView, renderSpruchmagieView } from './views/spruchmagie';
+import { renderGrimoireView } from './views/grimoire';
 import { renderPsiView, renderReadOnlyPsiView } from './views/psi';
 import { renderGeweihteView } from './views/geweihte';
 import { isGeweihterTalentSelectedInSheet } from './engine/geweihte';
@@ -726,6 +727,8 @@ function render(): void {
       renderCharakterbogen(viewContainer, sheet, currentCharacter);
     } else if (route.kind === 'charakterbogen-spruchmagie') {
       renderReadOnlySpruchmagieView(viewContainer, sheet);
+    } else if (route.kind === 'charakterbogen-grimoire') {
+      renderGrimoireView(viewContainer, sheet, currentCharacter);
     } else if (route.kind === 'charakterbogen-ki') {
       renderReadOnlyKiView(viewContainer, sheet, currentCharacter.grundfertigkeitAuswahl);
     } else if (route.kind === 'charakterbogen-psi') {

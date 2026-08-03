@@ -71,23 +71,23 @@ function getAttWert(sheet: ComputedSheet, referenz: string): number {
   return (sheet.byKategorie['Attribute'] ?? []).find((r) => r.rule.referenz === referenz)?.currentValue ?? 0;
 }
 
-function getAttMagie(sheet: ComputedSheet): number {
+export function getAttMagie(sheet: ComputedSheet): number {
   return getAttWert(sheet, 'att_magie');
 }
 
-function getAttAura(sheet: ComputedSheet): number {
+export function getAttAura(sheet: ComputedSheet): number {
   return getAttWert(sheet, 'att_aura');
 }
 
 /** "Macht"/"Mana" sind Formel-Zeilen (Kategorie "Charakterwerte") - Wert kommt ueber
  *  computedValue, NICHT currentValue (letzteres ist bei Formel-Zeilen immer 0, siehe der
  *  bekannte Spruchmagie-Weisheit-Bug). */
-function getCharakterwertFormel(sheet: ComputedSheet, referenz: string): number {
+export function getCharakterwertFormel(sheet: ComputedSheet, referenz: string): number {
   const row = (sheet.byKategorie['Charakterwerte'] ?? []).find((r) => r.rule.referenz === referenz);
   return Number(row?.computedValue ?? 0);
 }
 
-function getEigBonusValue(sheet: ComputedSheet, eigBonusReferenz: string | undefined): { label: string; value: number } | undefined {
+export function getEigBonusValue(sheet: ComputedSheet, eigBonusReferenz: string | undefined): { label: string; value: number } | undefined {
   if (!eigBonusReferenz) return undefined;
   const row = (sheet.byKategorie['Eigenschaftsbonus'] ?? []).find((r) => r.rule.referenz === eigBonusReferenz);
   if (!row) return undefined;
@@ -122,7 +122,7 @@ function divideVzValue(raw: string, teiler: number): string {
   return `${aufrunden(num / teiler, 0)}${match[2]}`;
 }
 
-interface Row {
+export interface Row {
   rule: ComputedRule['rule'];
   currentValue: number;
   kostenNext?: number;
@@ -190,7 +190,7 @@ function groupRowsByGrad(rows: Row[]): GradGruppe[] {
 
 /** Alle gewaehlten Zauber (TaW>0) ueber alle Schulen hinweg, fuer die Gesamtliste (Nutzer
  *  2026-07-24) - sortiert nach Schule, dann Grad, dann Name. */
-function buildAllGewaehlteRows(sheet: ComputedSheet, schulen: string[], needle = ''): Row[] {
+export function buildAllGewaehlteRows(sheet: ComputedSheet, schulen: string[], needle = ''): Row[] {
   return schulen
     .flatMap((s) => buildSchulRows(sheet, s, needle))
     .filter((r) => r.currentValue > 0)
@@ -208,7 +208,7 @@ function buildAllGewaehlteRows(sheet: ComputedSheet, schulen: string[], needle =
 /** "St. 1/St. 2/St. 3": St.1 immer, St.2/St.3 nur mit den passenden Talenten (schulen-
  *  uebergreifend). Zauberprobe-Variante berechnet zusaetzlich Magie+Eig-Bonus+TaW-StufeX statt
  *  nur den rohen Erschwerungswert - beide nutzen dieselbe Stufen-Auswahl. */
-function unlockedStufen(sheet: ComputedSheet, detail: SpruchmagieDetail | undefined): Array<{ label: string; erschwerung: number }> {
+export function unlockedStufen(sheet: ComputedSheet, detail: SpruchmagieDetail | undefined): Array<{ label: string; erschwerung: number }> {
   if (!detail) return [];
   const stufen: Array<{ label: string; erschwerung: number }> = [];
   if (detail.stufe1 !== undefined) stufen.push({ label: 'St. 1', erschwerung: Number(detail.stufe1) });
@@ -221,7 +221,7 @@ function unlockedStufen(sheet: ComputedSheet, detail: SpruchmagieDetail | undefi
   return stufen;
 }
 
-function renderStufenCell(stufen: Array<{ label: string; erschwerung: number }>): string {
+export function renderStufenCell(stufen: Array<{ label: string; erschwerung: number }>): string {
   if (stufen.length === 0) return '–';
   return escapeHtml(stufen.map((s) => s.erschwerung).join(' / '));
 }
@@ -238,7 +238,7 @@ function getGuteProbe(sheet: ComputedSheet, normaleProbe: number, eigBonWert: nu
   return Math.min(gute, Math.floor(normaleProbe / 2));
 }
 
-function renderZauberprobeCell(sheet: ComputedSheet, row: Row, stufen: Array<{ label: string; erschwerung: number }>): string {
+export function renderZauberprobeCell(sheet: ComputedSheet, row: Row, stufen: Array<{ label: string; erschwerung: number }>): string {
   if (row.currentValue <= 0 || stufen.length === 0) return '';
   const eigBon = getEigBonusValue(sheet, row.rule.eigBonus)?.value ?? 0;
   const magie = getAttMagie(sheet);
@@ -253,7 +253,7 @@ function renderZauberprobeCell(sheet: ComputedSheet, row: Row, stufen: Array<{ l
 /** VZ (Vorbereitungszeit) je freigeschalteter Stufe, geteilt durch den Schnell-Zaubern-Teiler
  *  dieser Stufe (talente_schnell_zaubern_stufe_1-3, Baseline :1/:2/:3 - siehe getSchnellZauberTeiler),
  *  analog renderZauberprobeCell. Ohne St.2/St.3-Talent bleibt es bei einem einzelnen Wert. */
-function renderVzCell(sheet: ComputedSheet, detail: SpruchmagieDetail | undefined, stufenCount: number): string {
+export function renderVzCell(sheet: ComputedSheet, detail: SpruchmagieDetail | undefined, stufenCount: number): string {
   const raw = detail?.vorbereitungszeit;
   if (!raw) return '–';
   const teiler = getSchnellZauberTeiler(sheet);

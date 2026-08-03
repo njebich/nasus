@@ -1672,3 +1672,277 @@ input.numeric-field-formatted-five {
   opacity: 0.6;
   font-style: italic;
 }
+
+/* Grimoire-Tab (Nutzer 2026-08-03): "Blaetterbares Buch"-Darstellung, siehe views/grimoire.ts.
+   Die Buchseiten sind bewusst fest hell/parchmentfarben (nicht theme-adaptiv) - eine aufgeschlagene
+   Buchseite bleibt hell, unabhaengig vom App-Farbschema, wie bei einem beleuchteten Papier. */
+.grimoire {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.grimoire-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.grimoire-search {
+  position: relative;
+  min-width: 240px;
+}
+
+.grimoire-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  font-size: 1rem;
+}
+
+.grimoire-search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: Canvas;
+  color: CanvasText;
+  border: 1px solid #8888;
+  border-radius: 4px;
+}
+
+.grimoire-search-hit {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.grimoire-search-hit:hover {
+  background: #8882;
+}
+
+.grimoire-search-hit-schule {
+  opacity: 0.65;
+  font-size: 0.85em;
+}
+
+.grimoire-search-empty {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin: 4px 0 0;
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+.grimoire-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grimoire-nav button {
+  font-size: 1.1rem;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.grimoire-nav button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.grimoire-page-indicator {
+  display: inline-block;
+  min-width: 8rem;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.grimoire-book {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  background: #2b1d0e;
+  padding: 18px;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px #0006;
+}
+
+.grimoire-cover {
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 3 / 4;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: linear-gradient(160deg, #3c2a16, #241708);
+  color: #e8d8b0;
+  border: 6px solid #17100a;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.grimoire-cover-title {
+  font-family: 'Nasus Gothic', Georgia, serif;
+  font-size: 2.4rem;
+  letter-spacing: 0.08em;
+}
+
+.grimoire-cover-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.85;
+}
+
+.grimoire-cover-hint {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin-top: 12px;
+}
+
+.grimoire-page {
+  width: 340px;
+  min-height: 480px;
+  background: #f4ecd8;
+  color: #2b1d0e;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-family: 'Nasus Bookman', Georgia, serif;
+}
+
+.grimoire-page:first-child {
+  border-radius: 4px 0 0 4px;
+  box-shadow: inset -8px 0 12px -10px #0006;
+}
+
+.grimoire-page:last-child {
+  border-radius: 0 4px 4px 0;
+  box-shadow: inset 8px 0 12px -10px #0006;
+}
+
+.grimoire-toc-heading {
+  font-family: 'Nasus Gothic', Georgia, serif;
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+.grimoire-toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.grimoire-toc-list li {
+  border-bottom: 1px dotted #2b1d0e66;
+}
+
+.grimoire-toc-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 4px;
+  font: inherit;
+  font-size: 1.05rem;
+  color: inherit;
+  cursor: pointer;
+}
+
+.grimoire-toc-link:hover {
+  background: #2b1d0e14;
+}
+
+.grimoire-empty {
+  text-align: center;
+  opacity: 0.7;
+  margin-top: 40px;
+}
+
+.grimoire-spell-head {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.grimoire-spell-grad {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.grimoire-spell-name {
+  font-family: 'Nasus Gothic', Georgia, serif;
+  margin: 2px 0;
+  font-size: 1.3rem;
+}
+
+.grimoire-spell-taw {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.grimoire-wirkung-box {
+  height: 150px;
+  overflow-y: auto;
+  margin: 10px 0;
+  border-top: 1px solid #2b1d0e33;
+  border-bottom: 1px solid #2b1d0e33;
+  padding: 6px 0;
+}
+
+.grimoire-wirkung-text {
+  margin: 0;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.grimoire-gegenprobe {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.grimoire-facts, .grimoire-stufen {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin: 6px 0;
+}
+
+.grimoire-facts th, .grimoire-facts td,
+.grimoire-stufen th, .grimoire-stufen td {
+  text-align: left;
+  padding: 2px 4px;
+  border-bottom: 1px dotted #2b1d0e33;
+  vertical-align: top;
+}
+
+.grimoire-facts th, .grimoire-stufen th {
+  font-weight: 600;
+  width: 45%;
+}

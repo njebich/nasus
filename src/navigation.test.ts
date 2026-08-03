@@ -51,9 +51,10 @@ describe('zweistufige Navigation', () => {
     expect(getViewRoute('Magie', 'Geweihte')).toEqual({ kind: 'geweihte' });
   });
 
-  it('routet alle sechs Charakterbogen-Untertabs auf reine Ausgaben', () => {
+  it('routet alle sieben Charakterbogen-Untertabs auf reine Ausgaben', () => {
     expect(getViewRoute('Charakterbogen', 'Übersicht')).toEqual({ kind: 'charakterbogen' });
     expect(getViewRoute('Charakterbogen', 'Spruchmagie')).toEqual({ kind: 'charakterbogen-spruchmagie' });
+    expect(getViewRoute('Charakterbogen', 'Grimoire')).toEqual({ kind: 'charakterbogen-grimoire' });
     expect(getViewRoute('Charakterbogen', 'KI')).toEqual({ kind: 'charakterbogen-ki' });
     expect(getViewRoute('Charakterbogen', 'PSI')).toEqual({ kind: 'charakterbogen-psi' });
     expect(getViewRoute('Charakterbogen', 'Geweihte')).toEqual({ kind: 'charakterbogen-geweihte' });

@@ -111,6 +111,7 @@ function renderSpellPage(row: Row | null, sheet: ComputedSheet): string {
   const aura = getAttAura(sheet);
   const mana = getCharakterwertFormel(sheet, 'mana');
   const wirkung = resolveWirkungText(rule.wirkung, macht, magie, aura);
+  const gegenprobe = resolveWirkungText(detail?.gegenprobe, macht, magie, aura);
   const rw = resolveRw(detail?.rw, macht, magie, aura, mana);
   const probe = renderZauberprobeCell(sheet, row, stufen);
   const eigBon = getEigBonusValue(sheet, rule.eigBonus);
@@ -123,7 +124,7 @@ function renderSpellPage(row: Row | null, sheet: ComputedSheet): string {
         <span class="grimoire-spell-taw">TaW ${currentValue}</span>
       </div>
       <div class="grimoire-wirkung-box"><p class="grimoire-wirkung-text">${escapeHtml(wirkung)}</p></div>
-      ${detail?.gegenprobe ? `<p class="grimoire-gegenprobe">Gegenprobe: ${escapeHtml(detail.gegenprobe)}</p>` : ''}
+      ${detail?.gegenprobe ? `<p class="grimoire-gegenprobe">Gegenprobe: ${escapeHtml(gegenprobe)}</p>` : ''}
       <table class="grimoire-facts">
         <tr><th>Reichweite</th><td>${escapeHtml(rw)}</td></tr>
         <tr><th>Ziel</th><td>${escapeHtml(detail?.ziel ?? '–')}</td></tr>

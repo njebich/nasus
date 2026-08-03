@@ -312,7 +312,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
       <td>${escapeHtml(detail?.minInt ?? '–')}</td>
       <td>${escapeHtml(getEigBonusValue(sheet, rule.eigBonus)?.label ?? '–')}</td>
       <td class="spruchmagie-wirkung-cell"${rule.wirkung ? tooltipAttr(`Rohtext: ${rule.wirkung}`) : ''}>${escapeHtml(resolveWirkungText(rule.wirkung, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet)))}</td>
-      <td class="spruchmagie-wirkung-cell"${detail?.gegenprobe ? tooltipAttr(`Rohtext: ${detail.gegenprobe}`) : ''}>${escapeHtml(resolveWirkungText(detail?.gegenprobe, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet)))}</td>
+      <td class="spruchmagie-wirkung-cell">${escapeHtml(resolveWirkungText(detail?.gegenprobe, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet)))}</td>
       <td${detail?.rw ? tooltipAttr(`Formel: ${detail.rw}`) : ''}>${escapeHtml(resolveRw(detail?.rw, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet), getCharakterwertFormel(sheet, 'mana')))}</td>
       <td>${escapeHtml(detail?.ziel ?? '–')}</td>
       <td>${escapeHtml(detail?.form ?? '–')}</td>

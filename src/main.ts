@@ -1,49 +1,17 @@
 import './style.css';
-import {
-  listCharacters, loadCharacter, createCharacter, saveCharacter, deleteCharacter,
-  getLastActiveCharacterId, setLastActiveCharacterId, ruestungSlotKey,
-  type CharacterState, type CharacterHeader, type StartbudgetPreset, type WaffenLoadoutComboType,
-} from './state/characterStore';
-import {
-  setValue, addSelection, removeSelection, setPoolAllocation, setWaffenPoolAllocation, updateHeader,
-  buyPreislisteItem, buyArtefakt, equipRuestung, unequipRuestung, buyShield, buyWeapon,
-  buyFernkampfwaffe, buyFeuerwaffe, buyMunition, buyFeuerwaffenMunition, buyAlchemika, removeEquipment,
-  setGrundfertigkeitPick, addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite,
-  addCustomWhkHauptfertigkeit, renameCustomWhkHauptfertigkeit, setCustomWhkHauptfertigkeitWert,
-  addCustomWhkSpezialisierung, renameCustomWhkSpezialisierung, setCustomWhkSpezialisierungWert,
-  BudgetError, MutationError,
-} from './state/characterMutations';
+import { listCharacters, loadCharacter, getLastActiveCharacterId, setLastActiveCharacterId } from './state/characterStore';
 import { computeSheet, makeValueSource, SSK_MINDEST_SP } from './engine/characterSheet';
 import { formatDublonenNumber } from './utils/format';
-import { renderCategoryRouteView, type WhkCustomAction } from './views/categoryView';
-import { renderAuswahlView } from './views/talenteVornachteile';
-import { renderAusruestungView, type RuestungGruppenSelection } from './views/ausruestung';
-import { renderReadOnlyBesitzView } from './views/besitz';
-import { renderGrunddatenView } from './views/charakterheader';
-import { renderCharakterbogen } from './views/charakterbogen';
-import { buildNahkampfRows, renderKampfView } from './views/kampf';
-import { renderKiView, renderReadOnlyKiView } from './views/ki';
-import { renderReadOnlySpruchmagieView, renderSpruchmagieView } from './views/spruchmagie';
-import { renderGrimoireView } from './views/grimoire';
-import { renderPsiView, renderReadOnlyPsiView } from './views/psi';
-import { renderGeweihteView } from './views/geweihte';
-import { renderVerteilungView } from './views/verteilung';
+import { buildNahkampfRows } from './views/kampf';
 import { isGeweihterTalentSelectedInSheet } from './engine/geweihte';
 import { initTooltips, tooltipAttr } from './views/tooltip';
-import { VOELKER_NAMEN } from './engine/voelker';
-import type { PoolAllocation } from './state/characterStore';
-import type { ArtefaktVariant } from './engine/equipmentPricing';
-import type { RsGruppe } from './data/trefferzonen';
-import type { FeuerwaffenSelections } from './engine/feuerwaffenComposition';
-import type { FeuerwaffenMunitionArt } from './data/equipment/feuerwaffenMunition';
+import { renderNewCharacterForm, wireCharacterLifecycleEvents } from './views/characterLifecycle';
+import { renderActiveView } from './views/viewRouter';
+import { createInitialAppState } from './state/appState';
+import { createMutationHandlers } from './state/mutationHandlers';
 import {
-  VORDEFINIERTE_ORTE, WELTEN, SIEDLUNGSGROESSEN, HANDELSSTUFEN, HERSTELLUNGSORTE,
-  createOrt, formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
-} from './data/orte';
-import { getReligionen, addReligion, addSekte, formatReligionLabel, combineReligionSekte } from './state/religionStore';
-import {
-  DEFAULT_NAVIGATION, getActiveNavigationTabId, getViewRoute, getVisibleSubTabs, normalizeNavigation,
-  type MainTab, type NavigationState, type SubTab,
+  getActiveNavigationTabId, getVisibleSubTabs, normalizeNavigation,
+  type MainTab, type SubTab,
 } from './navigation';
 import { renderNavigationMarkup } from './navigationMarkup';
 
@@ -79,396 +47,27 @@ const TAB_INTRO: Partial<Record<SubTab, string>> = {
 // Beim Start den zuletzt aktiven Charakter wiederherstellen (siehe characterStore.ts) - sonst
 // faellt jeder Seiten-Reload auf die leere Auswahl zurueck, obwohl der Charakter noch da ist.
 const lastActiveId = getLastActiveCharacterId();
-let currentCharacter: CharacterState | null = lastActiveId ? loadCharacter(lastActiveId) : null;
-if (lastActiveId && !currentCharacter) setLastActiveCharacterId(null); // Charakter wurde geloescht
-let errorMessage = '';
-let navigationState: NavigationState = { ...DEFAULT_NAVIGATION };
-let showNewCharacterForm = false;
-/** "Bestehenden Charakter erstellen" (Nutzer 2026-07-24): zweite Auswahl neben "Neuer Charakter"
- *  im selben Formular - einziger Unterschied ist das bestehenderCharakter-Flag auf dem erzeugten
- *  Charakter, das alle Verfuegbarkeit-Kaufsperren deaktiviert (siehe characterMutations.ts). */
-let newCharacterBestehend = false;
-let confirmingDelete = false;
+const initialCharacter = lastActiveId ? loadCharacter(lastActiveId) : null;
+if (lastActiveId && !initialCharacter) setLastActiveCharacterId(null); // Charakter wurde geloescht
 
-function handleValueChange(referenz: string, newValue: number): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = setValue(currentCharacter, referenz, newValue);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-/** Punkt 4a/4b: dispatcht die WhkCustomAction-Varianten aus categoryView.ts auf die passende
- *  state/characterMutations.ts-Funktion - gleiches Fehler-/Speicher-/Render-Muster wie
- *  handleValueChange oben, nur mit einer eigenen Aktionsform statt (referenz, wert). */
-function handleWhkCustomChange(action: WhkCustomAction): void {
-  if (!currentCharacter) return;
-  try {
-    switch (action.type) {
-      case 'add-hauptfertigkeit':
-        currentCharacter = addCustomWhkHauptfertigkeit(currentCharacter, action.name);
-        break;
-      case 'rename-hauptfertigkeit':
-        currentCharacter = renameCustomWhkHauptfertigkeit(currentCharacter, action.id, action.name);
-        break;
-      case 'set-hauptfertigkeit-wert':
-        currentCharacter = setCustomWhkHauptfertigkeitWert(currentCharacter, action.id, action.wert);
-        break;
-      case 'add-spezialisierung':
-        currentCharacter = addCustomWhkSpezialisierung(currentCharacter, action.hauptfertigkeitKey, action.name);
-        break;
-      case 'rename-spezialisierung':
-        currentCharacter = renameCustomWhkSpezialisierung(currentCharacter, action.hauptfertigkeitKey, action.id, action.name);
-        break;
-      case 'set-spezialisierung-wert':
-        currentCharacter = setCustomWhkSpezialisierungWert(currentCharacter, action.hauptfertigkeitKey, action.id, action.wert);
-        break;
-    }
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleHeaderChange(updates: Partial<CharacterHeader>): void {
-  if (!currentCharacter) return;
-  currentCharacter = updateHeader(currentCharacter, updates);
-  saveCharacter(currentCharacter);
-  render();
-}
-
-function handlePoolChange(referenz: string, allocation: PoolAllocation): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = setPoolAllocation(currentCharacter, referenz, allocation);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleWaffenPoolChange(poolReferenz: string, equipmentId: string, allocation: PoolAllocation): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = setWaffenPoolAllocation(currentCharacter, poolReferenz, equipmentId, allocation);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleGrundfertigkeitPick(talentReferenz: string, slotIndex: number, grundfertigkeitReferenz: string): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = setGrundfertigkeitPick(currentCharacter, talentReferenz, slotIndex, grundfertigkeitReferenz);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleToggle(referenz: string, selected: boolean): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = selected ? addSelection(currentCharacter, referenz) : removeSelection(currentCharacter, referenz);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleBuyPreisliste(sourceRow: number, quantity: number): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyPreislisteItem(currentCharacter, sourceRow, quantity);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleBuyArtefakt(referenz: string, grad: string, variant: ArtefaktVariant, targetWeaponId?: string, targetReferenz?: string): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyArtefakt(currentCharacter, referenz, grad, variant, targetWeaponId, targetReferenz);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleEquipRuestung(
-  gruppe: RsGruppe, lage: number, basisSourceRow: number, verarbeitungSourceRow: number, anpassungSourceRow: number,
-): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = equipRuestung(currentCharacter, gruppe, lage, basisSourceRow, verarbeitungSourceRow, anpassungSourceRow);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-const RUESTUNG_GRUPPEN_REIHENFOLGE: readonly RsGruppe[] = ['kopf', 'torso', 'arme', 'beine'];
-
-function handleEquipRuestungAlleTz(gruppe: RsGruppe, selections: RuestungGruppenSelection[]): void {
-  if (!currentCharacter) return;
-  try {
-    for (const ziel of RUESTUNG_GRUPPEN_REIHENFOLGE) {
-      if (ziel === gruppe) continue;
-      for (const sel of selections) {
-        if (currentCharacter.ruestungSlots[ruestungSlotKey(ziel, sel.lage)]) continue;
-        currentCharacter = equipRuestung(
-          currentCharacter, ziel, sel.lage, sel.basisSourceRow, sel.verarbeitungSourceRow, sel.anpassungSourceRow,
-        );
-      }
-    }
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  saveCharacter(currentCharacter);
-  render();
-}
-
-function handleUnequipRuestung(gruppe: RsGruppe, lage: number): void {
-  if (!currentCharacter) return;
-  currentCharacter = unequipRuestung(currentCharacter, gruppe, lage);
-  saveCharacter(currentCharacter);
-  errorMessage = '';
-  render();
-}
-
-function handleBuyShield(sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, bespannungSourceRow: number): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyShield(currentCharacter, sourceRow, materialSourceRow, fertigungSourceRow, bespannungSourceRow);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleBuyWeapon(
-  sourceRow: number, materialSourceRow: number, fertigungSourceRow: number, anpassungSourceRow: number, schaftmaterialSourceRow: number,
-): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyWeapon(currentCharacter, sourceRow, materialSourceRow, fertigungSourceRow, anpassungSourceRow, schaftmaterialSourceRow);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleBuyFernkampfwaffe(typ: 'boegen' | 'armbrust', sourceRow: number): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyFernkampfwaffe(currentCharacter, typ, sourceRow);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleBuyFeuerwaffe(sourceRow: number, selections: FeuerwaffenSelections): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyFeuerwaffe(currentCharacter, sourceRow, selections);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleBuyFeuerwaffenMunition(art: FeuerwaffenMunitionArt, kaliber: number, quantity: number): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyFeuerwaffenMunition(currentCharacter, art, kaliber, quantity);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleBuyMunition(typ: 'pfeile' | 'bolzen', basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyMunition(currentCharacter, typ, basisSourceRow, modifikatorSourceRow, quantity);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleBuyAlchemika(sourceRow: number, quantity: number): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = buyAlchemika(currentCharacter, sourceRow, quantity);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof BudgetError || err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleRemoveEquipment(equipmentId: string): void {
-  if (!currentCharacter) return;
-  currentCharacter = removeEquipment(currentCharacter, equipmentId);
-  saveCharacter(currentCharacter);
-  errorMessage = '';
-  render();
-}
-
-function handleAddWaffenLoadout(comboType: WaffenLoadoutComboType, primaryEquipmentId: string, secondaryEquipmentId: string): void {
-  if (!currentCharacter) return;
-  try {
-    currentCharacter = addWaffenLoadout(currentCharacter, comboType, primaryEquipmentId, secondaryEquipmentId);
-    saveCharacter(currentCharacter);
-    errorMessage = '';
-  } catch (err) {
-    errorMessage = err instanceof MutationError ? err.message : String(err);
-  }
-  render();
-}
-
-function handleRemoveWaffenLoadout(loadoutId: string): void {
-  if (!currentCharacter) return;
-  currentCharacter = removeWaffenLoadout(currentCharacter, loadoutId);
-  saveCharacter(currentCharacter);
-  errorMessage = '';
-  render();
-}
-
-function handleToggleWaffenLoadoutFavorite(loadoutId: string): void {
-  if (!currentCharacter) return;
-  currentCharacter = toggleWaffenLoadoutFavorite(currentCharacter, loadoutId);
-  saveCharacter(currentCharacter);
-  errorMessage = '';
-  render();
-}
-
-function renderNewCharacterForm(): string {
-  return `
-    <form id="new-character-form" class="new-character-form">
-      ${newCharacterBestehend ? '<p class="new-character-hinweis">Bestehenden Charakter erstellen: alle Verfügbarkeit-Kaufsperren sind deaktiviert (z.B. für vom Meister vergebene Gegenstände).</p>' : ''}
-      <label>Name * <input type="text" id="nc-name" required autofocus /></label>
-      <label>Spezies *
-        <select id="nc-spezies" required>
-          <option value="">-- wählen --</option>
-          ${VOELKER_NAMEN.map((name) => `<option value="${name}">${name}</option>`).join('')}
-        </select>
-      </label>
-      <label>Beruf <input type="text" id="nc-beruf" /></label>
-      <label>Alter <input type="text" id="nc-alter" /></label>
-      <label>Geburtstag <input type="text" id="nc-geburtstag" /></label>
-      <label>Herkunft *
-        <select id="nc-herkunft" required>
-          <option value="">-- wählen --</option>
-          ${VORDEFINIERTE_ORTE.map((ort) => `<option value="${ort.id}">${formatOrtKurz(ort)}</option>`).join('')}
-          <option value="__neu__">+ Neuen Ort anlegen</option>
-        </select>
-      </label>
-      <fieldset id="nc-neuer-ort" class="new-location-fields" hidden>
-        <legend>Neuer Herkunftsort</legend>
-        <label>Ortsname * <input type="text" id="nc-ort-name" /></label>
-        <label>AW/NW
-          <select id="nc-ort-welt"><option value="">-- offen --</option>${WELTEN.map((value) => `<option value="${value}">${value}</option>`).join('')}</select>
-        </label>
-        <label>Region <input type="text" id="nc-ort-region" /></label>
-        <label>Siedlungsgröße
-          <select id="nc-ort-siedlung"><option value="">-- offen --</option>${SIEDLUNGSGROESSEN.map((value) => `<option value="${value}">${value}</option>`).join('')}</select>
-        </label>
-        <label>Handelsstufe
-          <select id="nc-ort-handel"><option value="">-- offen --</option>${HANDELSSTUFEN.map((value) => `<option value="${value}">${value}</option>`).join('')}</select>
-        </label>
-        <label>Herstellungsort
-          <select id="nc-ort-herstellung"><option value="">-- offen --</option>${HERSTELLUNGSORTE.map((value) => `<option value="${value}">${value}</option>`).join('')}</select>
-        </label>
-      </fieldset>
-      <label>Familie <input type="text" id="nc-familie" /></label>
-      <label>Religion
-        <select id="nc-religion">
-          <option value="">-- keine --</option>
-          ${getReligionen().map((r) => `<option value="${r.id}" title="${r.volk ?? ''}">${formatReligionLabel(r)}</option>`).join('')}
-          <option value="__neu__">+ Neue Religion anlegen</option>
-        </select>
-      </label>
-      <fieldset id="nc-neue-religion" class="new-location-fields" hidden>
-        <legend>Neue Religion</legend>
-        <label>Name * <input type="text" id="nc-religion-name" /></label>
-        <label>Volk <input type="text" id="nc-religion-volk" /></label>
-      </fieldset>
-      <label>Sekte
-        <select id="nc-sekte" disabled>
-          <option value="">-- keine --</option>
-          <option value="__neu__">+ Neue Sekte anlegen</option>
-        </select>
-      </label>
-      <fieldset id="nc-neue-sekte" class="new-location-fields" hidden>
-        <legend>Neue Sekte</legend>
-        <label>Name * <input type="text" id="nc-sekte-name" /></label>
-      </fieldset>
-      <fieldset>
-        <legend>Startbudget</legend>
-        <label><input type="radio" name="nc-startbudget" value="normal" checked /> Normal (Stufe 0, 6400 SP, 5000D)</label>
-        <label><input type="radio" name="nc-startbudget" value="gehoben" /> Gehoben (Stufe 15, 8000 SP, 6000D)</label>
-      </fieldset>
-      <div class="new-character-form-actions">
-        <button type="submit">Anlegen</button>
-        <button type="button" id="new-character-cancel">Abbrechen</button>
-      </div>
-    </form>`;
-}
+const appState = createInitialAppState(initialCharacter);
+const handlers = createMutationHandlers(appState, render);
 
 function render(): void {
   const characters = listCharacters();
-  const sheet = currentCharacter ? computeSheet(currentCharacter) : null;
+  const sheet = appState.currentCharacter ? computeSheet(appState.currentCharacter) : null;
   // Fuer die Formel-Impact-Liste (Plan-Phase 3, nur Eigenschaft/Attribute-Tab) - billig zu bauen
   // (reine Closures ueber currentCharacter, keine Berechnung), siehe categoryView.ts.
-  const characterValues = currentCharacter ? makeValueSource(currentCharacter) : undefined;
+  const characterValues = appState.currentCharacter ? makeValueSource(appState.currentCharacter) : undefined;
   // Geweihte kann durch Ab-/Umwaehlen des Gate-Talents nachtraeglich unsichtbar werden.
   // normalizeNavigation faellt dann innerhalb des aktiven Hauptbereichs kontrolliert zurueck.
   const showGeweihte = sheet !== null && isGeweihterTalentSelectedInSheet(sheet);
-  navigationState = normalizeNavigation(navigationState, showGeweihte);
-  const visibleSubTabs = getVisibleSubTabs(navigationState.activeMainTab, showGeweihte);
-  const conformityIssues = sheet && currentCharacter
+  appState.navigationState = normalizeNavigation(appState.navigationState, showGeweihte);
+  const visibleSubTabs = getVisibleSubTabs(appState.navigationState.activeMainTab, showGeweihte);
+  const conformityIssues = sheet && appState.currentCharacter
     ? [
       ...sheet.validationIssues,
-      ...buildNahkampfRows(currentCharacter, sheet)
+      ...buildNahkampfRows(appState.currentCharacter, sheet)
         .filter((row, index, rows) => !row.poolValid
           && rows.findIndex((candidate) => candidate.key === row.key && candidate.grip === row.grip) === index)
         .map((row) => ({
@@ -490,17 +89,17 @@ function render(): void {
       <div class="character-bar">
         <select id="character-select">
           <option value="">-- Charakter wählen --</option>
-          ${characters.map((c) => `<option value="${c.id}" ${c.id === currentCharacter?.id ? 'selected' : ''}>${c.name}</option>`).join('')}
+          ${characters.map((c) => `<option value="${c.id}" ${c.id === appState.currentCharacter?.id ? 'selected' : ''}>${c.name}</option>`).join('')}
         </select>
         ${characterWarning}
         <button type="button" id="new-character">Neuer Charakter</button>
         <button type="button" id="new-character-bestehend">Bestehenden Charakter erstellen</button>
-        ${currentCharacter ? '<button type="button" id="delete-character">Löschen</button>' : ''}
+        ${appState.currentCharacter ? '<button type="button" id="delete-character">Löschen</button>' : ''}
       </div>
-      ${showNewCharacterForm ? renderNewCharacterForm() : ''}
-      ${confirmingDelete && currentCharacter ? `
+      ${appState.showNewCharacterForm ? renderNewCharacterForm(appState.newCharacterBestehend) : ''}
+      ${appState.confirmingDelete && appState.currentCharacter ? `
         <div class="inline-form">
-          <span>Charakter "${currentCharacter.name}" wirklich löschen?</span>
+          <span>Charakter "${appState.currentCharacter.name}" wirklich löschen?</span>
           <button type="button" id="delete-confirm">Ja, löschen</button>
           <button type="button" id="delete-cancel">Abbrechen</button>
         </div>` : ''}
@@ -512,176 +111,19 @@ function render(): void {
           <span title="Talentpunkte (übrig): bezahlt ausschließlich Talente, eigener Pool = 20+Stufe×5 – verbraucht ${sheet.tapSpent} von ${sheet.tapTotal}">TaP: <span class="numeric-field-output numeric-field-signed-five">${sheet.tapRemaining}</span></span>
           <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: <span class="numeric-field-output numeric-field-formatted-five">${formatDublonenNumber(sheet.dublonenBarRemaining)}</span> bar / <span class="numeric-field-output numeric-field-formatted-five">${formatDublonenNumber(sheet.dublonenBankRemaining)}</span> Bank</span>
         </div>` : ''}
-      ${errorMessage ? `<div class="error-message">${errorMessage}</div>` : ''}
-      ${currentCharacter ? renderNavigationMarkup(
-        navigationState, visibleSubTabs, (tab) => tooltipAttr(TAB_INTRO[tab]),
+      ${appState.errorMessage ? `<div class="error-message">${appState.errorMessage}</div>` : ''}
+      ${appState.currentCharacter ? renderNavigationMarkup(
+        appState.navigationState, visibleSubTabs, (tab) => tooltipAttr(TAB_INTRO[tab]),
       ) : ''}
     </header>
-    <main id="view-container" role="tabpanel" aria-labelledby="${currentCharacter ? getActiveNavigationTabId(navigationState) : ''}" tabindex="0"></main>
+    <main id="view-container" role="tabpanel" aria-labelledby="${appState.currentCharacter ? getActiveNavigationTabId(appState.navigationState) : ''}" tabindex="0"></main>
   `;
 
-  document.querySelector<HTMLSelectElement>('#character-select')?.addEventListener('change', (e) => {
-    const id = (e.target as HTMLSelectElement).value;
-    currentCharacter = id ? loadCharacter(id) : null;
-    setLastActiveCharacterId(id || null);
-    navigationState = { ...DEFAULT_NAVIGATION };
-    errorMessage = '';
-    confirmingDelete = false;
-    render();
-  });
-
-  document.querySelector('#new-character')?.addEventListener('click', () => {
-    showNewCharacterForm = true;
-    newCharacterBestehend = false;
-    render();
-  });
-
-  document.querySelector('#new-character-bestehend')?.addEventListener('click', () => {
-    showNewCharacterForm = true;
-    newCharacterBestehend = true;
-    render();
-  });
-
-  document.querySelector('#new-character-cancel')?.addEventListener('click', () => {
-    showNewCharacterForm = false;
-    newCharacterBestehend = false;
-    render();
-  });
-
-  document.querySelector<HTMLSelectElement>('#nc-herkunft')?.addEventListener('change', (e) => {
-    const isNew = (e.target as HTMLSelectElement).value === '__neu__';
-    const fields = document.querySelector<HTMLFieldSetElement>('#nc-neuer-ort');
-    const nameInput = document.querySelector<HTMLInputElement>('#nc-ort-name');
-    if (fields) fields.hidden = !isNew;
-    if (nameInput) nameInput.required = isNew;
-  });
-
-  const populateSekteSelect = (religionId: string): void => {
-    const sekteSelect = document.querySelector<HTMLSelectElement>('#nc-sekte');
-    if (!sekteSelect) return;
-    const sekten = getReligionen().find((r) => r.id === religionId)?.sekten ?? [];
-    sekteSelect.disabled = false;
-    sekteSelect.innerHTML = `
-      <option value="">-- keine --</option>
-      ${sekten.map((s) => `<option value="${s}">${s}</option>`).join('')}
-      <option value="__neu__">+ Neue Sekte anlegen</option>
-    `;
-    const sekteFields = document.querySelector<HTMLFieldSetElement>('#nc-neue-sekte');
-    if (sekteFields) sekteFields.hidden = true;
-  };
-
-  document.querySelector<HTMLSelectElement>('#nc-religion')?.addEventListener('change', (e) => {
-    const value = (e.target as HTMLSelectElement).value;
-    const isNew = value === '__neu__';
-    const fields = document.querySelector<HTMLFieldSetElement>('#nc-neue-religion');
-    const nameInput = document.querySelector<HTMLInputElement>('#nc-religion-name');
-    if (fields) fields.hidden = !isNew;
-    if (nameInput) nameInput.required = isNew;
-    if (!value) {
-      const sekteSelect = document.querySelector<HTMLSelectElement>('#nc-sekte');
-      if (sekteSelect) sekteSelect.disabled = true;
-      const sekteFields = document.querySelector<HTMLFieldSetElement>('#nc-neue-sekte');
-      if (sekteFields) sekteFields.hidden = true;
-      return;
-    }
-    populateSekteSelect(isNew ? '' : value);
-  });
-
-  document.querySelector<HTMLSelectElement>('#nc-sekte')?.addEventListener('change', (e) => {
-    const isNew = (e.target as HTMLSelectElement).value === '__neu__';
-    const fields = document.querySelector<HTMLFieldSetElement>('#nc-neue-sekte');
-    const nameInput = document.querySelector<HTMLInputElement>('#nc-sekte-name');
-    if (fields) fields.hidden = !isNew;
-    if (nameInput) nameInput.required = isNew;
-  });
-
-  document.querySelector<HTMLFormElement>('#new-character-form')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.querySelector<HTMLInputElement>('#nc-name')!.value.trim();
-    const spezies = document.querySelector<HTMLSelectElement>('#nc-spezies')!.value.trim();
-    const herkunftAuswahl = document.querySelector<HTMLSelectElement>('#nc-herkunft')!.value;
-    if (!name || !spezies || !herkunftAuswahl) return;
-    const herkunftOrt = herkunftAuswahl === '__neu__'
-      ? createOrt({
-          name: document.querySelector<HTMLInputElement>('#nc-ort-name')!.value.trim(),
-          welt: document.querySelector<HTMLSelectElement>('#nc-ort-welt')!.value as Welt || undefined,
-          region: document.querySelector<HTMLInputElement>('#nc-ort-region')!.value.trim() || undefined,
-          siedlungsgroesse: document.querySelector<HTMLSelectElement>('#nc-ort-siedlung')!.value as Siedlungsgroesse || undefined,
-          hauptspezies: undefined,
-          etablierteMinderheiten: [],
-          handelsstufe: document.querySelector<HTMLSelectElement>('#nc-ort-handel')!.value as Handelsstufe || undefined,
-          herstellungsort: document.querySelector<HTMLSelectElement>('#nc-ort-herstellung')!.value as Herstellungsort || undefined,
-          haendler: [],
-          lokaleProduktion: [],
-        })
-      : VORDEFINIERTE_ORTE.find((ort) => ort.id === herkunftAuswahl);
-    if (!herkunftOrt) return;
-    const religionAuswahl = document.querySelector<HTMLSelectElement>('#nc-religion')!.value;
-    let religionName: string | undefined;
-    let religionId: string | undefined;
-    if (religionAuswahl === '__neu__') {
-      const relName = document.querySelector<HTMLInputElement>('#nc-religion-name')!.value.trim();
-      if (relName) {
-        const religion = addReligion(relName, document.querySelector<HTMLInputElement>('#nc-religion-volk')!.value.trim() || undefined);
-        religionName = religion.name;
-        religionId = religion.id;
-      }
-    } else if (religionAuswahl) {
-      const religion = getReligionen().find((r) => r.id === religionAuswahl);
-      religionName = religion?.name;
-      religionId = religion?.id;
-    }
-    const sekteAuswahl = document.querySelector<HTMLSelectElement>('#nc-sekte')!.value;
-    let sekteName: string | undefined;
-    if (sekteAuswahl === '__neu__') {
-      const sName = document.querySelector<HTMLInputElement>('#nc-sekte-name')!.value.trim();
-      if (sName && religionId) sekteName = addSekte(religionId, sName);
-    } else if (sekteAuswahl) {
-      sekteName = sekteAuswahl;
-    }
-    const header: Partial<Omit<CharacterHeader, 'name'>> = {
-      spezies,
-      herkunftOrtId: herkunftOrt.id,
-      herkunftSnapshot: {
-        name: herkunftOrt.name, region: herkunftOrt.region ?? '', welt: herkunftOrt.welt,
-      },
-      beruf: document.querySelector<HTMLInputElement>('#nc-beruf')!.value.trim() || undefined,
-      alter: document.querySelector<HTMLInputElement>('#nc-alter')!.value.trim() || undefined,
-      geburtstag: document.querySelector<HTMLInputElement>('#nc-geburtstag')!.value.trim() || undefined,
-      familie: document.querySelector<HTMLInputElement>('#nc-familie')!.value.trim() || undefined,
-      religion: religionName ? combineReligionSekte(religionName, sekteName) : undefined,
-    };
-    const startbudget = (document.querySelector<HTMLInputElement>('input[name="nc-startbudget"]:checked')!.value) as StartbudgetPreset;
-    currentCharacter = createCharacter(name, header, startbudget, newCharacterBestehend);
-    setLastActiveCharacterId(currentCharacter.id);
-    navigationState = { ...DEFAULT_NAVIGATION };
-    showNewCharacterForm = false;
-    newCharacterBestehend = false;
-    render();
-  });
-
-  document.querySelector('#delete-character')?.addEventListener('click', () => {
-    confirmingDelete = true;
-    render();
-  });
-
-  document.querySelector('#delete-cancel')?.addEventListener('click', () => {
-    confirmingDelete = false;
-    render();
-  });
-
-  document.querySelector('#delete-confirm')?.addEventListener('click', () => {
-    if (!currentCharacter) return;
-    deleteCharacter(currentCharacter.id);
-    currentCharacter = null;
-    setLastActiveCharacterId(null);
-    confirmingDelete = false;
-    render();
-  });
+  wireCharacterLifecycleEvents(appState, render);
 
   document.querySelectorAll<HTMLButtonElement>('.main-tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      navigationState = normalizeNavigation({
+      appState.navigationState = normalizeNavigation({
         activeMainTab: btn.dataset.mainTab as MainTab,
         activeSubTab: null,
       }, showGeweihte);
@@ -691,8 +133,8 @@ function render(): void {
 
   document.querySelectorAll<HTMLButtonElement>('.sub-tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      navigationState = {
-        activeMainTab: navigationState.activeMainTab,
+      appState.navigationState = {
+        activeMainTab: appState.navigationState.activeMainTab,
         activeSubTab: btn.dataset.subTab as SubTab,
       };
       render();
@@ -719,66 +161,9 @@ function render(): void {
     });
   });
 
-  if (sheet && currentCharacter) {
+  if (sheet && appState.currentCharacter) {
     const viewContainer = document.querySelector<HTMLDivElement>('#view-container')!;
-    const route = getViewRoute(navigationState.activeMainTab, navigationState.activeSubTab);
-    if (route.kind === 'grunddaten') {
-      renderGrunddatenView(viewContainer, currentCharacter, handleHeaderChange);
-    } else if (route.kind === 'charakterbogen') {
-      renderCharakterbogen(viewContainer, sheet, currentCharacter);
-    } else if (route.kind === 'charakterbogen-spruchmagie') {
-      renderReadOnlySpruchmagieView(viewContainer, sheet);
-    } else if (route.kind === 'charakterbogen-grimoire') {
-      renderGrimoireView(viewContainer, sheet, currentCharacter);
-    } else if (route.kind === 'charakterbogen-ki') {
-      renderReadOnlyKiView(viewContainer, sheet, currentCharacter.grundfertigkeitAuswahl);
-    } else if (route.kind === 'charakterbogen-psi') {
-      renderReadOnlyPsiView(viewContainer, sheet);
-    } else if (route.kind === 'charakterbogen-geweihte') {
-      renderGeweihteView(viewContainer, sheet, currentCharacter);
-    } else if (route.kind === 'charakterbogen-inventar') {
-      renderReadOnlyBesitzView(viewContainer, currentCharacter);
-    } else if (route.kind === 'ausruestung') {
-      if (route.category === 'Besitz') {
-        renderReadOnlyBesitzView(viewContainer, currentCharacter);
-      } else renderAusruestungView(viewContainer, sheet, currentCharacter, {
-        onBuyPreisliste: handleBuyPreisliste,
-        onBuyArtefakt: handleBuyArtefakt,
-        onEquipRuestung: handleEquipRuestung,
-        onEquipRuestungAlleTz: handleEquipRuestungAlleTz,
-        onUnequipRuestung: handleUnequipRuestung,
-        onBuyShield: handleBuyShield,
-        onBuyWeapon: handleBuyWeapon,
-        onBuyFernkampfwaffe: handleBuyFernkampfwaffe,
-        onBuyFeuerwaffe: handleBuyFeuerwaffe,
-        onBuyFeuerwaffenMunition: handleBuyFeuerwaffenMunition,
-        onBuyMunition: handleBuyMunition,
-        onBuyAlchemika: handleBuyAlchemika,
-        onRemoveEquipment: handleRemoveEquipment,
-      }, route.category);
-    } else if (route.kind === 'verteilung') {
-      renderVerteilungView(viewContainer, sheet, currentCharacter);
-    } else if (route.kind === 'auswahl') {
-      renderAuswahlView(viewContainer, sheet, route.category, route.isTalent, handleToggle, currentCharacter.religion);
-    } else if (route.kind === 'kampf') {
-      renderKampfView(
-        viewContainer, sheet, currentCharacter, handleWaffenPoolChange,
-        handleAddWaffenLoadout, handleRemoveWaffenLoadout, handleToggleWaffenLoadoutFavorite,
-      );
-    } else if (route.kind === 'ki') {
-      renderKiView(viewContainer, sheet, handleValueChange, currentCharacter.grundfertigkeitAuswahl, handleGrundfertigkeitPick);
-    } else if (route.kind === 'spruchmagie') {
-      renderSpruchmagieView(viewContainer, sheet, handleValueChange);
-    } else if (route.kind === 'psi') {
-      renderPsiView(viewContainer, sheet, handleValueChange);
-    } else if (route.kind === 'geweihte') {
-      renderGeweihteView(viewContainer, sheet, currentCharacter);
-    } else if (route.kind === 'category') {
-      renderCategoryRouteView(
-        viewContainer, sheet, route.title, route.categories,
-        handleValueChange, handlePoolChange, characterValues, handleWhkCustomChange,
-      );
-    }
+    renderActiveView(viewContainer, sheet, appState.currentCharacter, appState.navigationState, handlers, characterValues);
   }
 }
 

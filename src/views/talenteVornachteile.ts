@@ -9,6 +9,7 @@ import {
   isGeweihterReferenzErlaubt,
 } from '../engine/geweihte';
 import { filterHoechsteStufeJeReihe, getTalentStufeInfo, getVorstufeReferenz } from '../engine/talenteStufenKette';
+import { normalizeForMatch } from '../engine/normalize';
 
 export type OnToggle = (referenz: string, selected: boolean) => void;
 
@@ -268,9 +269,30 @@ export function renderAuswahlView(
   } else if (kategorie === 'Vor- und Nachteile') {
     listHtml = renderGekauftSection(rows, sheet, characterReligion) + renderVnGroups(rows, sheet, characterReligion, needle);
   } else if (groupByParent) {
+    // Manche Talente haben statt einer Charakterklasse ein anderes Talent als Parent (z.B.
+    // "Beidhändig Pistolenschießen" -> "Linkshändig Pistolenschießen", als Voraussetzungs-Kette
+    // gedacht). Fuer die Gruppierung wird diese Kette bis zur eigentlichen Charakterklasse
+    // aufgeloest, sonst entstuende eine eigene Top-Level-Gruppe je Voraussetzungs-Talent.
+    const byName = new Map<string, ComputedRule>();
+    for (const r of rows) {
+      byName.set(normalizeForMatch(r.rule.beschreibung ?? r.rule.referenz), r);
+      byName.set(normalizeForMatch(r.rule.referenz), r);
+    }
+    const resolveKlasse = (r: ComputedRule): string => {
+      let current = r;
+      const seen = new Set<ComputedRule>();
+      while (current.rule.parent) {
+        const parentRow = byName.get(normalizeForMatch(current.rule.parent));
+        if (!parentRow || seen.has(parentRow)) break;
+        seen.add(parentRow);
+        current = parentRow;
+      }
+      return current.rule.parent ?? 'Sonstige';
+    };
+
     const groups = new Map<string, ComputedRule[]>();
     for (const r of rows) {
-      const key = r.rule.parent ?? 'Sonstige';
+      const key = resolveKlasse(r);
       (groups.get(key) ?? groups.set(key, []).get(key)!).push(r);
     }
     listHtml = renderGekauftSection(rows, sheet, characterReligion) + [...groups.entries()]

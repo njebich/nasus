@@ -1,44 +1,40 @@
 // Ausruestungs-Ansicht: Preisliste, Artefakte, Ruestung (Basis+Verarbeitung+Anpassung-
 // Komposition), Schilde und Waffen (je Basis+Material+Fertigung(+Anpassung/Schaftmaterial)-
 // Komposition) mit Kaufen-Buttons, plus "Mein Inventar". Keine Markt-Kontext-Faktoren
-// angewendet (siehe equipmentPricing.ts).
+// angewendet (siehe equipmentPricing.ts). Auf mehrere Dateien nach Kategorie aufgeteilt (siehe
+// ausruestungShared/Ruestung/Schild/Waffen/Fernkampf/Alchemika/Artefakte/Preisliste/Inventar.ts) -
+// diese Datei orchestriert nur noch renderAusruestungView: Filter-Zustand, categoryHtml-
+// Zusammenbau und das Verdrahten aller Kategorie-Event-Handler nach jedem (Neu-)Render.
 
 import type { ComputedSheet } from '../engine/characterSheet';
-import { formatDublonen } from '../utils/format';
-import { RULES } from '../data/rules';
-import { ruestungSlotKey, type CharacterState } from '../state/characterStore';
+import type { CharacterState } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
+import { ARTEFAKT_BASIS } from '../data/equipment/artefakte';
+import { BOEGEN, ARMBRUST, FEUERWAFFEN } from '../data/equipment/fernkampf';
+import { ALCHEMIKA } from '../data/equipment/alchemika';
 import { PREISLISTE } from '../data/equipment/preisliste';
-import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
-import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG, type GenericRow } from '../data/equipment/armor';
-import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
-import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
-import { BOEGEN, ARMBRUST, PFEILE, BOLZEN, FEUERWAFFEN, type FernkampfRow } from '../data/equipment/fernkampf';
-import { ALCHEMIKA, type AlchemikaRow } from '../data/equipment/alchemika';
+import type { FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMunition';
+import type { ArtefaktVariant } from '../engine/equipmentPricing';
+import type { FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
+import { escapeHtml, setBestehenderCharakterMode } from './ausruestungShared';
 import {
-  feuerwaffenMunitionOptionen,
-  type FeuerwaffenMunitionArt,
-} from '../data/equipment/feuerwaffenMunition';
-import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
-import { tooltipAttr } from './tooltip';
+  RS_GRUPPEN, openGruppen as openRuestungGruppen, renderRuestungGruppe, wireRuestungEvents,
+} from './ausruestungRuestung';
+import { SHIELDS, renderShieldRow, wireSchildEvents } from './ausruestungSchild';
+import { WEAPONS, WEAPON_HAUPTFERTIGKEITEN, renderWeaponRow, wireWaffenEvents } from './ausruestungWaffen';
 import {
-  ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
-  FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW,
-} from '../engine/weaponCatalog';
-import { firearmAmmoTypeForArt } from '../engine/ammunitionTypes';
-import { composeArmor } from '../engine/armorComposition';
-import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
-import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
-import { composeMunition } from '../engine/pfeilBolzenComposition';
+  renderFernkampfwaffeRow, renderFernkampfVolksgruppen, openFernkampfVolksgruppen, wireFernkampfwaffeEvents,
+  renderMunitionGruppe, openMunitionGruppen, wireMunitionEvents,
+  renderFeuerwaffeRow, wireFeuerwaffenEvents,
+} from './ausruestungFernkampf';
 import {
-  composeFeuerwaffe, feuerwaffenKomponentenOptionen, feuerwaffenStandardauswahl,
-  type FeuerwaffenSelections,
-} from '../engine/feuerwaffenComposition';
-import {
-  isXKlingeReferenz, resolveXKlingeWirkung, xKlingeTooltip, xKlingeWeaponName, xKlingeWirkungForEntry,
-} from '../engine/xKlinge';
-import { artefaktTooltip, resolveArtefaktGradWerte } from '../engine/artefaktWirkung';
-import { describeStoredWeapon, describeWeaponSelection } from './weaponDisplay';
+  ALCHEMIKA_KATEGORIEN, openAlchemikaKategorien, renderAlchemikaKategorie, wireAlchemikaEvents,
+} from './ausruestungAlchemika';
+import { openArtefakte, renderArtefaktRow, wireArtefakteEvents } from './ausruestungArtefakte';
+import { PREISLISTE_ARTEN, renderPreislisteRow, wirePreislisteEvents } from './ausruestungPreisliste';
+import { renderInventar, wireInventarEvents } from './ausruestungInventar';
+
+export { equipmentInKategorie } from './ausruestungInventar';
 
 export interface RuestungGruppenSelection {
   lage: number;
@@ -70,72 +66,6 @@ export interface AusruestungCallbacks {
 export type KaufKategorie = 'Rüstung' | 'Schilde' | 'Waffen' | 'Bögen' | 'Armbrüste'
   | 'Feuerwaffen' | 'Alchemika' | 'Preisliste' | 'Artefakte';
 
-function escapeHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function kaufenLabel(preis: number): string {
-  return `Kaufen (${formatDublonen(preis)})`;
-}
-
-/** Nutzer 2026-07-24: "Show full item stat block if Schilde, NK-Waffe or FK-Waffe or ammo or
- *  Alchemika" - Beschriftung fuer computedStatsSnapshot-Schluessel (generisch als
- *  Record<string, number> in characterMutations.ts gespeichert, siehe dort). verfuegbarkeit*-
- *  Schluessel sind bewusst ausgeschlossen (Kaufsperre, kein Statwert des Gegenstands selbst). */
-const STAT_SNAPSHOT_LABELS: Record<string, string> = {
-  rs: 'RS', at: 'AT', pa: 'PA', wk: 'WK', klingenbrecher: 'Klingenbrecher', klingenschutz: 'Klingenschutz',
-  staerkeMalus: 'Stärke-Malus', minStaerke: 'Mindest-Stärke', minStaerke1H: 'Mindest-Stärke (1H)',
-  minStaerke2H: 'Mindest-Stärke (2H)', rb: 'RB', gewicht: 'Gewicht', fixschaden: 'Fixschaden',
-  kaliber: 'Kaliber', rw: 'RW', nachladezeit: 'Nachladezeit', nachladenTawTeiler: 'Nachladen (TaW-Teiler)',
-  patzermodifikator: 'Patzer-Modifikator', rwModMeter: 'Reichweiten-Mod (m)', be: 'BE', ini: 'Initiative',
-};
-
-/** Baut den Stat-Block-Tooltip aus einem generischen Zahlen-Snapshot (Schilde/NK-Waffen/
- *  Feuerwaffen/Munition, siehe EquipmentEntry.computedStatsSnapshot bzw. die je-Kategorie
- *  composeX()-Rueckgabe hier im Shop-Picker) - eine Zeile pro Schluessel. */
-function statSnapshotTooltipText(snapshot: Record<string, number | undefined> | undefined): string {
-  if (!snapshot) return '';
-  const lines = Object.entries(snapshot)
-    .filter((entry): entry is [string, number] => entry[1] !== undefined && !entry[0].startsWith('verfuegbarkeit'))
-    .map(([key, value]) => `${STAT_SNAPSHOT_LABELS[key] ?? key}: ${value}`);
-  return lines.join('\n');
-}
-
-function statSnapshotTooltip(snapshot: Record<string, number | undefined> | undefined): string {
-  return tooltipAttr(statSnapshotTooltipText(snapshot));
-}
-
-/** Boegen/Armbrust speichern KEINEN computedStatsSnapshot (fertige Objekte mit festem Preis,
- *  siehe buyFernkampfwaffe) - der Stat-Block kommt hier direkt aus den rohen Basiszeilen-Spalten,
- *  denselben, die renderFernkampfwaffeRow bereits einzeilig anzeigt. */
-function fernkampfwaffeStatTooltip(row: FernkampfRow): string {
-  const schaden = `${row['1.W'] ?? '–'}${row['Fixschaden'] ? ` ${row['Fixschaden']}` : ''}`;
-  return tooltipAttr([
-    `Min. Stärke: ${row['Min. Stä'] ?? '–'}`,
-    `Schaden: ${schaden}`,
-    `RB: ${row['RB'] ?? '–'}`,
-    `RW: ${row['RW'] ?? '–'}`,
-    `Nachladezeit: ${row['Nachladezeit'] ?? '–'}`,
-  ].join('\n'));
-}
-
-/** Alchemika speichert ebenfalls keinen computedStatsSnapshot (reine Preisliste, kein Kompositions-
- *  Ergebnis) - der Stat-Block hier ist Kategorie+Wirkung+Beschreibung aus dem Katalog. */
-function alchemikaStatTooltip(row: AlchemikaRow): string {
-  const lines = [`Kategorie: ${row.kategorie}`, `Wirkung: ${row.wirkung}`];
-  if (row.beschreibung) lines.push(`Beschreibung: ${row.beschreibung}`);
-  return tooltipAttr(lines.join('\n'));
-}
-
-function gesperrtLabel(verfuegbarkeit: number): string {
-  return `(gesperrt) Verfügbarkeit ${verfuegbarkeit}`;
-}
-
-const PREISLISTE_ARTEN = [...new Set(PREISLISTE.map((r) => r.art).filter((a): a is string => !!a))].sort();
-const SHIELDS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] === 'Schild');
-const WEAPONS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] !== 'Schild');
-const WEAPON_HAUPTFERTIGKEITEN = [...new Set(WEAPONS.map((r) => r['Hauptfertigkeit']).filter((v): v is string => !!v))].sort();
-
 let selectedArt = PREISLISTE_ARTEN[0] ?? '';
 let searchText = '';
 let selectedHauptfertigkeit = WEAPON_HAUPTFERTIGKEITEN[0] ?? '';
@@ -147,56 +77,10 @@ let searchFeuerwaffen = '';
 let searchAlchemika = '';
 let searchArtefakte = '';
 
-// TZ-Gruppen x Lagen (Regel Nutzer 2026-07-17: "im character state muss die ruestung erfasst
-// werden" + "feste Slots: TZ-Gruppe x Lage"). Lage 0 (Kleidung) bewusst kein Slot, siehe
-// characterStore.ts. Beschriftung wie auf dem Charakterblatt ("nur Kopf/Torso/Arme/Beine
-// genannt, Zuordnung ist den Spielern bekannt").
-const RS_GRUPPEN: ReadonlyArray<{ gruppe: RsGruppe; label: string }> = [
-  { gruppe: 'kopf', label: 'Kopf' },
-  { gruppe: 'torso', label: 'Torso' },
-  { gruppe: 'arme', label: 'Arme' },
-  { gruppe: 'beine', label: 'Beine' },
-];
-const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
-// Sentinel-Wert im Basis-Select: "Keine Ruestung" muss auf jeder Lage waehlbar sein (Nutzer
-// 2026-07-22), damit eine Lage explizit leer bleibt statt implizit die erste Basis-Option
-// vorauszuwaehlen - relevant v.a. fuer "Für alle TZ kaufen" (leere Lage wird dort uebersprungen).
-const RUESTUNG_KEINE = -1;
-
-/** Transiente Picker-Auswahl je unbelegtem Slot (ueberlebt Re-Renders, bis "Ausruesten" geklickt
- *  wird) - analog zum frueheren globalen armorBasisRow/.../-Muster, jetzt aber pro Slot. */
-const slotPicker = new Map<string, { basisSourceRow: number; verarbeitungSourceRow: number; anpassungSourceRow: number }>();
-
-/** Welche Ruestungs-Gruppen (Kopf/Torso/Arme/Beine) der Spieler aufgeklappt hat - wie
- *  categoryView.ts's openGroupReferenzen: <details> hat keinen persistenten Zustand ueber ein
- *  komplettes Neu-Rendern hinweg, ohne das klappt die Gruppe bei jeder Aenderung (Dropdown-
- *  Wechsel, Ausruesten, ...) faelschlich wieder zu. */
-const openGruppen = new Set<RsGruppe>();
-
-/** "Bestehenden Charakter erstellen"-Modus (Nutzer 2026-07-24): deaktiviert alle Verfuegbarkeit-
- *  Kaufsperren-Anzeigen (gesperrt-Buttons) analog zur Mutation-Gate-Abschaltung in
- *  characterMutations.ts - modul-globaler Renderer-Zustand wie openGruppen/alchemikaQty etc.,
- *  von renderAusruestungView() bei jedem Render aus character.bestehenderCharakter gesetzt. */
-let bestehenderCharakterMode = false;
-
-/** Alchemika-Katalog gruppiert nach Kategorie (Gifte/Heiltraenke/Kampftraenke/Parfum/
- *  Zustandstraenke), collapsible je Kategorie (Nutzer 2026-07-19: "Ausgabe collapsible nach
- *  Kategorie") - gleiches Aufklapp-Persistenz-Muster wie openGruppen. */
-const ALCHEMIKA_KATEGORIEN = [...new Set(ALCHEMIKA.map((r) => r.kategorie))];
-const openAlchemikaKategorien = new Set<string>();
-
-/** Aufgeklappte Volksgruppen innerhalb der Fernkampf-Kategorien. Kategorie und Volk bilden
- *  gemeinsam den Schluessel. Neue Gruppen fehlen bewusst im Set und starten eingeklappt. */
-const openFernkampfVolksgruppen = new Set<string>();
-
-/** Pfeile/Bolzen sind eigene Untergruppen in den Fernkampf-Kategorien. Ihr Aufklappzustand
- *  bleibt bei Modifikator- und Mengenwechseln erhalten. */
-const openMunitionGruppen = new Set<'pfeile' | 'bolzen'>();
-
-/** Auch die Artefaktkarten und der Besitz-Block sind native <details>. Deren Zustand muss
- *  separat gespeichert werden, weil ein Kauf in main.ts die komplette App (einschliesslich
- *  #view-container) ersetzt und der naechste Renderer deshalb kein altes DOM mehr vorfindet. */
-const openArtefakte = new Set<string>();
+/** Auch der Besitz-Block ist ein natives <details> - dessen Zustand muss separat gespeichert
+ *  werden, weil ein Kauf in main.ts die komplette App (einschliesslich #view-container) ersetzt
+ *  und der naechste Renderer deshalb kein altes DOM mehr vorfindet (gleiches Muster wie
+ *  openGruppen/openArtefakte/... in den Kategoriemodulen). */
 const openBesitzKategorien = new Set<KaufKategorie>();
 
 /** Sichert alle Aufklappzustaende aus dem noch lebenden Inventar-DOM. Diese Funktion wird nicht
@@ -206,8 +90,8 @@ const openBesitzKategorien = new Set<KaufKategorie>();
 function rememberOpenInventoryDetails(container: HTMLElement): void {
   container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-gruppe]').forEach((details) => {
     const gruppe = details.dataset.gruppe as RsGruppe;
-    if (details.open) openGruppen.add(gruppe);
-    else openGruppen.delete(gruppe);
+    if (details.open) openRuestungGruppen.add(gruppe);
+    else openRuestungGruppen.delete(gruppe);
   });
   container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-alchemika-kategorie]').forEach((details) => {
     const kategorie = details.dataset.alchemikaKategorie!;
@@ -277,701 +161,6 @@ function preserveInventoryScrollAfterInteraction(event: Event): void {
   window.requestAnimationFrame(restore);
 }
 
-/** Transiente Mengen-Auswahl je Alchemika-Zeile (analog zum Preisliste-Mengenfeld, aber ueber
- *  Re-Renders hinweg gemerkt statt aus dem DOM neu gelesen, da renderAlchemikaRow keine eigene
- *  updatePicker-Funktion braucht). */
-const alchemikaQty = new Map<number, number>();
-
-function renderAlchemikaRow(row: AlchemikaRow): string {
-  const qty = alchemikaQty.get(row.sourceRow) ?? 1;
-  const gesperrt = !bestehenderCharakterMode && row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
-  return `
-    <div class="ausruestung-row" data-alchemika="${row.sourceRow}"${alchemikaStatTooltip(row)}>
-      <span class="stat-label">${escapeHtml(row.name)}</span>
-      <span class="stat-cost">${escapeHtml(row.wirkung)}${row.beschreibung ? ` — ${escapeHtml(row.beschreibung)}` : ''}</span>
-      ${row.preisDublonen !== undefined ? `
-        <input type="number" class="ausruestung-qty" min="1" value="${qty}" data-alchemika-qty="${row.sourceRow}" ${gesperrt ? 'disabled' : ''}/>
-        <button type="button" class="ausruestung-buy-button ausruestung-buy-alchemika${gesperrt ? ' ausruestung-buy-locked' : ''}" data-source-row="${row.sourceRow}" data-unit-price="${row.preisDublonen}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(row.verfuegbarkeitStufe!) : kaufenLabel(row.preisDublonen * qty)}</button>
-      ` : `<span class="stat-cost">nicht käuflich (${escapeHtml(row.preisRoh ?? '?')})</span><span></span>`}
-    </div>`;
-}
-
-function renderAlchemikaKategorie(kategorie: string, needle: string): string {
-  const rows = ALCHEMIKA.filter((r) => r.kategorie === kategorie && (!needle || r.name.toLowerCase().includes(needle)));
-  if (rows.length === 0) return '';
-  const openAttr = needle || openAlchemikaKategorien.has(kategorie) ? ' open' : '';
-  return `
-    <div class="stat-card">
-      <details class="stat-group" data-alchemika-kategorie="${escapeHtml(kategorie)}"${openAttr}>
-        <summary>${escapeHtml(kategorie)} <span class="stat-group-count">(${rows.length} Einträge)</span></summary>
-        <div class="stat-subgroup">
-          ${rows.map(renderAlchemikaRow).join('')}
-        </div>
-      </details>
-    </div>`;
-}
-
-function renderPreislisteRow(row: (typeof PREISLISTE)[number]): string {
-  const price = previewPreislistePrice(row, 1);
-  return `
-    <div class="ausruestung-row">
-      <span class="stat-label">${escapeHtml(row.name ?? '')}</span>
-      ${price !== null ? `
-        <input type="number" class="ausruestung-qty" min="1" value="1" data-source-row="${row.sourceRow}" />
-        <button type="button" class="ausruestung-buy-button ausruestung-buy" data-source-row="${row.sourceRow}" data-unit-price="${price}">${kaufenLabel(price)}</button>
-      ` : `<span class="stat-cost">nicht käuflich (${escapeHtml(row.preisRoh ?? '?')})</span><span></span>`}
-    </div>`;
-}
-
-/** Punkt 6: Artefakte "WHK-Talentwert erhöhen"/"Grundfertigkeit erhöhen" - der Beschreibungstext
- *  beider Artefakte verlangt "Wert muss vorher mindestens 4 betragen haben" (TaW>3). Befristete
- *  Zaubereffekte (WD 7h/40min, kein "immer aktiv"-Artefakt wie Eigenschaft/Attribut, siehe
- *  artefaktBonus.ts) - hier daher NUR Zielauswahl + Speicherung, keine automatische Bonuswirkung. */
-const WHK_TALENTWERT_ARTEFAKT_REFERENZ = 'artefakt_whk_talentwert_erhoehen';
-const GRUNDFERTIGKEIT_ARTEFAKT_REFERENZ = 'artefakt_grundfertigkeit_erhoehen';
-
-interface ArtefaktZielOption { value: string; label: string; wert: number; }
-
-function whkZielOptionen(character: CharacterState): ArtefaktZielOption[] {
-  const feste = RULES.filter((r) => r.kategorie === 'WHK' && r.art === 'Wert' && !r.parent)
-    .map((r) => ({ value: r.referenz, label: r.beschreibung ?? r.referenz, wert: character.values[r.referenz] ?? 0 }));
-  const freie = character.customWhkHauptfertigkeiten.map((h) => ({ value: h.id, label: h.name, wert: h.wert }));
-  return [...feste, ...freie].filter((o) => o.wert > 3).sort((a, b) => a.label.localeCompare(b.label, 'de'));
-}
-
-function grundfertigkeitZielOptionen(character: CharacterState): ArtefaktZielOption[] {
-  return RULES.filter((r) => r.kategorie === 'Grundfertigkeit' && r.art === 'Wert')
-    .map((r) => ({ value: r.referenz, label: r.beschreibung ?? r.referenz, wert: character.values[r.referenz] ?? 0 }))
-    .filter((o) => o.wert > 3)
-    .sort((a, b) => a.label.localeCompare(b.label, 'de'));
-}
-
-/** Fuer den Besitz-Eintrag eines bereits gekauften "WHK-Talentwert erhöhen"/"Grundfertigkeit
- *  erhöhen"-Artefakts: loest die beim Kauf gespeicherte Ziel-Referenz (`selections.ziel`, siehe
- *  characterMutations.ts buyArtefakt) auf einen Anzeigenamen auf. Bewusst OHNE den TaW>3-Filter
- *  der obigen *ZielOptionen-Funktionen (die sind nur fuer die Kauf-Dropdown-Auswahl) - ein einmal
- *  gekauftes Artefakt soll sein Ziel weiter anzeigen, auch wenn der TaW seither gesunken ist. */
-function resolveArtefaktZielLabel(character: CharacterState, artefaktReferenz: string, ziel: string): string | undefined {
-  if (artefaktReferenz === WHK_TALENTWERT_ARTEFAKT_REFERENZ) {
-    const custom = character.customWhkHauptfertigkeiten.find((h) => h.id === ziel);
-    if (custom) return custom.name;
-    return RULES.find((r) => r.kategorie === 'WHK' && r.referenz === ziel)?.beschreibung ?? ziel;
-  }
-  if (artefaktReferenz === GRUNDFERTIGKEIT_ARTEFAKT_REFERENZ) {
-    return RULES.find((r) => r.kategorie === 'Grundfertigkeit' && r.referenz === ziel)?.beschreibung ?? ziel;
-  }
-  return undefined;
-}
-
-function renderArtefaktRow(basis: (typeof ARTEFAKT_BASIS)[number], character: CharacterState): string {
-  const kostenRows = ARTEFAKT_KOSTEN.filter((k) => k.referenz === basis.referenz);
-  const xKlinge = isXKlingeReferenz(basis.referenz);
-  const profaneWaffen = xKlinge
-    ? character.equipment.filter((entry) => entry.family === 'weapon' && entry.magisch !== true)
-    : [];
-  const keineProfaneWaffe = xKlinge && profaneWaffen.length === 0;
-  const waffenPicker = xKlinge ? `
-    <label class="artefakt-waffen-ziel-label">
-      Profane NK-Waffe
-      <select class="artefakt-waffen-ziel" ${keineProfaneWaffe ? 'disabled' : ''}>
-        ${profaneWaffen.map((entry, index) => {
-          const row = MELEE_WEAPON_BY_SOURCE_ROW.get(entry.baseId);
-          return `<option value="${escapeHtml(entry.id)}">${index + 1}. ${escapeHtml(row?.name ?? 'Unbekannte Waffe')} (${formatDublonen(entry.computedPriceSnapshot ?? 0)})</option>`;
-        }).join('')}
-      </select>
-    </label>
-    ${keineProfaneWaffe ? '<p class="artefakt-waffen-hinweis">Benötigt mindestens eine profane NK-Waffe.</p>' : ''}
-  ` : '';
-  const istWhkZiel = basis.referenz === WHK_TALENTWERT_ARTEFAKT_REFERENZ;
-  const istGrundfertigkeitZiel = basis.referenz === GRUNDFERTIGKEIT_ARTEFAKT_REFERENZ;
-  const zielOptionen = istWhkZiel ? whkZielOptionen(character) : istGrundfertigkeitZiel ? grundfertigkeitZielOptionen(character) : undefined;
-  const keinZiel = zielOptionen !== undefined && zielOptionen.length === 0;
-  const zielPicker = zielOptionen ? `
-    <label class="artefakt-waffen-ziel-label">
-      Ziel-${istWhkZiel ? 'WHK' : 'Grundfertigkeit'}
-      <select class="artefakt-ziel-auswahl" ${keinZiel ? 'disabled' : ''}>
-        ${zielOptionen.map((o) => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)} (TaW ${o.wert})</option>`).join('')}
-      </select>
-    </label>
-    ${keinZiel ? `<p class="artefakt-waffen-hinweis">Benötigt eine ${istWhkZiel ? 'WHK-Fertigkeit' : 'Grundfertigkeit'} mit TaW über 3.</p>` : ''}
-  ` : '';
-  const keinKaufZiel = keineProfaneWaffe || keinZiel;
-  const options = kostenRows.map((k) => {
-    const einmalig = previewArtefaktPrice(k, 'einmalig');
-    const permanent = previewArtefaktPrice(k, 'permanent');
-    const verfuegbarkeitEinmalig = Number(k.verfuegbarkeitEinmalig);
-    const verfuegbarkeitPermanent = Number(k.verfuegbarkeitPermanent);
-    const einmaligGesperrt = !bestehenderCharakterMode && Number.isFinite(verfuegbarkeitEinmalig) && verfuegbarkeitEinmalig >= 5;
-    const permanentGesperrt = !bestehenderCharakterMode && Number.isFinite(verfuegbarkeitPermanent) && verfuegbarkeitPermanent >= 5;
-    const einmaligDisabled = einmaligGesperrt || keinKaufZiel;
-    const permanentDisabled = permanentGesperrt || keinKaufZiel;
-    const wirkung = xKlinge ? resolveXKlingeWirkung(basis.referenz, k.grad ?? '') : undefined;
-    const gradWerte = resolveArtefaktGradWerte(basis, k.grad ?? '');
-    const wirkungText = wirkung
-      ? [xKlingeTooltip(wirkung), `ED: ${gradWerte.effektdauer}`, `WD: ${gradWerte.wirkungsdauer}`].join('\n')
-      : artefaktTooltip(basis, k.grad ?? '');
-    const zielFehltLabel = istWhkZiel ? 'Ziel-WHK benötigt' : 'Ziel-Grundfertigkeit benötigt';
-    return `
-      <div class="artefakt-grad-row"${tooltipAttr(wirkungText)}>
-        <span class="artefakt-grad-label">Grad ${escapeHtml(k.grad ?? '?')}</span>
-        ${einmalig !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${einmaligDisabled ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="einmalig" data-artefakt-preis="${einmalig}" ${einmaligDisabled ? 'disabled' : ''}>${einmaligGesperrt ? gesperrtLabel(verfuegbarkeitEinmalig) : keineProfaneWaffe ? 'Profane NK-Waffe benötigt' : keinZiel ? zielFehltLabel : `Einmalig kaufen (${formatDublonen(einmalig)})`}</button>` : ''}
-        ${permanent !== null ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-artefakt${permanentDisabled ? ' ausruestung-buy-locked' : ''}" data-referenz="${basis.referenz}" data-grad="${k.grad}" data-variant="permanent" data-artefakt-preis="${permanent}" ${permanentDisabled ? 'disabled' : ''}>${permanentGesperrt ? gesperrtLabel(verfuegbarkeitPermanent) : keineProfaneWaffe ? 'Profane NK-Waffe benötigt' : keinZiel ? zielFehltLabel : `Permanent kaufen (${formatDublonen(permanent)})`}</button>` : ''}
-      </div>`;
-  }).join('');
-  // <details> als direktes Flex-Item hat einen Chromium-Renderbug (open=false im DOM, Inhalt
-  // trotzdem sichtbar ausserhalb des Layouts) - Huelle als nicht-flex Block-Element dazwischen.
-  return `
-    <div class="artefakt-card">
-      <details class="artefakt-details" data-artefakt-referenz="${escapeHtml(basis.referenz)}"${openArtefakte.has(basis.referenz) ? ' open' : ''}>
-        <summary>${escapeHtml(basis.name ?? basis.referenz)}</summary>
-        <p class="artefakt-beschreibung">${escapeHtml(basis.beschreibung ?? '')}</p>
-        ${waffenPicker}
-        ${zielPicker}
-        ${options}
-      </details>
-    </div>`;
-}
-
-function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: CharacterState): string {
-  const key = ruestungSlotKey(gruppe, lage);
-  const equipped = character.ruestungSlots[key];
-
-  if (equipped) {
-    const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === equipped.basisSourceRow);
-    const stats = equipped.computedStatsSnapshot;
-    return `
-      <div class="ruestung-slot-row ausruestung-row" data-slot="${key}">
-        <span class="stat-label">Lage ${lage}: ${escapeHtml(basis?.name ?? '?')}</span>
-        <span class="stat-cost">RS ${stats.rs} | RH ${stats.rh} | ${equipped.computedPriceSnapshot} D</span>
-        <button type="button" class="ausruestung-buy-button ruestung-unequip" data-gruppe="${gruppe}" data-lage="${lage}">Ausziehen</button>
-      </div>`;
-  }
-
-  const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
-  if (optionen.length === 0) {
-    // Lage 5 (Drachenschuppen/Spinnweben) hat noch keine Daten in Ruestung-Basis - Slot ist
-    // strukturell vorbereitet, aber ohne Kaufoption bis die Daten+Sonderregeln stehen.
-    return `
-      <div class="ruestung-slot-row ausruestung-row">
-        <span class="stat-label">Lage ${lage}: (noch keine Optionen hinterlegt)</span>
-      </div>`;
-  }
-
-  const sel = slotPicker.get(key) ?? {
-    basisSourceRow: RUESTUNG_KEINE,
-    verarbeitungSourceRow: RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0,
-    anpassungSourceRow: RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0,
-  };
-  const basisSelectHtml = `
-    <select class="ruestung-basis-select" data-slot="${key}">
-      <option value="${RUESTUNG_KEINE}" ${sel.basisSourceRow === RUESTUNG_KEINE ? 'selected' : ''}>Keine Rüstung</option>
-      ${optionen.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === sel.basisSourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
-    </select>`;
-
-  if (sel.basisSourceRow === RUESTUNG_KEINE) {
-    return `
-      <div class="ruestung-slot-row ausruestung-row" data-slot="${key}" data-gruppe="${gruppe}" data-lage="${lage}">
-        <span class="stat-label">Lage ${lage}</span>
-        ${basisSelectHtml}
-        <span class="stat-cost">RS 0 | RH 0 | 0 D</span>
-      </div>`;
-  }
-
-  const basis = optionen.find((r) => r.sourceRow === sel.basisSourceRow) ?? optionen[0];
-  const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === sel.verarbeitungSourceRow) ?? RUESTUNG_VERARBEITUNG[0];
-  const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === sel.anpassungSourceRow) ?? RUESTUNG_ANPASSUNG[0];
-  const composed = composeArmor(basis, verarbeitung, anpassung);
-
-  return `
-    <div class="ruestung-slot-row ausruestung-row" data-slot="${key}" data-gruppe="${gruppe}" data-lage="${lage}">
-      <span class="stat-label">Lage ${lage}</span>
-      ${basisSelectHtml}
-      <select class="ruestung-verarbeitung-select" data-slot="${key}">
-        ${RUESTUNG_VERARBEITUNG.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === verarbeitung.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
-      </select>
-      <select class="ruestung-anpassung-select" data-slot="${key}">
-        ${RUESTUNG_ANPASSUNG.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === anpassung.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
-      </select>
-      <span class="stat-cost">RS ${composed.rs} | RH ${composed.rh} | ${composed.preis} D</span>
-      <button type="button" class="ausruestung-buy-button ruestung-equip" data-gruppe="${gruppe}" data-lage="${lage}">${kaufenLabel(composed.preis)}</button>
-    </div>`;
-}
-
-/** Liest fuer jede Lage der gegebenen Gruppe die "gewuenschte" Basis/Verarbeitung/Anpassung
- *  aus - entweder das bereits Ausgeruestete, oder (falls noch leer) die aktuelle Picker-Auswahl
- *  (bzw. deren Default). Lagen ohne Optionen (z.B. Lage 5) werden ausgelassen. Grundlage fuer
- *  den "Für alle TZ kaufen"-Button (Nutzer 2026-07-22: "ich stelle alle lagen wie gewünscht ein
- *  und der klick auf den button kauft alles wie auf dieser TZ auf allen anderen tz"). */
-function getGruppenSelections(gruppe: RsGruppe, character: CharacterState): RuestungGruppenSelection[] {
-  const selections: RuestungGruppenSelection[] = [];
-  for (const lage of RUESTUNG_LAGEN) {
-    const key = ruestungSlotKey(gruppe, lage);
-    const equipped = character.ruestungSlots[key];
-    if (equipped) {
-      selections.push({
-        lage, basisSourceRow: equipped.basisSourceRow,
-        verarbeitungSourceRow: equipped.verarbeitungSourceRow, anpassungSourceRow: equipped.anpassungSourceRow,
-      });
-      continue;
-    }
-    const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
-    if (optionen.length === 0) continue;
-    const sel = slotPicker.get(key) ?? {
-      basisSourceRow: RUESTUNG_KEINE,
-      verarbeitungSourceRow: RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0,
-      anpassungSourceRow: RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0,
-    };
-    if (sel.basisSourceRow === RUESTUNG_KEINE) continue;
-    selections.push({ lage, ...sel });
-  }
-  return selections;
-}
-
-/** Summiert den Kaufpreis, den "Für alle TZ kaufen" tatsaechlich ausloesen wuerde: nur die
- *  anderen 3 Gruppen, und je Lage nur wenn dort noch nichts ausgeruestet ist (Nutzer 2026-07-22:
- *  "Überspringen und nur leere Gruppen kaufen"). */
-function berechneAlleTzPreis(
-  gruppe: RsGruppe, selections: RuestungGruppenSelection[], character: CharacterState,
-): { preis: number; anzahl: number } {
-  let preis = 0;
-  let anzahl = 0;
-  for (const { gruppe: ziel } of RS_GRUPPEN) {
-    if (ziel === gruppe) continue;
-    for (const sel of selections) {
-      if (character.ruestungSlots[ruestungSlotKey(ziel, sel.lage)]) continue;
-      const basis = RUESTUNG_BASIS.find((r) => r.sourceRow === sel.basisSourceRow);
-      const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === sel.verarbeitungSourceRow);
-      const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === sel.anpassungSourceRow);
-      if (!basis || !verarbeitung || !anpassung) continue;
-      preis += composeArmor(basis, verarbeitung, anpassung).preis;
-      anzahl += 1;
-    }
-  }
-  return { preis, anzahl };
-}
-
-function renderRuestungGruppe(gruppe: RsGruppe, label: string, character: CharacterState): string {
-  const gesamtRs = RUESTUNG_LAGEN.reduce(
-    (sum, lage) => sum + (character.ruestungSlots[ruestungSlotKey(gruppe, lage)]?.computedStatsSnapshot.rs ?? 0), 0,
-  );
-  const gesamtRh = RUESTUNG_LAGEN.reduce(
-    (sum, lage) => sum + (character.ruestungSlots[ruestungSlotKey(gruppe, lage)]?.computedStatsSnapshot.rh ?? 0), 0,
-  );
-  const openAttr = openGruppen.has(gruppe) ? ' open' : '';
-  const selections = getGruppenSelections(gruppe, character);
-  const { preis: alleTzPreis, anzahl: alleTzAnzahl } = berechneAlleTzPreis(gruppe, selections, character);
-  const alleTzRow = selections.length === 0 ? '' : `
-    <div class="ausruestung-row ruestung-alle-tz-row">
-      <span class="stat-label">Für alle TZ übernehmen (${label})</span>
-      ${alleTzAnzahl > 0
-    ? `<button type="button" class="ausruestung-buy-button ruestung-buy-alle-tz" data-gruppe="${gruppe}">Für alle TZ kaufen (${formatDublonen(alleTzPreis)})</button>`
-    : `<span class="stat-cost">bereits überall ausgerüstet</span>`}
-    </div>`;
-  return `
-    <div class="stat-card">
-      <details class="stat-group" data-gruppe="${gruppe}"${openAttr}>
-        <summary>${label} <span class="stat-group-count">(RS ${gesamtRs} | RH ${gesamtRh})</span></summary>
-        <div class="stat-subgroup">
-          ${alleTzRow}
-          ${RUESTUNG_LAGEN.map((lage) => renderRuestungSlotRow(gruppe, lage, character)).join('')}
-        </div>
-      </details>
-    </div>`;
-}
-
-/** Transiente Picker-Auswahl je Schild (Regel Nutzer 2026-07-17: "die haben auch Anpassung" -
- *  Material/Fertigung/Bespannung, analog zum Ruestungs-Slot-Picker). Kolhartz(Material)/
- *  Kohlharz(Bespannung) sind nur fuer Zentauren waehlbar, siehe istSchildKomponenteVerfuegbar. */
-const shieldPicker = new Map<number, { materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>();
-
-function renderShieldRow(row: (typeof SHIELDS)[number], character: CharacterState): string {
-  const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m.name, character.spezies));
-  const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b.name, character.spezies));
-  const sel = shieldPicker.get(row.sourceRow) ?? {
-    materialSourceRow: materialOptionen[0]?.sourceRow ?? 0,
-    fertigungSourceRow: SCHILD_FERTIGUNG[0]?.sourceRow ?? 0,
-    bespannungSourceRow: bespannungOptionen[0]?.sourceRow ?? 0,
-  };
-  const material = materialOptionen.find((m) => m.sourceRow === sel.materialSourceRow) ?? materialOptionen[0];
-  const fertigung = SCHILD_FERTIGUNG.find((f) => f.sourceRow === sel.fertigungSourceRow) ?? SCHILD_FERTIGUNG[0];
-  const bespannung = bespannungOptionen.find((b) => b.sourceRow === sel.bespannungSourceRow) ?? bespannungOptionen[0];
-  const composed = composeShield(row, material, fertigung, bespannung);
-  const statTooltip = statSnapshotTooltip({
-    rs: composed.rs, klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz,
-    at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus, minStaerke: composed.minStaerke,
-  });
-
-  return `
-    <div class="ausruestung-row" data-shield="${row.sourceRow}"${statTooltip}>
-      <span class="stat-label">${escapeHtml(row.name)}</span>
-      <select class="schild-material-select" data-shield="${row.sourceRow}">
-        ${materialOptionen.map((m) => `<option value="${m.sourceRow}" ${m.sourceRow === material.sourceRow ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
-      </select>
-      <select class="schild-fertigung-select" data-shield="${row.sourceRow}">
-        ${SCHILD_FERTIGUNG.map((f) => `<option value="${f.sourceRow}" ${f.sourceRow === fertigung.sourceRow ? 'selected' : ''}>${escapeHtml(f.name)}</option>`).join('')}
-      </select>
-      <select class="schild-bespannung-select" data-shield="${row.sourceRow}">
-        ${bespannungOptionen.map((b) => `<option value="${b.sourceRow}" ${b.sourceRow === bespannung.sourceRow ? 'selected' : ''}>${escapeHtml(b.name)}</option>`).join('')}
-      </select>
-      <span class="stat-cost">RS ${composed.rs}${composed.preis === null ? ' | kein Preis (Meister-Ermessen)' : ''}</span>
-      ${composed.preis !== null
-    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-shield" data-shield="${row.sourceRow}">${kaufenLabel(composed.preis)}</button>`
-    : '<span></span>'}
-    </div>`;
-}
-
-/** Transiente Picker-Auswahl je Waffe (Regel Nutzer 2026-07-18: "fang an damit, die nk-waffen
- *  inkl. herstellungs-modifikatoren zu implementieren" - analog zum Schild-Picker, aber mit 4
- *  statt 3 Ebenen: Material/Fertigung/Anpassung/Schaftmaterial). */
-const weaponPicker = new Map<number, {
-  materialSourceRow: number; fertigungSourceRow: number; anpassungSourceRow: number; schaftmaterialSourceRow: number;
-}>();
-
-/** "Standard" hat ausser Name/sourceRow keine Spalten - traegt 0 zu jeder Kompositionsgroesse
- *  bei, daher als impliziter Schaftmaterial-Wert fuer Waffen ohne eigene Auswahl (siehe
- *  waffeBrauchtSchaftmaterial) sicher verwendbar. */
-const SCHAFTMATERIAL_STANDARD = NK_SCHAFTMATERIAL.find((s) => s.name === 'Standard')!;
-
-/** Regel Nutzer 2026-07-18: "Bei allen waffen, die einen holzschaft haben, muss die schaft-mod
- *  auswahl bestehen. bei allen anderen keine auswahl." - je Hauptfertigkeit uniform (nicht aus
- *  der uneinheitlichen Art-Specials-Freitextspalte abgeleitet): Stangenwaffen=alle,
- *  Hiebwaffen/Klingenwaffen/Stichwaffen/Unbewaffnet=keine. */
-function waffeBrauchtSchaftmaterial(row: GenericRow): boolean {
-  return row['Hauptfertigkeit'] === 'Stangenwaffen';
-}
-
-function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterState): string {
-  const brauchtSchaft = waffeBrauchtSchaftmaterial(row);
-  const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
-  const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
-  const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
-  const schaftmaterialOptionen = brauchtSchaft
-    ? NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies))
-    : [SCHAFTMATERIAL_STANDARD];
-  const sel = weaponPicker.get(row.sourceRow) ?? {
-    materialSourceRow: materialOptionen[0]?.sourceRow ?? 0,
-    fertigungSourceRow: fertigungOptionen[0]?.sourceRow ?? 0,
-    anpassungSourceRow: anpassungOptionen[0]?.sourceRow ?? 0,
-    schaftmaterialSourceRow: schaftmaterialOptionen[0]?.sourceRow ?? 0,
-  };
-  const material = materialOptionen.find((m) => m.sourceRow === sel.materialSourceRow) ?? materialOptionen[0];
-  const fertigung = fertigungOptionen.find((f) => f.sourceRow === sel.fertigungSourceRow) ?? fertigungOptionen[0];
-  const anpassung = anpassungOptionen.find((a) => a.sourceRow === sel.anpassungSourceRow) ?? anpassungOptionen[0];
-  const schaftmaterial = brauchtSchaft
-    ? (schaftmaterialOptionen.find((s) => s.sourceRow === sel.schaftmaterialSourceRow) ?? schaftmaterialOptionen[0])
-    : SCHAFTMATERIAL_STANDARD;
-  const composed = composeWeapon(row, material, fertigung, anpassung, schaftmaterial);
-  const display = describeWeaponSelection(row, material, fertigung, anpassung, schaftmaterial, composed);
-  const statTooltip = statSnapshotTooltip({
-    at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus,
-    minStaerke1H: composed.minStaerke1H, minStaerke2H: composed.minStaerke2H,
-    klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz, rb: composed.rb,
-  });
-
-  return `
-    <div class="ausruestung-row" data-weapon="${row.sourceRow}"${statTooltip}>
-      <span class="stat-label">${escapeHtml(row.name)}</span>
-      <select class="waffe-material-select" data-weapon="${row.sourceRow}">
-        ${materialOptionen.map((m) => `<option value="${m.sourceRow}" ${m.sourceRow === material.sourceRow ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
-      </select>
-      <select class="waffe-fertigung-select" data-weapon="${row.sourceRow}">
-        ${fertigungOptionen.map((f) => `<option value="${f.sourceRow}" ${f.sourceRow === fertigung.sourceRow ? 'selected' : ''}>${escapeHtml(f.name)}</option>`).join('')}
-      </select>
-      <select class="waffe-anpassung-select" data-weapon="${row.sourceRow}">
-        ${anpassungOptionen.map((a) => `<option value="${a.sourceRow}" ${a.sourceRow === anpassung.sourceRow ? 'selected' : ''}>${escapeHtml(a.name)}</option>`).join('')}
-      </select>
-      ${brauchtSchaft ? `
-      <select class="waffe-schaftmaterial-select" data-weapon="${row.sourceRow}">
-        ${schaftmaterialOptionen.map((s) => `<option value="${s.sourceRow}" ${s.sourceRow === schaftmaterial.sourceRow ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('')}
-      </select>` : ''}
-      <span class="stat-cost">n-Mod ${composed.at}/${composed.pa}${composed.preis === null ? ' | kein Preis (kein Materialpreis-Faktor)' : ''}</span>
-      ${composed.preis !== null
-    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-weapon" data-weapon="${row.sourceRow}">${kaufenLabel(composed.preis)}</button>`
-    : '<span></span>'}
-    </div>
-    <div class="waffe-details">
-      <strong>${escapeHtml(display.title)}</strong><br>${escapeHtml(display.stats)}
-    </div>`;
-}
-
-/** Boegen/Armbrust sind fertige Objekte mit festem Preis (keine Material/Fertigung/Anpassung-
- *  Komposition wie NK-Waffen/Schilde/Ruestung - siehe project-fk-waffen-erfassung memory). */
-function renderFernkampfwaffeRow(typ: 'boegen' | 'armbrust', row: FernkampfRow): string {
-  const gesperrt = !bestehenderCharakterMode && row.verfuegbarkeitStufe !== undefined && row.verfuegbarkeitStufe >= 5;
-  return `
-    <div class="ausruestung-row" data-fernkampfwaffe="${typ}:${row.sourceRow}"${fernkampfwaffeStatTooltip(row)}>
-      <span class="stat-label">${escapeHtml(row.name)}</span>
-      <span class="stat-cost">Min.Stä ${escapeHtml(row['Min. Stä'] ?? '-')} | ${escapeHtml(row['1.W'] ?? '-')}${row['Fixschaden'] ? escapeHtml(row['Fixschaden']) : ''} | RW ${escapeHtml(row['RW'] ?? '-')} | Nachladezeit ${escapeHtml(row['Nachladezeit'] ?? '-')}</span>
-      ${row.preisDublonen !== undefined
-    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-fernkampfwaffe${gesperrt ? ' ausruestung-buy-locked' : ''}" data-typ="${typ}" data-source-row="${row.sourceRow}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(row.verfuegbarkeitStufe!) : kaufenLabel(row.preisDublonen)}</button>`
-    : `<span class="stat-cost">nicht käuflich (${escapeHtml(row['Preis'] ?? '?')})</span>`}
-    </div>`;
-}
-
-const feuerwaffenPicker = new Map<number, FeuerwaffenSelections>();
-const feuerwaffenMunitionQty = new Map<number, number>();
-
-function renderFeuerwaffeRow(row: FernkampfRow): string {
-  const optionen = feuerwaffenKomponentenOptionen();
-  const standard = feuerwaffenStandardauswahl(row);
-  const auswahl = feuerwaffenPicker.get(row.sourceRow) ?? standard;
-  const composed = composeFeuerwaffe(row, auswahl);
-  const gesperrt = !bestehenderCharakterMode && composed.verfuegbarkeitStufe >= 5;
-  const quantity = feuerwaffenMunitionQty.get(row.sourceRow) ?? 1;
-  const munitionOptionen = feuerwaffenMunitionOptionen(
-    row['Lademechanik'] ?? '', composed.munition, composed.kaliber,
-  );
-  const option = (items: typeof optionen.verarbeitungen, selected: number) => items
-    .map((item) => `<option value="${item.sourceRow}" ${item.sourceRow === selected ? 'selected' : ''}>${escapeHtml(item.name)}</option>`).join('');
-  const statTooltip = statSnapshotTooltip({
-    gewicht: composed.gewicht, minStaerke: composed.minStaerke, fixschaden: composed.fixschaden,
-    rb: composed.rb, kaliber: composed.kaliber, rw: composed.rw, nachladezeit: composed.nachladezeit,
-    nachladenTawTeiler: composed.nachladenTawTeiler, patzermodifikator: composed.patzermodifikator, ini: composed.ini,
-  });
-  return `
-    <div class="ausruestung-row feuerwaffe-row" data-feuerwaffe="${row.sourceRow}"${statTooltip}>
-      <span class="stat-label">${escapeHtml(row.name)}</span>
-      <span class="stat-cost">${composed.ersterWuerfel}+${composed.zweiterWuerfel}${composed.fixschaden ? ` +${composed.fixschaden}` : ''} | RB ${composed.rb} | Min.St&auml; ${composed.minStaerke} | RW ${composed.rw}</span>
-      <select class="feuerwaffe-verarbeitung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.verarbeitungen, auswahl.verarbeitungSourceRow)}</select>
-      <select class="feuerwaffe-anpassung-select" data-feuerwaffe="${row.sourceRow}">${option(optionen.anpassungen, auswahl.anpassungSourceRow)}</select>
-      ${gesperrt
-    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-feuerwaffe ausruestung-buy-locked" data-feuerwaffe="${row.sourceRow}" disabled>${gesperrtLabel(composed.verfuegbarkeitStufe)}</button>`
-    : `<button type="button" class="ausruestung-buy-button ausruestung-buy-feuerwaffe" data-feuerwaffe="${row.sourceRow}">${kaufenLabel(composed.preisDublonen)}</button>`}
-    </div>
-    <div class="waffe-details feuerwaffe-details" data-feuerwaffe-details="${row.sourceRow}">
-      <span>${escapeHtml(row['Bauart'] ?? '-')} | ${escapeHtml(row['Lademechanik'] ?? '-')} | ${escapeHtml(row['Schloss'] ?? '-')} | ${escapeHtml(row['Lauf'] ?? '-')}</span>
-      ${munitionOptionen.length ? `
-        <span class="feuerwaffe-munition-kauf">
-          <select class="feuerwaffe-munition-qty" data-feuerwaffe="${row.sourceRow}" aria-label="Munitionsmenge">
-            ${[1, 10, 100].map((qty) => `<option value="${qty}" ${qty === quantity ? 'selected' : ''}>${qty}</option>`).join('')}
-          </select>
-          ${munitionOptionen.map((ammo) => `<button type="button" class="ausruestung-buy-feuerwaffen-munition" data-feuerwaffe="${row.sourceRow}" data-art="${ammo.art}" data-kaliber="${ammo.kaliber}">${escapeHtml(ammo.label)} kaufen (${formatDublonen(ammo.preisDublonen * quantity)})</button>`).join('')}
-        </span>` : ''}
-    </div>`;
-}
-
-function renderFernkampfVolksgruppen(
-  kategorie: 'boegen' | 'armbrust' | 'feuerwaffen',
-  rows: FernkampfRow[],
-  renderRow: (row: FernkampfRow) => string,
-  searchActive: boolean,
-): string {
-  const gruppen = new Map<string, FernkampfRow[]>();
-  rows.forEach((row) => {
-    const volk = row['Volk']?.trim() || 'Ohne Volk';
-    const gruppe = gruppen.get(volk);
-    if (gruppe) gruppe.push(row);
-    else gruppen.set(volk, [row]);
-  });
-
-  return [...gruppen.entries()].map(([volk, gruppenRows]) => {
-    const gruppenKey = `${kategorie}:${volk}`;
-    // Bei aktiver Suche werden alle (uebrig gebliebenen, d.h. treffenden) Gruppen zwangsweise
-    // aufgeklappt, ohne den manuellen Aufklapp-Zustand zu ueberschreiben - selbes Muster wie in
-    // talenteVornachteile.ts.
-    const openAttr = searchActive || openFernkampfVolksgruppen.has(gruppenKey) ? ' open' : '';
-    return `
-      <div class="stat-card">
-        <details class="stat-group" data-fernkampf-volksgruppe="${escapeHtml(gruppenKey)}"${openAttr}>
-          <summary>${escapeHtml(volk)} <span class="stat-group-count">(${gruppenRows.length} Eintr&auml;ge)</span></summary>
-          <div class="stat-subgroup">
-            ${gruppenRows.map(renderRow).join('')}
-          </div>
-        </details>
-      </div>`;
-  }).join('');
-}
-
-/** Transiente Auswahl je Pfeil-/Bolzenart. Die Basis steht als vollstaendige Liste fest; nur der
- *  optionale Spitzen-Modifikator und die Kaufmenge werden pro Zeile ausgewaehlt. */
-const munitionPicker = new Map<string, { modifikatorSourceRow: number | null; quantity: number }>();
-
-function munitionPickerKey(typ: 'pfeile' | 'bolzen', basisSourceRow: number): string {
-  return `${typ}:${basisSourceRow}`;
-}
-
-function munitionBasisOptionen(typ: 'pfeile' | 'bolzen'): FernkampfRow[] {
-  return (typ === 'pfeile' ? PFEILE : BOLZEN).filter((r) => r['Kategorie'] !== 'Spitzen-Modifikator');
-}
-function munitionModOptionen(typ: 'pfeile' | 'bolzen'): FernkampfRow[] {
-  return (typ === 'pfeile' ? PFEILE : BOLZEN).filter((r) => r['Kategorie'] === 'Spitzen-Modifikator');
-}
-
-function renderMunitionCard(typ: 'pfeile' | 'bolzen'): string {
-  const basisOptionen = munitionBasisOptionen(typ);
-  const modOptionen = munitionModOptionen(typ);
-  return basisOptionen.map((basis) => {
-    const sel = munitionPicker.get(munitionPickerKey(typ, basis.sourceRow)) ?? { modifikatorSourceRow: null, quantity: 1 };
-    const modifikator = sel.modifikatorSourceRow !== null
-      ? modOptionen.find((r) => r.sourceRow === sel.modifikatorSourceRow) ?? null
-      : null;
-    const composed = composeMunition(basis, modifikator);
-    const gesperrt = !bestehenderCharakterMode && composed.verfuegbarkeitStufe !== undefined && composed.verfuegbarkeitStufe >= 5;
-    const statTooltip = tooltipAttr([
-      `Schaden: ${composed.wuerfel}`,
-      `Fixschaden: ${composed.fixschaden}`,
-      `RB: ${composed.rb}`,
-      `Reichweiten-Mod: ${composed.rwModMeter}m`,
-      `BE: ${composed.be}`,
-    ].join('\n'));
-    return `
-      <div class="ausruestung-row munition-row" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}"${statTooltip}>
-        <span class="munition-name">${escapeHtml(basis.name)} <span class="munition-kategorie">(${escapeHtml(basis['Kategorie'] ?? '')})</span></span>
-        <select class="munition-mod-select" data-munition="${typ}" aria-label="Modifikator f&uuml;r ${escapeHtml(basis.name)}">
-          <option value="" ${modifikator === null ? 'selected' : ''}>Kein Modifikator</option>
-          ${modOptionen.map((r) => `<option value="${r.sourceRow}" ${modifikator?.sourceRow === r.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
-        </select>
-        <select class="munition-qty" data-munition="${typ}" aria-label="Menge f&uuml;r ${escapeHtml(basis.name)}">
-          ${[1, 10, 100].map((qty) => `<option value="${qty}" ${qty === sel.quantity ? 'selected' : ''}>${qty}</option>`).join('')}
-        </select>
-        <span class="stat-cost">${escapeHtml(composed.wuerfel)} | Fixschaden ${composed.fixschaden >= 0 ? '+' : ''}${composed.fixschaden} | RB ${composed.rb >= 0 ? '+' : ''}${composed.rb} | RW-Mod ${composed.rwModMeter >= 0 ? '+' : ''}${composed.rwModMeter}m | BE ${composed.be}${composed.preisDublonen === null ? ' | nicht käuflich' : ''}</span>
-        ${composed.preisDublonen !== null
-      ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-munition${gesperrt ? ' ausruestung-buy-locked' : ''}" data-munition="${typ}" data-basis-source-row="${basis.sourceRow}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(composed.verfuegbarkeitStufe!) : kaufenLabel(composed.preisDublonen * sel.quantity)}</button>`
-      : '<span></span>'}
-      </div>`;
-  }).join('');
-}
-
-function renderMunitionGruppe(typ: 'pfeile' | 'bolzen', label: string): string {
-  const count = munitionBasisOptionen(typ).length;
-  const openAttr = openMunitionGruppen.has(typ) ? ' open' : '';
-  return `
-    <div class="stat-card munition-group-card">
-      <details class="stat-group" data-munition-gruppe="${typ}"${openAttr}>
-        <summary>${label} <span class="stat-group-count">(${count} Eintr&auml;ge)</span></summary>
-        <div class="ausruestung-category munition-category">${renderMunitionCard(typ)}</div>
-      </details>
-    </div>`;
-}
-
-export function equipmentInKategorie(entry: CharacterState['equipment'][number], category: KaufKategorie): boolean {
-  if (category === 'Schilde') return entry.family === 'shield';
-  if (category === 'Waffen') return entry.family === 'weapon';
-  if (category === 'Bögen') return (entry.family === 'fernkampfwaffe' && entry.baseTable === 'boegen')
-    || (entry.family === 'ammo' && entry.baseTable === 'pfeile');
-  if (category === 'Armbrüste') return (entry.family === 'fernkampfwaffe' && entry.baseTable === 'armbrust')
-    || (entry.family === 'ammo' && entry.baseTable === 'bolzen');
-  if (category === 'Feuerwaffen') return entry.family === 'feuerwaffe'
-    || (entry.family === 'ammo' && entry.baseTable === 'feuerwaffen-munition');
-  if (category === 'Alchemika') return entry.family === 'alchemika';
-  if (category === 'Preisliste') return entry.family === 'preisliste';
-  if (category === 'Artefakte') return entry.family === 'artefakt';
-  return false;
-}
-
-function renderInventar(character: CharacterState, category: KaufKategorie): string {
-  const equipment = character.equipment.filter((entry) => equipmentInKategorie(entry, category));
-  if (equipment.length === 0) {
-    return '<p class="inventar-empty">In dieser Kategorie noch nichts gekauft.</p>';
-  }
-  return equipment.map((e) => {
-    let invalidReason = e.invalidReason;
-    if (!invalidReason && (e.family === 'weapon' || e.family === 'shield') && !MELEE_WEAPON_BY_SOURCE_ROW.has(e.baseId)) {
-      invalidReason = `Ungültige Waffe: Tabelle '${e.baseTable}', sourceRow ${e.baseId}, `
-        + `Waffe '<unbekannt>', Spezialisierung '<fehlt>': Katalogeintrag fehlt`;
-    } else if (!invalidReason && e.family === 'feuerwaffe' && !FIREARM_BY_SOURCE_ROW.has(e.baseId)) {
-      invalidReason = `Ungültige Waffe: Tabelle 'Feuerwaffen', sourceRow ${e.baseId}, `
-        + `Waffe '<unbekannt>', Spezialisierung '<fehlt>': Katalogeintrag fehlt`;
-    } else if (!invalidReason && e.family === 'fernkampfwaffe' && e.rangedSnapshot?.kind !== 'ranged-weapon') {
-      invalidReason = `Ungültige Waffe: Tabelle '${e.baseTable}', sourceRow ${e.baseId}: Waffen-Snapshot fehlt`;
-    } else if (!invalidReason && e.family === 'ammo' && e.baseTable === 'feuerwaffen-munition') {
-      const caliber = Number(e.selections.kaliber);
-      const ammoRow = FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${e.baseId}:${caliber}`);
-      if (!ammoRow) {
-        invalidReason = `Ungültige Munition: Eintrag '${e.baseId}', Kaliber '${e.selections.kaliber ?? '<fehlt>'}', `
-          + `Munitions-Typ '${firearmAmmoTypeForArt(e.baseId) ?? '<fehlt>'}': Katalogeintrag fehlt`;
-      }
-    } else if (!invalidReason && e.family === 'ammo' && e.baseTable !== 'feuerwaffen-munition'
-      && e.rangedSnapshot?.kind !== 'ranged-ammo') {
-      invalidReason = `Ungültige Munition: Tabelle '${e.baseTable}', sourceRow ${e.baseId}, `
-        + `erwarteter Munitions-Typ '${e.baseTable === 'pfeile' ? 'pfeil' : 'bolzen'}', tatsächlicher Typ '<fehlt>'`;
-    }
-    let label = e.displayNameSnapshot ?? `${e.family} (${e.baseTable} #${e.baseId})`;
-    // Nur gesetzt fuer Faelle, die eigenes sicheres HTML brauchen (Material-/Fertigung-/Anpassung-
-    // Wertemodifikator-Tooltips, Nutzer-Ask) - sonst faellt der Renderer auf escapeHtml(label) zurueck.
-    let labelHtml: string | undefined;
-    // Nutzer 2026-07-24: "Show full item stat block if Schilde, NK-Waffe or FK-Waffe or ammo or
-    // Alchemika" - Ruestung/Preisliste/Artefakt bewusst aussen vor (nicht in der Nutzer-Aufzaehlung).
-    let statTooltip = '';
-    if (e.family === 'preisliste') {
-      const row = PREISLISTE.find((r) => String(r.sourceRow) === e.baseId);
-      label = row?.name ?? label;
-    } else if (e.family === 'artefakt') {
-      const kostenRow = ARTEFAKT_KOSTEN.find((r) => String(r.sourceRow) === e.baseId);
-      const zielLabel = kostenRow && e.selections.ziel
-        ? resolveArtefaktZielLabel(character, kostenRow.referenz, String(e.selections.ziel))
-        : undefined;
-      label = kostenRow
-        ? `${kostenRow.name}${zielLabel ? ` – ${zielLabel}` : ''} Grad ${kostenRow.grad} (${e.selections.variant})`
-        : label;
-      const basis = kostenRow ? ARTEFAKT_BASIS.find((row) => row.referenz === kostenRow.referenz) : undefined;
-      if (basis && kostenRow) {
-        // Nutzer-Ask: volle Wirkung/Wirkungswert/ED/WD zeigen, wenn vorhanden - dieselbe Funktion
-        // wie die Kaufvorschau (siehe artefaktTooltip-Aufruf oben in renderArtefaktGradAuswahl),
-        // statt nur der rohen Basis-Beschreibung ohne ED/WD.
-        const text = isXKlingeReferenz(basis.referenz)
-          ? xKlingeTooltip(resolveXKlingeWirkung(basis.referenz, kostenRow.grad ?? ''))
-          : artefaktTooltip(basis, kostenRow.grad ?? '');
-        statTooltip = tooltipAttr(text);
-      }
-    } else if (e.family === 'shield') {
-      const row = MELEE_WEAPON_BY_SOURCE_ROW.get(e.baseId);
-      const rs = e.computedStatsSnapshot?.rs;
-      // RS des Schilds wird angezeigt, aber bewusst NICHT in rs_arme eingerechnet (Regel Nutzer
-      // 2026-07-17: Anrechnung auf den linken Arm ist Kampfmodul-Scope, siehe characterMutations.ts).
-      label = row ? `${row.name} (RS ${rs})` : label;
-      statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
-    } else if (e.family === 'weapon') {
-      const row = MELEE_WEAPON_BY_SOURCE_ROW.get(e.baseId);
-      const display = describeStoredWeapon(e);
-      label = display ? `${display.title} — ${display.stats}` : row ? (xKlingeWeaponName(e) ?? row.name) : label;
-      // Nutzer-Ask: Material/Fertigung/Anpassung zeigen einzeln beim Hover ihren Wertemodifikator.
-      if (display) labelHtml = `${display.titleHtml ?? escapeHtml(display.title)} — ${escapeHtml(display.stats)}`;
-      const wirkung = xKlingeWirkungForEntry(e);
-      statTooltip = tooltipAttr([
-        statSnapshotTooltipText(e.computedStatsSnapshot),
-        wirkung ? xKlingeTooltip(wirkung) : '',
-      ].filter(Boolean).join('\n'));
-    } else if (e.family === 'fernkampfwaffe') {
-      const row = (e.baseTable === 'boegen' ? BOW_BY_SOURCE_ROW : CROSSBOW_BY_SOURCE_ROW).get(e.baseId);
-      label = row?.name ?? label;
-      if (row) statTooltip = fernkampfwaffeStatTooltip(row);
-    } else if (e.family === 'feuerwaffe') {
-      const row = FIREARM_BY_SOURCE_ROW.get(e.baseId);
-      label = row?.name ?? label;
-      statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
-    } else if (e.family === 'ammo') {
-      if (e.baseTable === 'feuerwaffen-munition') {
-        const ammo = FIREARM_AMMO_BY_ART_AND_CALIBER.get(`${e.baseId}:${e.selections.kaliber}`);
-        label = ammo ? `${ammo.label} (Kaliber ${ammo.kaliber})` : label;
-      } else {
-        const table = e.baseTable === 'pfeile' ? ARROW_BY_SOURCE_ROW : BOLT_BY_SOURCE_ROW;
-        const basis = table.get(e.baseId);
-        const modRow = e.selections.modifikator ? table.get(e.selections.modifikator) : undefined;
-        const fixschaden = e.computedStatsSnapshot?.fixschaden;
-        const rwMod = e.computedStatsSnapshot?.rwModMeter;
-        const details = [
-          fixschaden ? `Fixschaden ${fixschaden >= 0 ? '+' : ''}${fixschaden}` : '',
-          rwMod ? `RW-Mod ${rwMod >= 0 ? '+' : ''}${rwMod}m` : '',
-        ].filter(Boolean).join(', ');
-        label = basis ? `${modRow ? `${modRow.name} (${basis.name})` : basis.name}${details ? ` (${details})` : ''}` : label;
-      }
-      statTooltip = statSnapshotTooltip(e.computedStatsSnapshot);
-    } else if (e.family === 'alchemika') {
-      const row = ALCHEMIKA.find((r) => String(r.sourceRow) === e.baseId);
-      label = row?.name ?? label;
-      if (row) statTooltip = alchemikaStatTooltip(row);
-    }
-    const total = (e.computedPriceSnapshot ?? 0) * e.quantity;
-    return `
-      <div class="inventar-row${invalidReason ? ' inventar-row-invalid' : ''}" data-equipment-id="${e.id}"${invalidReason ? ` title="${escapeHtml(invalidReason)}"` : statTooltip}>
-        <span class="stat-label">${labelHtml ?? escapeHtml(label)}${e.quantity > 1 ? ` ×${e.quantity}` : ''}${invalidReason ? `<span class="inventar-invalid-error">Ungültig: ${escapeHtml(invalidReason)}</span>` : ''}</span>
-        <span class="stat-cost">${formatDublonen(total)}</span>
-        <button type="button" class="inventar-remove" data-equipment-id="${e.id}">Entfernen</button>
-      </div>`;
-  }).join('');
-}
-
 export function renderAusruestungView(
   container: HTMLElement,
   sheet: ComputedSheet,
@@ -979,7 +168,7 @@ export function renderAusruestungView(
   callbacks: AusruestungCallbacks,
   category: KaufKategorie,
 ): void {
-  bestehenderCharakterMode = character.bestehenderCharakter ?? false;
+  setBestehenderCharakterMode(character.bestehenderCharakter ?? false);
   const filteredPreisliste = PREISLISTE.filter((r) => r.art === selectedArt)
     .filter((r) => !searchText || (r.name ?? '').toLowerCase().includes(searchText.toLowerCase()));
   const needleWaffen = searchWaffen.trim().toLowerCase();
@@ -1059,325 +248,57 @@ export function renderAusruestungView(
     }
   }
 
+  const rerender = () => renderAusruestungView(container, sheet, character, callbacks, category);
+
   document.getElementById('ausruestung-art-select')?.addEventListener('change', (e) => {
     selectedArt = (e.target as HTMLSelectElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('ausruestung-search')?.addEventListener('input', (e) => {
     searchText = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('weapon-hauptfertigkeit-select')?.addEventListener('change', (e) => {
     selectedHauptfertigkeit = (e.target as HTMLSelectElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('waffen-search')?.addEventListener('input', (e) => {
     searchWaffen = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('schilde-search')?.addEventListener('input', (e) => {
     searchSchilde = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('boegen-search')?.addEventListener('input', (e) => {
     searchBoegen = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('armbrueste-search')?.addEventListener('input', (e) => {
     searchArmbrueste = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('feuerwaffen-search')?.addEventListener('input', (e) => {
     searchFeuerwaffen = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('alchemika-search')?.addEventListener('input', (e) => {
     searchAlchemika = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
+    rerender();
   });
   document.getElementById('artefakte-search')?.addEventListener('input', (e) => {
     searchArtefakte = (e.target as HTMLInputElement).value;
-    renderAusruestungView(container, sheet, character, callbacks, category);
-  });
-  // Liest die aktuell angezeigten Werte aller 3 Dropdowns einer Slot-Zeile aus dem DOM, damit
-  // ein einzelnes "change" (z.B. nur Verarbeitung) die anderen beiden nicht auf Zeile-0 zuruecksetzt.
-  function updateSlotPicker(slotKey: string, patch: Partial<{ basisSourceRow: number; verarbeitungSourceRow: number; anpassungSourceRow: number }>): void {
-    const row = container.querySelector<HTMLElement>(`.ruestung-slot-row[data-slot="${slotKey}"]`);
-    // Verarbeitung/Anpassung-Select existieren im DOM nicht, solange die Basis auf "Keine
-    // Ruestung" steht - Fallback auf die erste echte Option (statt 0), sonst verliert ein
-    // direkter Wechsel "Keine Ruestung" -> echte Basis die Verarbeitung/Anpassung stillschweigend
-    // (0 matcht keine reale Zeile, was z.B. "Für alle TZ kaufen" die Lage unbemerkt ausblenden liess).
-    const readSelect = (cls: string, fallback: number) => {
-      const el = row?.querySelector<HTMLSelectElement>(`.${cls}`);
-      return el ? Number(el.value) : fallback;
-    };
-    slotPicker.set(slotKey, {
-      basisSourceRow: readSelect('ruestung-basis-select', RUESTUNG_KEINE),
-      verarbeitungSourceRow: readSelect('ruestung-verarbeitung-select', RUESTUNG_VERARBEITUNG[0]?.sourceRow ?? 0),
-      anpassungSourceRow: readSelect('ruestung-anpassung-select', RUESTUNG_ANPASSUNG[0]?.sourceRow ?? 0),
-      ...patch,
-    });
-    renderAusruestungView(container, sheet, character, callbacks, category);
-  }
-  container.querySelectorAll<HTMLSelectElement>('.ruestung-basis-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateSlotPicker(sel.dataset.slot!, { basisSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.ruestung-verarbeitung-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateSlotPicker(sel.dataset.slot!, { verarbeitungSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.ruestung-anpassung-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateSlotPicker(sel.dataset.slot!, { anpassungSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ruestung-equip').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const gruppe = btn.dataset.gruppe as RsGruppe;
-      const lage = Number(btn.dataset.lage);
-      const sel = slotPicker.get(ruestungSlotKey(gruppe, lage));
-      const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
-      const basisSourceRow = sel?.basisSourceRow ?? optionen[0]?.sourceRow;
-      const verarbeitungSourceRow = sel?.verarbeitungSourceRow ?? RUESTUNG_VERARBEITUNG[0]?.sourceRow;
-      const anpassungSourceRow = sel?.anpassungSourceRow ?? RUESTUNG_ANPASSUNG[0]?.sourceRow;
-      if (basisSourceRow === undefined || verarbeitungSourceRow === undefined || anpassungSourceRow === undefined) return;
-      callbacks.onEquipRuestung(gruppe, lage, basisSourceRow, verarbeitungSourceRow, anpassungSourceRow);
-    });
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ruestung-buy-alle-tz').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const gruppe = btn.dataset.gruppe as RsGruppe;
-      callbacks.onEquipRuestungAlleTz(gruppe, getGruppenSelections(gruppe, character));
-    });
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ruestung-unequip').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      callbacks.onUnequipRuestung(btn.dataset.gruppe as RsGruppe, Number(btn.dataset.lage));
-    });
+    rerender();
   });
 
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const sourceRow = Number(btn.dataset.sourceRow);
-      const qtyInput = container.querySelector<HTMLInputElement>(`.ausruestung-qty[data-source-row="${sourceRow}"]`);
-      const quantity = Math.max(1, Math.floor(Number(qtyInput?.value ?? '1')));
-      callbacks.onBuyPreisliste(sourceRow, quantity);
-    });
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-artefakt').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const referenz = btn.dataset.referenz!;
-      const grad = btn.dataset.grad!;
-      const variant = btn.dataset.variant as ArtefaktVariant;
-      let targetWeaponId: string | undefined;
-      let targetReferenz: string | undefined;
-      if (referenz === WHK_TALENTWERT_ARTEFAKT_REFERENZ || referenz === GRUNDFERTIGKEIT_ARTEFAKT_REFERENZ) {
-        targetReferenz = btn.closest('.artefakt-card')?.querySelector<HTMLSelectElement>('.artefakt-ziel-auswahl')?.value;
-      }
-      if (isXKlingeReferenz(referenz)) {
-        targetWeaponId = btn.closest('.artefakt-card')?.querySelector<HTMLSelectElement>('.artefakt-waffen-ziel')?.value;
-        const weapon = character.equipment.find((entry) => entry.id === targetWeaponId);
-        const weaponRow = weapon ? MELEE_WEAPON_BY_SOURCE_ROW.get(weapon.baseId) : undefined;
-        const wirkung = resolveXKlingeWirkung(referenz, grad);
-        const artefaktPreis = Number(btn.dataset.artefaktPreis ?? 0);
-        const waffenWert = weapon?.computedPriceSnapshot ?? 0;
-        const neuerName = `${wirkung.namenspraefix}-${weaponRow?.name ?? 'Waffe'}`;
-        const confirmed = window.confirm([
-          `${weaponRow?.name ?? 'Waffe'} mit ${wirkung.namenspraefix}-Klinge Grad ${grad} verzaubern?`,
-          `Ergebnis: ${neuerName}`,
-          `Neuer Gegenstandswert: ${formatDublonen(waffenWert + artefaktPreis)}`,
-          `Jetzt zu bezahlen: ${formatDublonen(artefaktPreis)}`,
-          '',
-          xKlingeTooltip(wirkung),
-        ].join('\n'));
-        if (!confirmed) return;
-      }
-      callbacks.onBuyArtefakt(referenz, grad, variant, targetWeaponId, targetReferenz);
-    });
-  });
-  function updateShieldPicker(shieldSourceRow: number, patch: Partial<{ materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>): void {
-    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-shield="${shieldSourceRow}"]`);
-    const readSelect = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
-    shieldPicker.set(shieldSourceRow, {
-      materialSourceRow: readSelect('schild-material-select'),
-      fertigungSourceRow: readSelect('schild-fertigung-select'),
-      bespannungSourceRow: readSelect('schild-bespannung-select'),
-      ...patch,
-    });
-    renderAusruestungView(container, sheet, character, callbacks, category);
-  }
-  container.querySelectorAll<HTMLSelectElement>('.schild-material-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateShieldPicker(Number(sel.dataset.shield), { materialSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.schild-fertigung-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateShieldPicker(Number(sel.dataset.shield), { fertigungSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.schild-bespannung-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateShieldPicker(Number(sel.dataset.shield), { bespannungSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-shield').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const shieldSourceRow = Number(btn.dataset.shield);
-      const sel = shieldPicker.get(shieldSourceRow);
-      const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m.name, character.spezies));
-      const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b.name, character.spezies));
-      const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;
-      const fertigungSourceRow = sel?.fertigungSourceRow ?? SCHILD_FERTIGUNG[0]?.sourceRow;
-      const bespannungSourceRow = sel?.bespannungSourceRow ?? bespannungOptionen[0]?.sourceRow;
-      if (materialSourceRow === undefined || fertigungSourceRow === undefined || bespannungSourceRow === undefined) return;
-      callbacks.onBuyShield(shieldSourceRow, materialSourceRow, fertigungSourceRow, bespannungSourceRow);
-    });
-  });
-  function updateWeaponPicker(weaponSourceRow: number, patch: Partial<{
-    materialSourceRow: number; fertigungSourceRow: number; anpassungSourceRow: number; schaftmaterialSourceRow: number;
-  }>): void {
-    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-weapon="${weaponSourceRow}"]`);
-    const readSelect = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
-    weaponPicker.set(weaponSourceRow, {
-      materialSourceRow: readSelect('waffe-material-select'),
-      fertigungSourceRow: readSelect('waffe-fertigung-select'),
-      anpassungSourceRow: readSelect('waffe-anpassung-select'),
-      schaftmaterialSourceRow: readSelect('waffe-schaftmaterial-select'),
-      ...patch,
-    });
-    renderAusruestungView(container, sheet, character, callbacks, category);
-  }
-  container.querySelectorAll<HTMLSelectElement>('.waffe-material-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { materialSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.waffe-fertigung-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { fertigungSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.waffe-anpassung-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { anpassungSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.waffe-schaftmaterial-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateWeaponPicker(Number(sel.dataset.weapon), { schaftmaterialSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-weapon').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const weaponSourceRow = Number(btn.dataset.weapon);
-      const weaponRow = MELEE_WEAPON_BY_SOURCE_ROW.get(String(weaponSourceRow));
-      const brauchtSchaft = !!weaponRow && waffeBrauchtSchaftmaterial(weaponRow);
-      const sel = weaponPicker.get(weaponSourceRow);
-      const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
-      const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
-      const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
-      const schaftmaterialOptionen = brauchtSchaft
-        ? NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies))
-        : [SCHAFTMATERIAL_STANDARD];
-      const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;
-      const fertigungSourceRow = sel?.fertigungSourceRow ?? fertigungOptionen[0]?.sourceRow;
-      const anpassungSourceRow = sel?.anpassungSourceRow ?? anpassungOptionen[0]?.sourceRow;
-      const schaftmaterialSourceRow = brauchtSchaft
-        ? (sel?.schaftmaterialSourceRow ?? schaftmaterialOptionen[0]?.sourceRow)
-        : SCHAFTMATERIAL_STANDARD.sourceRow;
-      if (materialSourceRow === undefined || fertigungSourceRow === undefined
-        || anpassungSourceRow === undefined || schaftmaterialSourceRow === undefined) return;
-      callbacks.onBuyWeapon(weaponSourceRow, materialSourceRow, fertigungSourceRow, anpassungSourceRow, schaftmaterialSourceRow);
-    });
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-fernkampfwaffe').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      callbacks.onBuyFernkampfwaffe(btn.dataset.typ as 'boegen' | 'armbrust', Number(btn.dataset.sourceRow));
-    });
-  });
-  function updateFeuerwaffenPicker(sourceRow: number, patch: Partial<FeuerwaffenSelections>): void {
-    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-feuerwaffe="${sourceRow}"]`);
-    const read = (cls: string) => Number(row?.querySelector<HTMLSelectElement>(`.${cls}`)?.value ?? 0);
-    feuerwaffenPicker.set(sourceRow, {
-      verarbeitungSourceRow: read('feuerwaffe-verarbeitung-select'),
-      anpassungSourceRow: read('feuerwaffe-anpassung-select'),
-      ...patch,
-    });
-    renderAusruestungView(container, sheet, character, callbacks, category);
-  }
-  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-verarbeitung-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { verarbeitungSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-anpassung-select').forEach((sel) => {
-    sel.addEventListener('change', () => updateFeuerwaffenPicker(Number(sel.dataset.feuerwaffe), { anpassungSourceRow: Number(sel.value) }));
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-feuerwaffe').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const sourceRow = Number(btn.dataset.feuerwaffe);
-      const basis = FIREARM_BY_SOURCE_ROW.get(String(sourceRow));
-      if (!basis) return;
-      callbacks.onBuyFeuerwaffe(sourceRow, feuerwaffenPicker.get(sourceRow) ?? feuerwaffenStandardauswahl(basis));
-    });
-  });
-  container.querySelectorAll<HTMLSelectElement>('.feuerwaffe-munition-qty').forEach((select) => {
-    select.addEventListener('change', () => {
-      feuerwaffenMunitionQty.set(Number(select.dataset.feuerwaffe), Number(select.value));
-      renderAusruestungView(container, sheet, character, callbacks, category);
-    });
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-feuerwaffen-munition').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const sourceRow = Number(btn.dataset.feuerwaffe);
-      callbacks.onBuyFeuerwaffenMunition(
-        btn.dataset.art as FeuerwaffenMunitionArt,
-        Number(btn.dataset.kaliber),
-        feuerwaffenMunitionQty.get(sourceRow) ?? 1,
-      );
-    });
-  });
-  function updateMunitionPicker(typ: 'pfeile' | 'bolzen', basisSourceRow: number): void {
-    const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-munition="${typ}"][data-basis-source-row="${basisSourceRow}"]`);
-    const modValue = row?.querySelector<HTMLSelectElement>('.munition-mod-select')?.value ?? '';
-    munitionPicker.set(munitionPickerKey(typ, basisSourceRow), {
-      modifikatorSourceRow: modValue === '' ? null : Number(modValue),
-      quantity: Math.max(1, Math.floor(Number(row?.querySelector<HTMLSelectElement>('.munition-qty')?.value ?? '1'))),
-    });
-    renderAusruestungView(container, sheet, character, callbacks, category);
-  }
-  container.querySelectorAll<HTMLSelectElement>('.munition-mod-select').forEach((sel) => {
-    sel.addEventListener('change', () => {
-      const row = sel.closest<HTMLElement>('[data-basis-source-row]');
-      if (row) updateMunitionPicker(sel.dataset.munition as 'pfeile' | 'bolzen', Number(row.dataset.basisSourceRow));
-    });
-  });
-  container.querySelectorAll<HTMLInputElement>('.ausruestung-qty[data-source-row]').forEach((input) => {
-    input.addEventListener('input', () => {
-      const button = container.querySelector<HTMLButtonElement>(`.ausruestung-buy[data-source-row="${input.dataset.sourceRow}"]`);
-      const quantity = Math.max(1, Math.floor(Number(input.value || '1')));
-      const unitPrice = Number(button?.dataset.unitPrice);
-      if (button && Number.isFinite(unitPrice)) button.textContent = kaufenLabel(unitPrice * quantity);
-    });
-  });
-  container.querySelectorAll<HTMLSelectElement>('.munition-qty').forEach((select) => {
-    select.addEventListener('change', () => {
-      const row = select.closest<HTMLElement>('[data-basis-source-row]');
-      if (row) updateMunitionPicker(select.dataset.munition as 'pfeile' | 'bolzen', Number(row.dataset.basisSourceRow));
-    });
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-munition').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const typ = btn.dataset.munition as 'pfeile' | 'bolzen';
-      const basisSourceRow = Number(btn.dataset.basisSourceRow);
-      const sel = munitionPicker.get(munitionPickerKey(typ, basisSourceRow));
-      callbacks.onBuyMunition(typ, basisSourceRow, sel?.modifikatorSourceRow ?? null, sel?.quantity ?? 1);
-    });
-  });
-
-  container.querySelectorAll<HTMLInputElement>('[data-alchemika-qty]').forEach((input) => {
-    input.addEventListener('input', () => {
-      const sourceRow = Number(input.dataset.alchemikaQty);
-      const quantity = Math.max(1, Math.floor(Number(input.value || '1')));
-      alchemikaQty.set(sourceRow, quantity);
-      const button = container.querySelector<HTMLButtonElement>(`.ausruestung-buy-alchemika[data-source-row="${sourceRow}"]`);
-      const unitPrice = Number(button?.dataset.unitPrice);
-      if (button && Number.isFinite(unitPrice)) button.textContent = kaufenLabel(unitPrice * quantity);
-    });
-  });
-  container.querySelectorAll<HTMLButtonElement>('.ausruestung-buy-alchemika').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const sourceRow = Number(btn.dataset.sourceRow);
-      const quantity = alchemikaQty.get(sourceRow) ?? 1;
-      callbacks.onBuyAlchemika(sourceRow, quantity);
-    });
-  });
-
-  container.querySelectorAll<HTMLButtonElement>('.inventar-remove').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      callbacks.onRemoveEquipment(btn.dataset.equipmentId!);
-    });
-  });
+  wireRuestungEvents(container, character, callbacks, rerender);
+  wireSchildEvents(container, character, callbacks, rerender);
+  wireWaffenEvents(container, character, callbacks, rerender);
+  wireFernkampfwaffeEvents(container, callbacks);
+  wireFeuerwaffenEvents(container, callbacks, rerender);
+  wireMunitionEvents(container, callbacks, rerender);
+  wireAlchemikaEvents(container, callbacks);
+  wireArtefakteEvents(container, character, callbacks);
+  wirePreislisteEvents(container, callbacks);
+  wireInventarEvents(container, callbacks);
 }

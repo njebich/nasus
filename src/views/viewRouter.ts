@@ -79,7 +79,7 @@ export function renderActiveView(
   } else if (route.kind === 'psi') {
     renderPsiView(viewContainer, sheet, handlers.handleValueChange);
   } else if (route.kind === 'geweihte') {
-    renderGeweihteView(viewContainer, sheet, currentCharacter);
+    renderGeweihteView(viewContainer, sheet, currentCharacter, handlers.handleValueChange);
   } else if (route.kind === 'category') {
     renderCategoryRouteView(
       viewContainer, sheet, route.title, route.categories,

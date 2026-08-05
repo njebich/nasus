@@ -780,6 +780,9 @@ const HIDDEN_REFERENZEN = new Set([
   'startbudget_ausruestung', 'startbudget_ausruestung_gehoben',
   'le_arm_l', 'le_arm_r', 'le_bein_l', 'le_bein_r', 'le_brust', 'le_kopf', 'le_unterleib',
   'gesundheit', 'stufe', 'kreis', 'talentpunkte', 'macht', 'rerolls', 'mana', 'selbstbeherrschung',
+  // Migriert auf den Geweihte-Tab (Nutzer-Ask): Kategorie bleibt "WHK" (gleiche Kosten-/Kosten-
+  // formel), aber die 3 Faehigkeiten werden nur noch dort gekauft, nicht mehr im WHK-Tab gelistet.
+  'whk_geweihte_stossgebet', 'whk_geweihte_wunder', 'whk_geweihte_ritual',
 ]);
 
 export function renderCategoryView(

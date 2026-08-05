@@ -41,7 +41,7 @@ const lastUpdated = formatLastUpdated(__LAST_UPDATED_AT__);
 const TAB_INTRO: Partial<Record<SubTab, string>> = {
   'Grundfertigkeiten': 'Grundfertigkeiten werden, sofern der Meister sie für die Probe zulässt, zum Probenwert addiert. Zugelassene Grundfertigkeiten werden entweder vom Meister mit der Probe angesagt, oder wenn er eine Eigenschaftsprobe verlangt, so wird vom Spieler nachgefragt ob er eine bestimmte verwenden darf, die er als passend ansieht. Für eine Probe darf höchstens eine Grundfertigkeit verwendet werden. Der Meister kann aber auch mehr als eine Grundfertigkeit zulassen, dann darf der Charakter eine davon auswählen. Der einzige Unterschied zwischen körperlichen und geistigen Grundfertigkeiten ist, dass der Meister dadurch einen Anhaltspunkt hat, ob eine Grundfertigkeitsprobe durch GBE behindert werden sollte: In der Regel bei körperlichen 1-fach und bei geistigen nicht. Durch Kampf oder andere Ereignisse erhaltene BE gilt für alle Grundfertigkeiten gleich.',
   'Sonderfertigkeiten': 'Sonderfertigkeiten werden in der Regel nicht mit eigenen Proben abgefragt; sie sind entweder in Formeln vertreten oder geben Boni auf Tabellenproben.',
-  'Geweihte': 'Zeigt Geweihtengrad, Karma-Pool-Punkte (KPP) und die verfügbaren Wunder der gewählten Religion. Die Fähigkeiten Stoßgebet/Wunder/Ritual (Probe-Basis) werden im WHK-Tab gesteigert.',
+  'Geweihte': 'Zeigt Geweihtengrad, Karma-Pool-Punkte (KPP) und die verfügbaren Wunder der gewählten Religion. Die Fähigkeiten Stoßgebet/Wunder/Ritual (Probe-Basis) werden direkt hier gesteigert.',
 };
 
 // Beim Start den zuletzt aktiven Charakter wiederherstellen (siehe characterStore.ts) - sonst

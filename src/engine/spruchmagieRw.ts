@@ -12,12 +12,30 @@
 // **Karma (Nutzer 2026-08-05):** Geweihte-Wunder (siehe views/geweihte.ts) nutzen dieselbe RW-Spalte,
 // haben aber zusaetzlich "Karma" als Basisvariable sowie "x" statt "*" als Multiplikationszeichen und
 // den ausgeschriebenen Einheitsnamen "Meter" statt "m" (z.B. "Karma*10m", "Karma x Meter"). Beides ist
-// dazugenommen, OHNE die Spruchmagie-Faelle zu veraendern (reine Erweiterung der Alternativen). Mehr-
-// Variablen-Formeln wie "(M) x Aura x Karma x 10m Radius" oder "Aura+ Karma" passen weiterhin nicht ins
-// Einzeltoken-Muster und werden (wie schon bisher bei "Selbst"/"B") unveraendert durchgereicht.
+// dazugenommen, OHNE die Spruchmagie-Faelle zu veraendern (reine Erweiterung der Alternativen).
+//
+// **Mehr-Variablen-Ketten (Nutzer 2026-08-06):** ein paar Geweihte-RW-Formeln verknuepfen mehrere
+// Basisvariablen direkt miteinander statt nur eine mit einem Zahlenfaktor, z.B.
+// "(M) x Aura x Karma x 10m Radius" oder "Aura+ Karma" (kein Spruchmagie-RW-Wert tut das, siehe
+// spruchmagieDetails.json - Vollscan ergab 0 Mehr-Variablen-Faelle dort, diese Erweiterung aendert an
+// Spruchmagie also nichts). Statt eines eigenen zweiten Musters wird der optionale
+// Operator+Faktor+Einheit+Radius-Suffix jetzt von einer KETTE aus Basisvariablen (durch
+// +/-/*// /x verknuepft) statt nur einer einzelnen Basisvariable eingeleitet - ein Einzeltoken ist
+// einfach eine Kette der Laenge 1, das bisherige Verhalten bleibt also unveraendert erhalten. Die
+// Kette wird zunaechst gegen CHAIN_PATTERN validiert (nur Basisvariablen + Operatoren erlaubt) und bei
+// Nichttreffer unveraendert durchgereicht (z.B. "Selbst"/"B"/"Sicht Unmagisch verstärkt") - dieselbe
+// sichere Fallback-Garantie wie zuvor.
 import { aufrunden } from './functions';
 
-const RW_PATTERN = /^(\(M\)|Magie|Aura|Karma)(?:\s*([*/x])\s*((?:\(Mana\/30\))|\d+(?:[.,]\d+)?)?)?\s*(Meter|cm|km|m)?\s*(Radius)?$/;
+const BASE_TOKEN = '\\(M\\)|Magie|Aura|Karma';
+const BASE_TOKEN_PATTERN = new RegExp(BASE_TOKEN, 'g');
+const CHAIN_PATTERN = new RegExp(`^(?:${BASE_TOKEN})(?:\\s*[+\\-*/x]\\s*(?:${BASE_TOKEN}))*$`);
+// Lazy-Chain-Gruppe: wenn der optionale Operator+Faktor+Einheit+Radius-Suffix (nur EIN Operator
+// erlaubt) am Stringende matcht, waechst die Kette links davon minimal - dadurch landet bei mehreren
+// Operatoren in Folge automatisch nur der LETZTE im Suffix, alle davor in der Kette (siehe Datei-
+// Kommentar oben, Beispiel "(M) x Aura x Karma x 10m Radius" -> Kette "(M) x Aura x Karma" + Suffix
+// "x 10m Radius").
+const RW_PATTERN = /^(.*?)(?:\s*([*/x])\s*((?:\(Mana\/30\))|\d+(?:[.,]\d+)?)?)?\s*(Meter|cm|km|m)?\s*(Radius)?$/;
 
 /** Wertet einen RW-Formeltext aus spruchmagieDetails.json/geweihteWunder.ts aus. Liefert den Rohtext
  *  unveraendert zurueck, wenn er keinem der bekannten Muster entspricht (z.B. "Selbst", "Berührung",
@@ -26,12 +44,15 @@ const RW_PATTERN = /^(\(M\)|Magie|Aura|Karma)(?:\s*([*/x])\s*((?:\(Mana\/30\))|\
 export function resolveRw(raw: string | undefined, macht: number, magie: number, aura: number, mana: number, karma = 0): string {
   if (!raw) return '–';
   const trimmed = raw.trim();
-  const match = RW_PATTERN.exec(trimmed);
-  if (!match) return trimmed;
-  const [, baseToken, op, factorToken, unitToken, radiusToken] = match;
-  const base = baseToken === 'Magie' ? magie : baseToken === 'Aura' ? aura : baseToken === 'Karma' ? karma : macht;
+  const match = RW_PATTERN.exec(trimmed)!; // RW_PATTERN matcht immer (alle Gruppen optional) - exec() kann hier nie null liefern
+  const [, chainPart, op, factorToken, unitToken, radiusToken] = match;
+  const chain = chainPart.trim();
+  if (!CHAIN_PATTERN.test(chain)) return trimmed;
+  const valueOf = (token: string) => (token === 'Magie' ? magie : token === 'Aura' ? aura : token === 'Karma' ? karma : macht);
+  const substituted = chain.replace(BASE_TOKEN_PATTERN, (token) => String(valueOf(token))).replace(/x/g, '*');
+  const chainValue = evaluateChain(substituted);
   const factor = factorToken === '(Mana/30)' ? mana / 30 : factorToken ? Number(factorToken.replace(',', '.')) : 1;
-  const result = op === '/' ? base / factor : base * factor;
+  const result = op === '/' ? chainValue / factor : chainValue * factor;
   const unit = unitToken === 'Meter' ? 'm' : unitToken ?? 'm';
   return `${aufrunden(result, 0)}${unit}${radiusToken ? ' Radius' : ''}`;
 }

@@ -46,10 +46,17 @@ describe('resolveRw', () => {
     expect(resolveRw('(M) m', macht, magie, aura, mana, karma)).toBe('10m');
   });
 
-  it('reicht Mehr-Variablen-Formeln (Geweihte-Wunder) unveraendert durch, statt falsch zu parsen', () => {
+  it('wertet Mehr-Variablen-Ketten aus (Geweihte-Wunder, mehrere Basisvariablen verknuepft statt nur Faktor)', () => {
     const karma = 5;
-    expect(resolveRw('(M) x Aura x Karma x 10m Radius', macht, magie, aura, mana, karma)).toBe('(M) x Aura x Karma x 10m Radius');
-    expect(resolveRw('Aura+ Karma', macht, magie, aura, mana, karma)).toBe('Aura+ Karma');
+    // (M)*Aura*Karma = 10*6*5 = 300, davon x10m Radius = 3000m Radius
+    expect(resolveRw('(M) x Aura x Karma x 10m Radius', macht, magie, aura, mana, karma)).toBe('3000m Radius');
+    // Aura+Karma = 6+5 = 11, keine Einheit angegeben -> Default "m"
+    expect(resolveRw('Aura+ Karma', macht, magie, aura, mana, karma)).toBe('11m');
+  });
+
+  it('reicht unbekannte Formeln weiterhin unveraendert durch (Kette validiert nur bekannte Basisvariablen)', () => {
+    expect(resolveRw('Sicht Unmagisch verstärkt', macht, magie, aura, mana)).toBe('Sicht Unmagisch verstärkt');
+    expect(resolveRw('Welt', macht, magie, aura, mana)).toBe('Welt');
   });
 });
 

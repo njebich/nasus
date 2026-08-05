@@ -1985,3 +1985,97 @@ input.numeric-field-formatted-five {
   font-weight: 600;
   width: 150px;
 }
+
+/* Gesinnung-Tab (S09 Gesinnung.docx): eine gemeinsame Grid-Spaltenbreite fuer alle 22 Zeilen
+   (max-content links/rechts, 1fr fuer den Slider dazwischen) richtet jede Slider-Spur exakt am
+   laengsten linken bzw. rechten Poltext aus - kein JS-Messen noetig, das macht CSS Grid selbst,
+   solange alle Zeilen EIN gemeinsamer Grid-Container sind statt 22 unabhaengiger. */
+.gesinnung-view {
+  padding: 0.75rem 1rem;
+  border: 1px solid #8884;
+  border-radius: 6px;
+  background: #8881;
+}
+
+.gesinnung-view h2 {
+  margin-block: 0 0.4rem;
+}
+
+.gesinnung-legende {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #8884;
+  border-radius: 6px;
+  font-size: 0.85em;
+}
+
+.gesinnung-legende-liste {
+  margin: 0.3rem 0 0;
+  padding-left: 1.4rem;
+  columns: 2;
+}
+
+.gesinnung-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content;
+  align-items: center;
+  column-gap: 0.75rem;
+  row-gap: 0.5rem;
+}
+
+.gesinnung-label {
+  font-size: 0.85em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gesinnung-label-links {
+  text-align: right;
+}
+
+.gesinnung-label-rechts {
+  text-align: left;
+}
+
+.gesinnung-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.gesinnung-slider {
+  width: 100%;
+}
+
+.gesinnung-readout {
+  text-align: center;
+  font-size: 0.78em;
+  opacity: 0.75;
+}
+
+.gesinnung-row-unset .gesinnung-slider {
+  outline: 2px dashed #a33;
+  outline-offset: 2px;
+}
+
+.gesinnung-row-unset .gesinnung-readout {
+  color: #a33;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.gesinnung-notiz-feld {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 1rem;
+  font-size: 0.9em;
+}
+
+.gesinnung-notiz-feld textarea {
+  font: inherit;
+  border: 1px solid #8888;
+  border-radius: 4px;
+  padding: 0.3rem 0.4rem;
+  resize: vertical;
+}

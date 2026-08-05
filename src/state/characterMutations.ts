@@ -32,6 +32,7 @@ import type { FeuerwaffenMunitionArt } from '../data/equipment/feuerwaffenMuniti
 import type { RsGruppe } from '../data/trefferzonen';
 import { listEligibleNahkampf1HWaffen, listEligibleSchilde, listEligiblePistolen } from '../engine/waffenLoadout';
 import { isXKlingeReferenz, resolveXKlingeWirkung } from '../engine/xKlinge';
+import { GESINNUNG_TRAITS } from '../data/gesinnung';
 import {
   ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
   FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, MELEE_WEAPON_BY_SOURCE_ROW,
@@ -54,6 +55,24 @@ export function updateHeader(character: CharacterState, updates: Partial<Charact
   return { ...clone(character), ...updates };
 }
 
+/** Setzt einen Gesinnung-Slider (S09 Gesinnung.docx) - frei, kein SP-Bezug, daher keine
+ *  assertBudgetOk-Pruefung. Wert wird auf -7..7 geklemmt. */
+export function setGesinnung(character: CharacterState, traitKey: string, wert: number): CharacterState {
+  if (!GESINNUNG_TRAITS.some((t) => t.key === traitKey)) {
+    throw new MutationError(`Unbekannter Gesinnung-Trait '${traitKey}'`);
+  }
+  const geklemmt = Math.max(-7, Math.min(7, Math.round(wert)));
+  const candidate = clone(character);
+  candidate.gesinnung = { ...candidate.gesinnung, [traitKey]: geklemmt };
+  return candidate;
+}
+
+export function setGesinnungNotiz(character: CharacterState, notiz: string): CharacterState {
+  const candidate = clone(character);
+  candidate.gesinnungNotiz = notiz;
+  return candidate;
+}
+
 function clone(character: CharacterState): CharacterState {
   return {
     ...character,
@@ -74,6 +93,7 @@ function clone(character: CharacterState): CharacterState {
     customWhkSpezialisierungen: Object.fromEntries(
       Object.entries(character.customWhkSpezialisierungen ?? {}).map(([k, list]) => [k, list.map((s) => ({ ...s }))]),
     ),
+    gesinnung: { ...character.gesinnung },
   };
 }
 

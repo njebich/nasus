@@ -14,6 +14,7 @@ import { renderKampfLeRs } from './kampfLeRs';
 import {
   buildAusweichenRow, buildLoadoutDisplayRows, formatLoadoutCells, type LoadoutDisplayRow,
 } from './kampf';
+import { GESINNUNG_TRAITS, describeGesinnungWert, isGesinnungVollstaendig } from '../data/gesinnung';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -366,10 +367,29 @@ function renderAusweichenMirror(character: CharacterState): string {
     </div>`;
 }
 
+/** Gesinnung-Spiegel (S09 Gesinnung.docx): analog zur AT/PA-Balance-Regel (poolCaps.ts) bleibt
+ *  der Abschnitt nur eine Tab-lokale Warnung (siehe views/gesinnung.ts) - hier auf dem
+ *  Charakterbogen wird er stattdessen komplett ausgeblendet, solange nicht alle 22 Slider
+ *  gesetzt sind ("gilt erst als vollstaendig, wenn alle Slider gesetzt sind"). */
+function renderGesinnungMirror(character: CharacterState): string {
+  if (!isGesinnungVollstaendig(character.gesinnung)) return '';
+  const notiz = character.gesinnungNotiz?.trim();
+  return `
+    <h3 class="bogen-section-heading">Gesinnung</h3>
+    <table class="bogen-table bogen-table-gesinnung">
+      ${GESINNUNG_TRAITS.map((trait) => `
+        <tr><th>${escapeHtml(trait.links)} / ${escapeHtml(trait.rechts)}</th>
+        <td>${escapeHtml(describeGesinnungWert(trait, character.gesinnung[trait.key] ?? 0))}</td></tr>
+      `).join('')}
+      ${notiz ? `<tr><th>Besonderheiten und Anmerkungen</th><td>${escapeHtml(notiz)}</td></tr>` : ''}
+    </table>`;
+}
+
 export function renderCharakterbogen(container: HTMLElement, sheet: ComputedSheet, character: CharacterState): void {
   container.innerHTML = `
     <div class="bogen">
       ${renderHeaderTable(character)}
+      ${renderGesinnungMirror(character)}
       ${renderCharakterwerteUndAttribute(sheet)}
       ${renderEigenschaften(sheet)}
       ${renderAuswahlListe(sheet, 'Vor- und Nachteile', 'Vor-/Nachteile')}

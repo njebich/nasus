@@ -5,6 +5,7 @@ import {
   setGrundfertigkeitPick, addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite,
   addCustomWhkHauptfertigkeit, renameCustomWhkHauptfertigkeit, setCustomWhkHauptfertigkeitWert,
   addCustomWhkSpezialisierung, renameCustomWhkSpezialisierung, setCustomWhkSpezialisierungWert,
+  setGesinnung, setGesinnungNotiz,
   BudgetError, MutationError,
 } from './characterMutations';
 import { saveCharacter, ruestungSlotKey, type CharacterHeader, type PoolAllocation, type WaffenLoadoutComboType } from './characterStore';
@@ -309,12 +310,32 @@ export function createMutationHandlers(appState: AppState, render: () => void) {
     render();
   }
 
+  function handleGesinnungChange(traitKey: string, wert: number): void {
+    if (!appState.currentCharacter) return;
+    try {
+      appState.currentCharacter = setGesinnung(appState.currentCharacter, traitKey, wert);
+      saveCharacter(appState.currentCharacter);
+      appState.errorMessage = '';
+    } catch (err) {
+      appState.errorMessage = err instanceof MutationError ? err.message : String(err);
+    }
+    render();
+  }
+
+  function handleGesinnungNotizChange(notiz: string): void {
+    if (!appState.currentCharacter) return;
+    appState.currentCharacter = setGesinnungNotiz(appState.currentCharacter, notiz);
+    saveCharacter(appState.currentCharacter);
+    render();
+  }
+
   return {
     handleValueChange, handleWhkCustomChange, handleHeaderChange, handlePoolChange, handleWaffenPoolChange,
     handleGrundfertigkeitPick, handleToggle, handleBuyPreisliste, handleBuyArtefakt, handleEquipRuestung,
     handleEquipRuestungAlleTz, handleUnequipRuestung, handleBuyShield, handleBuyWeapon, handleBuyFernkampfwaffe,
     handleBuyFeuerwaffe, handleBuyFeuerwaffenMunition, handleBuyMunition, handleBuyAlchemika, handleRemoveEquipment,
     handleAddWaffenLoadout, handleRemoveWaffenLoadout, handleToggleWaffenLoadoutFavorite,
+    handleGesinnungChange, handleGesinnungNotizChange,
   };
 }
 

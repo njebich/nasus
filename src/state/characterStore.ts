@@ -190,6 +190,13 @@ export interface CharacterState extends CharacterHeader {
    *  Hauptfertigkeit-Referenz (z.B. "whk_kaufmann") oder die `id` eines Eintrags aus
    *  customWhkHauptfertigkeiten oben; funktioniert fuer beide identisch. */
   customWhkSpezialisierungen: Record<string, CustomWhkEintrag[]>;
+  /** Gesinnung/Charakterzüge (S09 Gesinnung.docx, Tab "Charakter" -> "Gesinnung"): Key ist
+   *  GesinnungTrait.key (data/gesinnung.ts), Wert -7..7. Ein fehlender Key bedeutet "Slider
+   *  noch nicht gesetzt" - Charakter gilt erst als vollstaendig, wenn alle 22 gesetzt sind
+   *  (siehe engine/characterSheet.ts's validationIssues). Kostenlos, kein SP-Bezug. */
+  gesinnung: Record<string, number>;
+  /** Freitext "Besonderheiten und Anmerkungen" vom selben Gesinnung-Bogen. */
+  gesinnungNotiz: string;
 }
 
 export interface CustomWhkEintrag {
@@ -293,6 +300,9 @@ export function loadCharacter(id: string): CharacterState | null {
   // Migrations-Fallback fuer Charaktere von vor den customWhk*-Feldern (Punkt 4a/4b).
   if (!parsed.customWhkHauptfertigkeiten) parsed.customWhkHauptfertigkeiten = [];
   if (!parsed.customWhkSpezialisierungen) parsed.customWhkSpezialisierungen = {};
+  // Migrations-Fallback fuer Charaktere von vor dem gesinnung-Feld (S09 Gesinnung.docx).
+  if (!parsed.gesinnung) parsed.gesinnung = {};
+  if (parsed.gesinnungNotiz === undefined) parsed.gesinnungNotiz = '';
   // Magisch/profan ist ein unsichtbares Positiv-Flag: fehlend bedeutet profan. Artefakte sind
   // immer magisch; bei Alchemika ist Spalte B des SPOT-Sheets die alleinige Quelle.
   parsed.equipment = (parsed.equipment ?? []).map((entry) => {
@@ -446,6 +456,8 @@ export function createCharacter(
     waffenLoadouts: [],
     customWhkHauptfertigkeiten: [],
     customWhkSpezialisierungen: {},
+    gesinnung: {},
+    gesinnungNotiz: '',
   };
   if (startbudget) {
     const preset = STARTBUDGET_PRESETS[startbudget];

@@ -11,7 +11,7 @@ export type MainTab = (typeof MAIN_TABS)[number];
 
 export const SUB_TABS = {
   Charakterbogen: ['Übersicht', 'Spruchmagie', 'Grimoire', 'KI', 'PSI', 'Geweihte', 'Inventar'],
-  Charakter: ['Grunddaten', 'Talente', 'Vor- und Nachteile', 'Verteilung'],
+  Charakter: ['Grunddaten', 'Gesinnung', 'Talente', 'Vor- und Nachteile', 'Verteilung'],
   Charakterwerte: [
     'Eigenschaft', 'Attribute', 'Berechnete Werte', 'Sonderfertigkeiten',
     'Grundfertigkeiten', 'Nahkampf', 'Fernkampf', 'WHK', 'SSK',
@@ -71,6 +71,7 @@ export function normalizeNavigation(
 
 export type ViewRoute =
   | { kind: 'grunddaten' }
+  | { kind: 'gesinnung' }
   | { kind: 'charakterbogen' }
   | { kind: 'charakterbogen-spruchmagie' | 'charakterbogen-grimoire' | 'charakterbogen-ki' | 'charakterbogen-psi' | 'charakterbogen-geweihte' | 'charakterbogen-inventar' }
   | { kind: 'category'; title: CharacterValuesSubTab; categories: readonly string[] }
@@ -112,6 +113,7 @@ export function getViewRoute(mainTab: MainTab, subTab: SubTab | null): ViewRoute
   }
 
   if (mainTab === 'Charakter') {
+    if (subTab === 'Gesinnung') return { kind: 'gesinnung' };
     if (subTab === 'Talente') return { kind: 'auswahl', category: 'Talente', isTalent: true };
     if (subTab === 'Vor- und Nachteile') {
       return { kind: 'auswahl', category: 'Vor- und Nachteile', isTalent: false };

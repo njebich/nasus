@@ -22,6 +22,7 @@ import { getTalentMaximumBonus } from './talenteMaximum';
 import { getFertigkeitBaseMax } from './fertigkeitenGrenzen';
 import { getSchlechteEigenschaftMax, hasSchlechteEigenschaft } from './schlechteEigenschaft';
 import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry, type CustomWhkEintrag } from '../state/characterStore';
+import { GESINNUNG_TRAITS, countGesinnungGesetzt } from '../data/gesinnung';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
 
@@ -407,6 +408,13 @@ export function computeSheet(character: CharacterState): ComputedSheet {
   }
   if (!sskLanguageMinimumMet) {
     validationIssues.push({ source: 'SSK › Sprachen', message: 'keine Sprache auf Stufe 1 oder höher' });
+  }
+  const gesinnungGesetzt = countGesinnungGesetzt(character.gesinnung);
+  if (gesinnungGesetzt < GESINNUNG_TRAITS.length) {
+    validationIssues.push({
+      source: 'Gesinnung',
+      message: `nur ${gesinnungGesetzt} von ${GESINNUNG_TRAITS.length} Charakterzügen gesetzt`,
+    });
   }
   for (const rows of Object.values(byKategorie)) {
     for (const row of rows) {

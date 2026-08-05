@@ -4,6 +4,7 @@ import { setValue, buyWeapon, addWaffenLoadout, toggleWaffenLoadoutFavorite } fr
 import { computeSheet } from '../engine/characterSheet';
 import { renderCharakterbogen } from './charakterbogen';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
+import { GESINNUNG_TRAITS } from '../data/gesinnung';
 
 describe('gedruckter Herkunftsheader', () => {
   it('druckt fuer die Herkunft ausschliesslich Ort, Region und AW/NW', () => {
@@ -118,5 +119,30 @@ describe('Waffen-Loadout-Spiegelung auf dem Charakterbogen (nur favorisierte Loa
     const loadoutRow = container.querySelector('[data-loadout-table="nk"] tbody tr')!;
     expect(loadoutRow.firstElementChild?.textContent).toBe('Axt');
     expect(loadoutRow.textContent).not.toContain('Axt+Axt');
+  });
+});
+
+describe('Gesinnung-Spiegel auf dem Charakterbogen (analog zur AT/PA-Balance-Regel: Abschnitt bleibt ausgeblendet, bis vollstaendig)', () => {
+  it('zeigt keinen Gesinnung-Abschnitt, solange nicht alle 22 Slider gesetzt sind', () => {
+    const character = createCharacter('Test');
+    const container = document.createElement('div');
+    renderCharakterbogen(container, computeSheet(character), character);
+
+    const heading = [...container.querySelectorAll('h3')].find((h) => h.textContent === 'Gesinnung');
+    expect(heading).toBeUndefined();
+  });
+
+  it('zeigt den Gesinnung-Abschnitt inkl. Anmerkungen, sobald alle 22 Slider gesetzt sind', () => {
+    const character = createCharacter('Test');
+    for (const trait of GESINNUNG_TRAITS) character.gesinnung[trait.key] = 0;
+    character.gesinnungNotiz = 'Hasst Piraten.';
+    const container = document.createElement('div');
+    renderCharakterbogen(container, computeSheet(character), character);
+
+    const heading = [...container.querySelectorAll('h3')].find((h) => h.textContent === 'Gesinnung');
+    expect(heading).toBeDefined();
+    const rows = [...heading!.nextElementSibling!.querySelectorAll('tr')];
+    expect(rows).toHaveLength(GESINNUNG_TRAITS.length + 1);
+    expect(rows.every((row) => row.querySelector('td')?.textContent === 'Neutral' || row.textContent?.includes('Hasst Piraten.'))).toBe(true);
   });
 });

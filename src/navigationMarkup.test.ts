@@ -15,13 +15,13 @@ describe('Navigations-Markup', () => {
     const mainTabs = [...window.document.querySelectorAll('.main-tab-btn')];
     const subTabs = [...window.document.querySelectorAll('.sub-tab-btn')];
     expect(mainTabs).toHaveLength(6);
-    expect(subTabs).toHaveLength(4);
+    expect(subTabs).toHaveLength(5);
     expect(window.document.querySelectorAll('[role="tab"][aria-selected="true"]')).toHaveLength(2);
     expect(window.document.querySelectorAll('[role="tab"][tabindex="0"]')).toHaveLength(2);
     expect(window.document.querySelectorAll('[role="tab"][aria-controls="view-container"]'))
-      .toHaveLength(10);
+      .toHaveLength(11);
     expect(window.document.querySelector('[role="tabpanel"]')?.getAttribute('aria-labelledby'))
-      .toBe('sub-tab-1-1');
+      .toBe('sub-tab-1-2');
   });
 
   it('beschriftet Kampf ohne künstliche Unternavigation über den aktiven Haupttab', () => {

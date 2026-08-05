@@ -2,9 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { createCharacter } from './characterStore';
 import {
   setValue, addSelection, removeSelection, setWaffenPoolAllocation, buyWeapon, buyShield, buyFeuerwaffe,
-  addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite, BudgetError, MutationError,
+  addWaffenLoadout, removeWaffenLoadout, toggleWaffenLoadoutFavorite, setGesinnung, setGesinnungNotiz,
+  BudgetError, MutationError,
 } from './characterMutations';
 import { computeSheet } from '../engine/characterSheet';
+import { GESINNUNG_TRAITS } from '../data/gesinnung';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { FEUERWAFFEN } from '../data/equipment/fernkampf';
@@ -758,6 +760,38 @@ describe('Waffen-Loadout-Mutationen', () => {
       const bonusRow = correctedSheet.byKategorie['Eigenschaftsbonus']
         .find((entry) => entry.rule.referenz === 'eig_bonus_k_ausstrahlung');
       expect(bonusRow?.computedValue).toBe(0);
+    });
+  });
+
+  describe('Gesinnung', () => {
+    it('setGesinnung setzt einen Wert ohne Budget-Pruefung und klemmt auf -7..7', () => {
+      const character = createCharacter('Test');
+      const traitKey = GESINNUNG_TRAITS[0].key;
+      const updated = setGesinnung(character, traitKey, 5);
+      expect(updated.gesinnung[traitKey]).toBe(5);
+
+      const geklemmt = setGesinnung(updated, traitKey, 99);
+      expect(geklemmt.gesinnung[traitKey]).toBe(7);
+    });
+
+    it('setGesinnung erlaubt 0 als expliziten Wert (Neutral bleibt unterscheidbar von "nicht gesetzt")', () => {
+      const character = createCharacter('Test');
+      const traitKey = GESINNUNG_TRAITS[0].key;
+      expect(character.gesinnung[traitKey]).toBeUndefined();
+      const updated = setGesinnung(character, traitKey, 0);
+      expect(updated.gesinnung[traitKey]).toBe(0);
+      expect(traitKey in updated.gesinnung).toBe(true);
+    });
+
+    it('setGesinnung lehnt einen unbekannten Trait ab', () => {
+      const character = createCharacter('Test');
+      expect(() => setGesinnung(character, 'does_not_exist', 1)).toThrow(MutationError);
+    });
+
+    it('setGesinnungNotiz aktualisiert die Freitext-Anmerkungen', () => {
+      const character = createCharacter('Test');
+      const updated = setGesinnungNotiz(character, 'Hasst Piraten.');
+      expect(updated.gesinnungNotiz).toBe('Hasst Piraten.');
     });
   });
 });

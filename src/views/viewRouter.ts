@@ -9,6 +9,7 @@ import { renderAuswahlView } from './talenteVornachteile';
 import { renderAusruestungView } from './ausruestung';
 import { renderReadOnlyBesitzView } from './besitz';
 import { renderGrunddatenView } from './charakterheader';
+import { renderGesinnungView } from './gesinnung';
 import { renderCharakterbogen } from './charakterbogen';
 import { renderKampfView } from './kampf';
 import { renderKiView, renderReadOnlyKiView } from './ki';
@@ -31,6 +32,8 @@ export function renderActiveView(
   const route = getViewRoute(navigationState.activeMainTab, navigationState.activeSubTab);
   if (route.kind === 'grunddaten') {
     renderGrunddatenView(viewContainer, currentCharacter, handlers.handleHeaderChange);
+  } else if (route.kind === 'gesinnung') {
+    renderGesinnungView(viewContainer, currentCharacter, handlers.handleGesinnungChange, handlers.handleGesinnungNotizChange);
   } else if (route.kind === 'charakterbogen') {
     renderCharakterbogen(viewContainer, sheet, currentCharacter);
   } else if (route.kind === 'charakterbogen-spruchmagie') {

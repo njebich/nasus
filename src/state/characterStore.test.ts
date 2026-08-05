@@ -90,6 +90,20 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     expect(() => computeSheet(loaded!)).not.toThrow();
   });
 
+  it('ergaenzt fehlende gesinnung/gesinnungNotiz-Felder beim Laden (Regression: Feld neu, alte localStorage-Charaktere hatten es nicht)', () => {
+    const id = 'alt-charakter-vor-gesinnung';
+    const ohneGesinnung = {
+      id, name: 'Alt', spezies: 'Mensch', createdAt: '', updatedAt: '',
+      values: {}, selections: {}, poolAllocations: {}, equipment: [], ruestungSlots: {},
+      // kein gesinnung/gesinnungNotiz-Feld - so sahen gespeicherte Charaktere vor diesem Feature aus.
+    };
+    localStorage.setItem(`nasus:character:${id}`, JSON.stringify(ohneGesinnung));
+    const loaded = loadCharacter(id);
+    expect(loaded?.gesinnung).toEqual({});
+    expect(loaded?.gesinnungNotiz).toBe('');
+    expect(() => computeSheet(loaded!)).not.toThrow();
+  });
+
   it('migriert alte Angst-Referenzen und behaelt pro Thema nur die hoechste Stufe', () => {
     const id = 'alt-charakter-vor-angstnummern';
     const alterCharakter = {

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { computeSheet } from './characterSheet';
 import { createCharacter } from '../state/characterStore';
+import { GESINNUNG_TRAITS } from '../data/gesinnung';
 
 // createCharacter() speichert in localStorage - im Test-Environment (happy-dom, via
 // vitest.config.ts) ist das verfuegbar; wir nutzen nur die zurueckgegebene In-Memory-Instanz.
@@ -87,6 +88,23 @@ describe('computeSheet', () => {
       expect(sheet.validationIssues).toContainEqual({
         source: 'SSK › Sprachen', message: 'keine Sprache auf Stufe 1 oder höher',
       });
+    });
+  });
+
+  describe('Gesinnung-Vollstaendigkeit (S09 Gesinnung.docx: Charakter erst gueltig, wenn alle 22 Slider gesetzt sind)', () => {
+    it('meldet ein validationIssue, solange nicht alle 22 Gesinnung-Slider gesetzt sind', () => {
+      const character = createCharacter('Test');
+      const sheet = computeSheet(character);
+      expect(sheet.validationIssues).toContainEqual({
+        source: 'Gesinnung', message: 'nur 0 von 22 Charakterzügen gesetzt',
+      });
+    });
+
+    it('meldet kein Gesinnung-validationIssue mehr, sobald alle 22 Slider gesetzt sind (auch auf 0/Neutral)', () => {
+      const character = createCharacter('Test');
+      for (const trait of GESINNUNG_TRAITS) character.gesinnung[trait.key] = 0;
+      const sheet = computeSheet(character);
+      expect(sheet.validationIssues.some((issue) => issue.source === 'Gesinnung')).toBe(false);
     });
   });
 

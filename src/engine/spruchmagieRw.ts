@@ -8,23 +8,31 @@
 // des grossen xlsx-Formel-Evaluators (engine/evaluator.ts) - der ist fuer Excel-AST-Formeln gebaut,
 // hier reicht "Basisvariable [*|/] Faktor Einheit [Radius]" bzw. unveraendertes Durchreichen von
 // Literalen wie "Selbst"/"Berührung", die kein Muster treffen.
+//
+// **Karma (Nutzer 2026-08-05):** Geweihte-Wunder (siehe views/geweihte.ts) nutzen dieselbe RW-Spalte,
+// haben aber zusaetzlich "Karma" als Basisvariable sowie "x" statt "*" als Multiplikationszeichen und
+// den ausgeschriebenen Einheitsnamen "Meter" statt "m" (z.B. "Karma*10m", "Karma x Meter"). Beides ist
+// dazugenommen, OHNE die Spruchmagie-Faelle zu veraendern (reine Erweiterung der Alternativen). Mehr-
+// Variablen-Formeln wie "(M) x Aura x Karma x 10m Radius" oder "Aura+ Karma" passen weiterhin nicht ins
+// Einzeltoken-Muster und werden (wie schon bisher bei "Selbst"/"B") unveraendert durchgereicht.
 import { aufrunden } from './functions';
 
-const RW_PATTERN = /^(\(M\)|Magie|Aura)(?:([*/])((?:\(Mana\/30\))|\d+(?:[.,]\d+)?)?)?(cm|km|m)?\s*(Radius)?$/;
+const RW_PATTERN = /^(\(M\)|Magie|Aura|Karma)(?:\s*([*/x])\s*((?:\(Mana\/30\))|\d+(?:[.,]\d+)?)?)?\s*(Meter|cm|km|m)?\s*(Radius)?$/;
 
-/** Wertet einen RW-Formeltext aus spruchmagieDetails.json aus. Liefert den Rohtext unveraendert
- *  zurueck, wenn er keinem der bekannten Muster entspricht (z.B. "Selbst", "Berührung", oder ein
- *  kuenftig neu hinzugekommenes, noch unbekanntes Muster) - sicherer Fallback statt Fehlanzeige. */
-export function resolveRw(raw: string | undefined, macht: number, magie: number, aura: number, mana: number): string {
+/** Wertet einen RW-Formeltext aus spruchmagieDetails.json/geweihteWunder.ts aus. Liefert den Rohtext
+ *  unveraendert zurueck, wenn er keinem der bekannten Muster entspricht (z.B. "Selbst", "Berührung",
+ *  oder ein kuenftig neu hinzugekommenes, noch unbekanntes Muster) - sicherer Fallback statt Fehlanzeige.
+ *  `karma` ist optional (nur Geweihte-Aufrufe brauchen ihn, siehe Datei-Kommentar). */
+export function resolveRw(raw: string | undefined, macht: number, magie: number, aura: number, mana: number, karma = 0): string {
   if (!raw) return '–';
   const trimmed = raw.trim();
   const match = RW_PATTERN.exec(trimmed);
   if (!match) return trimmed;
   const [, baseToken, op, factorToken, unitToken, radiusToken] = match;
-  const base = baseToken === 'Magie' ? magie : baseToken === 'Aura' ? aura : macht;
+  const base = baseToken === 'Magie' ? magie : baseToken === 'Aura' ? aura : baseToken === 'Karma' ? karma : macht;
   const factor = factorToken === '(Mana/30)' ? mana / 30 : factorToken ? Number(factorToken.replace(',', '.')) : 1;
   const result = op === '/' ? base / factor : base * factor;
-  const unit = unitToken ?? 'm';
+  const unit = unitToken === 'Meter' ? 'm' : unitToken ?? 'm';
   return `${aufrunden(result, 0)}${unit}${radiusToken ? ' Radius' : ''}`;
 }
 
@@ -65,6 +73,7 @@ const MAGIE_EXCLUSIONS: TokenExclusion[] = [
   { before: /\bAlle\s*$/, after: /^\s*und Materie\b/ }, // "Alle Magie und Materie"
   { before: /\bFeindliche\s*$/ }, // "Feindliche Magie"
   { before: /\baußer\s*$/, after: /^\s*mit\b/ }, // "außer Magie mit [Ziel]"
+  { before: /\bund\s*$/, after: /^\.\s*Solange/ }, // "Gifte und Magie. Solange..." (Geweihte-Wunder "Leber-schutz", Konzept)
 ];
 
 const AURA_EXCLUSIONS: TokenExclusion[] = [
@@ -84,7 +93,15 @@ const AURA_EXCLUSIONS: TokenExclusion[] = [
   { before: /\bund\s*$/, after: /^\s*erkennen\b/ }, // "und Aura erkennen" (Zaubername in Aufzaehlung)
   { before: /\beine\s*$/, after: /^\s*außer\b/ }, // "eine Aura außer dem Magus" (fremde Aura)
   { before: /\bdieser\s*$/, after: /^\s*befindet\b/ }, // "in dieser Aura befindet" (Wirkzone des Zaubers)
+  { after: /^-Kontakt\b/ }, // "Aura-Kontakt" (Geweihte-Wunder "Tod", Konzept statt Attributwert)
+  { before: /\beigene\s*$/ }, // "eigene Aura" (Geweihte-Wunder "Mantel der Schatten", Konzept)
 ];
+
+// Karma (Nutzer 2026-08-05, Geweihte-Wunder): Vollscan aller Wirkung-/RW-Texte in geweihteWunder.ts
+// ergab AUSSCHLIESSLICH echte Formel-Treffer fuer das blanke Wort "Karma" (keine Ausnahmefaelle wie
+// bei Magie/Aura) - Liste bleibt trotzdem als Erweiterungspunkt stehen, falls kuenftiger Content einen
+// beschreibenden Gebrauch einfuehrt.
+const KARMA_EXCLUSIONS: TokenExclusion[] = [];
 
 function isExcluded(text: string, matchStart: number, matchEnd: number, exclusions: TokenExclusion[]): boolean {
   const before = text.slice(Math.max(0, matchStart - CONTEXT_WINDOW), matchStart);
@@ -100,14 +117,15 @@ function markToken(text: string, token: string, exclusions: TokenExclusion[], ma
 }
 
 /** Migrations-/Autoren-Hilfsfunktion: ueberfuehrt rohen, unmarkierten Wirkungstext (wie er frueher
- *  in der xlsx stand) in die neue Marker-Form - "(M)" -> "{M}" (immer), "Magie"/"Aura" -> "{Magie}"/
- *  "{Aura}" ueberall dort, wo die obigen Ausnahmelisten keinen beschreibenden Gebrauch erkennen.
- *  Wird zur Laufzeit NICHT mehr aufgerufen (siehe resolveWirkungText) - nur fuer die einmalige
- *  Content-Migration bzw. als Hilfestellung beim Anlegen neuer Zauber gedacht. */
+ *  in der xlsx stand) in die neue Marker-Form - "(M)" -> "{M}" (immer), "Magie"/"Aura"/"Karma" ->
+ *  "{Magie}"/"{Aura}"/"{Karma}" ueberall dort, wo die obigen Ausnahmelisten keinen beschreibenden
+ *  Gebrauch erkennen. Wird zur Laufzeit NICHT mehr aufgerufen (siehe resolveWirkungText) - nur fuer
+ *  die einmalige Content-Migration bzw. als Hilfestellung beim Anlegen neuer Zauber/Wunder gedacht. */
 export function markFormulaTokens(raw: string): string {
   let result = raw.replace(/\(M\)/g, '{M}');
   result = markToken(result, 'Magie', MAGIE_EXCLUSIONS, '{Magie}');
   result = markToken(result, 'Aura', AURA_EXCLUSIONS, '{Aura}');
+  result = markToken(result, 'Karma', KARMA_EXCLUSIONS, '{Karma}');
   return result;
 }
 
@@ -152,10 +170,10 @@ function evaluateArithmeticChains(text: string): string {
   });
 }
 
-const FORMULA_MARKER = /\{(M|Magie|Aura)\}/g;
+const FORMULA_MARKER = /\{(M|Magie|Aura|Karma)\}/g;
 
-function markerValue(token: string, macht: number, magie: number, aura: number): number {
-  return token === 'Magie' ? magie : token === 'Aura' ? aura : macht;
+function markerValue(token: string, macht: number, magie: number, aura: number, karma: number): number {
+  return token === 'Magie' ? magie : token === 'Aura' ? aura : token === 'Karma' ? karma : macht;
 }
 
 // Sentinel-Zeichen (kommt in echten Wirkungstexten nie vor): markiert eine gerade eingesetzte
@@ -167,13 +185,14 @@ const MARKER_SENTINEL = ' ';
 const MARKER_COLON_DIVISION = new RegExp(`${MARKER_SENTINEL}(\\d+(?:[.,]\\d+)?)\\s*:\\s*(?=\\d)`, 'g');
 const MARKER_SENTINEL_PATTERN = new RegExp(MARKER_SENTINEL, 'g');
 
-/** Loest "{M}", "{Magie}" und "{Aura}" im Wirkungstext eines Spruchzaubers zu den aktuellen
- *  Charakterwerten auf (Macht/att_magie/att_aura) - ein unmarkiertes "Magie"/"Aura" bleibt Klartext
- *  (siehe Kommentar oben zum Marker-Format) - und rechnet anschliessend verbleibende reine
- *  Zahlenformeln (z.B. "6 + 1*2") zu einem fertigen Wert zusammen. */
-export function resolveWirkungText(raw: string | undefined, macht: number, magie: number, aura: number): string {
+/** Loest "{M}", "{Magie}", "{Aura}" und "{Karma}" im Wirkungstext eines Spruchzaubers/Geweihte-Wunders
+ *  zu den aktuellen Charakterwerten auf (Macht/att_magie/att_aura/att_karma) - ein unmarkiertes
+ *  "Magie"/"Aura"/"Karma" bleibt Klartext (siehe Kommentar oben zum Marker-Format) - und rechnet
+ *  anschliessend verbleibende reine Zahlenformeln (z.B. "6 + 1*2") zu einem fertigen Wert zusammen.
+ *  `karma` ist optional (nur Geweihte-Aufrufe brauchen ihn, siehe Datei-Kommentar zu resolveRw). */
+export function resolveWirkungText(raw: string | undefined, macht: number, magie: number, aura: number, karma = 0): string {
   if (!raw) return '–';
-  let result = raw.replace(FORMULA_MARKER, (_match, token: string) => MARKER_SENTINEL + String(markerValue(token, macht, magie, aura)));
+  let result = raw.replace(FORMULA_MARKER, (_match, token: string) => MARKER_SENTINEL + String(markerValue(token, macht, magie, aura, karma)));
   result = result.replace(MARKER_COLON_DIVISION, '$1/');
   result = result.replace(MARKER_SENTINEL_PATTERN, '');
   return evaluateArithmeticChains(result);

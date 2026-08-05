@@ -18,6 +18,8 @@ import { GEWEIHTE_WUNDER, type GeweihterWunderEintrag } from '../data/geweihteWu
 import type { CharacterState } from '../state/characterStore';
 import { formatKlickpreis, parseStatInputValue, type OnValueChange } from './categoryView';
 import { withScrollAnchor } from './scrollAnchor';
+import { resolveRw, resolveWirkungText } from '../engine/spruchmagieRw';
+import { getAttAura, getAttMagie, getCharakterwertFormel } from './spruchmagie';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -186,15 +188,25 @@ function sortWunderZeilen(zeilen: GeweihterWunderEintrag[]): GeweihterWunderEint
     minKarmaSortKey(a.minKarma) - minKarmaSortKey(b.minKarma) || kppSortKey(a.kpp) - kppSortKey(b.kpp));
 }
 
+/** (M)/Magie/Aura/Karma-Aufloesung fuer RW und Wirkung, analog Spruchmagie (siehe engine/
+ *  spruchmagieRw.ts) - Nutzer-Ask 2026-08-05, "wie bereits in Spruchmagie". RW bleibt roher
+ *  Formeltext (resolveRw erkennt (M)/Magie/Aura/Karma direkt, keine Marker noetig), Wirkung
+ *  ist bereits per Migration auf {M}/{Magie}/{Aura}/{Karma}-Marker umgestellt (geweihteWunder.ts). */
 function renderWunderRow(eintrag: GeweihterWunderEintrag, sheet: ComputedSheet, karma: number): string {
   const gesperrt = eintrag.minKarma === null || karma < eintrag.minKarma;
   const probe = computeProbe(eintrag, sheet);
+  const macht = getCharakterwertFormel(sheet, 'macht');
+  const magie = getAttMagie(sheet);
+  const aura = getAttAura(sheet);
+  const mana = getCharakterwertFormel(sheet, 'mana');
+  const rw = resolveRw(eintrag.rw, macht, magie, aura, mana, karma);
+  const wirkung = resolveWirkungText(eintrag.wirkung, macht, magie, aura, karma);
   return `
     <tr class="${gesperrt ? 'ki-row-locked' : ''}">
       <td>${probe}</td>
       <td class="ki-name-cell">${escapeHtml(eintrag.name || '–')}</td>
-      <td class="geweihte-wirkung-cell">${nl2br(eintrag.wirkung || '–')}</td>
-      <td>${escapeHtml(eintrag.rw || '–')}</td>
+      <td class="geweihte-wirkung-cell">${nl2br(wirkung)}</td>
+      <td>${escapeHtml(rw)}</td>
       <td>${escapeHtml(eintrag.ziel || '–')}</td>
       <td>${nl2br(eintrag.vd || '–')}</td>
       <td>${nl2br(formatWd(eintrag.wd) || '–')}</td>

@@ -37,6 +37,20 @@ describe('resolveRw', () => {
   it('faellt bei fehlendem Wert auf "–" zurueck', () => {
     expect(resolveRw(undefined, macht, magie, aura, mana)).toBe('–');
   });
+
+  it('wertet Karma-Formeln aus (Geweihte-Wunder, "x" als Multiplikationszeichen, "Meter" als Einheit)', () => {
+    const karma = 5;
+    expect(resolveRw('Karma*10m', macht, magie, aura, mana, karma)).toBe('50m');
+    expect(resolveRw('Karma x Meter', macht, magie, aura, mana, karma)).toBe('5m');
+    expect(resolveRw('(M)x2m', macht, magie, aura, mana, karma)).toBe('20m');
+    expect(resolveRw('(M) m', macht, magie, aura, mana, karma)).toBe('10m');
+  });
+
+  it('reicht Mehr-Variablen-Formeln (Geweihte-Wunder) unveraendert durch, statt falsch zu parsen', () => {
+    const karma = 5;
+    expect(resolveRw('(M) x Aura x Karma x 10m Radius', macht, magie, aura, mana, karma)).toBe('(M) x Aura x Karma x 10m Radius');
+    expect(resolveRw('Aura+ Karma', macht, magie, aura, mana, karma)).toBe('Aura+ Karma');
+  });
 });
 
 describe('resolveWirkungText (Marker-Format {M}/{Magie}/{Aura})', () => {
@@ -116,6 +130,16 @@ describe('resolveWirkungText (Marker-Format {M}/{Magie}/{Aura})', () => {
   it('faellt bei fehlendem Text auf "–" zurueck', () => {
     expect(resolveWirkungText(undefined, macht, magie, aura)).toBe('–');
   });
+
+  it('loest {Karma} auf (Geweihte-Wunder)', () => {
+    const karma = 5;
+    expect(resolveWirkungText('Das Opfer erleidet W10 + {Karma}, Heiligen Schaden.', macht, magie, aura, karma))
+      .toBe('Das Opfer erleidet W10 + 5, Heiligen Schaden.');
+    expect(resolveWirkungText('Kugel von {Karma}*2 Meter Radius.', macht, magie, aura, karma))
+      .toBe('Kugel von 10 Meter Radius.');
+    expect(resolveWirkungText('({Aura}+{Karma}) W6 zusätzlicher Schaden.', macht, magie, aura, karma))
+      .toBe('(10) W6 zusätzlicher Schaden.');
+  });
 });
 
 describe('markFormulaTokens (Migrations-Helfer)', () => {
@@ -148,6 +172,26 @@ describe('markFormulaTokens (Migrations-Helfer)', () => {
     expect(markFormulaTokens('Der Magus verhüllt seine Aura.')).toBe('Der Magus verhüllt seine Aura.');
     expect(markFormulaTokens('Wer sich in dieser Aura befindet, erleidet Elementarschaden.')).toBe(
       'Wer sich in dieser Aura befindet, erleidet Elementarschaden.',
+    );
+    expect(markFormulaTokens('Der nächste Mensch, den der Kleriker berührt (Aura-Kontakt), altert.')).toBe(
+      'Der nächste Mensch, den der Kleriker berührt (Aura-Kontakt), altert.',
+    );
+    expect(markFormulaTokens('...innerhalb seiner Aura, was nicht über eine eigene Aura verfügt.')).toBe(
+      '...innerhalb seiner Aura, was nicht über eine eigene Aura verfügt.',
+    );
+  });
+
+  it('markiert "Karma" (Geweihte-Wunder) immer - Vollscan ergab keine beschreibenden Faelle', () => {
+    expect(markFormulaTokens('Das Opfer erleidet W10 + Karma, Heiligen Schaden. (Aura+Karma) W6 Schaden.')).toBe(
+      'Das Opfer erleidet W10 + {Karma}, Heiligen Schaden. ({Aura}+{Karma}) W6 Schaden.',
+    );
+    // Wortgrenze verhindert Fehltreffer in zusammengesetzten Woertern wie "Karmapoolpunktkosten".
+    expect(markFormulaTokens('Die Karmapoolpunktkosten erhöhen sich um 10.')).toBe('Die Karmapoolpunktkosten erhöhen sich um 10.');
+  });
+
+  it('markiert "Magie" in "Gifte und Magie. Solange..." nicht (Geweihte-Wunder "Leber-schutz", Konzept)', () => {
+    expect(markFormulaTokens('Leberschutz wirkt auch gegen Gifte und Magie. Solange noch Leberschutz vorhanden ist...')).toBe(
+      'Leberschutz wirkt auch gegen Gifte und Magie. Solange noch Leberschutz vorhanden ist...',
     );
   });
 });

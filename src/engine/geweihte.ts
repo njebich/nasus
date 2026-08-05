@@ -1,20 +1,28 @@
 // Geweihte-Tab (Nutzer 2026-07-22): Gate-Talente + Geweihtengrad/KPP-Mechanik.
 //
 // Architekturentscheidung (Nutzer-Antwort 2026-07-22): die 5 Gate-Talente
-// (talente_geweihter_<religion>_orthodox) sind eine STATISCHE xlsx-generierte Liste (siehe
-// scripts/add_geweihte_rows.py), nicht zur Laufzeit aus religionStore.ts synthetisiert - neue,
-// vom Nutzer per "+ Neu" angelegte Religionen/Sekten bekommen also (noch) kein eigenes
-// Gate-Talent, bis die xlsx manuell erweitert wird.
+// (urspruenglich talente_geweihter_<religion>_orthodox) sind eine STATISCHE xlsx-generierte
+// Liste (siehe scripts/add_geweihte_rows.py), nicht zur Laufzeit aus religionStore.ts
+// synthetisiert - neue, vom Nutzer per "+ Neu" angelegte Religionen/Sekten bekommen also
+// (noch) keine eigene Stufenkette, bis die xlsx manuell erweitert wird.
 //
-// Geweihtengrad (Nutzer-Antwort 2026-07-22): das Kaufen des Gate-Talents setzt den Charakter
-// SOFORT auf Grad 1 "Niederer" - es gibt (noch) keine spielerseitige Steigerung auf Grad 2-7,
-// das ist als Meistermodul-Folgearbeit im Entwickeln-Sheet vermerkt (add_geweihte_rows.py).
+// Geweihtengrad-Steigerung (Nutzer-Ask 2026-08-06, ersetzt die 2026-07-22-Entscheidung "nur
+// Meister-vergebbar"): die 5 Gate-Talente sind jetzt Stufe 1 einer 7-stufigen Stufenkette pro
+// Religion (talente_geweihter_<religion>_stufe_<1-7>_orthodox, scripts/add_geweihte_stufen.py),
+// mit dem generischen Stufenketten-Mechanismus aus engine/talenteStufenKette.ts (gleiches Muster
+// wie die Magus-Schulen) - Stufe N erfordert Stufe N-1 bereits gewaehlt, harter Block in
+// characterMutations.ts. Jede Stufe kostet 5 TaP. getGeweihtenGrad() liest jetzt die hoechste
+// gewaehlte Stufe der aktiven Religion (statt fix 1 sobald irgendein Gate-Talent gewaehlt ist).
 //
-// Religions-Gate (Nutzer 2026-07-22): ein Charakter darf nur das Gate-Talent seiner im
+// Religions-Gate (Nutzer 2026-07-22): ein Charakter darf nur die Stufenkette seiner im
 // Charakterheader gewaehlten Religion+Sekte kaufen - ein Lloth-Anhaenger kann kein Geweihter
 // von Tepod werden. Sekte muss ebenfalls passen (nicht nur Religion), da die Wundertabelle
-// aktuell nur Orthodox abdeckt (siehe GEWEIHTER_RELIGION_BY_REFERENZ unten).
+// aktuell nur Orthodox abdeckt (siehe GEWEIHTER_RELIGION_BY_REFERENZ unten). Innerhalb einer
+// Religion bleiben alle gekauften Stufen nebeneinander bestehen (Stufenkette); der Wechsel zu
+// einer ANDEREN Religion entfernt weiterhin alle bisherigen Stufen (characterMutations.ts,
+// gleiche Exklusivitaet wie zuvor, jetzt familienbasiert statt exact-referenz-basiert).
 import { parseReligionSekte } from '../state/religionStore';
+import { getTalentStufeInfo } from './talenteStufenKette';
 
 export interface GeweihtenGradEintrag {
   grad: number;
@@ -47,15 +55,20 @@ export function getMaxKpp(grad: number, karma: number): number {
 
 export const GEWEIHTER_TALENT_PREFIX = 'talente_geweihter_';
 
+const GEWEIHTER_RELIGIONEN = ['Lloth', 'Khartazh', 'Nomna', 'Tepod', 'Isch'] as const;
+
 /** Statische Zuordnung Talent-Referenz -> Religion/Sekte (siehe Architekturentscheidung oben -
- *  muss von Hand erweitert werden, wenn add_geweihte_rows.py um weitere Kombinationen ergaenzt wird). */
-export const GEWEIHTER_RELIGION_BY_REFERENZ: Record<string, { religion: string; sekte: string }> = {
-  talente_geweihter_lloth_orthodox: { religion: 'Lloth', sekte: 'Orthodox' },
-  talente_geweihter_khartazh_orthodox: { religion: 'Khartazh', sekte: 'Orthodox' },
-  talente_geweihter_nomna_orthodox: { religion: 'Nomna', sekte: 'Orthodox' },
-  talente_geweihter_tepod_orthodox: { religion: 'Tepod', sekte: 'Orthodox' },
-  talente_geweihter_isch_orthodox: { religion: 'Isch', sekte: 'Orthodox' },
-};
+ *  muss von Hand erweitert werden, wenn add_geweihte_stufen.py-artige xlsx-Edits um weitere
+ *  Religionen/Sekten ergaenzt werden). Ein Eintrag pro Stufe (1-7), da jede Stufe ihre eigene
+ *  Talent-Referenz ist - Religion/Sekte sind fuer alle 7 Stufen einer Religion identisch. */
+export const GEWEIHTER_RELIGION_BY_REFERENZ: Record<string, { religion: string; sekte: string }> = Object.fromEntries(
+  GEWEIHTER_RELIGIONEN.flatMap((religion) =>
+    Array.from({ length: 7 }, (_, i) => i + 1).map((stufe) => [
+      `talente_geweihter_${religion.toLowerCase()}_stufe_${stufe}_orthodox`,
+      { religion, sekte: 'Orthodox' },
+    ]),
+  ),
+);
 
 /** Prueft, ob referenz's Gate-Talent zur gewaehlten Charakter-Religion (CharacterHeader.religion,
  *  Format "Religion, Sekte") passt. Nicht-Gate-Talente sind immer erlaubt (true); ohne gewaehlte
@@ -101,8 +114,16 @@ export function isGeweihterTalentSelectedInSheet(sheet: SheetTalenteSource): boo
   );
 }
 
-/** Fixe Geweihtengrad-Ermittlung: 1 sobald irgendein Gate-Talent gewaehlt ist, sonst 0 - siehe
- *  Architekturentscheidung oben (keine Steigerung ueber Grad 1 hinaus implementiert). */
+/** Geweihtengrad = hoechste gewaehlte Stufe der Stufenkette (Nutzer-Ask 2026-08-06, ersetzt die
+ *  vorherige feste "1 sobald irgendein Gate-Talent gewaehlt" - siehe Architekturentscheidung
+ *  oben). Gemischte Religionen koennen laut characterMutations.ts-Exklusivitaet nicht gleichzeitig
+ *  bestehen, daher reicht ein einfaches Maximum ueber alle gewaehlten Geweihter-Stufen. */
 export function getGeweihtenGrad(sheet: SheetTalenteSource): number {
-  return isGeweihterTalentSelectedInSheet(sheet) ? 1 : 0;
+  let maxGrad = 0;
+  for (const row of sheet.byKategorie['Talente'] ?? []) {
+    if (!row.selected) continue;
+    const info = getTalentStufeInfo(row.rule.referenz);
+    if (info && info.family.startsWith(GEWEIHTER_TALENT_PREFIX) && info.stufe > maxGrad) maxGrad = info.stufe;
+  }
+  return maxGrad;
 }

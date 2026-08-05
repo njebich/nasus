@@ -63,13 +63,15 @@ function isTalentSelected(sheet: ComputedSheet, referenz: string): boolean {
 }
 
 /** Gute PSI-Probe (talente_psi_gute_stufe_1/2): Stufe 1 = Magie, Stufe 2 = Magie + Eigenschaftsbonus,
- *  gedeckelt auf Normale:2 (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt"). */
+ *  gedeckelt auf Normale:2 (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt").
+ *  Anzeigeregel "gXX nur wenn g>1" (Proben v2.0.md §7, Nutzer-Normalisierung 2026-08-06). */
 function getGuteProbe(sheet: ComputedSheet, normaleProbe: number, eigBonWert: number): number | undefined {
   const stufe2 = isTalentSelected(sheet, 'talente_psi_gute_stufe_2');
   const stufe1 = stufe2 || isTalentSelected(sheet, 'talente_psi_gute_stufe_1');
   if (!stufe1) return undefined;
   const gute = stufe2 ? getAttMagie(sheet) + eigBonWert : getAttMagie(sheet);
-  return Math.min(gute, Math.floor(normaleProbe / 2));
+  const capped = Math.min(gute, Math.floor(normaleProbe / 2));
+  return capped > 1 ? capped : undefined;
 }
 
 /** Kante(n) + benoetigte(r) TaW als Tooltip - die beiden Wurzeln (Telekinese/Empathie, kein
@@ -144,11 +146,11 @@ function renderRow(r: Row, sheet: ComputedSheet, readOnly = false): string {
   const eigBon = getEigBonusValue(sheet, r.eigBonusReferenz);
   const normaleProbe = currentValue + (eigBon?.value ?? 0) + getAttAura(sheet) + getAttMagie(sheet);
   const guteProbe = currentValue < 1 ? undefined : getGuteProbe(sheet, normaleProbe, eigBon?.value ?? 0);
-  const probe = currentValue < 1 ? '' : guteProbe !== undefined ? `${normaleProbe} / G${guteProbe}` : `${normaleProbe}`;
+  const probe = currentValue < 1 ? '' : guteProbe !== undefined ? `${normaleProbe} / g${guteProbe}` : `${normaleProbe}`;
   // Nutzer 2026-07-24: "On Probe Value, show Formula" - identisch zur Formel im statischen
   // Info-Kasten (renderInfoBlock).
   const probeTooltip = probe
-    ? tooltipAttr(`Probe = TaW + Eig.Bon. + Aura + Magie${guteProbe !== undefined ? ' (G = Gute Probe)' : ''}`)
+    ? tooltipAttr(`Probe = TaW + Eig.Bon. + Aura + Magie${guteProbe !== undefined ? ' (g = Gute Probe)' : ''}`)
     : '';
   const detail = PSI_ZAUBERTABELLE[referenz];
   const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';

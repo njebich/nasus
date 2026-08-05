@@ -4,10 +4,7 @@
 
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import { tooltipAttr } from './tooltip';
-import {
-  GEWEIHTER_TALENT_PREFIX, GEWEIHTER_RELIGION_BY_REFERENZ, getGeweihtenGrad, getGeweihtenGradEintrag,
-  isGeweihterReferenzErlaubt,
-} from '../engine/geweihte';
+import { GEWEIHTER_RELIGION_BY_REFERENZ, isGeweihterReferenzErlaubt } from '../engine/geweihte';
 import { filterHoechsteStufeJeReihe, getTalentStufeInfo, getVorstufeReferenz } from '../engine/talenteStufenKette';
 import { normalizeForMatch } from '../engine/normalize';
 
@@ -103,14 +100,14 @@ function wirkungIcon(wirkung: string | undefined): string {
   return `<span class="stat-info-icon"${tooltipAttr(wirkung)}>ⓘ</span>`;
 }
 
-/** Geweihte-Gate-Talente zeigen den aktuellen Geweihtengrad-Titel dynamisch vor dem Basisnamen
- *  (Nutzer 2026-07-22: "dynamic name, no mention at grad 0") - nur wenn das Talent selbst
- *  bereits gewaehlt ist, sonst bleibt der statische xlsx-Name ("Geweihter von X, Orthodox"). */
-function geweihterLabel(r: ComputedRule, sheet: ComputedSheet): string {
-  const base = r.rule.beschreibung ?? r.rule.referenz;
-  if (!r.rule.referenz.startsWith(GEWEIHTER_TALENT_PREFIX) || !r.selected) return base;
-  const titel = getGeweihtenGradEintrag(getGeweihtenGrad(sheet)).titel;
-  return titel ? `${titel} ${base}` : base;
+/** Ehemals (Nutzer 2026-07-22) ein dynamischer Grad-Titel-Praefix vor dem Basisnamen des EINEN
+ *  Gate-Talents. Seit der Geweihte-Stufenkette (Nutzer-Ask 2026-08-06, siehe engine/geweihte.ts)
+ *  traegt jede der 7 Stufen-Zeilen ihren Grad-Titel bereits fest im xlsx-Namen ("Geweihter von X,
+ *  Orthodox – Minderer" usw.) - ein zusaetzlicher dynamischer Praefix wuerde ihn nur verdoppeln.
+ *  Bleibt als Funktion stehen (statt an den 2 Aufrufstellen zu inlinen), falls spaeter doch wieder
+ *  ein Talent-spezifischer Label-Sonderfall noetig wird. */
+function geweihterLabel(r: ComputedRule): string {
+  return r.rule.beschreibung ?? r.rule.referenz;
 }
 
 /** Geweihte-Gate-Talente sind hinter der im Charakterheader gewaehlten Religion+Sekte gesperrt
@@ -123,7 +120,7 @@ function geweihterSperrTitle(referenz: string): string {
 }
 
 function renderRow(r: ComputedRule, sheet: ComputedSheet, characterReligion: string | undefined): string {
-  const label = escapeHtml(geweihterLabel(r, sheet));
+  const label = escapeHtml(geweihterLabel(r));
   // Talente kosten TaP (eigener, von SP komplett getrennter Pool), alles andere (z.B.
   // Vor-/Nachteile) kostet SP - siehe characterSheet.ts.
   const waehrung = r.rule.kategorie === 'Talente' ? 'TaP' : 'SP';
@@ -249,7 +246,7 @@ export function renderAuswahlView(
   const allRows = (sheet.byKategorie[kategorie] ?? []).filter((r) => r.rule.art === 'Auswahl');
   const searchText = searchTextByKategorie.get(kategorie) ?? '';
   const needle = searchText.trim().toLowerCase();
-  let rows = needle ? allRows.filter((r) => geweihterLabel(r, sheet).toLowerCase().includes(needle)) : allRows;
+  let rows = needle ? allRows.filter((r) => geweihterLabel(r).toLowerCase().includes(needle)) : allRows;
   if (nurKaufbare) {
     rows = rows.filter((r) => r.selected || r.kostenSelect === undefined || r.kostenSelect <= budgetRemaining);
   }

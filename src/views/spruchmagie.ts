@@ -237,14 +237,18 @@ export function filterProbableStufen(sheet: ComputedSheet, row: Row, stufen: Arr
 
 /** Gute Spruchzauberprobe (talente_spruchgute_stufe_1/2, schulen-uebergreifend): Stufe 1 =
  *  Weisheit, Stufe 2 = Weisheit + Eigenschaftsbonus, gedeckelt auf Normale:2 pro Zauberstufe
- *  (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt"). */
+ *  (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt"). Anzeigeregel
+ *  "gXX nur wenn g>1" (Proben v2.0.md §7, Nutzer-Normalisierung 2026-08-06) - vorher zeigten
+ *  Spruchmagie/KI/PSI den Wert auch bei g<=1 (kein tatsaechlicher Bonus ueber die Basis-Gute
+ *  1 hinaus). */
 function getGuteProbe(sheet: ComputedSheet, normaleProbe: number, eigBonWert: number): number | undefined {
   const stufe2 = isTalentSelected(sheet, 'talente_spruchgute_stufe_2');
   const stufe1 = stufe2 || isTalentSelected(sheet, 'talente_spruchgute_stufe_1');
   if (!stufe1) return undefined;
   const weisheit = getMaxLernbarerGrad(sheet);
   const gute = stufe2 ? weisheit + eigBonWert : weisheit;
-  return Math.min(gute, Math.floor(normaleProbe / 2));
+  const capped = Math.min(gute, Math.floor(normaleProbe / 2));
+  return capped > 1 ? capped : undefined;
 }
 
 export function renderZauberprobeCell(sheet: ComputedSheet, row: Row, stufen: Array<{ label: string; erschwerung: number }>): string {

@@ -115,16 +115,38 @@ function whkReferenzForArt(art: string): string | undefined {
   return undefined;
 }
 
+function isTalentSelected(sheet: ComputedSheet, referenz: string): boolean {
+  return (sheet.byKategorie['Talente'] ?? []).find((r) => r.rule.referenz === referenz)?.selected ?? false;
+}
+
+/** Gute Wunder-Probe (talente_geweihte_gute_wunder_stufe_1/2, Nutzer-Ask 2026-08-06): ersetzt
+ *  die Basis-Gute (1, gilt implizit fuer jeden Geweihten) durch Karma (Stufe 1) bzw. Karma+Aura
+ *  (Stufe 2), gedeckelt auf Normale:2 - gleiches Muster wie Spruchmagie/KI/PSI (siehe z.B.
+ *  getGuteProbe in views/spruchmagie.ts; "_stufe_1/2"-Namenskonvention gibt den Vorstufenketten-
+ *  Hardblock aus engine/talenteStufenKette.ts kostenlos dazu, Stufe 2 erfordert Stufe 1).
+ *  Anzeigeregel "gXX nur anzeigen wenn g>1" (Proben v2.0.md §7, seit 2026-08-06 auch dort normiert). */
+function getGuteWunderProbe(sheet: ComputedSheet, normaleProbe: number, karma: number): number | undefined {
+  const stufe2 = isTalentSelected(sheet, 'talente_geweihte_gute_wunder_stufe_2');
+  const stufe1 = stufe2 || isTalentSelected(sheet, 'talente_geweihte_gute_wunder_stufe_1');
+  if (!stufe1) return undefined;
+  const gute = stufe2 ? karma + getAttAura(sheet) : karma;
+  const capped = Math.min(gute, Math.floor(normaleProbe / 2));
+  return capped > 1 ? capped : undefined;
+}
+
 /** Probe = Aus.Bon + WHK-TaW - Malus (Nutzer-Antwort 2026-07-22). Leer, wenn die passende
  *  Geweihte-WHK-Faehigkeit noch nicht gelernt ist (TaW<1) oder die Zeile keinen Malus/keine
- *  Art traegt (die 2 Platzhalter-Zeilen der Quelle). */
-function computeProbe(eintrag: GeweihterWunderEintrag, sheet: ComputedSheet): string {
+ *  Art traegt (die 2 Platzhalter-Zeilen der Quelle). Haengt "/g<X>" an, wenn "Gute Wunder"
+ *  gewaehlt ist und die daraus resultierende Gute-Probe >1 ist (siehe getGuteWunderProbe). */
+function computeProbe(eintrag: GeweihterWunderEintrag, sheet: ComputedSheet, karma: number): string {
   if (eintrag.malus === null) return '–';
   const whkReferenz = whkReferenzForArt(eintrag.art);
   if (!whkReferenz) return '–';
   const taw = getWhkTaw(sheet, whkReferenz);
   if (taw < 1) return '–';
-  return String(getAusstrahlungsBonus(sheet) + taw - eintrag.malus);
+  const normale = getAusstrahlungsBonus(sheet) + taw - eintrag.malus;
+  const gute = getGuteWunderProbe(sheet, normale, karma);
+  return gute !== undefined ? `${normale}/g${gute}` : String(normale);
 }
 
 function renderGradTabelle(aktiverGrad: number): string {
@@ -155,10 +177,10 @@ function renderInfoBlock(sheet: ComputedSheet, character: CharacterState): strin
         <div><b>Geweihtengrad</b> = ${grad} ${gradEintrag.titel ? `(${escapeHtml(gradEintrag.titel)})` : ''}</div>
         <div><b>Karma</b> = ${karma}</div>
         <div><b>Max. KPP</b> = ${gradEintrag.kppBasis} + Karma×10 = ${maxKpp}</div>
-        <div><b>Probe</b> = Aus.Bon + TaW − Malus (je nach Art: Stoß→Stoßgebet, Wunder→Wunder, Ritual→Ritual)</div>
+        <div><b>Probe</b> = Aus.Bon + TaW − Malus (je nach Art: Stoß→Stoßgebet, Wunder→Wunder, Ritual→Ritual), mit Talent "Gute Wunder": /g&lt;Karma, max. Probe:2&gt;</div>
       </div>
       ${renderGradTabelle(grad)}
-      <p class="geweihte-grad-hinweis">Grad 2-7 sind nicht spielerseitig steigerbar - Meister-Vergabe, noch nicht umgesetzt (siehe Entwickeln-Sheet).</p>
+      <p class="geweihte-grad-hinweis">Grad 2-7 werden durch die Talente "Geweihter von &lt;Religion&gt;, Orthodox – &lt;Titel&gt;" (Stufe 2-7, je 5 TaP, Tab "Talente" unter "Geweihte") gesteigert - Stufe N erfordert Stufe N-1.</p>
     </div>`;
 }
 
@@ -194,7 +216,7 @@ function sortWunderZeilen(zeilen: GeweihterWunderEintrag[]): GeweihterWunderEint
  *  ist bereits per Migration auf {M}/{Magie}/{Aura}/{Karma}-Marker umgestellt (geweihteWunder.ts). */
 function renderWunderRow(eintrag: GeweihterWunderEintrag, sheet: ComputedSheet, karma: number): string {
   const gesperrt = eintrag.minKarma === null || karma < eintrag.minKarma;
-  const probe = computeProbe(eintrag, sheet);
+  const probe = computeProbe(eintrag, sheet, karma);
   const macht = getCharakterwertFormel(sheet, 'macht');
   const magie = getAttMagie(sheet);
   const aura = getAttAura(sheet);

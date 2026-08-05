@@ -91,7 +91,7 @@ describe('Magie-Arbeitsbereich', () => {
 
   it('zeigt Geweihte nach dem Gate mit denselben Daten und ohne Mutationssteuerung', () => {
     const character = createCharacter('Geweihtentest', { religion: 'Nomna, Orthodox' }, undefined, true);
-    character.selections.talente_geweihter_nomna_orthodox = 1;
+    character.selections.talente_geweihter_nomna_stufe_1_orthodox = 1;
     character.values.att_karma = 3;
     const sheet = computeSheet(character);
 

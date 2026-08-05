@@ -9,7 +9,7 @@ import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
 import { getTalentMaximumBonus } from '../engine/talenteMaximum';
 import { getSchlechteEigenschaftZielReferenz, getSchlechteEigenschaftMax } from '../engine/schlechteEigenschaft';
 import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent, isGeweihterReferenzErlaubt } from '../engine/geweihte';
-import { getVorstufeReferenz, getHoehereStufenReferenzen } from '../engine/talenteStufenKette';
+import { getVorstufeReferenz, getHoehereStufenReferenzen, getTalentStufeInfo } from '../engine/talenteStufenKette';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
@@ -325,14 +325,19 @@ export function addSelection(character: CharacterState, referenz: string): Chara
       `'${rule.referenz}' erfordert zuerst '${vorstufeRule?.beschreibung ?? vorstufeReferenz}'`,
     );
   }
-  // Geweihte-Gate-Talente sind gegenseitig exklusiv (Nutzer 2026-07-22: ein Charakter kann nicht
-  // gleichzeitig Geweihter mehrerer Religionen sein - sonst waere Geweihtengrad/Wundertabellen-
-  // Filterung mehrdeutig) - gleiche Struktur wie die Angststufen-Regel oben.
+  // Geweihte-Stufenketten sind gegenseitig exklusiv NACH RELIGION (Nutzer 2026-07-22: ein
+  // Charakter kann nicht gleichzeitig Geweihter mehrerer Religionen sein - sonst waere
+  // Geweihtengrad/Wundertabellen-Filterung mehrdeutig; Nutzer-Ask 2026-08-06: aber INNERHALB
+  // einer Religion sollen alle gekauften Stufen 1-7 nebeneinander bestehen bleiben, siehe
+  // engine/geweihte.ts). Vergleich per Stufenketten-Familie (z.B. "talente_geweihter_lloth"),
+  // nicht mehr per exakter Referenz - sonst wuerde das Kaufen von Stufe 2 die bereits gekaufte
+  // Stufe 1 derselben Religion faelschlich wieder entfernen.
   if (rule.referenz.toLowerCase().startsWith(GEWEIHTER_TALENT_PREFIX)) {
+    const family = getTalentStufeInfo(rule.referenz)?.family;
     for (const selectedReference of Object.keys(candidate.selections)) {
-      if (selectedReference.startsWith(GEWEIHTER_TALENT_PREFIX) && selectedReference !== rule.referenz.toLowerCase()) {
-        delete candidate.selections[selectedReference];
-      }
+      if (!selectedReference.startsWith(GEWEIHTER_TALENT_PREFIX)) continue;
+      const selectedFamily = getTalentStufeInfo(selectedReference)?.family;
+      if (selectedFamily !== family) delete candidate.selections[selectedReference];
     }
   }
   candidate.selections[rule.referenz.toLowerCase()] = 1;

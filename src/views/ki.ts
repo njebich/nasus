@@ -76,13 +76,15 @@ function isTalentSelected(sheet: ComputedSheet, referenz: string): boolean {
 }
 
 /** Gute KI-Probe (talente_ki_gute_stufe_1/2): Stufe 1 = Magie, Stufe 2 = Magie + Aura, gedeckelt
- *  auf Normale:2 (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt"). */
+ *  auf Normale:2 (Nutzer 2026-07-21, "talente-add-implementation-charaktererstellung.txt").
+ *  Anzeigeregel "gXX nur wenn g>1" (Proben v2.0.md §7, Nutzer-Normalisierung 2026-08-06). */
 function getGuteProbe(sheet: ComputedSheet, normaleProbe: number): number | undefined {
   const stufe2 = isTalentSelected(sheet, 'talente_ki_gute_stufe_2');
   const stufe1 = stufe2 || isTalentSelected(sheet, 'talente_ki_gute_stufe_1');
   if (!stufe1) return undefined;
   const gute = stufe2 ? getAttMagie(sheet) + getAttAura(sheet) : getAttMagie(sheet);
-  return Math.min(gute, Math.floor(normaleProbe / 2));
+  const capped = Math.min(gute, Math.floor(normaleProbe / 2));
+  return capped > 1 ? capped : undefined;
 }
 
 /** Kante(n) + benoetigte(r) TaW als Tooltip-Text fuers "+"-Feld - unabhaengig vom Lock-Status,
@@ -176,13 +178,13 @@ function renderRow(r: ReturnType<typeof buildRows>[number], sheet: ComputedSheet
   // Probe ist nur sinnvoll, sobald die Faehigkeit ueberhaupt gelernt ist (Nutzer 2026-07-20).
   const normaleProbe = currentValue + (eigBon?.value ?? 0) + 2 * getAttMagie(sheet);
   const guteProbe = currentValue < 1 ? undefined : getGuteProbe(sheet, normaleProbe);
-  const probe = currentValue < 1 ? '' : guteProbe !== undefined ? `${normaleProbe} / G${guteProbe}` : `${normaleProbe}`;
+  const probe = currentValue < 1 ? '' : guteProbe !== undefined ? `${normaleProbe} / g${guteProbe}` : `${normaleProbe}`;
   // Nutzer 2026-07-24: "On Probe Value, show Formula" - dieselbe Formel wie im statischen
   // Info-Kasten (renderInfoBlock), aber nur der Teil, der den hier angezeigten Zahlenwert ergibt
   // (ohne den Erfolgs-Check "(W30-W12) <= ... - Zuschlag - (ME:X)", der die Probe selbst betrifft,
   // nicht ihre Berechnung).
   const probeTooltip = probe
-    ? tooltipAttr(`Probe = TaW + Eig.Bon. + 2 × Magie${guteProbe !== undefined ? ' (G = Gute Probe)' : ''}`)
+    ? tooltipAttr(`Probe = TaW + Eig.Bon. + 2 × Magie${guteProbe !== undefined ? ' (g = Gute Probe)' : ''}`)
     : '';
   const dauer = KI_DAUER[referenz];
   const rowClass = unlocked ? '' : currentValue > 0 ? 'ki-row-invalid' : 'ki-row-locked';

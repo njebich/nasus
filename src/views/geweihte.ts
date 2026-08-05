@@ -160,23 +160,62 @@ function renderInfoBlock(sheet: ComputedSheet, character: CharacterState): strin
     </div>`;
 }
 
+/** WD-Rohtext "P" (aus der Quelltabelle) ist eine Abkuerzung fuer "permanent" (Nutzer-Ask
+ *  2026-08-05) - alle anderen WD-Texte (Formeln, Zeitangaben) bleiben unveraendert. */
+function formatWd(wd: string): string {
+  return wd === 'P' ? 'permanent' : wd;
+}
+
+/** Sortierschluessel fuer Min. Karma: fehlende Angabe (die 2 Platzhalter-Zeilen der Quelle)
+ *  sortiert ans Tabellenende statt an den Anfang. */
+function minKarmaSortKey(minKarma: number | null): number {
+  return minKarma ?? Infinity;
+}
+
+/** Sortierschluessel fuer KPP: die meisten Werte sind reine Zahlen, manche tragen aber eine
+ *  Formel statt einer Zahl (z.B. "Karma * 10", "1KPP pro Min" - siehe Datei-Kommentar in
+ *  geweihteWunder.ts). Nutzer-Ask 2026-08-05: fuehrende Zahl auswerten wo vorhanden, reine
+ *  Formeltexte ans Ende ihrer Min.-Karma-Gruppe sortieren. */
+function kppSortKey(kpp: string): number {
+  const match = /^\d+(?:[.,]\d+)?/.exec(kpp.trim());
+  return match ? Number(match[0].replace(',', '.')) : Infinity;
+}
+
+function sortWunderZeilen(zeilen: GeweihterWunderEintrag[]): GeweihterWunderEintrag[] {
+  return [...zeilen].sort((a, b) =>
+    minKarmaSortKey(a.minKarma) - minKarmaSortKey(b.minKarma) || kppSortKey(a.kpp) - kppSortKey(b.kpp));
+}
+
 function renderWunderRow(eintrag: GeweihterWunderEintrag, sheet: ComputedSheet, karma: number): string {
   const gesperrt = eintrag.minKarma === null || karma < eintrag.minKarma;
   const probe = computeProbe(eintrag, sheet);
   return `
     <tr class="${gesperrt ? 'ki-row-locked' : ''}">
       <td>${probe}</td>
-      <td>${escapeHtml(eintrag.typ)}</td>
       <td class="ki-name-cell">${escapeHtml(eintrag.name || '–')}</td>
-      <td>${escapeHtml(eintrag.art || '–')}</td>
-      <td>${eintrag.malus ?? '–'}</td>
-      <td>${eintrag.minKarma ?? '–'}</td>
-      <td>${escapeHtml(eintrag.rw || '–')}</td>
-      <td>${nl2br(eintrag.vd || '–')}</td>
-      <td>${nl2br(eintrag.wd || '–')}</td>
       <td class="geweihte-wirkung-cell">${nl2br(eintrag.wirkung || '–')}</td>
+      <td>${escapeHtml(eintrag.rw || '–')}</td>
+      <td>${escapeHtml(eintrag.ziel || '–')}</td>
+      <td>${nl2br(eintrag.vd || '–')}</td>
+      <td>${nl2br(formatWd(eintrag.wd) || '–')}</td>
       <td>${escapeHtml(eintrag.kpp || '–')}</td>
     </tr>`;
+}
+
+/** Eine der 3 Wunder-Tabellen (Stoßgebete/Wunder/Ritual - Nutzer-Ask 2026-08-05: Tabelle nach
+ *  Art aufteilen). Jede Tabelle traegt ihre eigene Ueberschrift und wird unabhaengig sortiert. */
+function renderWunderTabelle(titel: string, zeilen: GeweihterWunderEintrag[], sheet: ComputedSheet, karma: number): string {
+  if (zeilen.length === 0) return '';
+  return `
+    <h3 class="stat-section-heading">${escapeHtml(titel)}</h3>
+    <div class="kampf-table-scroll">
+      <table class="bogen-table ki-table geweihte-table">
+        <thead><tr>
+          <th>Probe</th><th>Name</th><th>Wirkung</th><th>RW</th><th>Ziel</th><th>VD</th><th>WD</th><th>KPP</th>
+        </tr></thead>
+        <tbody>${sortWunderZeilen(zeilen).map((e) => renderWunderRow(e, sheet, karma)).join('')}</tbody>
+      </table>
+    </div>`;
 }
 
 export function renderGeweihteView(
@@ -193,18 +232,19 @@ export function renderGeweihteView(
     return aktivReligion?.sekte === 'Orthodox' && e.typ === aktivReligion.religion;
   });
 
+  // Aufteilung nach Art (Nutzer-Ask 2026-08-05: Stoßgebete/Wunder/Ritual als eigene Tabellen).
+  // Zeilen ohne erkannte Art (die 1 unvollstaendige Platzhalter-Zeile der Quelle ohne Art-Angabe)
+  // fallen in die Wunder-Tabelle, statt unsichtbar zu verschwinden.
+  const stossgebete = zeilen.filter((e) => e.art === 'Stoß');
+  const ritual = zeilen.filter((e) => e.art === 'Ritual');
+  const wunder = zeilen.filter((e) => e.art !== 'Stoß' && e.art !== 'Ritual');
+
   container.innerHTML = `
     ${renderInfoBlock(sheet, character)}
     ${renderWhkFaehigkeitenBlock(sheet, onChange === undefined)}
-    <div class="kampf-table-scroll">
-      <table class="bogen-table ki-table geweihte-table">
-        <thead><tr>
-          <th>Probe</th><th>Typ</th><th>Name</th><th>Art</th><th>Malus</th><th>Min. Karma</th>
-          <th>RW</th><th>VD</th><th>WD</th><th>Wirkung</th><th>KPP</th>
-        </tr></thead>
-        <tbody>${zeilen.map((e) => renderWunderRow(e, sheet, karma)).join('')}</tbody>
-      </table>
-    </div>`;
+    ${renderWunderTabelle('Stoßgebete', stossgebete, sheet, karma)}
+    ${renderWunderTabelle('Wunder', wunder, sheet, karma)}
+    ${renderWunderTabelle('Ritual', ritual, sheet, karma)}`;
 
   if (onChange) wireWhkFaehigkeiten(container, sheet, onChange);
 }

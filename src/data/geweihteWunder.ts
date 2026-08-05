@@ -14,6 +14,7 @@ export interface GeweihterWunderEintrag {
   vd: string;
   wd: string;
   wirkung: string;
+  ziel: string;
   kpp: string;
 }
 
@@ -28,6 +29,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "P",
     "wirkung": "Das Opfer erleidet W10 + Karma, Heiligen Schaden, Rüstung ignorierend, auf 1 TZ (W30). Das Wunder kann max. (Aura+Karma) W6 zusätzlichen Schaden machen, wenn die Anrufungszeit um 2sec verlängert wird. Dämonen und Untote werden immer Getroffen.",
+    "ziel": "",
     "kpp": "15"
   },
   {
@@ -40,6 +42,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "P",
     "wirkung": "Aus dem Nichts schießt ein weißer Blitz mit 40m/s auf sein Ziel zu. Das Opfer hat eine Glücks-Probe. Schaden nur auf Dämonen oder Untote. Auf 1 TZ (W30) : 2W12 + Magie + Karma, Heiliger Schaden, RB=unendlich",
+    "ziel": "",
     "kpp": "25"
   },
   {
@@ -52,6 +55,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "Max: (M)*min",
     "wirkung": "Eine Wand aus Licht, von Lichtblitzen durchzuckt, breitet sich vor dem Kleriker aus. Sie ist W6 + (Aura+Karma) Meter breit und Macht x Meter hoch. Die Wand ist nur von Heilig/Heiligen passierbar. Jeder, der die Wand mit einer TZ berührt, erleidet auf diese TZ 2W12 Heiligen Schaden . Durchdringt alle unbelebte Materie.",
+    "ziel": "",
     "kpp": "120"
   },
   {
@@ -64,6 +68,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "P",
     "wirkung": "Vom Kleriker aus fährt eine nur durch Lichtreflexionen zu erkennende Welle kugelförmig in alle Richtungen. Alle Dämonen und Untoten, die von der Welle erfasst werden erleiden: 2W6 + Karma + aufgeladene W6 (maximal Aura +Karma weitere W6), Heiligen Schaden, RB=0, auf jede TZ (1x für alle Würfeln). Für jeden zusätzlichen W6 an TP verlängert sich die Anrufung um 2sec. Jedes Opfer muss eine SB-Probe erschwert um den Gesamtschaden des Zaubers ablegen.",
+    "ziel": "",
     "kpp": "115"
   },
   {
@@ -76,6 +81,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "2+(Aura +Karma) *2sec",
     "wirkung": "Aus den Händen des Kleriker schießt ein leuchtender, von Blitzen umrahmter Strahl, der 2W20 + (Aura + Karma) Heiligen Schaden auf 1 TZ (W30) macht. Der Strahl ist schwenkbar. Der Kleriker kann den Strahl max. (Aura + Karma) sec aufrechterhalten.",
+    "ziel": "",
     "kpp": "60"
   },
   {
@@ -88,6 +94,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1h",
     "wd": "Aura *Karma *Std",
     "wirkung": "Das Land um den Kleriker herum erstrahlt göttlich hell. Während der Wirkungsdauer schweben göttliche Lichter durch das Wirkungsgebiet. Die Kosten für das Rufen eines Avatars werden halbiert. Die Wahrscheinlichkeit, dass eine Gottheit erscheint, verdoppelt sich. Jedes nicht lebendige Wesen im Radius erhält 2W12 Heiligen Schaden pro KR auf jede TZ, jegliche Rüstung ignorierend; fliegende Dämonen/Untote können sich nicht schützen.",
+    "ziel": "",
     "kpp": "325"
   },
   {
@@ -100,6 +107,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1h",
     "wd": "Beliebig\n1KPP pro Min",
     "wirkung": "Der Kleriker erfleht den unmittelbaren Beistand seiner Gottheit. Gelingt die Anrufung, so erscheint mit mächtigen Tramram ein gigantischer (oder auch nicht, je nach Situation) Avatar, der den Willen des Gottes vollstreckt. Der Avatar ist unaufhaltsam und kann ganze Armeen im in Sekunden auslöschen. Allerdings weckt ein solch drastisches Eingreifen einer Gotteit immer die Aufmerksamkeit der anderen Gottheiten, die gegebenenfalls intervenieren. (Meisterentscheid)",
+    "ziel": "",
     "kpp": "425"
   },
   {
@@ -112,6 +120,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Sec",
     "wd": "(M)*sec",
     "wirkung": "Eine Zone mit einem Radius von (M)/10m um den Kleriker wird geweiht. Diese Zone bewegt sich nicht mit dem Kleriker mit. Befindet sich ein Untoter oder Dämon in dieser Zone oder berührt sie, so ist JEDER Schaden, der gegen ihn gewirkt wird, mit dem Zusatzeffekt „Gesegnet“ versehen. Das gilt auch für den Pfeil, der von einem 150m entfernten Bogenschützen abgeschossen wurde.",
+    "ziel": "",
     "kpp": "60"
   },
   {
@@ -124,6 +133,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Minute",
     "wd": "777 Jahre",
     "wirkung": "Der Kleriker kann bis zu Karma Liter Wasser in Weihwasser verwandeln. Dieses Wasser ist danach vollkommen rein und sauber. Jegliche Krankheitserreger oder Giftstoffe sind verschwunden. Wenn man es trinkt, entsteht ein angenehmes Gefühl. Das Weihwasser wirkt bei Untoten und Dämonen wie hoch konzentrierte Schwefelsäure. Sie verursacht 1W8 Heiligen Schaden pro Sekunde, solange der Untote/ Dämon sie auf irgendeine Weise berührt. Dieser Schaden ist auch bei Untoten als permanenter Schaden anzusehen, senkt also nachhaltig die Todesschwelle so als wäre es eine normale Lebensenergie.\nDas Weihwasser kann auch in Spritzern verwendet werden. Jeder Tropfen macht maximal 1W8 Schaden und ist dann verbraucht. Der Liter macht also maximal 200W8 Schaden. Egal, wie viel Weihwasser den Untoten berührt, es werden immer nur 1W8 pro TZ und Sec angerechnet…..\nGeweihtes Wasser ist 777Jahre lang haltbar….im Verkauf kostet es 5D pro Liter. Die Zwerge brauen daraus das sogenannte „Weihbräu“ das 8D pro Liter kostet.\nWird es konsumiert, so bekommt der Konsument 1 Punkt Gesundheit pro Liter wieder hergestellt. Danach erlischt die Wirkung von Weihwasser und es wird wieder zu normalen Wasser. 1 Liter Weihwasser kann in bis zu 25 „Kurze“ aufgeteilt werden.",
+    "ziel": "",
     "kpp": "10"
   },
   {
@@ -136,6 +146,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Std",
     "wd": "777Jahre",
     "wirkung": "Ein Gegensand oder eine Waffe machen ab sofort Gesegneten schaden. x2 gegen Untote und x5 gegen Dämonen. Außerdem erhöht sich die Stabilität um 5 und ignoriert Magische schilde.",
+    "ziel": "",
     "kpp": "220"
   },
   {
@@ -148,6 +159,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "7Std",
     "wd": "P",
     "wirkung": "Ein Gegensand oder eine Waffe machen ab sofort Heiligen schaden. x5 gegen Untote und x10 gegen Dämonen. Außerdem erhöht sich die Stabilität um 15 und ignoriert Magische schilde.",
+    "ziel": "",
     "kpp": "395"
   },
   {
@@ -160,6 +172,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Sec",
     "wd": "Karma *sec",
     "wirkung": "ALLE heiligen Auren von Lebewesen oder Gegenständen werden für den Kleriker deutlich sichtbar.",
+    "ziel": "",
     "kpp": "20"
   },
   {
@@ -172,6 +185,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma * 5min",
     "wirkung": "Maximal (M)/2 befreundete Ziele (inklusive des Klerikers selbst) nach Wahl des Klerikers werden in eine heilige Rüstung eingehüllt, die optische Erscheinung entspricht dabei den Vorstellungen des Gottes, der sie wirkt. Die Heilige Rüstung bewirkt eine Erhöhung des Rüstungsschutzes auf allen TZ (auch gegen kritische Treffer) von Karma in Punkten.",
+    "ziel": "",
     "kpp": "Karma * 10"
   },
   {
@@ -184,6 +198,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma *2min",
     "wirkung": "Der Kleriker taucht die Umgebung in absolute Dunkelheit. Diese Dunkelheit bildet eine Kugel von Karma*2 Meter Radius um den Kleriker. Jeder, der sich in dieser Kugel befindet, erleidet eine effektive Behinderung von 10. Von außen ist die Kugel nicht einsehbar; Schützen, die ein Ziel in der Kugel treffen wollen, dürfen eine Glücksprobe würfeln, ob sie überhaupt etwas treffen. Der Kleriker selbst sieht in dieser Dunkelheit, wie wenn er sich in dichtem Nebel befinden würde, wodurch er eine effektive Behinderung von 4 erleidet. Die Dunkelheit ist statisch (NICHT statisch geladen!).",
+    "ziel": "",
     "kpp": "70"
   },
   {
@@ -196,6 +211,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma *min",
     "wirkung": "Vom Kleriker gehen kaum sichtbare, scheinbar aus schwarzem Nebel bestehende, tentakelartige Finger aus, die Karma/3 feindliche Ziele umschlingen und an ihrer Bewegung hindern. Dies führt zu einer Behinderung von Karma.",
+    "ziel": "",
     "kpp": "80"
   },
   {
@@ -208,6 +224,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma *2min",
     "wirkung": "Lloth rächt jeglichen Schaden, der ihrem Kleriker zugefügt wird augenblicklich, indem sie dem Angreifer die Hälfte (aufgerundet) des vom Kleriker erlittenen Schadens verursacht. Dieser Schaden trifft die gleiche TZ wie beim Kleriker und ignoriert sämtliche Schutzmechanismen wie Rüstungen oder magische Schilde.\n„Lloth mag ihre Kleriker nicht schützen, aber sie hasst es, wenn andere ihr Eigentum beschädigen.“ – Salfalur Schildbrech, zwergischer Paladin, nach Verlust seines linken Auges.",
+    "ziel": "",
     "kpp": "60"
   },
   {
@@ -220,6 +237,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "P",
     "wirkung": "Spinnennetze aus Rost und/oder Schimmel (je nach Material) überziehen die Waffen und Rüstungen von Karma/3 Feinden des Klerikers. Die betroffenen Waffen erleiden einen Abzug von Karma+3 auf ihren Klingenschutz, betroffene Rüstung verlieren Karma/2 Rüstungsschutz. Der Effekt lässt sich durch die Arbeit eines fähigen Schmiedes rückgängig machen.",
+    "ziel": "",
     "kpp": "50"
   },
   {
@@ -232,6 +250,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "P",
     "wirkung": "Der Kleriker muss das erste Opfer während der gesamten Anrufung berühren.\nDieses Opfer Nummer 1 hat keinen Rettungswurf es wird auf jeden Fall Infiziert. Nach genau 7 Stunden wird jedes Opfer ansteckend. Jeder andere Mensch der sich dem Opfer dann auf 7m oder weniger nähert, hat eine Glücksprobe, scheitert diese so wird er ebenfalls infiziert und dann nach 7 Stunden ansteckend. Gelingt die Glücksprobe so ist das Opfer immun und kann nicht mehr mit der Pestilenz Infiziert werden.\nNach 21+Vitalität des Opfers Stunden erscheinen langsam die Krankheitssymptome, die Opfer fühlen sich schwach und fiebrig, auf der Haut bilden sich Gelbe und Grüne Eiterbeulen, die gerne aufplatzen und sich entzünden.\nDie natürliche Regeneration durch z.B. Schlafen setzt komplett aus.\nAm ersten Tag verliert das Opfer 1Punkt Gesundheit, am zweiten Tag 2Punkte, am dritten Tag 3Punkte, dann 4-5-6-7-8-9-10 usw. Um das noch mal zu verdeutlichen: Am ersten Tag hat das Opfer insgesamt 1 Punkt Gesundheit verloren, am zweiten Tag hat es insgesamt 3 Punkte Gesundheit verloren, am dritten Tag dann insgesamt 6 Punkte Gesundheit. Usw\nAlle 2 Tage haben die Opfer eine Genesungsprobe: Konstitution erschwert um Karma x2 der Klerikers. Je nach dem wo sich die Kranke aufhalten (Gosse oder Krankenhaus mit Einzelzimmer) ist die Probe um bis zu 5 Punkte erschwert oder erleichtert. Gelinkt diese, so wird das Opfer wieder langsam Gesund. Am nächsten Tag bekommt es wieder 1 Punkt Gesundheit, am Übernächsten 2 Punkte Gesundheit, usw. Sobald die Gesundheit des Opfers wieder voll ist, gilt es als Gesund und die Natürliche Regeneration setzt wieder ein. Jetzt ist das Opfer immun und kann nicht mehr mit der Pestilenz Infiziert werden.\nSobald ein Opfer stirbt oder wieder Gesund ist, endet die Ansteckungsgefahr die von ihm ausgeht.\nMeisterhinweise und Hintergrund:\nNur Lloth Kleriker sind immun gegen diese Pest.\nDie Mortalitätsrate liegt bei 50%-80% je nachdem wie gut eine Stadt/Dorf gegen eine Pest gewappnet ist.\nCa. 33,4% der Todesopfer werden zu Wandelnden Toten „Zombies“. Diese „Zombies“ verhalten sich wie normale „Zombies“. Mit dem Unterschied, dass sie NICHT die Untotenkrankheit übertragen können. Allerdings verbreiten sie die Pestilenz.\nDie Pestilenz ist eine Magische Krankheit Grad 8. Lässt sich allerdings nicht mit magischer mitteln als solche erkennen.\nDieses Wunder ist zwar nicht direkt ein Geheimnis, allerdings wird darüber so gut wie nie innerhalb der Lloth Kirche gesprochen. Das Wunder selbst wird nur an Kleriker weitergegeben, die mindestens Pfarrer/Ritterbruder sind. Der Lloth Kirche ist die verheerende Wirkung dieses „Wunders“ sehr wohl bewusst, darum wurde es in den letzten 800 Jahren nur ein einziges Mal eigesetzt. Bei der Drow Bevölkerung ist das Wunder Eigentlich überhaupt nicht bekannt. Es gibt nur ein dunkles Gerücht über „Lloth strafe“ die die trifft die den Zorn der Göttin auf sich gezogen haben. Bei den anderen Völkern ist dieses Wunder total unbekannt.",
+    "ziel": "",
     "kpp": "300"
   },
   {
@@ -244,6 +263,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "P",
     "wirkung": "Auf Bitten des Klerikers verwandelt Lloth Karma Liter Wasser in feinstes, körperwarmes Elfenblut. Das auf diese Weise erschaffene Blut verhält sich wie jedes andere Elfenblut auch.",
+    "ziel": "",
     "kpp": "10"
   },
   {
@@ -256,6 +276,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "Karma *2Std",
     "wirkung": "Lloth löscht sämtliche vom Kleriker und bis zu Karma/2 befreundete Ziele, die sich innerhalb von (M)m um den Kleriker befinden, verursachten Spuren und Fährten vollständig aus. Zudem verursachen die Begünstigten während der Wirkungsdauer keinerlei Geräusche.",
+    "ziel": "",
     "kpp": "130"
   },
   {
@@ -268,6 +289,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "Karma *2Min",
     "wirkung": "Der Kleriker wird unsichtbar. Die Unsichtbarkeit betrifft ihn selbst und alles innerhalb seiner Aura, was nicht über eine eigene Aura verfügt. Im Kampf gegen den unsichtbaren Kleriker erhält jeder Gegner eine Behinderung von 10.",
+    "ziel": "",
     "kpp": "200"
   },
   {
@@ -280,6 +302,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "Karma*min",
     "wirkung": "Nach Beendigung der Anrufung ist der Speichel des Klerikers giftig. Das Gift gilt als Kontaktgift mit einer Potenz von Karma*5, es ist keine Dosiserhöhung möglich. Nach erfolgter Vergiftung eines oder mehrerer Opfer erleiden die Opfer alle 30sec eine kumulative Behinderung von +1 bis zu einer Maximalbehinderung von Karma*4. Nachdem diese Maximalbehinderung erreicht ist, nimmt die Behinderung alle 30sec wieder um einen Punkt ab. Sollte aufgrund der Behinderung die Intelligenz des Opfers auf 0 fallen, so wird es bewusstlos. Fallen Stärke oder Athletik auf 0, so wird es bewegungsunfähig. Das Gift lässt sich maximal Karma Stunden aufbewahren, danach verliert es seine Wirkung.\nDer Speichel kann maximal Karma Liter Wasser vergiften.\nKleriker der Lloth sind immun gegen dieses Gift.",
+    "ziel": "",
     "kpp": "120"
   },
   {
@@ -292,6 +315,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "P",
     "wirkung": "Der nächste Mensch, den der Kleriker nach der Anrufung berührt (Aura-Kontakt), altert um Karma*2% seiner maximal möglichen Lebensspanne.",
+    "ziel": "",
     "kpp": "250"
   },
   {
@@ -304,6 +328,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "Max. Karma Std",
     "wd": "P",
     "wirkung": "Der zum Lebensspender erkorene Mensch wird für die Dauer des Rituals auf einem der Lloth geweihten Altar fixiert. Der durchführende Kleriker berührt den Lebensspender während des gesamten Rituals an Stirn und Brust. Das Opfer altert pro Stunde Ritualdauer um 10% seiner maximalen Lebensspanne, der Kleriker wird um ein Fünftel (aufgerundet) der auf diese Weise verlorenen Jahre verjüngt.",
+    "ziel": "",
     "kpp": "375"
   },
   {
@@ -316,6 +341,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Std",
     "wd": "Bis zum Ende des Duells",
     "wirkung": "Der Kleriker schließt die beiden Duellanten in einem undurchdringlichen Duellkreis mit 20m Radius ein. Nichts kann in diesen Kreis eindringen und Nichts kommt heraus. Der Kreis hebt sich erst auf, sobald mindestens einer der beiden Duellanten gestorben ist. Khartazh heilt den bzw. die Verstorbenen nach Beendigung des Duells wieder auf GES 1 hoch und schließt alle Blutungen.\nDer Duellkreis ist nur durch göttliche Einwirkung aufhebbar.",
+    "ziel": "",
     "kpp": "50"
   },
   {
@@ -328,6 +354,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma*min",
     "wirkung": "Der Kleriker wird von Khartazh in eine wahre Kampfmaschine verwandelt. Er spürt keine Schmerzen mehr, muss somit keine SB Proben mehr würfeln und erleidet durch auf 0 LE geschlagene und abgetrennte Gliedmaßen nur die Hälfte der üblichen Kampfbehinderung (abgerundet). Desweiteren scheint seine Ausdauer geradezu unendlich zu sein, er erleidet während der Wirkungsdauer keine Ausdauerabzüge durch seine Kampfaktionen.",
+    "ziel": "",
     "kpp": "60"
   },
   {
@@ -340,6 +367,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma*min",
     "wirkung": "Der Kleriker steht unter Khartazhs Schutz, wodurch er keine kritischen und tödlichen Treffer mehr erleidet. Jeder solche gegen ihn erzielte Treffer wird als normaler Treffer auf derselben TZ gewertet.",
+    "ziel": "",
     "kpp": "60"
   },
   {
@@ -352,6 +380,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma*min",
     "wirkung": "Jede vom Kleriker ausgeführte Attacke trifft Karma/3 zusätzliche Ziele in NK Reichweite. Diese Attacken können normal vermieden werden (AW/PA).",
+    "ziel": "",
     "kpp": "180"
   },
   {
@@ -364,6 +393,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "2Std",
     "wd": "P",
     "wirkung": "Der Kleriker schickt bei einer Bedrohung von außen den Anführern der großen Clans eine Botschaft. Die Botschaft wird beim nächsten Schlaf als Traum übermittelt und ist zweifelsfrei als Vision zu erkennen. Khartazh wählt immer besondere Helden aus die diese Vision ebenfalls erhalten und von ALLEN Orks mit dem allergrößten Respekt behandelt werden. Man nennt diese Champions von Khartazhs „Nereva“.",
+    "ziel": "",
     "kpp": "77"
   },
   {
@@ -376,6 +406,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "Karma *10min",
     "wirkung": "Der Kleriker segnet sich und entweder Karma befreundete Ziele (oder ein Regiment im Schlachtensystem). Alle von diesem Segen begünstigten Einheiten erhalten gegen FK Attacken einen Bonus in Höhe des Karmas+3 des Klerikers auf ihre Glücksprobe, um dem Schuss/Wurf/Zauber zu entgehen.",
+    "ziel": "",
     "kpp": "190"
   },
   {
@@ -388,6 +419,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Std",
     "wd": "Karma * Std",
     "wirkung": "Der Kleriker segnet sich und entweder Karma*3 befreundete Ziele (oder drei Regimenter im Schlachtensystem). Alle von diesem Segen begünstigten Einheiten erhalten Mut +21, ATBasis+7, Selbstbeherrschung+3, Initative+11, außerdem eine LE- Regeneration von 2W6 pro Minute. Auch Gesundheit bis GES-Vit (zum Tod).",
+    "ziel": "",
     "kpp": "320"
   },
   {
@@ -400,6 +432,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma *10min",
     "wirkung": "Der Kleriker und Karma/3 befreundete Ziele ahnen die Attacken ihrer Gegner förmlich voraus. Sie erhalten PA- und AW-Klasse +1.",
+    "ziel": "",
     "kpp": "215"
   },
   {
@@ -412,6 +445,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "P",
     "wirkung": "Auf Bitten des Klerikers verwandelt Khartazh Karma Liter Wasser in feinsten, wohltemperierten Orcischen Met. Der auf diese Weise erschaffene Met verhält sich wie jedes andere Met auch.",
+    "ziel": "",
     "kpp": "10"
   },
   {
@@ -424,6 +458,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1sec",
     "wd": "Karma *10min",
     "wirkung": "Khartazh „führt“ die Hand seines Klerikers im Kampf, wodurch der Kleriker keine katastrophalen Fehlschläge mehr unterlaufen. Sollte der Kleriker unter Einfluss dieses Wunders im NK einen Patzer werfen, so ist es ihm erlaubt, den Wurf zu wiederholen (ohne dafür einen seiner Rerolls einzusetzen). Das Gleiche gilt für Streiftreffer. Außerdem wird dem Kleriker ein zusätzlicher, kostenfreier TZ Reroll pro eigener Attacke zugestanden.",
+    "ziel": "",
     "kpp": "60"
   },
   {
@@ -436,6 +471,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Min",
     "wd": "777Jahre",
     "wirkung": "Das Ziel bekommt einen Schadenspuffer ähnlich dem Magischen Schild in Höhe von Kama x2. Dieser Puffer ist einmalig, füllt sich also nicht wieder auf. Er triggert nach dem evtl. vorhandenen Magischen Schild, aber bevor kritische oder tödliche Treffer gewertet werden. Leberschutz wirkt auch gegen Gifte und Magie. Solange noch Leberschutz vorhanden ist, kann Alkoholkonsum niemals mehr als eine leichte Trunkenheit auslösen",
+    "ziel": "",
     "kpp": "30"
   },
   {
@@ -448,6 +484,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Min",
     "wd": "Karma * Std",
     "wirkung": "Eine beliebige optionale Fertigkeit (Stoßgebet, Gebet und Ritual sind hiervon ausgenommen) wird um Karma x5 Punkte erhöht, wenn der Betreffende mindestens 1 Punkt in ihr gesteigert hat. Unbekannte werden auf Karma x3 Gesetzt. Dazu gehören auch Sprachen.",
+    "ziel": "",
     "kpp": "100"
   },
   {
@@ -460,6 +497,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Stunde",
     "wd": "30 Tage",
     "wirkung": "Alle Proben für das ausgewählte Handwerks werden um Karma x3 erhöht, wenn der betreffende mindestens 1 Punkt in ihr gesteigert hat. Unbekannte Handwerke werden auf Karma Gesetzt.",
+    "ziel": "",
     "kpp": "70"
   },
   {
@@ -472,6 +510,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Stunde",
     "wd": "Karma * Std",
     "wirkung": "Das Opfer muss die Hände auf einen (mindestens) geweihten Gegenstand legen. Sodann ist es angehalten die Wahrheit zu sagen, falls nicht, verbrennen seine Hände zu Stumpen. Die Lebensenergie beider Arme fällt dabei sofort auf 0. Das Opfer muss eine SB Probe in Höhe des gerade angerichteten Schadens abgelegen. Der Kleriker muss die ganze Zeit den Gegenstand mithalten und bekommt im Falle einer Lüge des Opfers 1W20 Heiligen (Rüstung ignorierend) Schaden auf beide Hände verteilt.",
+    "ziel": "",
     "kpp": "250"
   },
   {
@@ -484,6 +523,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "10 Minuten",
     "wd": "7 Stunden",
     "wirkung": "Weisheit, (M) und Zauber Gute des Ziels werden um Karma erhöht. Das Mana erhöht sich einmalig um 50 Punkte, die allerdings nicht regeneriert werden aber auch nicht die LE Kopf angreifen wenn sie ausgegeben wurden und die Wirkung endet.",
+    "ziel": "",
     "kpp": "295"
   },
   {
@@ -496,6 +536,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "Karma *2min",
     "wirkung": "Die Augen des Klerikers verwandeln für die Wirkungsdauer in reines Adamantit. Jegliche Materie, sei es magische oder unmagische, wird für den Kleriker unsichtbar. Die einzige Ausnahme hierzu bilden Erzadern, Kohleflöze und Edelsteinvorkommen. Diese kann der Kleriker auf Sichtweite (ca. 5km) erkennen.",
+    "ziel": "",
     "kpp": "50"
   },
   {
@@ -508,6 +549,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "P",
     "wirkung": "Auf Bitten des Klerikers verwandelt Nomna Karma Liter Wasser in feinstes, wohltemperiertes Zwergisches Starkbier. Das auf diese Weise erschaffene Starkbier verhält sich wie jedes andere Starkbier auch.",
+    "ziel": "",
     "kpp": "10"
   },
   {
@@ -520,6 +562,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "5min",
     "wd": "Karma * Std",
     "wirkung": "Ein Gegenstand (z.B.: Schwert, Tür, Harnisch, Stein) wird um ein Vielfaches härter und stabiler als er vorher war. Die Stabilität des Gegenstands erhöht sich um den Faktor Karma*2. Bei Gegenständen mit einem Stabilitätswert erhöht sich derselbige, bei Gegenständen ohne diesen Wert erhöht sich die LE.\nBeispiel 1: Ein Kleriker mit Karma 5 „verzaubert“ ein Schwert mit KS 15. Nach der erfolgreichen Anrufung beträgt der KS 150.\nBeispiel 2: Ein Kürass mit RS 5 wird von demselben Kleriker „verzaubert“. Nach erfolgreicher Anrufung beträgt der RS 50.\nBeispiel 3: Derselbe Kleriker „verzaubert“ nun auch noch eine Tür mit LE 20, bringt die Anrufung tatsächlich erfolgreich zu Ende und erhöht somit die LE der Tür auf 200.",
+    "ziel": "",
     "kpp": "205"
   },
   {
@@ -532,6 +575,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "7Std",
     "wd": "P",
     "wirkung": "Die willige Seele eines Nomna-Gläubigen wird durch dieses Ritual in einen mindestens faustgroßen Seelenstein gebannt. Die Stabilität des Seelensteins erhöht sich hierdurch um den Faktor 100. Solange der Seelenstein Bestand hat, existiert auch die Seele weiter.",
+    "ziel": "",
     "kpp": "385"
   },
   {
@@ -544,6 +588,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "7Std",
     "wirkung": "Nomna gewährt einer Ewigen Seele (siehe Wunder Ewige Seele) die Fähigkeit, als Abbild seines früheren Ichs in Erscheinung zu treten. Dieses Abbild ist leicht durchscheinend und physisch und magisch nicht berührbar. Es verfügt über die Fähigkeit, sich innerhalb eines Radius von 7m um den Seelenstein frei im Raum zu bewegen. Weiterhin ist es der Seele möglich, verbal zu kommunizieren. Die Stimme klingt allerdings sehr hohl und substanzlos. Die Ewige Seele verfügt über die gesammelte Erfahrung und Weisheit, die ihr auch zu Lebzeiten zur Verfügung standen, sowie über alles Wissen aus ihrem ursprünglichen Leben und eventuellen früheren Anrufungen. Die Gesinnung der Ewigen Seele entspricht ihrer Gesinnung zu Lebzeiten. Mit Ausnahme der verbalen Kommunikation ist der Seele nicht möglich, in irgendeiner Form Einfluss auf die Welt zu nehmen.",
+    "ziel": "",
     "kpp": "70"
   },
   {
@@ -556,6 +601,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "10min",
     "wd": "7Std",
     "wirkung": "NK gAT, FK gAT sowie NK- und FK-Schaden des Ziels werden um Karma erhöht. Außerdem wird die Gesundheit des Ziels um Karma*2 erhöht. Diese Gesundheitserhöhung kann nicht regeneriert werden, wird dem Ziel aber nach Ablauf der Wirkungsdauer auch nicht weiter abgezogen als bis zu seinem „natürlichen“ Gesundheitsstand.",
+    "ziel": "",
     "kpp": "295"
   },
   {
@@ -568,6 +614,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "P",
     "wirkung": "Auf Bitten des Klerikers verwandeln die Götter Karma Liter Wasser in feinsten Nektar. Der auf diese Weise erschaffene Nektar verhält sich wie jeder andere Nektar auch.",
+    "ziel": "",
     "kpp": "10"
   },
   {
@@ -580,6 +627,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "Karma *2Std",
     "wirkung": "Cenalia segnet die Jagdgruppe des Klerikers (Kleriker sowie bis zu Karma/2 befreundete Ziele, die sich innerhalb von (M)m um den Kleriker befinden), woraufhin sie die Fährte ihrer vorher festgelegten Beute sehen, egal ob diese vorher vorhanden war oder nicht. Zudem verbirgt Cenalia die Witterung der Gruppe vor ihrer Beute.",
+    "ziel": "",
     "kpp": "130"
   },
   {
@@ -592,6 +640,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Min",
     "wd": "Karma Std",
     "wirkung": "Das Ziel ignoriert während der Wirkungsdauer Karma*2 Punkte Behinderung. Er wirkt gegen jede Form bereits erlittener als auch noch eventuell zu erleidender Behinderung.",
+    "ziel": "",
     "kpp": "30"
   },
   {
@@ -604,6 +653,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Std.",
     "wd": "P",
     "wirkung": "Der Kleriker formt organische Gegenstände mit einem maximalen Volumen von Karma m³ in eine frühere Form, die diese(s) Objekt(e) bereits einmal inne hatte, zurück. Die exakte Wahl der früheren Form obliegt dem Kleriker. Das/die Zielobjekt(e) verhalten sich nach Abschluss des Rituals normal, sprich verfallen/altern in ihrem natürlichen Tempo.",
+    "ziel": "",
     "kpp": "50"
   },
   {
@@ -616,6 +666,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Std.",
     "wd": "P",
     "wirkung": "Der Kleriker kann durch einen beliebigen Baum zu einem anderen Baum teleportieren. Hierbei gelten folgende Einschränkungen:\nIst der Ausgangspunkt ein Uribenbaum, so kann der Kleriker zu jedem Uribenbaum, mit dem er sich bereits verbunden hat, teleportieren.\nIst der Ausgungspunkt ein „gewöhnlicher“ Baum, so ist dem Kleriker die Teleportation zum nächsten Uribenbaum, mit dem er sich bereits verbunden hat, möglich.\nDer Kleriker kann hierbei durch Karma/2 Gefährten begleitet werden. Diese müssen Kleriker während der gesamten Ritualdauer berühren. Für jeden Mitreisenden erhöhen sich die Karmapoolpunktkosten um 10.",
+    "ziel": "",
     "kpp": "100"
   },
   {
@@ -628,6 +679,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Min",
     "wd": "Karma Min",
     "wirkung": "Dem Kleriker wird für die Wirkungsdauer eine Vision der Wahrnehmung aller Pflanzen im Umkreis von Karma/2 km gewährt. Dies beinhaltet zunächst nur Tastempfindungen, es sei denn, es befinden sich magische Flora mit zusätzlichen Sinnesorganen im Wirkungsbereich.\nWährend der Wirkungsdauer muss der Kleriker regungslos verharren und ist keinerlei Kommunikation mächtig. Die normale Wahrnehmung des Klerikers wird auf den Tastsinn reduziert.\nDer Kleriker kann seine Trance jederzeit beenden. Nach dem Erwachen aus der Trance ist der Kleriker für W4 Minuten desorientiert, was sich in einer Behinderung von W4 widerspiegelt.",
+    "ziel": "",
     "kpp": "77"
   },
   {
@@ -640,6 +692,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Min",
     "wd": "Karma Min",
     "wirkung": "Dem Kleriker wird für die Wirkungsdauer eine Vision der Wahrnehmung aller Tiere im Umkreis von Karma/2 km gewährt.\nWährend der Wirkungsdauer muss der Kleriker regungslos verharren und ist keinerlei Kommunikation mächtig. Die normale Wahrnehmung des Klerikers wird auf den Tastsinn reduziert.\nDer Kleriker kann seine Trance jederzeit beenden. Nach dem Erwachen aus der Trance ist der Kleriker für W4 Minuten desorientiert, was sich in einer Behinderung von W4 widerspiegelt.",
+    "ziel": "",
     "kpp": "90"
   },
   {
@@ -652,6 +705,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "Max. Karma Std",
     "wd": "P",
     "wirkung": "Die Göttin der Heilung und Jugend verjüngt durch den Kleriker das Ziel um Karma% der maximalen Lebensspanne pro Stunde.\nDas Ziel muss während der gesamten Ritualdauer in direktem Kontakt zu einem Uribenbaum stehen.",
+    "ziel": "",
     "kpp": "425"
   },
   {
@@ -664,6 +718,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "7Std",
     "wd": "P",
     "wirkung": "Die willige Seele eines Tepod-Gläubigen wird durch dieses Ritual in einen Uribenbaum geführt. Solange der Uribenbaum lebt, existiert auch die Seele weiter.",
+    "ziel": "",
     "kpp": "385"
   },
   {
@@ -676,6 +731,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1min",
     "wd": "Karma Std",
     "wirkung": "Tepod gewährt einer [Ewigen Seele] (siehe Wunder [Ewige Seele]) die Fähigkeit, als Abbild seines früheren Ichs in Erscheinung zu treten. Dieses Abbild ist leicht durchscheinend und physisch und magisch nicht berührbar. Es verfügt über die Fähigkeit, sich innerhalb der Lebensaura des jeweiligen Uribenbaumes frei im Raum zu bewegen. Weiterhin ist es der Seele möglich, verbal zu kommunizieren. Die Stimme klingt wie zu Lebzeiten. Die [Ewige Seele] verfügt über die gesammelte Erfahrung und Weisheit, die ihr auch zu Lebzeiten zur Verfügung standen, über alles Wissen aus ihrem ursprünglichen Leben und eventuellen früheren Anrufungen sowie über das Wissen um alles, was sich seit der Zeit ihrer Vereinigung in der Lebensaura des Uribenbaumes zugetragen hat. Die Gesinnung der [Ewigen Seele] entspricht ihrer Gesinnung zu Lebzeiten. Mit Ausnahme der verbalen Kommunikation ist der Seele nicht möglich, in irgendeiner Form Einfluss auf die Welt zu nehmen.",
+    "ziel": "",
     "kpp": "70"
   },
   {
@@ -688,6 +744,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "",
     "wd": "",
     "wirkung": "[Platzhalter für Baumformung]",
+    "ziel": "",
     "kpp": ""
   },
   {
@@ -700,6 +757,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1 Std",
     "wd": "Karma Jahre",
     "wirkung": "Der Kleriker segnet Land oder Karma/2 Lebewesen im Umkreis von Karma*10m mit göttlicher Fruchtbarkeit.",
+    "ziel": "",
     "kpp": "50"
   },
   {
@@ -712,6 +770,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Sec",
     "wd": "Max Karma Min",
     "wirkung": "Der Kleriker schützt bis zu Karma*2 Lebewesen in einem Umkreis von (M)m vor jeglichem Schaden. Aller auf diese Weise verhinderter Schaden wird zu einem Drittel dem Kleriker auf der jeweiligen TZ zugefügt. Die transferierten Treffer werden separat betrachtet.\nDer Kleriker erleidet durch den so genommenen Schaden keine Blutungen, SB-Proben werden normal verlangt.",
+    "ziel": "",
     "kpp": "90"
   },
   {
@@ -724,6 +783,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "1Min",
     "wd": "P",
     "wirkung": "Durch die Macht Tepods stellt der Kleriker ein Lebewesen vollständig wieder her. Hierbei wird jeglicher Schaden geheilt, Gliedmaßen werden regeneriert, sämtliche unmagischen Krankheiten und Vergiftungen werden geheilt, magische Erkrankungen und Vergiftungen bis Grad 8. Alle jemals erhaltenen Narben verschwinden. Außerdem wird das Ziel um 1 Jahr verjüngt. Nicht kurierbare Nachteile wie z.B. Blindheit sind hiervon ausgenommen.\nHierzu muss das Ziel allerdings noch am Leben sein.",
+    "ziel": "",
     "kpp": "125"
   },
   {
@@ -736,6 +796,7 @@ export const GEWEIHTE_WUNDER: GeweihterWunderEintrag[] = [
     "vd": "",
     "wd": "",
     "wirkung": "[Platzhalter für Gruppen-LE-Regeneration]",
+    "ziel": "",
     "kpp": ""
   }
 ];

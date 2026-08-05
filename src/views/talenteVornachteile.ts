@@ -119,6 +119,18 @@ function geweihterSperrTitle(referenz: string): string {
   return `Erfordert Religion "${info.religion}, ${info.sekte}" (Feld "Religion"/"Sekte" im Charakterheader)`;
 }
 
+/** Nutzer-Ask 2026-08-06: religionsabhaengige Geweihte-Talente (die 35 Stufe-1-7-Zeilen je
+ *  Religion), die nicht zur im Charakterheader gewaehlten Religion+Sekte passen, komplett aus der
+ *  Liste ausblenden statt nur gesperrt anzuzeigen - bei 5 Religionen x 7 Stufen waeren sonst 28-35
+ *  faktisch nie waehlbare Zeilen staendig sichtbar. Bereits gewaehlte Zeilen bleiben trotzdem
+ *  sichtbar (z.B. nach einem spaeteren Religionswechsel im Header), damit sie weiterhin abwaehlbar
+ *  sind - gleiches Prinzip wie "waehlbar" in renderRow. Nicht-Gate-Talente (u.a. "Gute Wunder")
+ *  sind nicht religionsabhaengig und daher nie betroffen (isGeweihterReferenzErlaubt liefert fuer
+ *  sie immer true). */
+function isAusgeblendetesGeweihterTalent(r: ComputedRule, characterReligion: string | undefined): boolean {
+  return !r.selected && !isGeweihterReferenzErlaubt(r.rule.referenz, characterReligion);
+}
+
 function renderRow(r: ComputedRule, sheet: ComputedSheet, characterReligion: string | undefined): string {
   const label = escapeHtml(geweihterLabel(r));
   // Talente kosten TaP (eigener, von SP komplett getrennter Pool), alles andere (z.B.
@@ -243,7 +255,8 @@ export function renderAuswahlView(
   const budgetRemaining = kategorie === 'Talente' ? sheet.tapRemaining : sheet.spRemaining;
   const nurKaufbare = kategorie !== 'Talente' && (nurKaufbareByKategorie.get(kategorie) ?? false);
 
-  const allRows = (sheet.byKategorie[kategorie] ?? []).filter((r) => r.rule.art === 'Auswahl');
+  const allRows = (sheet.byKategorie[kategorie] ?? [])
+    .filter((r) => r.rule.art === 'Auswahl' && !isAusgeblendetesGeweihterTalent(r, characterReligion));
   const searchText = searchTextByKategorie.get(kategorie) ?? '';
   const needle = searchText.trim().toLowerCase();
   let rows = needle ? allRows.filter((r) => geweihterLabel(r).toLowerCase().includes(needle)) : allRows;

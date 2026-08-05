@@ -17,7 +17,16 @@ export function buildHierarchy(rows: ComputedRule[]): HierarchyNode[] {
   const byKey = new Map<string, ComputedRule>();
   for (const r of rows) {
     byKey.set(normalizeForMatch(r.rule.referenz), r);
-    if (r.rule.beschreibung) byKey.set(normalizeForMatch(r.rule.beschreibung), r);
+    // Zeilen, deren Beschreibung mit "-> " beginnt, sind selbst schon als Spezialisierung markiert
+    // (WHK/Nahkampf/Fernkampf-Konvention) - sie duerfen nicht als Parent-Ziel einer ANDEREN Zeile
+    // gefunden werden, sonst kollidiert ihr normalisierter Name mit einer gleichnamigen
+    // Hauptfertigkeit (normalizeForMatch entfernt Satzzeichen inkl. "->", z.B. WHK "-> Maler" unter
+    // Kunsthandwerker vs. die eigenstaendige Hauptfertigkeit "Maler" unter Bau - beide normalisieren
+    // zu "maler". Bugfix WHK-Zensus-Import 2026-08-05: Maler(Bau) zeigte faelschlich 0 statt 3
+    // Spezialisierungen, weil dessen echte Kinder auf die Kunsthandwerker-Zeile aufgeloest wurden).
+    if (r.rule.beschreibung && !r.rule.beschreibung.trimStart().startsWith('->')) {
+      byKey.set(normalizeForMatch(r.rule.beschreibung), r);
+    }
   }
   const childrenOf = new Map<ComputedRule, ComputedRule[]>();
   const isChild = new Set<ComputedRule>();
@@ -47,4 +56,19 @@ export function sortHierarchyByBeschreibung(nodes: HierarchyNode[]): HierarchyNo
   return [...nodes]
     .sort((a, b) => labelOf(a.row).localeCompare(labelOf(b.row), 'de'))
     .map((n) => ({ row: n.row, children: [...n.children].sort((a, b) => labelOf(a).localeCompare(labelOf(b), 'de')) }));
+}
+
+/** Gruppiert bereits gebaute Top-Level-Knoten (Hauptfertigkeiten) nach ihrem eigenen Parent-Feld -
+ *  bei WHK ist das die neue Kategorie-Gruppe (z.B. "Bau"/"Metall", WHK-ZENSUS-ENTWURF.md Runde 8),
+ *  eine zweite Parent-Ebene UEBER der Hauptfertigkeit->Spezialisierung-Kette, die buildHierarchy
+ *  bereits aufgeloest hat (Hauptfertigkeit-Zeilen loesen als Parent NICHT auf eine andere WHK-Zeile
+ *  auf, bleiben also bei buildHierarchy bewusst Top-Level-Knoten). Knoten ohne Parent landen in
+ *  "Sonstige". Reihenfolge der zurueckgegebenen Map folgt der Eingabe-Reihenfolge der Knoten. */
+export function groupHierarchyByParent(nodes: HierarchyNode[]): Map<string, HierarchyNode[]> {
+  const groups = new Map<string, HierarchyNode[]>();
+  for (const node of nodes) {
+    const key = node.row.rule.parent ?? 'Sonstige';
+    (groups.get(key) ?? groups.set(key, []).get(key)!).push(node);
+  }
+  return groups;
 }

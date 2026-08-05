@@ -1000,6 +1000,21 @@ input.numeric-field-formatted-five {
   list-style-position: outside;
 }
 
+/* WHK-Kategorie-Gruppe (3. Gliederungsebene, WHK-ZENSUS-ENTWURF.md Runde 8): umschliesst mehrere
+   Hauptfertigkeit-Karten - etwas praesenter als die Hauptfertigkeit-Ebene darin (Akzentrahmen wie
+   .gekauft-group, groessere Summary-Schrift), damit die zwei Ebenen optisch unterscheidbar bleiben. */
+.whk-kategorie-group {
+  border-color: #8886;
+}
+
+.whk-kategorie-group > summary {
+  font-size: 1.05em;
+}
+
+.whk-kategorie-body {
+  margin-top: 0.4rem;
+}
+
 .stat-group-count {
   font-weight: 400;
   opacity: 0.65;

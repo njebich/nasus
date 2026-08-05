@@ -6,7 +6,9 @@
 import type { ComputedSheet, ComputedRule } from '../engine/characterSheet';
 import type { PoolAllocation, CustomWhkEintrag } from '../state/characterStore';
 import { prettyFormula } from '../engine/formulaDisplay';
-import { buildHierarchy, sortHierarchyByBeschreibung, type HierarchyNode } from '../engine/hierarchy';
+import {
+  buildHierarchy, sortHierarchyByBeschreibung, groupHierarchyByParent, type HierarchyNode,
+} from '../engine/hierarchy';
 import { describeSkillStufe } from '../engine/skillStufen';
 import { LADESCHUETZE_SF_FK_GATE, isLadeschuetzeSfVisible } from '../engine/ladeschuetzeGating';
 import { GUT_BASIS, MEISTERLICH_BASIS } from '../engine/poolCaps';
@@ -460,6 +462,31 @@ function renderEditableGroup(
     </div>`;
 }
 
+/** WHK-Kategorie-Gruppe (WHK-ZENSUS-ENTWURF.md Runde 8/Umsetzung, 3. Gliederungsebene ueber
+ *  Hauptfertigkeit->Spezialisierung, z.B. "Bau" mit den Hauptfertigkeiten Zimmerei/Maurerhandwerk/
+ *  ...): eigene <details>-Karte, die mehrere renderEditableGroup-Karten umschliesst. Der
+ *  Aufklapp-Zustand teilt sich bewusst dieselbe openGroupReferenzen-Persistenz wie Hauptfertigkeit-
+ *  Gruppen (Praefix "kategorie::" analog zu "custom::" bei freien Hauptfertigkeiten) - syncOpenGroups
+ *  greift generisch ueber ".stat-group[data-referenz]" und erfasst diese Ebene damit automatisch
+ *  mit, ohne eigene Verdrahtung. forceOpen (aktive WHK-Suche) klappt die Kategorie zusammen mit
+ *  ihren Treffer-Hauptfertigkeiten auf, analog zum forceOpen-Parameter von renderEditableGroup. */
+function renderWhkKategorieGroup(
+  kategorieName: string,
+  nodes: HierarchyNode[],
+  forceOpen: boolean,
+  renderNode: (node: HierarchyNode) => string,
+): string {
+  const groupKey = `kategorie::${kategorieName}`;
+  const openAttr = forceOpen || openGroupReferenzen.has(groupKey) ? ' open' : '';
+  return `
+    <div class="stat-card">
+      <details class="stat-group whk-kategorie-group" data-referenz="${escapeHtml(groupKey)}"${openAttr}>
+        <summary>${escapeHtml(kategorieName)} <span class="stat-group-count">(${nodes.length} Hauptfertigkeiten)</span></summary>
+        <div class="stat-category whk-kategorie-body">${nodes.map(renderNode).join('')}</div>
+      </details>
+    </div>`;
+}
+
 /** Nahkampf-/Fernkampf-Tab (Nutzer-Mockup 2026-07-22, "S05 Nahkampfwaffen", spaeter auf Fernkampf
  *  uebertragen): Hauptfertigkeit + Spezialisierungen als feste Tabelle statt aufklappbarer
  *  <details>-Karte (renderEditableGroup) - eine Tabelle pro Hauptfertigkeit. Alle Spezialisierungen
@@ -844,7 +871,21 @@ export function renderCategoryView(
         ? renderEigenschaftenTable(restEditable, sheet.byKategorie['Eigenschaftsbonus'] ?? [], formulaImpactValues)
         : isSsk
           ? renderSskGroups(restEditable)
-          : editableHierarchy.map((n) => renderEditableGroup(n, kategorie, formulaImpactValues, isWhk && !!whkNeedle, isWhk ? sheet.customWhkSpezialisierungen : undefined)).join('')
+          : (isWhk
+            // WHK-ZENSUS-ENTWURF.md Runde 8: dritte Gliederungsebene "Kategorie-Gruppe" (Bau/
+            // Metall/...) ueber der bestehenden Hauptfertigkeit->Spezialisierung-Hierarchie -
+            // alphabetisch sortiert wie die Hauptfertigkeiten selbst (sortHierarchyByBeschreibung
+            // hat editableHierarchy bereits sortiert, hier nur die Gruppenschluessel selbst).
+            // Geklammert (statt "isWhk ? A : B + C"), sonst bindet "+" wegen Operator-Precedence
+            // nur an den ELSE-Zweig und der Custom-Hauptfertigkeit-Block darunter wuerde fuer WHK
+            // (isWhk===true) nie angehaengt - browser-verifiziert 2026-08-05.
+            ? [...groupHierarchyByParent(editableHierarchy).entries()]
+              .sort(([a], [b]) => a.localeCompare(b, 'de'))
+              .map(([kategorieName, nodes]) => renderWhkKategorieGroup(
+                kategorieName, nodes, !!whkNeedle,
+                (n) => renderEditableGroup(n, kategorie, formulaImpactValues, !!whkNeedle, sheet.customWhkSpezialisierungen),
+              )).join('')
+            : editableHierarchy.map((n) => renderEditableGroup(n, kategorie, formulaImpactValues)).join(''))
             // Punkt 4a/4b: frei angelegte Hauptfertigkeiten stehen unterhalb der festen Liste, plus
             // eine Leerzeile zum Anlegen weiterer - beides unabhaengig von der Suche immer sichtbar,
             // freie Hauptfertigkeiten aber bei aktiver Suche auf Treffer (eigener oder Spez-Name) reduziert.

@@ -1518,6 +1518,30 @@ input.numeric-field-formatted-five {
   min-width: 10rem;
 }
 
+.psi-regeltext-cell {
+  min-width: 24rem;
+  max-width: 38rem;
+  text-align: left !important;
+  white-space: normal !important;
+  line-height: 1.35;
+}
+
+.psi-stufe-cell {
+  min-width: 7.5rem;
+  white-space: normal !important;
+}
+
+.psi-stufe-werte,
+.psi-stufe-wirkung {
+  display: block;
+}
+
+.psi-stufe-wirkung {
+  margin-top: 0.2rem;
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
 .ki-wirkung-cell {
   min-width: 18rem;
   font-size: 0.9em;

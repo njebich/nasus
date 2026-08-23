@@ -1,16 +1,11 @@
-"""Extrahiert die Tabellenspalten (Eig./ST.1-7/RW/W.dauer/E.zeit/MpZ/Wirkung) fuer alle 15
-PSI-Werte aus der Originalquelle "PSI Magie Zaubertabelle 1.42.docx" (Sheet/Tabelle existiert nur
-als Word-Tabelle, nicht in werte-0.8-claude.xlsx - Nutzer 2026-07-21: "i see no wirkung in the
-xlsx. Wirkung can be found in psi magie zaubertabelle 1.42").
+"""Extrahiert die überarbeitete PSI-Zaubertabelle 1.421 aus der XLSX-Quelle.
 
-Schreibt src/data/psiZaubertabelle.json (Begleit-Datei, analog spruchmagieDetails.json/
-KI_DAUER/kiFaehigkeiten.ts) - die xlsx bleibt alleinige Quelle fuer die Kern-Werte (art/eigBonus/
-kostenRaw/mindestTaw/parent, siehe psi.jsonl), diese Datei liefert nur zusaetzliche Anzeigespalten
-fuer views/psi.ts.
+Die Arbeitsmappe enthält je PSI-Wert Stammdaten, Zeit-/Reichweitenwerte und für jede der
+sieben Zauberstufen getrennte Angaben für Erschwerung, MbS und Wirkung. Die erzeugte JSON-Datei
+wird von ``src/views/psi.ts`` angezeigt.
 
-pandoc/python-docx sind in dieser Umgebung nicht installiert (siehe Memory
-reference-nasus-rules-doc) - .docx ist ein ZIP aus XML, daher direktes Parsen von
-word/document.xml per xml.etree (Stdlib, keine Zusatz-Dependency).
+Die XLSX wird als Open-XML-ZIP mit der Python-Standardbibliothek gelesen. Dadurch bleibt der
+Importer ohne zusätzliche Projektabhängigkeiten ausführbar.
 
 Aufruf:
     python scripts/extract_psi_zaubertabelle.py
@@ -21,137 +16,136 @@ import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
 
-SOURCE_DOCX = Path(
+
+SOURCE_XLSX = Path(
     r"E:\Das Western Rollenspiel\_Aktuelle Daten\Nasus\Nasus Nasus das Western Rollenspiel"
-    r"\Die Magie\PSI-Magie\PSI Magie Zaubertabelle 1.42.docx"
+    r"\Die Magie\PSI-Magie\PSI_Magie_Zaubertabelle_1_421.xlsx"
 )
 OUT_JSON = Path(__file__).parent.parent / "src" / "data" / "psiZaubertabelle.json"
 RULES_JSON = Path(__file__).parent.parent / "src" / "data" / "rules.json"
 
-NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+NS = {"x": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 
-
-def qn(tag: str) -> str:
-    prefix, local = tag.split(":")
-    return f"{{{NS[prefix]}}}{local}"
-
-
-def cell_text(tc: ET.Element) -> str:
-    paragraphs = []
-    for p in tc.findall(qn("w:p")):
-        parts = [t.text or "" for t in p.iter(qn("w:t"))]
-        paragraphs.append("".join(parts))
-    return "\n".join(p for p in paragraphs if p.strip() != "").strip()
-
-
-def cell_vmerge(tc: ET.Element) -> str | None:
-    tcPr = tc.find(qn("w:tcPr"))
-    if tcPr is not None:
-        vm = tcPr.find(qn("w:vMerge"))
-        if vm is not None:
-            return vm.get(qn("w:val")) or "continue"
-    return None
-
-
-# Name, wie er (zeilenumbruchbereinigt) in der Word-Tabelle steht -> Referenz aus psi.jsonl.
 NAME_TO_REFERENZ = {
     "Telekinese": "psi_telekinese",
-    "TelekineseGriff": "psi_telekinese_griff",
-    "HöhereTelekinese": "psi_hoehere_telekinese",
-    "TelekinetischesGeschoss": "psi_telekinetisches_geschoss",
-    "Geschosseablenken": "psi_geschosse_ablenken",
+    "Telekinese Griff": "psi_telekinese_griff",
+    "Höhere Telekinese": "psi_hoehere_telekinese",
+    "Telekinetisches Geschoss": "psi_telekinetisches_geschoss",
+    "Geschosse ablenken": "psi_geschosse_ablenken",
     "Deformation": "psi_deformation",
     "Destruktion": "psi_destruktion",
     "Empathie": "psi_empathie",
     "Suggestion": "psi_suggestion",
-    "Im Schattenverstecken": "psi_im_schatten_verstecken",
-    "Im Waldverstecken": "psi_im_wald_verstecken",
+    "Im Schatten verstecken": "psi_im_schatten_verstecken",
+    "Im Wald verstecken": "psi_im_wald_verstecken",
     "In der Menge verstecken": "psi_in_der_menge_verstecken",
-    "In der Ferneverstecken": "psi_in_der_ferne_verstecken",
+    "In der Ferne verstecken": "psi_in_der_ferne_verstecken",
     "Pyrokinese": "psi_pyrokinese",
     "Kryokinese": "psi_kryokinese",
 }
 
 
-def parse_tables(document_xml: bytes) -> list[list[list[dict]]]:
-    root = ET.fromstring(document_xml)
-    body = root.find(qn("w:body"))
-    tables = []
-    for tbl in body.iter(qn("w:tbl")):
-        rows = []
-        for tr in tbl.findall(qn("w:tr")):
-            cells = []
-            for tc in tr.findall(qn("w:tc")):
-                cells.append({"text": cell_text(tc), "vmerge": cell_vmerge(tc)})
-            rows.append(cells)
-        tables.append(rows)
-    return tables
+def column_index(cell_reference: str) -> int:
+    letters = re.match(r"[A-Z]+", cell_reference)
+    if letters is None:
+        raise ValueError(f"Ungültige Zellreferenz: {cell_reference!r}")
+    value = 0
+    for char in letters.group(0):
+        value = value * 26 + ord(char) - ord("A") + 1
+    return value - 1
+
+
+def cell_value(cell: ET.Element) -> str:
+    inline = cell.find("x:is", NS)
+    if inline is not None:
+        return "".join(text.text or "" for text in inline.iterfind(".//x:t", NS)).strip()
+    value = cell.find("x:v", NS)
+    if value is None or value.text is None:
+        return ""
+    raw = value.text.strip()
+    if cell.get("t") == "n":
+        try:
+            number = float(raw)
+            return str(int(number)) if number.is_integer() else str(number)
+        except ValueError:
+            pass
+    return raw
+
+
+def read_rows(xlsx: Path) -> list[list[str]]:
+    with zipfile.ZipFile(xlsx) as archive:
+        root = ET.fromstring(archive.read("xl/worksheets/sheet1.xml"))
+    result: list[list[str]] = []
+    for row in root.findall(".//x:sheetData/x:row", NS):
+        values = [""] * 32
+        for cell in row.findall("x:c", NS):
+            index = column_index(cell.get("r", ""))
+            if index < len(values):
+                values[index] = cell_value(cell)
+        result.append(values)
+    return result
 
 
 def main() -> None:
-    with zipfile.ZipFile(SOURCE_DOCX) as zf:
-        document_xml = zf.read("word/document.xml")
-    tables = parse_tables(document_xml)
+    rows = read_rows(SOURCE_XLSX)
+    expected_headers = [
+        "Name", "Regeltext", "Aurabann", "Ziel", "Eig.", "RW", "VD", "ED", "W.dauer",
+        "Erholungszeit EZ in KR", "MpZ",
+    ]
+    if len(rows) < 3 or rows[1][:11] != expected_headers:
+        raise SystemExit("Unerwartete Spaltenstruktur in PSI-Zaubertabelle 1.421")
 
     result: dict[str, dict] = {}
-    # zuletzt gesehene Wirkung je Tabelle - fuer vMerge="continue"-Zellen (die 4 "verstecken"-
-    # Faehigkeiten in Tabelle 2 teilen sich EINEN Wirkungstext, siehe vMerge restart/continue).
-    last_wirkung: str | None = None
+    for row in rows[2:]:
+        name = row[0]
+        if not name:
+            continue
+        referenz = NAME_TO_REFERENZ.get(name)
+        if referenz is None:
+            raise SystemExit(f"Unbekannter PSI-Name in Zaubertabelle: {name!r}")
+        if referenz in result:
+            raise SystemExit(f"Doppelter PSI-Eintrag: {referenz}")
 
-    # Tabelle 0 ist nur der schwarze "PSI Magie"-Titelbalken - ueberspringen.
-    for table in tables[1:]:
-        header = [c["text"] for c in table[0]]
-        is_headered = header and header[0] == "Name"
-        data_rows = table[1:] if is_headered else table
-        i = 0
-        while i < len(data_rows):
-            row = data_rows[i]
-            name_cell = row[0]["text"].replace("\n", "")
-            if name_cell == "":
-                # Fortsetzungszeile (Wirkung ueber gridSpan) einer vorherigen Namenszeile - kommt
-                # in Tabelle 1 (Telekinese-Ast) vor, wo Wirkung eine eigene Zeile statt eigener
-                # Spalte ist. Wird unten schon mitgelesen (siehe wirkung_row), hier ueberspringen.
-                i += 1
-                continue
+        stufen = []
+        for stufe in range(7):
+            start = 11 + stufe * 3
+            stufen.append({
+                "erschwerung": row[start],
+                "mbs": row[start + 1],
+                "wirkung": row[start + 2],
+            })
 
-            referenz = NAME_TO_REFERENZ.get(name_cell)
-            if referenz is None:
-                raise SystemExit(f"Unbekannter PSI-Name in Zaubertabelle: {name_cell!r}")
-
-            cells = [c["text"].replace("\n", " / ") for c in row]
-            eig, st1, st2, st3, st4, st5, st6, st7, rw, wd, ed, mpz = cells[1:13]
-
-            if len(row) >= 14:
-                # Tabelle 2: Wirkung ist Spalte 14 (eigene Zelle je Zeile, ggf. vertikal gemerged).
-                wirkung_cell = row[13]
-                if wirkung_cell["vmerge"] == "continue" or wirkung_cell["text"] == "" and wirkung_cell["vmerge"] is not None:
-                    wirkung = last_wirkung or ""
-                else:
-                    wirkung = wirkung_cell["text"].replace("\n", " / ")
-                last_wirkung = wirkung
-                i += 1
-            else:
-                # Tabelle 1: Wirkung steht in der naechsten Zeile (gridSpan=12, Spalte 2).
-                wirkung_row = data_rows[i + 1]
-                wirkung = wirkung_row[1]["text"].replace("\n", " / ")
-                i += 2
-
-            result[referenz] = {
-                "st1": st1, "st2": st2, "st3": st3, "st4": st4, "st5": st5, "st6": st6, "st7": st7,
-                "rw": rw, "wd": wd, "ed": ed, "mpz": mpz, "wirkung": wirkung,
-            }
+        result[referenz] = {
+            "regeltext": row[1],
+            "aurabann": row[2],
+            "ziel": row[3],
+            "eig": row[4],
+            "rw": row[5],
+            "vd": row[6],
+            "ed": row[7],
+            "wirkungsdauer": row[8],
+            "erholungszeit": row[9],
+            "mpz": row[10],
+            "stufen": stufen,
+        }
 
     rules = json.loads(RULES_JSON.read_text(encoding="utf-8"))
-    psi_referenzen = {r["referenz"] for r in rules if r.get("kategorie") == "PSI" and r.get("art") == "Wert"}
+    psi_referenzen = {
+        rule["referenz"] for rule in rules
+        if rule.get("kategorie") == "PSI" and rule.get("art") == "Wert"
+    }
     missing = psi_referenzen - result.keys()
     extra = result.keys() - psi_referenzen
     if missing:
         raise SystemExit(f"PSI-Referenzen ohne Zaubertabellen-Eintrag: {sorted(missing)}")
     if extra:
-        raise SystemExit(f"Zaubertabellen-Eintraege ohne PSI-Referenz in rules.json: {sorted(extra)}")
+        raise SystemExit(f"Zaubertabellen-Einträge ohne PSI-Referenz in rules.json: {sorted(extra)}")
 
-    OUT_JSON.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
-    print(f"OK: {len(result)} PSI-Werte -> {OUT_JSON}")
+    OUT_JSON.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    print(f"OK: {len(result)} PSI-Werte aus Version 1.421 -> {OUT_JSON}")
 
 
 if __name__ == "__main__":

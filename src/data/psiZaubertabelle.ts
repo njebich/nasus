@@ -2,9 +2,24 @@
 
 import psiZaubertabelleJson from './psiZaubertabelle.json';
 
+export interface PsiZauberstufe {
+  erschwerung: string;
+  mbs: string;
+  wirkung: string;
+}
+
 export interface PsiZaubertabelleEintrag {
-  st1: string; st2: string; st3: string; st4: string; st5: string; st6: string; st7: string;
-  rw: string; wd: string; ed: string; mpz: string; wirkung: string;
+  regeltext: string;
+  aurabann: string;
+  ziel: string;
+  eig: string;
+  rw: string;
+  vd: string;
+  ed: string;
+  wirkungsdauer: string;
+  erholungszeit: string;
+  mpz: string;
+  stufen: PsiZauberstufe[];
 }
 
 export const PSI_ZAUBERTABELLE = psiZaubertabelleJson as unknown as Record<string, PsiZaubertabelleEintrag>;

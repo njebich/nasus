@@ -1,212 +1,737 @@
 {
   "psi_deformation": {
-    "ed": "15 Sec.",
+    "aurabann": "Aurabann",
+    "ed": "sofort",
+    "eig": "Stä",
+    "erholungszeit": "15",
     "mpz": "St*4",
+    "regeltext": "Auf 1 Unbel. Geg/ max Druck = (Aura+ST)³ in Kg pro cm³. Ziel darf sich absolut nicht Bewegen! Aurabann",
     "rw": "(M)*m",
-    "st1": "+5/15",
-    "st2": "+10/25",
-    "st3": "+14/35",
-    "st4": "+18/50",
-    "st5": "+21/70",
-    "st6": "+24/90",
-    "st7": "+27/115",
-    "wd": "(M)*Sec",
-    "wirkung": "Auf 1 Unbel. Geg/ max Druck = (Aura+ST)³ in Kg pro cm³. Ziel darf sich absolut nicht Bewegen! Aurabann"
+    "stufen": [
+      {
+        "erschwerung": "5",
+        "mbs": "15",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "10",
+        "mbs": "25",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "35",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "18",
+        "mbs": "50",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "21",
+        "mbs": "70",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "24",
+        "mbs": "90",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "27",
+        "mbs": "115",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M) sec",
+    "ziel": "Gegenstand"
   },
   "psi_destruktion": {
-    "ed": "20 Sec.",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Will",
+    "erholungszeit": "20",
     "mpz": "St*5",
+    "regeltext": "Auf 1 Unbel. Geg/ nur kleinere Dinge, Bei großen =ST+1. Bei Fremdaura FK-TZW",
     "rw": "(M)*m",
-    "st1": "+4/15 / Glas",
-    "st2": "+8/25 / Holz",
-    "st3": "+11/35 / Stein",
-    "st4": "+14/50 / Metall",
-    "st5": "+17/70 / Guss",
-    "st6": "+20/90 / Panzer",
-    "st7": "+23/115 / Diamant",
-    "wd": "~",
-    "wirkung": "Auf 1 Unbel. Geg/ nur kleinere Dinge, Bei großen =ST+1. Bei Fremdaura FK-TZW"
+    "stufen": [
+      {
+        "erschwerung": "4",
+        "mbs": "15",
+        "wirkung": "Glas"
+      },
+      {
+        "erschwerung": "8",
+        "mbs": "25",
+        "wirkung": "Holz"
+      },
+      {
+        "erschwerung": "11",
+        "mbs": "35",
+        "wirkung": "Stein"
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "50",
+        "wirkung": "Metall"
+      },
+      {
+        "erschwerung": "17",
+        "mbs": "70",
+        "wirkung": "Guss"
+      },
+      {
+        "erschwerung": "20",
+        "mbs": "90",
+        "wirkung": "Panzer"
+      },
+      {
+        "erschwerung": "23",
+        "mbs": "115",
+        "wirkung": "Diamant"
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "permanent",
+    "ziel": "Aura"
   },
   "psi_empathie": {
-    "ed": "5 Sec.",
-    "mpz": "St*1",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Will",
+    "erholungszeit": "5",
+    "mpz": "St",
+    "regeltext": "Der Zauberer bekommt St*2 Punkte und kann sie frei nach der unten gewählten Tabelle einsetzen:\n14 Punkte = 1 gesehene Person Gesinnungsbogen Scannen\n1 Punkt = 60° zusätzlicher Sichtwinkel\n1 Punkt = Personen vorhanden, ja oder nein\n3 Punkte = Personen Vorhanden, ja nein; ungefähre Anzahl\n5 Punkte = Personen Vorhanden, ja nein; genaue Anzahl\n7 Punkte = Personen Vorhanden, ja nein; genaue Anzahl; ungefähre Position\n9 Punkte = Personen Vorhanden, ja nein; genaue Anzahl; genaue Position\n11 Punkte = Personen Vorhanden, ja/nein; genaue Anzahl; genaue Position; Tier und Mensch unterscheiden.\n(genaue Position ist +/- 1m)",
     "rw": "(M)*2m",
-    "st1": "+1/5",
-    "st2": "+4/10",
-    "st3": "+7/20",
-    "st4": "+10/30",
-    "st5": "+13/35",
-    "st6": "+16/40",
-    "st7": "+19/50",
-    "wd": "(M)*Sec",
-    "wirkung": "Der Zauberer bekommt St*2 Punkte  / 14 Punkte = 1 gesehene Person  Gesinnungsbogen Scannen / 1 Punkt = 90°Sichtwinkel / 1 Punkt= Personen vorhanden, ja  oder nein / 3 Punkte= Personen Vorhanden, ja nein; ungefähre Anzahl / 5 Punkte= Personen Vorhanden, ja nein; genaue Anzahl / 7 Punkte= Personen Vorhanden, ja nein; genaue Anzahl; ungefähre Pos. / 9 Punkte = Personen Vorhanden, ja nein; genaue Anzahl; genaue Pos. / 11 Punkte= Personen Vorhanden, ja nein; genaue Anzahl; genaue Pos.; Tier und Mensch unterscheiden. / (genaue Position ist +-1m)"
+    "stufen": [
+      {
+        "erschwerung": "1",
+        "mbs": "5",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "4",
+        "mbs": "10",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "7",
+        "mbs": "20",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "10",
+        "mbs": "30",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "13",
+        "mbs": "35",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "16",
+        "mbs": "40",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "19",
+        "mbs": "50",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M) sec",
+    "ziel": "Aura"
   },
   "psi_geschosse_ablenken": {
-    "ed": "2 Sec.",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Sch",
+    "erholungszeit": "2",
     "mpz": "St*5",
-    "rw": "~",
-    "st1": "+2/7",
-    "st2": "+5/14",
-    "st3": "+8/21",
-    "st4": "+11/28",
-    "st5": "+14/35",
-    "st6": "+17/92",
-    "st7": "+20/145",
-    "wd": "~",
-    "wirkung": "1 Geschoss/ Mündungsfeuer sehen/Glück+ST x 3."
+    "regeltext": "Der Magus kann Geschosse ablenken, die er sieht oder deren Abwurf/Abschuss/Mündungsfeuer er gesehen hat. Die AW oder Glück-Probe ist um ST x 3 erleichtert.",
+    "rw": "Selbst",
+    "stufen": [
+      {
+        "erschwerung": "2",
+        "mbs": "7",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "5",
+        "mbs": "14",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "8",
+        "mbs": "21",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "11",
+        "mbs": "28",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "35",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "17",
+        "mbs": "92",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "20",
+        "mbs": "145",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "permanent",
+    "ziel": "Selbst"
   },
   "psi_hoehere_telekinese": {
-    "ed": "20 Sec.",
+    "aurabann": "Aurabann",
+    "ed": "sofort",
+    "eig": "Will",
+    "erholungszeit": "20",
     "mpz": "St*2",
+    "regeltext": "1 Gegenstand / Nur Unbelebtes/ Aurabann St³ x kg oder Liter/ max. 10m/sec.",
     "rw": "(M)*m",
-    "st1": "+4/20",
-    "st2": "+7/30",
-    "st3": "+10/40",
-    "st4": "+14/55",
-    "st5": "+18/75",
-    "st6": "+22/95",
-    "st7": "+29/150",
-    "wd": "(M)*Min",
-    "wirkung": "1 Gegenstand / Nur Unbelebtes/ Aurabann St³ x kg oder Liter/  max. 10m/sec."
+    "stufen": [
+      {
+        "erschwerung": "4",
+        "mbs": "20",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "7",
+        "mbs": "30",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "10",
+        "mbs": "40",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "55",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "18",
+        "mbs": "75",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "22",
+        "mbs": "95",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "29",
+        "mbs": "150",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M) min",
+    "ziel": "Gegenstand"
   },
   "psi_im_schatten_verstecken": {
-    "ed": "10 Sec.",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Aus",
+    "erholungszeit": "10",
     "mpz": "St*6",
+    "regeltext": "(Subjektiv) Allen Personen, von denen der Magier weiß, dass sie da sind, fällt es schwer, ihn wahrzunehmen. Der Zaubernde hat völlige Bewegungsfreiheit während der Wirkung, auch Laufen oder Schießen. Feuerwaffen sind problematisch /Sinnesschärfe Probe ST x 3 bis x 5, Je nach Umgebung!",
     "rw": "Selbst",
-    "st1": "+2/5",
-    "st2": "+5/10",
-    "st3": "+8/20",
-    "st4": "+11/35",
-    "st5": "+14/55",
-    "st6": "+17/70",
-    "st7": "+20/90",
-    "wd": "(M)*3Min",
-    "wirkung": "(Subjektiv) Auf alle Personen von denen der Magier weiß, dass sie da sind. /Der Zaubernde hat völlige Bewegungsfreiheit während der Wirkung, auch Laufen oder Schießen. Feuerwaffen sind problematisch /Sinnesschärfe Probe ST x 3 bis x 5,  Je nach Umgebung!"
+    "stufen": [
+      {
+        "erschwerung": "2",
+        "mbs": "5",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "5",
+        "mbs": "10",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "8",
+        "mbs": "20",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "11",
+        "mbs": "35",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "55",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "17",
+        "mbs": "70",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "20",
+        "mbs": "90",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M)*3Min",
+    "ziel": "Aura"
   },
   "psi_im_wald_verstecken": {
-    "ed": "10 Sec.",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Aus",
+    "erholungszeit": "10",
     "mpz": "St*6",
+    "regeltext": "(Subjektiv) Auf alle Personen von denen der Magier weiß, dass sie da sind. /Der Zaubernde hat völlige Bewegungsfreiheit während der Wirkung, auch Laufen oder Schießen. Feuerwaffen sind problematisch /Sinnesschärfe Probe ST x 3 bis x 5, Je nach Umgebung!",
     "rw": "Selbst",
-    "st1": "+2/5",
-    "st2": "+5/10",
-    "st3": "+8/20",
-    "st4": "+11/35",
-    "st5": "+14/55",
-    "st6": "+17/70",
-    "st7": "+20/90",
-    "wd": "(M)*3Min",
-    "wirkung": "(Subjektiv) Auf alle Personen von denen der Magier weiß, dass sie da sind. /Der Zaubernde hat völlige Bewegungsfreiheit während der Wirkung, auch Laufen oder Schießen. Feuerwaffen sind problematisch /Sinnesschärfe Probe ST x 3 bis x 5,  Je nach Umgebung!"
+    "stufen": [
+      {
+        "erschwerung": "2",
+        "mbs": "5",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "5",
+        "mbs": "10",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "8",
+        "mbs": "20",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "11",
+        "mbs": "35",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "55",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "17",
+        "mbs": "70",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "20",
+        "mbs": "90",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M)*3Min",
+    "ziel": "Aura"
   },
   "psi_in_der_ferne_verstecken": {
-    "ed": "10 Sec.",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Aus",
+    "erholungszeit": "10",
     "mpz": "St*6",
+    "regeltext": "(Subjektiv) Auf alle Personen von denen der Magier weiß, dass sie da sind. /Der Zaubernde hat völlige Bewegungsfreiheit während der Wirkung, auch Laufen oder Schießen. Feuerwaffen sind problematisch /Sinnesschärfe Probe ST x 3 bis x 5, Je nach Umgebung!",
     "rw": "Selbst",
-    "st1": "+2/5",
-    "st2": "+5/10",
-    "st3": "+8/20",
-    "st4": "+11/35",
-    "st5": "+14/55",
-    "st6": "+17/70",
-    "st7": "+20/90",
-    "wd": "(M)*3Min",
-    "wirkung": "(Subjektiv) Auf alle Personen von denen der Magier weiß, dass sie da sind. /Der Zaubernde hat völlige Bewegungsfreiheit während der Wirkung, auch Laufen oder Schießen. Feuerwaffen sind problematisch /Sinnesschärfe Probe ST x 3 bis x 5,  Je nach Umgebung!"
+    "stufen": [
+      {
+        "erschwerung": "2",
+        "mbs": "5",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "5",
+        "mbs": "10",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "8",
+        "mbs": "20",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "11",
+        "mbs": "35",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "55",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "17",
+        "mbs": "70",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "20",
+        "mbs": "90",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M)*3Min",
+    "ziel": "Aura"
   },
   "psi_in_der_menge_verstecken": {
-    "ed": "10 Sec.",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Aus",
+    "erholungszeit": "10",
     "mpz": "St*6",
+    "regeltext": "(Subjektiv) Auf alle Personen von denen der Magier weiß, dass sie da sind. /Der Zaubernde hat völlige Bewegungsfreiheit während der Wirkung, auch Laufen oder Schießen. Feuerwaffen sind problematisch /Sinnesschärfe Probe ST x 3 bis x 5, Je nach Umgebung!",
     "rw": "Selbst",
-    "st1": "+2/5",
-    "st2": "+5/10",
-    "st3": "+8/20",
-    "st4": "+11/35",
-    "st5": "+14/55",
-    "st6": "+17/70",
-    "st7": "+20/90",
-    "wd": "(M)*3Min",
-    "wirkung": "(Subjektiv) Auf alle Personen von denen der Magier weiß, dass sie da sind. /Der Zaubernde hat völlige Bewegungsfreiheit während der Wirkung, auch Laufen oder Schießen. Feuerwaffen sind problematisch /Sinnesschärfe Probe ST x 3 bis x 5,  Je nach Umgebung!"
+    "stufen": [
+      {
+        "erschwerung": "2",
+        "mbs": "5",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "5",
+        "mbs": "10",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "8",
+        "mbs": "20",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "11",
+        "mbs": "35",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "55",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "17",
+        "mbs": "70",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "20",
+        "mbs": "90",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M)*3Min",
+    "ziel": "Aura"
   },
   "psi_kryokinese": {
-    "ed": "10 Sec.",
-    "mpz": "St*1",
+    "aurabann": "Aurabann",
+    "ed": "ST sec",
+    "eig": "Int",
+    "erholungszeit": "10",
+    "mpz": "St",
+    "regeltext": "Der Zauber erhitzt eine Kugel mit Radius (M) x 2 mm³. Gegenstände innerhalb der Kugel bleiben gefroren, tauen aber natürlich auf.",
     "rw": "(M) x m",
-    "st1": "+4/10 / -15° / -15°/s",
-    "st2": "+7/20 / -40° / -20°/s",
-    "st3": "+10/30 / -60° / -20°/s",
-    "st4": "+14/45 / -85° / -21°/s",
-    "st5": "+18/60 / -110° / -22°/s",
-    "st6": "+22/80 / -200° / -33°/s",
-    "st7": "+29/100 / -279° / -40°/s",
-    "wd": "ST. x Sec",
-    "wirkung": "Auf 1 Unbel. Geg/ Aurabann/Geg  bleibt gefroren, taut aber natürlich auf./ Radius (M) x cm³."
+    "stufen": [
+      {
+        "erschwerung": "4",
+        "mbs": "10",
+        "wirkung": "-15° | -15°/s"
+      },
+      {
+        "erschwerung": "7",
+        "mbs": "20",
+        "wirkung": "-40° | -20°/s"
+      },
+      {
+        "erschwerung": "10",
+        "mbs": "30",
+        "wirkung": "-60° | -20°/s"
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "45",
+        "wirkung": "-85° | -21°/s"
+      },
+      {
+        "erschwerung": "18",
+        "mbs": "60",
+        "wirkung": "-110° | -22°/s"
+      },
+      {
+        "erschwerung": "22",
+        "mbs": "80",
+        "wirkung": "-200° | -33°/s"
+      },
+      {
+        "erschwerung": "29",
+        "mbs": "100",
+        "wirkung": "-279° | -40°/s"
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "ST sec",
+    "ziel": "Gegenstand"
   },
   "psi_pyrokinese": {
-    "ed": "15 Sec.",
-    "mpz": "St*1",
+    "aurabann": "Aurabann",
+    "ed": "ST sec",
+    "eig": "Int",
+    "erholungszeit": "15",
+    "mpz": "St",
+    "regeltext": "Der Zauber erhitzt eine Kugel mit Radius (M) x 2 mm³. Gegenstände innerhalb der Kugel brennen nur weiter, wenn sie auch natürlich brennen würden.",
     "rw": "(M) x m",
-    "st1": "+4/10 / 200° /  Watte / +200°/s",
-    "st2": "+7/20 / 400° / L. Stoff / +200°/s",
-    "st3": "+10/30 / 800° / Holz / +266°/s",
-    "st4": "+14/45 / 1000° / Leder / +250°/s",
-    "st5": "+18/60 / 1200° / Guss / +240°/s",
-    "st6": "+22/80 / 2200° / Stahl / +366°/s",
-    "st7": "+29/100 / 3390° / Wolfram / +484°/s",
-    "wd": "ST. x Sec",
-    "wirkung": "Auf 1Unbel. Geg./ Aurabann/Geg.brennt nur weiter, wenn er auch Natürlich brennen würde./ Radius (M) x 2 in mm³."
+    "stufen": [
+      {
+        "erschwerung": "4",
+        "mbs": "10",
+        "wirkung": "200° | Watte | +200°/s"
+      },
+      {
+        "erschwerung": "7",
+        "mbs": "20",
+        "wirkung": "400° | Stoff | +200°/s"
+      },
+      {
+        "erschwerung": "10",
+        "mbs": "30",
+        "wirkung": "800° | Holz | +266°/s"
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "45",
+        "wirkung": "1000° | Leder | +250°/s"
+      },
+      {
+        "erschwerung": "18",
+        "mbs": "60",
+        "wirkung": "1200° | Guss | +240°/s"
+      },
+      {
+        "erschwerung": "22",
+        "mbs": "80",
+        "wirkung": "2200° | Stahl | +366°/s"
+      },
+      {
+        "erschwerung": "29",
+        "mbs": "100",
+        "wirkung": "3390° | Wolfram | +484°/s"
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "ST sec",
+    "ziel": "Gegenstand"
   },
   "psi_suggestion": {
-    "ed": "5. Sec",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Aus",
+    "erholungszeit": "5",
     "mpz": "St*3",
+    "regeltext": "(Subjektiv) Das Opfer macht eine Intelligenz Probe um ST x 3 erschwert. Bei Gelingen: keine Wirkung und das Opfer bemerkt den Verzauberungsversuch sofort.\nBei Misslingen: Der Magus darf einen Gesinnungsaspekt des Opfers um St. Punkte verschieben.",
     "rw": "(M)* 0,5m",
-    "st1": "+4/10",
-    "st2": "+8/15",
-    "st3": "+12/25",
-    "st4": "+16/35",
-    "st5": "+20/45",
-    "st6": "+24/60",
-    "st7": "+28/80",
-    "wd": "(M)*Min",
-    "wirkung": "(Subjektiv)/ Opfer macht Intelligenz  Probe um ST x3 erschwert. Bei Gelingen keine Wirkung und das Opfer bemerkt den Verzauberungsversuch     / Bei Misslingen darf der Magus  / einen Gesinnungsaspekt des Opfers um St. Punkte für die Wirkungsdauer verschieben."
+    "stufen": [
+      {
+        "erschwerung": "4",
+        "mbs": "10",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "8",
+        "mbs": "15",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "12",
+        "mbs": "25",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "16",
+        "mbs": "35",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "20",
+        "mbs": "45",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "24",
+        "mbs": "60",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "28",
+        "mbs": "80",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M) min",
+    "ziel": "Aura"
   },
   "psi_telekinese": {
-    "ed": "5 Sec.",
-    "mpz": "St*1",
+    "aurabann": "Aurabann",
+    "ed": "sofort",
+    "eig": "Wil",
+    "erholungszeit": "5",
+    "mpz": "St",
+    "regeltext": "1 Gegenstand / Nur Unbelebtes/ Aurabann / St² x kg oder Liter /max. 20m/sec.",
     "rw": "(M)*m",
-    "st1": "+3/10",
-    "st2": "+6/15",
-    "st3": "+9/25",
-    "st4": "+12/40",
-    "st5": "+15/60",
-    "st6": "+18/80",
-    "st7": "+21/105",
-    "wd": "(M)*Min",
-    "wirkung": "1 Gegenstand / Nur Unbelebtes/ Aurabann / St² x kg oder Liter /max. 20m/sec."
+    "stufen": [
+      {
+        "erschwerung": "3",
+        "mbs": "10",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "6",
+        "mbs": "15",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "9",
+        "mbs": "25",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "12",
+        "mbs": "40",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "15",
+        "mbs": "60",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "18",
+        "mbs": "80",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "21",
+        "mbs": "105",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M) min",
+    "ziel": "Gegenstand"
   },
   "psi_telekinese_griff": {
-    "ed": "10 Sec.",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Stä",
+    "erholungszeit": "10",
     "mpz": "St*3",
+    "regeltext": "Nur Greifbares / Auch Lebendiges/ ST³ x kg oder Stärke = ST x 5/ max. 0,5m/sec.",
     "rw": "(M)*m",
-    "st1": "+4/20",
-    "st2": "+7/30",
-    "st3": "+10/40",
-    "st4": "+14/55",
-    "st5": "+18/75",
-    "st6": "+22/95",
-    "st7": "+29/150",
-    "wd": "(M)*Min",
-    "wirkung": "Nur Greifbares / Auch Lebendiges/ ST³ x kg oder Stärke = ST x 5/ max. 0,5m/sec."
+    "stufen": [
+      {
+        "erschwerung": "4",
+        "mbs": "20",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "7",
+        "mbs": "30",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "10",
+        "mbs": "40",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "14",
+        "mbs": "55",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "18",
+        "mbs": "75",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "22",
+        "mbs": "95",
+        "wirkung": ""
+      },
+      {
+        "erschwerung": "29",
+        "mbs": "150",
+        "wirkung": ""
+      }
+    ],
+    "vd": "1",
+    "wirkungsdauer": "(M) min",
+    "ziel": "Aura"
   },
   "psi_telekinetisches_geschoss": {
-    "ed": "5 Sec.",
-    "mpz": "St*1",
+    "aurabann": "Kein Aurabann",
+    "ed": "sofort",
+    "eig": "Will",
+    "erholungszeit": "5",
+    "mpz": "St",
+    "regeltext": "SP verteilt auf 3 TZ, Opfer wird um SP/2m zurückgeworfen. Körperbeherrschung+Athletik-Probe, um nicht zu stürzen. Auch Gegenstände werden zurückgeworfen.",
     "rw": "(M)*2m",
-    "st1": "+3/10 / 1W4",
-    "st2": "+6/20 / 1W6",
-    "st3": "+9/30 / 1W8",
-    "st4": "+12/40 / 1W10",
-    "st5": "+15/55 / 1w12",
-    "st6": "+20/75 / 1W20",
-    "st7": "+30/100 / 1W30",
-    "wd": "~",
-    "wirkung": "ST x Sec. = Aufladezeit/ TP verteilt auf 3 TZ / Wenn festes Objekt in Weg 2W/1WX : 2  = Meter zurückwerfen ."
+    "stufen": [
+      {
+        "erschwerung": "3",
+        "mbs": "10",
+        "wirkung": "W4"
+      },
+      {
+        "erschwerung": "6",
+        "mbs": "20",
+        "wirkung": "W6"
+      },
+      {
+        "erschwerung": "9",
+        "mbs": "30",
+        "wirkung": "W8"
+      },
+      {
+        "erschwerung": "12",
+        "mbs": "40",
+        "wirkung": "W10"
+      },
+      {
+        "erschwerung": "15",
+        "mbs": "55",
+        "wirkung": "W12"
+      },
+      {
+        "erschwerung": "20",
+        "mbs": "75",
+        "wirkung": "W20"
+      },
+      {
+        "erschwerung": "30",
+        "mbs": "100",
+        "wirkung": "W30"
+      }
+    ],
+    "vd": "ST sec",
+    "wirkungsdauer": "permanent",
+    "ziel": "Aura"
   }
 }

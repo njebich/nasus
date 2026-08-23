@@ -3,11 +3,9 @@
 // getFertigkeitBaseMax('PSI')=24 gedeckelt, Kosten = wert*9 EP ueber kostenRaw in psi.jsonl) -
 // dieser Tab ist reine UI-Arbeit.
 //
-// Spaltenlayout (Nutzer-Vorgabe 2026-07-21): TaW | Probe | Name | Eig. | ST.1-7 | RW | WD | ED |
-// MpZ. ST.1-7/RW/WD/ED/MpZ kommen NICHT aus der xlsx (die hat keine Wirkungs-/Stufentabelle fuer
-// PSI), sondern aus psiZaubertabelle.json (extrahiert aus "PSI Magie Zaubertabelle 1.42.docx",
-// siehe scripts/extract_psi_zaubertabelle.py) - reine Referenzwerte, nicht live berechnet
-// ("i need no deeper understanding of the stufen and proben erschwerung", Nutzer 2026-07-21).
+// PSI-Referenzdaten kommen aus PSI_Magie_Zaubertabelle_1_421.xlsx und werden mit
+// scripts/extract_psi_zaubertabelle.py in psiZaubertabelle.json überführt. Die sieben Stufen
+// bleiben reine Referenzwerte; Erschwerung, MbS und Wirkung werden getrennt dargestellt.
 // Probe ist bewusst nur die Basisformel TaW + Eig.Bon + Aura + Magie (ohne Stufen-Erschwerung
 // abzuziehen) - anders als spruchmagie.ts's renderZauberprobeCell.
 //
@@ -33,7 +31,8 @@ function renderInfoBlock(): string {
       <div class="ki-info-grid">
         <div><b>Probe</b> = TaW + Eig.Bon. + Aura + Magie</div>
         <div><b>Kosten</b> = 9 EP pro Punkt</div>
-        <div><b>ST.1-7</b> = Erschwerung/ASP-Kosten je Zauberstufe (reine Referenz, siehe "PSI Magie Zaubertabelle 1.42")</div>
+        <div><b>ST.1-7</b> = Erschwerung / MbS / Wirkung je Zauberstufe</div>
+        <div><b>Quelle</b> = PSI-Magie-Zaubertabelle 1.421 (auch im SPOT-Sheet „PSI-Zauberstufen“)</div>
       </div>
     </div>`;
 }
@@ -171,20 +170,28 @@ function renderRow(r: Row, sheet: ComputedSheet, readOnly = false): string {
         <span class="stat-cost stat-cost-click">${costLabel}</span>`}
       </td>
       <td${probeTooltip}>${probe}</td>
-      <td class="ki-name-cell"${tooltipAttr(detail?.wirkung)}>${escapeHtml(name)}</td>
+      <td class="ki-name-cell">${escapeHtml(name)}</td>
+      <td class="psi-regeltext-cell">${escapeHtml(detail?.regeltext ?? '–')}</td>
+      <td>${escapeHtml(detail?.aurabann ?? '–')}</td>
+      <td>${escapeHtml(detail?.ziel ?? '–')}</td>
       <td>${eigBon ? `${escapeHtml(eigBon.label)} (${eigBon.value})` : '–'}</td>
-      <td>${escapeHtml(detail?.st1 ?? '–')}</td>
-      <td>${escapeHtml(detail?.st2 ?? '–')}</td>
-      <td>${escapeHtml(detail?.st3 ?? '–')}</td>
-      <td>${escapeHtml(detail?.st4 ?? '–')}</td>
-      <td>${escapeHtml(detail?.st5 ?? '–')}</td>
-      <td>${escapeHtml(detail?.st6 ?? '–')}</td>
-      <td>${escapeHtml(detail?.st7 ?? '–')}</td>
       <td>${escapeHtml(detail?.rw ?? '–')}</td>
-      <td>${escapeHtml(detail?.wd ?? '–')}</td>
+      <td>${escapeHtml(detail?.vd ?? '–')}</td>
       <td>${escapeHtml(detail?.ed ?? '–')}</td>
+      <td>${escapeHtml(detail?.wirkungsdauer ?? '–')}</td>
+      <td>${escapeHtml(detail?.erholungszeit ?? '–')}</td>
       <td>${escapeHtml(detail?.mpz ?? '–')}</td>
+      ${Array.from({ length: 7 }, (_, index) => renderStufe(detail?.stufen[index])).join('')}
     </tr>`;
+}
+
+function renderStufe(stufe: { erschwerung: string; mbs: string; wirkung: string } | undefined): string {
+  if (!stufe) return '<td class="psi-stufe-cell">–</td>';
+  const werte = `${stufe.erschwerung || '–'} / ${stufe.mbs || '–'}`;
+  return `<td class="psi-stufe-cell"${stufe.wirkung ? tooltipAttr(`Wirkung: ${stufe.wirkung}`) : ''}>
+    <span class="psi-stufe-werte">${escapeHtml(werte)}</span>
+    ${stufe.wirkung ? `<span class="psi-stufe-wirkung">${escapeHtml(stufe.wirkung)}</span>` : ''}
+  </td>`;
 }
 
 function renderPsiContent(container: HTMLElement, sheet: ComputedSheet, onChange?: OnValueChange): void {
@@ -196,9 +203,15 @@ function renderPsiContent(container: HTMLElement, sheet: ComputedSheet, onChange
     <div class="kampf-table-scroll">
       <table class="bogen-table ki-table">
         <thead><tr>
-          <th>TaW</th><th>Probe</th><th>Name</th><th>Eig.</th>
-          <th>ST.1</th><th>ST.2</th><th>ST.3</th><th>ST.4</th><th>ST.5</th><th>ST.6</th><th>ST.7</th>
-          <th>RW</th><th>WD</th><th>ED</th><th>MpZ</th>
+          <th>TaW</th><th>Probe</th><th>Name</th><th>Regeltext</th><th>Aurabann</th><th>Ziel</th><th>Eig.</th>
+          <th>RW</th><th>VD</th><th>ED</th><th>W.dauer</th><th>EZ</th><th>MpZ</th>
+          <th${tooltipAttr('Erschwerung / MbS / Wirkung')}>ST.1</th>
+          <th${tooltipAttr('Erschwerung / MbS / Wirkung')}>ST.2</th>
+          <th${tooltipAttr('Erschwerung / MbS / Wirkung')}>ST.3</th>
+          <th${tooltipAttr('Erschwerung / MbS / Wirkung')}>ST.4</th>
+          <th${tooltipAttr('Erschwerung / MbS / Wirkung')}>ST.5</th>
+          <th${tooltipAttr('Erschwerung / MbS / Wirkung')}>ST.6</th>
+          <th${tooltipAttr('Erschwerung / MbS / Wirkung')}>ST.7</th>
         </tr></thead>
         <tbody>${rows.map((r) => renderRow(r, sheet, readOnly)).join('')}</tbody>
       </table>

@@ -7,6 +7,7 @@ import { tooltipAttr } from './tooltip';
 import { GEWEIHTER_RELIGION_BY_REFERENZ, isGeweihterReferenzErlaubt } from '../engine/geweihte';
 import { filterHoechsteStufeJeReihe, getTalentStufeInfo, getVorstufeReferenz } from '../engine/talenteStufenKette';
 import { normalizeForMatch } from '../engine/normalize';
+import type { CharakterTyp } from '../state/characterStore';
 
 export type OnToggle = (referenz: string, selected: boolean) => void;
 
@@ -65,6 +66,7 @@ function renderMagusSchuleGruppen(
   sheet: ComputedSheet,
   characterReligion: string | undefined,
   needle: string,
+  charakterTyp: CharakterTyp,
 ): string {
   const groups = new Map<string, ComputedRule[]>();
   for (const r of rows) {
@@ -78,7 +80,7 @@ function renderMagusSchuleGruppen(
       return `
         <details class="stat-group stat-group-nested" data-magus-schule="${escapeHtml(schule)}"${openAttr}>
           <summary>${escapeHtml(schule)} <span class="stat-group-count">(${schuleRows.length})</span></summary>
-          <div class="auswahl-category">${schuleRows.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+          <div class="auswahl-category">${schuleRows.map((r) => renderRow(r, sheet, characterReligion, charakterTyp)).join('')}</div>
         </details>`;
     }).join('');
 }
@@ -131,7 +133,12 @@ function isAusgeblendetesGeweihterTalent(r: ComputedRule, characterReligion: str
   return !r.selected && !isGeweihterReferenzErlaubt(r.rule.referenz, characterReligion);
 }
 
-function renderRow(r: ComputedRule, sheet: ComputedSheet, characterReligion: string | undefined): string {
+function renderRow(
+  r: ComputedRule,
+  sheet: ComputedSheet,
+  characterReligion: string | undefined,
+  charakterTyp: CharakterTyp,
+): string {
   const label = escapeHtml(geweihterLabel(r));
   // Talente kosten TaP (eigener, von SP komplett getrennter Pool), alles andere (z.B.
   // Vor-/Nachteile) kostet SP - siehe characterSheet.ts.
@@ -147,12 +154,14 @@ function renderRow(r: ComputedRule, sheet: ComputedSheet, characterReligion: str
     || r.kostenSelect <= sheet.tapRemaining;
   // Gekaufte Einträge bleiben stets aktiv, damit sie auch bei inzwischen fehlendem Budget oder
   // einer weggefallenen Voraussetzung wieder abgewählt werden können.
-  const waehlbar = r.selected || (religionErlaubt && vorstufeGekauft && bezahlbar);
+  const automatischSc = r.rule.verfuegbarkeit === 'SC' && charakterTyp === 'SC';
+  const waehlbar = !automatischSc && (r.selected || (religionErlaubt && vorstufeGekauft && bezahlbar));
   // Nicht wählbare Einträge bleiben vollständig sichtbar, werden aber gedimmt und deaktiviert.
   // Bereits gekaufte Einträge bleiben abwählbar, auch wenn eine Voraussetzung später wegfällt.
   const rowClass = waehlbar ? '' : 'auswahl-row-locked';
   let sperrgrund = '';
-  if (!religionErlaubt) sperrgrund = geweihterSperrTitle(r.rule.referenz);
+  if (automatischSc) sperrgrund = 'Für jeden Spielercharakter automatisch gewählt und nicht abwählbar';
+  else if (!religionErlaubt) sperrgrund = geweihterSperrTitle(r.rule.referenz);
   else if (!vorstufeGekauft && vorstufe) {
     const vorstufeRule = (sheet.byKategorie['Talente'] ?? [])
       .find((talent) => talent.rule.referenz.toLowerCase() === vorstufe)?.rule;
@@ -180,6 +189,7 @@ function renderGekauftSection(
   rows: ComputedRule[],
   sheet: ComputedSheet,
   characterReligion: string | undefined,
+  charakterTyp: CharakterTyp,
 ): string {
   const gekauft = rows.filter((r) => r.selected);
   const sichtbar = filterHoechsteStufeJeReihe(gekauft);
@@ -188,7 +198,7 @@ function renderGekauftSection(
     <div class="stat-card">
       <div class="stat-group gekauft-group">
         <div class="gekauft-header">Gekauft <span class="stat-group-count">(${sichtbar.length})</span></div>
-        <div class="auswahl-category">${sichtbar.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+        <div class="auswahl-category">${sichtbar.map((r) => renderRow(r, sheet, characterReligion, charakterTyp)).join('')}</div>
       </div>
     </div>`;
 }
@@ -198,6 +208,7 @@ function renderVnGroups(
   sheet: ComputedSheet,
   characterReligion: string | undefined,
   needle: string,
+  charakterTyp: CharakterTyp,
 ): string {
   const nachteile = rows.filter((r) => (r.kostenSelect ?? 0) < 0);
   const vorteile = rows.filter((r) => (r.kostenSelect ?? 0) >= 0);
@@ -212,14 +223,14 @@ function renderVnGroups(
   const angsteHtml = angste.length ? `
     <details class="stat-group" data-vn-group="Ängste"${openAngste ? ' open' : ''}>
       <summary>Ängste <span class="stat-group-count">(${angste.length})</span></summary>
-      <div class="auswahl-category">${angste.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+      <div class="auswahl-category">${angste.map((r) => renderRow(r, sheet, characterReligion, charakterTyp)).join('')}</div>
     </details>` : '';
 
   const nachteileHtml = `
     <div class="stat-card">
       <details class="stat-group" data-vn-group="Nachteile"${openNachteile ? ' open' : ''}>
         <summary>Nachteile <span class="stat-group-count">(${nachteile.length})</span></summary>
-        <div class="auswahl-category">${nachteileRest.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+        <div class="auswahl-category">${nachteileRest.map((r) => renderRow(r, sheet, characterReligion, charakterTyp)).join('')}</div>
         ${angsteHtml}
       </details>
     </div>`;
@@ -228,7 +239,7 @@ function renderVnGroups(
     <div class="stat-card">
       <details class="stat-group" data-vn-group="Vorteile"${openVorteile ? ' open' : ''}>
         <summary>Vorteile <span class="stat-group-count">(${vorteile.length})</span></summary>
-        <div class="auswahl-category">${vorteile.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
+        <div class="auswahl-category">${vorteile.map((r) => renderRow(r, sheet, characterReligion, charakterTyp)).join('')}</div>
       </details>
     </div>`;
 
@@ -242,6 +253,7 @@ export function renderAuswahlView(
   groupByParent: boolean,
   onToggle: OnToggle,
   characterReligion?: string,
+  charakterTyp: CharakterTyp = 'SC',
 ): void {
   // VOR dem innerHTML-Ersatz sichern, ob das Suchfeld gerade fokussiert war (und an welcher
   // Cursor-Position) - sonst wuerde JEDER Re-Render dieser View (auch durch Checkbox-Klicks
@@ -256,7 +268,9 @@ export function renderAuswahlView(
   const nurKaufbare = kategorie !== 'Talente' && (nurKaufbareByKategorie.get(kategorie) ?? false);
 
   const allRows = (sheet.byKategorie[kategorie] ?? [])
-    .filter((r) => r.rule.art === 'Auswahl' && !isAusgeblendetesGeweihterTalent(r, characterReligion));
+    .filter((r) => r.rule.art === 'Auswahl'
+      && !(r.rule.verfuegbarkeit === 'SC' && charakterTyp === 'NSC')
+      && !isAusgeblendetesGeweihterTalent(r, characterReligion));
   const searchText = searchTextByKategorie.get(kategorie) ?? '';
   const needle = searchText.trim().toLowerCase();
   let rows = needle ? allRows.filter((r) => geweihterLabel(r).toLowerCase().includes(needle)) : allRows;
@@ -277,7 +291,8 @@ export function renderAuswahlView(
   if (rows.length === 0 && needle) {
     listHtml = `<p class="auswahl-empty">Keine Treffer für "${escapeHtml(searchText)}".</p>`;
   } else if (kategorie === 'Vor- und Nachteile') {
-    listHtml = renderGekauftSection(rows, sheet, characterReligion) + renderVnGroups(rows, sheet, characterReligion, needle);
+    listHtml = renderGekauftSection(rows, sheet, characterReligion, charakterTyp)
+      + renderVnGroups(rows, sheet, characterReligion, needle, charakterTyp);
   } else if (groupByParent) {
     // Manche Talente haben statt einer Charakterklasse ein anderes Talent als Parent (z.B.
     // "Beidhändig Pistolenschießen" -> "Linkshändig Pistolenschießen", als Voraussetzungs-Kette
@@ -305,7 +320,7 @@ export function renderAuswahlView(
       const key = resolveKlasse(r);
       (groups.get(key) ?? groups.set(key, []).get(key)!).push(r);
     }
-    listHtml = renderGekauftSection(rows, sheet, characterReligion) + [...groups.entries()]
+    listHtml = renderGekauftSection(rows, sheet, characterReligion, charakterTyp) + [...groups.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([parent, groupRows]) => {
         // Bei aktiver Suche werden alle Gruppen mit Treffern zwangsweise aufgeklappt, OHNE den
@@ -321,13 +336,13 @@ export function renderAuswahlView(
           <div class="stat-card">
             <details class="stat-group" data-parent="${escapeHtml(parent)}"${openAttr}>
               <summary>${escapeHtml(parent)} <span class="stat-group-count">(${groupRows.length})</span></summary>
-              <div class="auswahl-category">${restRows.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>
-              ${magusRows.length > 0 ? renderMagusSchuleGruppen(magusRows, sheet, characterReligion, needle) : ''}
+              <div class="auswahl-category">${restRows.map((r) => renderRow(r, sheet, characterReligion, charakterTyp)).join('')}</div>
+              ${magusRows.length > 0 ? renderMagusSchuleGruppen(magusRows, sheet, characterReligion, needle, charakterTyp) : ''}
             </details>
           </div>`;
       }).join('');
   } else {
-    listHtml = `<div class="auswahl-category">${rows.map((r) => renderRow(r, sheet, characterReligion)).join('')}</div>`;
+    listHtml = `<div class="auswahl-category">${rows.map((r) => renderRow(r, sheet, characterReligion, charakterTyp)).join('')}</div>`;
   }
 
   container.innerHTML = filtersHtml + listHtml;
@@ -341,14 +356,14 @@ export function renderAuswahlView(
     }
     searchInput.addEventListener('input', (e) => {
       searchTextByKategorie.set(kategorie, (e.target as HTMLInputElement).value);
-      renderAuswahlView(container, sheet, kategorie, groupByParent, onToggle, characterReligion);
+      renderAuswahlView(container, sheet, kategorie, groupByParent, onToggle, characterReligion, charakterTyp);
     });
   }
 
   const nurKaufbareCheckbox = container.querySelector<HTMLInputElement>('#auswahl-nur-kaufbare');
   nurKaufbareCheckbox?.addEventListener('change', (e) => {
     nurKaufbareByKategorie.set(kategorie, (e.target as HTMLInputElement).checked);
-    renderAuswahlView(container, sheet, kategorie, groupByParent, onToggle, characterReligion);
+    renderAuswahlView(container, sheet, kategorie, groupByParent, onToggle, characterReligion, charakterTyp);
   });
 
   container.querySelectorAll<HTMLDetailsElement>('.stat-group[data-parent]').forEach((details) => {

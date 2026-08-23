@@ -35,6 +35,22 @@ describe('renderGeweihteView', () => {
     expect(container.textContent).toContain('Konfirmierter');
   });
 
+  it('zeigt ED und die vervollstaendigten Tepod-Wunder aus der XLSX, aber nicht das Normalisierungsartefakt Aurabann', () => {
+    const character = createCharacter('WundertabelleNeu', { religion: 'Tepod, Orthodox' }, undefined, true);
+    character.selections.talente_geweihter_tepod_stufe_1_orthodox = 1;
+    const sheet = computeSheet(character);
+
+    renderGeweihteView(container, sheet, character);
+    const wunderHeader = [...container.querySelectorAll('.geweihte-table thead')]
+      .map((head) => head.textContent).join(' ');
+    expect(wunderHeader).toContain('ED');
+    expect(wunderHeader).not.toContain('Aurabann');
+    expect(container.textContent).toContain('Uribengebet');
+    expect(container.textContent).toContain("Lahja's Kuss");
+    expect(container.textContent).not.toContain('kein Aurabann');
+    expect(container.textContent).toContain('Karma sec');
+  });
+
   it('zeigt die Probe ohne "/g"-Suffix, wenn "Gute Wunder" nicht gewaehlt ist', () => {
     const character = createCharacter('OhneGuteWunder', { religion: 'Lloth, Orthodox' }, undefined, true);
     character.selections.talente_geweihter_lloth_stufe_1_orthodox = 1;

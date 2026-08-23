@@ -42,7 +42,7 @@ import {
   firearmAmmunitionType, firearmAmmoTypeForArt, rangedWeaponAmmunitionType,
 } from '../engine/ammunitionTypes';
 import {
-  ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry,
+  AUTOMATISCHER_SC_VORTEIL, ruestungSlotKey, type CharacterState, type CharacterHeader, type PoolAllocation, type EquipmentEntry,
   type WaffenLoadoutEntry, type WaffenLoadoutComboType, isWaffenLoadoutSingleType,
 } from './characterStore';
 
@@ -282,6 +282,9 @@ export function addSelection(character: CharacterState, referenz: string): Chara
   const rule = getRule(referenz);
   if (!rule) throw new MutationError(`Referenz '${referenz}' existiert nicht`);
   if (rule.art !== 'Auswahl') throw new MutationError(`'${referenz}' ist Art='${rule.art}', keine Auswahl`);
+  if (rule.referenz.toLowerCase() === AUTOMATISCHER_SC_VORTEIL && character.charakterTyp !== 'SC') {
+    throw new MutationError(`'${rule.beschreibung ?? referenz}' ist automatisch SC vorbehalten`);
+  }
 
   // Regel (Nutzer 2026-07-22, Geweihte-Feature): ein Gate-Talent darf nur gekauft werden, wenn es
   // zur im Charakterheader gewaehlten Religion+Sekte passt - siehe engine/geweihte.ts.
@@ -370,6 +373,9 @@ export function addSelection(character: CharacterState, referenz: string): Chara
 export function removeSelection(character: CharacterState, referenz: string): CharacterState {
   const rule = getRule(referenz);
   if (!rule) throw new MutationError(`Referenz '${referenz}' existiert nicht`);
+  if (rule.referenz.toLowerCase() === AUTOMATISCHER_SC_VORTEIL && character.charakterTyp === 'SC') {
+    throw new MutationError(`'${rule.beschreibung ?? referenz}' ist für SC automatisch gewählt und nicht abwählbar`);
+  }
 
   const candidate = clone(character);
   delete candidate.selections[rule.referenz.toLowerCase()];

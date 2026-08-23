@@ -10,7 +10,7 @@ Prueft (siehe Funktionen unten fuer Details):
   - Gross-/Kleinschreibung der Art-Spalte
   - Formel-/Kosten-Spalte: Verweise auf nicht existierende Referenzen
   - Leerzeichen am Rand von Beschreibung/Referenz
-  - Format der Verfuegbarkeit-Spalte (E / E&Zahl / Zahl)
+  - Format der Verfuegbarkeit-Spalte (E / E&Zahl / S / M / SC / Zahl)
 
 Gibt am Ende eine Zusammenfassung aus. Exit-Code 0 wenn alles sauber ist,
 sonst 1 (nuetzlich falls das mal automatisiert laufen soll).
@@ -29,7 +29,7 @@ KEYWORDS = {"MIN", "MAX", "WENN", "SVERWEIS", "AUFRUNDEN", "ABRUNDEN"}
 SELF_REF_TOKENS = {"wert", "grad"}
 UNIT_WORDS = {"m", "s", "je", "nach", "Pferd", "ca"}
 KNOWN_ART_VALUES = {"Wert", "Formel", "Pool", "Auswahl", "Fixwert", "Lookup"}
-VERFUEGBARKEIT_RE = re.compile(r"^(E(&\d+)?|\d+)$")
+VERFUEGBARKEIT_RE = re.compile(r"^(E(&\d+)?|S|M|SC|\d+)$")
 
 
 def load_rows(ws, headers):
@@ -115,9 +115,20 @@ def main(path):
     ws = wb["Werte"]
     headers = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
     headers = [h for h in headers if h]
-    rows, idx = load_rows(ws, headers)
+    all_rows, idx = load_rows(ws, headers)
+    # Mit "#" praefigierte Referenzen sind bewusst auskommentierte Zukunfts-/Entwurfszeilen
+    # (z.B. GBE) und werden wie im eigentlichen Datengenerator vollstaendig ignoriert.
+    rows = [
+        (r, v) for r, v in all_rows
+        if not (isinstance(v.get("Referenz"), str) and v["Referenz"].startswith("#"))
+    ]
 
-    valid_refs = {v["Referenz"] for r, v in rows if isinstance(v.get("Referenz"), str)}
+    # Auskommentierte Namen bleiben bekannte Tokens, damit aktive Formeln, die ein noch nicht
+    # implementiertes Laufzeitfeld erwähnen, nicht irreführend als Tippfehler gemeldet werden.
+    valid_refs = {
+        v["Referenz"].lstrip("#") for r, v in all_rows
+        if isinstance(v.get("Referenz"), str)
+    }
 
     problems = 0
 

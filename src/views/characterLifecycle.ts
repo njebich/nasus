@@ -1,6 +1,6 @@
 import {
   loadCharacter, createCharacter, deleteCharacter, setLastActiveCharacterId,
-  type CharacterHeader, type StartbudgetPreset,
+  type CharakterTyp, type CharacterHeader, type StartbudgetPreset,
 } from '../state/characterStore';
 import {
   VORDEFINIERTE_ORTE, WELTEN, SIEDLUNGSGROESSEN, HANDELSSTUFEN, HERSTELLUNGSORTE,
@@ -16,6 +16,11 @@ export function renderNewCharacterForm(newCharacterBestehend: boolean): string {
     <form id="new-character-form" class="new-character-form">
       ${newCharacterBestehend ? '<p class="new-character-hinweis">Bestehenden Charakter erstellen: alle Verfügbarkeit-Kaufsperren sind deaktiviert (z.B. für vom Meister vergebene Gegenstände).</p>' : ''}
       <label>Name * <input type="text" id="nc-name" required autofocus /></label>
+      <fieldset>
+        <legend>Charaktertyp</legend>
+        <label><input type="radio" name="nc-charaktertyp" value="SC" checked /> Spielercharakter (SC)</label>
+        <label><input type="radio" name="nc-charaktertyp" value="NSC" /> Nichtspielercharakter (NSC)</label>
+      </fieldset>
       <label>Spezies *
         <select id="nc-spezies" required>
           <option value="">-- wählen --</option>
@@ -219,7 +224,8 @@ export function wireCharacterLifecycleEvents(appState: AppState, render: () => v
       religion: religionName ? combineReligionSekte(religionName, sekteName) : undefined,
     };
     const startbudget = (document.querySelector<HTMLInputElement>('input[name="nc-startbudget"]:checked')!.value) as StartbudgetPreset;
-    appState.currentCharacter = createCharacter(name, header, startbudget, appState.newCharacterBestehend);
+    const charakterTyp = document.querySelector<HTMLInputElement>('input[name="nc-charaktertyp"]:checked')!.value as CharakterTyp;
+    appState.currentCharacter = createCharacter(name, header, startbudget, appState.newCharacterBestehend, charakterTyp);
     setLastActiveCharacterId(appState.currentCharacter.id);
     appState.navigationState = { ...DEFAULT_NAVIGATION };
     appState.showNewCharacterForm = false;

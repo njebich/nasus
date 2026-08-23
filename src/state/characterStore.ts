@@ -145,11 +145,17 @@ export interface CharacterHeader {
   augenfarbe?: string;
 }
 
+export type CharakterTyp = 'SC' | 'NSC';
+export const AUTOMATISCHER_SC_VORTEIL = 'vn_kind_der_froehlichkeit';
+
 export interface CharacterState extends CharacterHeader {
   id: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  /** SC erhalten den mit Verfügbarkeit=SC markierten Vorteil automatisch und dauerhaft.
+   *  NSC erhalten ihn nicht. */
+  charakterTyp: CharakterTyp;
   /** Charaktererstellung "Bestehenden Charakter erstellen" (Nutzer 2026-07-24): bildet einen
    *  bereits im Spiel etablierten Charakter nach, dessen Ausruestung/Artefakte nicht ueber den
    *  ueblichen Erstellungs-Einkauf, sondern per Meister-Erlaubnis/Spielgeschehen erworben wurden.
@@ -424,6 +430,7 @@ export function createCharacter(
   header?: Partial<Omit<CharacterHeader, 'name'>>,
   startbudget?: StartbudgetPreset,
   bestehenderCharakter?: boolean,
+  charakterTyp: CharakterTyp = 'SC',
 ): CharacterState {
   const now = new Date().toISOString();
   const state: CharacterState = {
@@ -447,8 +454,9 @@ export function createCharacter(
     augenfarbe: header?.augenfarbe,
     createdAt: now,
     updatedAt: now,
+    charakterTyp,
     values: {},
-    selections: {},
+    selections: charakterTyp === 'SC' ? { [AUTOMATISCHER_SC_VORTEIL]: 1 } : {},
     poolAllocations: {},
     equipment: [],
     ruestungSlots: {},

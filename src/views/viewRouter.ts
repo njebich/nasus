@@ -69,7 +69,10 @@ export function renderActiveView(
   } else if (route.kind === 'verteilung') {
     renderVerteilungView(viewContainer, sheet, currentCharacter);
   } else if (route.kind === 'auswahl') {
-    renderAuswahlView(viewContainer, sheet, route.category, route.isTalent, handlers.handleToggle, currentCharacter.religion);
+    renderAuswahlView(
+      viewContainer, sheet, route.category, route.isTalent, handlers.handleToggle,
+      currentCharacter.religion, currentCharacter.charakterTyp,
+    );
   } else if (route.kind === 'kampf') {
     renderKampfView(
       viewContainer, sheet, currentCharacter, handlers.handleWaffenPoolChange,

@@ -27,8 +27,16 @@ export interface RuleEntry {
 
 // Der generische Unbewaffnet-Pool ist kein gültiger Waffenpool. Unbewaffnet wird ausschließlich
 // über die Spezialisierung nk_spez_unbewaffnet_unbewaffnet aufgelöst.
+// GBE ist in der Arbeitsmappe auskommentiert. Zwei bestehende Kampf-Formeln verwenden den
+// internen Wert weiterhin; deshalb bleibt er als nicht aus der Tabelle stammende Kompatibilitätsregel erhalten.
+const GEWICHTSBELASTUNG_KOMPAT: RuleEntry = {
+  referenz: 'gewichtsbelastung', kategorie: 'Charakterwerte', beschreibung: 'Gewichtsbelastung',
+  abkuerzung: 'GBE', art: 'Formel', formelRaw: 'MAX(0;RBE)', sourceRow: 266,
+};
+
 export const RULES = (rulesJson as unknown as RuleEntry[])
-  .filter((rule) => rule.referenz !== 'nk_pool_unbewaffnet');
+  .filter((rule) => rule.referenz !== 'nk_pool_unbewaffnet')
+  .concat(GEWICHTSBELASTUNG_KOMPAT);
 
 // Codegen-Warnungen (siehe Konsolen-Ausgabe beim Generieren):
 // - Zeile 2: Referenz '#spruchmagie_erdbeschwoerung_1_splitterwand' mit '#' auskommentiert - uebersprungen
@@ -109,6 +117,7 @@ export const RULES = (rulesJson as unknown as RuleEntry[])
 // - Zeile 181: Referenz '#sf_ladeschuetze_schleuder' mit '#' auskommentiert - uebersprungen
 // - Zeile 196: Referenz '#att_essenz' mit '#' auskommentiert - uebersprungen
 // - Zeile 240: Referenz '#ki_ki_faehigkeiten' mit '#' auskommentiert - uebersprungen
+// - Zeile 266: Referenz '#gewichtsbelastung' mit '#' auskommentiert - uebersprungen
 // - Zeile 270: Referenz '#spruchmagie_erdbeschwoerung_3_steinkugel_salve' mit '#' auskommentiert - uebersprungen
 // - Zeile 271: Referenz '#spruchmagie_erdbeschwoerung_3_steinkugel_salve_nr' mit '#' auskommentiert - uebersprungen
 // - Zeile 272: Referenz '#spruchmagie_erdbeschwoerung_4_steinschuss_salve' mit '#' auskommentiert - uebersprungen

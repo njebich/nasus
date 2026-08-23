@@ -16,6 +16,14 @@ describe('createCharacter mit Charakterheader + Startbudget', () => {
     expect(character.herkunftOrtId).toBe('straitmor');
     expect(character.herkunftSnapshot).toEqual({ name: 'Straitmor', region: 'Orkisches Protektorat Straitmor', welt: 'NW' });
     expect(character.alter).toBeUndefined();
+    expect(character.charakterTyp).toBe('SC');
+    expect(character.selections.vn_kind_der_froehlichkeit).toBe(1);
+  });
+
+  it('legt einen NSC ohne den automatischen SC-Vorteil an', () => {
+    const character = createCharacter('Wache', { spezies: 'Mensch' }, 'normal', false, 'NSC');
+    expect(character.charakterTyp).toBe('NSC');
+    expect(character.selections.vn_kind_der_froehlichkeit).toBeUndefined();
   });
 
   it('Startbudget normal: EP=0 (Stufe 0), SP automatisch 6400+0=6400, 5000 Dublonen', () => {

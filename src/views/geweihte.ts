@@ -106,12 +106,12 @@ function wireWhkFaehigkeiten(container: HTMLElement, sheet: ComputedSheet, onCha
   });
 }
 
-/** Art (Stoß/Wunder/Ritual) bestimmt, welche der 3 Geweihte-WHK-Faehigkeiten die Probe
+/** Gebet (Stoß/Wunder/Ritual) bestimmt, welche der 3 Geweihte-WHK-Faehigkeiten die Probe
  *  liefert - siehe scripts/add_geweihte_rows.py fuer die 3 Referenzen. */
-function whkReferenzForArt(art: string): string | undefined {
-  if (art === 'Stoß') return 'whk_geweihte_stossgebet';
-  if (art === 'Wunder') return 'whk_geweihte_wunder';
-  if (art === 'Ritual') return 'whk_geweihte_ritual';
+function whkReferenzForGebet(gebet: string): string | undefined {
+  if (gebet === 'Stoß') return 'whk_geweihte_stossgebet';
+  if (gebet === 'Wunder') return 'whk_geweihte_wunder';
+  if (gebet === 'Ritual') return 'whk_geweihte_ritual';
   return undefined;
 }
 
@@ -135,12 +135,10 @@ function getGuteWunderProbe(sheet: ComputedSheet, normaleProbe: number, karma: n
 }
 
 /** Probe = Aus.Bon + WHK-TaW - Malus (Nutzer-Antwort 2026-07-22). Leer, wenn die passende
- *  Geweihte-WHK-Faehigkeit noch nicht gelernt ist (TaW<1) oder die Zeile keinen Malus/keine
- *  Art traegt (die 2 Platzhalter-Zeilen der Quelle). Haengt "/g<X>" an, wenn "Gute Wunder"
+ *  Geweihte-WHK-Faehigkeit noch nicht gelernt ist (TaW<1). Haengt "/g<X>" an, wenn "Gute Wunder"
  *  gewaehlt ist und die daraus resultierende Gute-Probe >1 ist (siehe getGuteWunderProbe). */
 function computeProbe(eintrag: GeweihterWunderEintrag, sheet: ComputedSheet, karma: number): string {
-  if (eintrag.malus === null) return '–';
-  const whkReferenz = whkReferenzForArt(eintrag.art);
+  const whkReferenz = whkReferenzForGebet(eintrag.gebet);
   if (!whkReferenz) return '–';
   const taw = getWhkTaw(sheet, whkReferenz);
   if (taw < 1) return '–';
@@ -177,7 +175,7 @@ function renderInfoBlock(sheet: ComputedSheet, character: CharacterState): strin
         <div><b>Geweihtengrad</b> = ${grad} ${gradEintrag.titel ? `(${escapeHtml(gradEintrag.titel)})` : ''}</div>
         <div><b>Karma</b> = ${karma}</div>
         <div><b>Max. KPP</b> = ${gradEintrag.kppBasis} + Karma×10 = ${maxKpp}</div>
-        <div><b>Probe</b> = Aus.Bon + TaW − Malus (je nach Art: Stoß→Stoßgebet, Wunder→Wunder, Ritual→Ritual), mit Talent "Gute Wunder": /g&lt;Karma, max. Probe:2&gt;</div>
+        <div><b>Probe</b> = Aus.Bon + TaW − Malus (je nach Gebet: Stoß→Stoßgebet, Wunder→Wunder, Ritual→Ritual), mit Talent "Gute Wunder": /g&lt;Karma, max. Probe:2&gt;</div>
       </div>
       ${renderGradTabelle(grad)}
       <p class="geweihte-grad-hinweis">Grad 2-7 werden durch die Talente "Geweihter von &lt;Religion&gt;, Orthodox – &lt;Titel&gt;" (Stufe 2-7, je 5 TaP, Tab "Talente" unter "Geweihte") gesteigert - Stufe N erfordert Stufe N-1.</p>
@@ -190,10 +188,9 @@ function formatWd(wd: string): string {
   return wd === 'P' ? 'permanent' : wd;
 }
 
-/** Sortierschluessel fuer Min. Karma: fehlende Angabe (die 2 Platzhalter-Zeilen der Quelle)
- *  sortiert ans Tabellenende statt an den Anfang. */
-function minKarmaSortKey(minKarma: number | null): number {
-  return minKarma ?? Infinity;
+/** Sortierschluessel fuer Min. Karma. */
+function minKarmaSortKey(minKarma: number): number {
+  return minKarma;
 }
 
 /** Sortierschluessel fuer KPP: die meisten Werte sind reine Zahlen, manche tragen aber eine
@@ -215,7 +212,7 @@ function sortWunderZeilen(zeilen: GeweihterWunderEintrag[]): GeweihterWunderEint
  *  Formeltext (resolveRw erkennt (M)/Magie/Aura/Karma direkt, keine Marker noetig), Wirkung
  *  ist bereits per Migration auf {M}/{Magie}/{Aura}/{Karma}-Marker umgestellt (geweihteWunder.ts). */
 function renderWunderRow(eintrag: GeweihterWunderEintrag, sheet: ComputedSheet, karma: number): string {
-  const gesperrt = eintrag.minKarma === null || karma < eintrag.minKarma;
+  const gesperrt = karma < eintrag.minKarma;
   const probe = computeProbe(eintrag, sheet, karma);
   const macht = getCharakterwertFormel(sheet, 'macht');
   const magie = getAttMagie(sheet);
@@ -229,8 +226,9 @@ function renderWunderRow(eintrag: GeweihterWunderEintrag, sheet: ComputedSheet, 
       <td class="ki-name-cell">${escapeHtml(eintrag.name || '–')}</td>
       <td class="geweihte-wirkung-cell">${nl2br(wirkung)}</td>
       <td>${escapeHtml(rw)}</td>
-      <td>${escapeHtml(eintrag.ziel || '–')}</td>
+      <td>${escapeHtml(eintrag.ziel)}</td>
       <td>${nl2br(eintrag.vd || '–')}</td>
+      <td>${nl2br(eintrag.ed)}</td>
       <td>${nl2br(formatWd(eintrag.wd) || '–')}</td>
       <td>${escapeHtml(eintrag.kpp || '–')}</td>
     </tr>`;
@@ -245,7 +243,7 @@ function renderWunderTabelle(titel: string, zeilen: GeweihterWunderEintrag[], sh
     <div class="kampf-table-scroll">
       <table class="bogen-table ki-table geweihte-table">
         <thead><tr>
-          <th>Probe</th><th>Name</th><th>Wirkung</th><th>RW</th><th>Ziel</th><th>VD</th><th>WD</th><th>KPP</th>
+          <th>Probe</th><th>Name</th><th>Wirkung</th><th>RW</th><th>Ziel</th><th>VD</th><th>ED</th><th>WD</th><th>KPP</th>
         </tr></thead>
         <tbody>${sortWunderZeilen(zeilen).map((e) => renderWunderRow(e, sheet, karma)).join('')}</tbody>
       </table>
@@ -266,12 +264,10 @@ export function renderGeweihteView(
     return aktivReligion?.sekte === 'Orthodox' && e.typ === aktivReligion.religion;
   });
 
-  // Aufteilung nach Art (Nutzer-Ask 2026-08-05: Stoßgebete/Wunder/Ritual als eigene Tabellen).
-  // Zeilen ohne erkannte Art (die 1 unvollstaendige Platzhalter-Zeile der Quelle ohne Art-Angabe)
-  // fallen in die Wunder-Tabelle, statt unsichtbar zu verschwinden.
-  const stossgebete = zeilen.filter((e) => e.art === 'Stoß');
-  const ritual = zeilen.filter((e) => e.art === 'Ritual');
-  const wunder = zeilen.filter((e) => e.art !== 'Stoß' && e.art !== 'Ritual');
+  // Aufteilung nach Gebet (Stoßgebete/Wunder/Ritual als eigene Tabellen).
+  const stossgebete = zeilen.filter((e) => e.gebet === 'Stoß');
+  const ritual = zeilen.filter((e) => e.gebet === 'Ritual');
+  const wunder = zeilen.filter((e) => e.gebet === 'Wunder');
 
   container.innerHTML = `
     ${renderInfoBlock(sheet, character)}

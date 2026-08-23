@@ -147,6 +147,15 @@ def read_rules(wb):
         if all(v is None for v in raw.values()):
             continue
 
+        # Kanonische App-Referenz: Ausstrahlung ist eine koerperliche Eigenschaft (`eig_k_*`).
+        # Die Arbeitsmappe enthaelt an einigen Stellen noch das alte Normalisierungsartefakt
+        # `eig_g_ausstrahlung`; beim Import wird es zentral berichtigt, damit abgeleitete
+        # Eigenschaftsbonus-Referenzen nicht erneut auf die falsche Familie umspringen.
+        for field, value in raw.items():
+            if isinstance(value, str):
+                raw[field] = value.replace("eig_bonus_g_ausstrahlung", "eig_bonus_k_ausstrahlung") \
+                    .replace("eig_g_ausstrahlung", "eig_k_ausstrahlung")
+
         entry = {k: v for k, v in raw.items() if v is not None}
         entry["sourceRow"] = r
 
@@ -423,8 +432,16 @@ def write_rules_ts(rules, warnings):
     lines.append("")
     lines.append("// Der generische Unbewaffnet-Pool ist kein gültiger Waffenpool. Unbewaffnet wird ausschließlich")
     lines.append("// über die Spezialisierung nk_spez_unbewaffnet_unbewaffnet aufgelöst.")
+    lines.append("// GBE ist in der Arbeitsmappe auskommentiert. Zwei bestehende Kampf-Formeln verwenden den")
+    lines.append("// internen Wert weiterhin; deshalb bleibt er als nicht aus der Tabelle stammende Kompatibilitätsregel erhalten.")
+    lines.append("const GEWICHTSBELASTUNG_KOMPAT: RuleEntry = {")
+    lines.append("  referenz: 'gewichtsbelastung', kategorie: 'Charakterwerte', beschreibung: 'Gewichtsbelastung',")
+    lines.append("  abkuerzung: 'GBE', art: 'Formel', formelRaw: 'MAX(0;RBE)', sourceRow: 266,")
+    lines.append("};")
+    lines.append("")
     lines.append("export const RULES = (rulesJson as unknown as RuleEntry[])")
-    lines.append("  .filter((rule) => rule.referenz !== 'nk_pool_unbewaffnet');")
+    lines.append("  .filter((rule) => rule.referenz !== 'nk_pool_unbewaffnet')")
+    lines.append("  .concat(GEWICHTSBELASTUNG_KOMPAT);")
     lines.append("")
 
     if warnings:

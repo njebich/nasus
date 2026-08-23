@@ -19,6 +19,14 @@ function withEpGesamt(epGesamt: number) {
 }
 
 describe('characterMutations', () => {
+  it('erzwingt den automatischen SC-Vorteil und sperrt ihn für NSC', () => {
+    const sc = createCharacter('SC');
+    expect(() => removeSelection(sc, 'vn_kind_der_froehlichkeit')).toThrow(MutationError);
+
+    const nsc = createCharacter('NSC', undefined, undefined, false, 'NSC');
+    expect(() => addSelection(nsc, 'vn_kind_der_froehlichkeit')).toThrow(MutationError);
+  });
+
   it('setValue erhoeht einen Wert, wenn genug SP vorhanden sind', () => {
     const character = withEpGesamt(1000);
     const updated = setValue(character, 'eig_g_mut', 5);

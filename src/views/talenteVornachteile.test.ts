@@ -13,6 +13,19 @@ describe('Talente-Auswahl', () => {
     container = document.querySelector<HTMLDivElement>('#view')!;
   });
 
+  it('zeigt den SC-Pflichtvorteil gewählt und gesperrt, bei NSC dagegen gar nicht', () => {
+    const sc = createCharacter('Spielercharakter');
+    renderAuswahlView(container, computeSheet(sc), 'Vor- und Nachteile', false, vi.fn(), sc.religion, sc.charakterTyp);
+    const scRow = container.querySelector<HTMLElement>('[data-referenz="vn_kind_der_froehlichkeit"]');
+    expect(scRow).not.toBeNull();
+    expect(scRow?.querySelector('input')?.checked).toBe(true);
+    expect(scRow?.querySelector('input')?.disabled).toBe(true);
+
+    const nsc = createCharacter('Nichtspielercharakter', undefined, undefined, false, 'NSC');
+    renderAuswahlView(container, computeSheet(nsc), 'Vor- und Nachteile', false, vi.fn(), nsc.religion, nsc.charakterTyp);
+    expect(container.querySelector('[data-referenz="vn_kind_der_froehlichkeit"]')).toBeNull();
+  });
+
   it('zeigt auch nicht wählbare Talente, aber ausgegraut und deaktiviert', () => {
     const sheet = computeSheet(createCharacter('Talenttest', undefined, 'normal'));
     renderAuswahlView(container, sheet, 'Talente', true, vi.fn());

@@ -161,16 +161,9 @@ export function formatLoadoutCells(result: LoadoutResult | SingleLoadoutResult):
         fkReichweitenR: '', fkReichweitenL: result.pistole.ranges.join(' / '),
       };
     case 'nk1h_schild':
-      if (result.talentActive) {
-        return {
-          schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
-          nat: String(result.nat), npa: String(result.npa),
-          fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
-        };
-      }
       return {
         schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
-        wk: `${result.primary.wk} / ${result.secondary.wk}`,
+        wk: `AT ${result.atWk} / PA ${result.paWk}`,
         nat: String(result.nat), npa: String(result.npa),
         fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
       };

@@ -190,6 +190,52 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
     expect(result.talentActive).toBe(true);
   });
 
+  it('erlaubt negative WK in der Zweithand, ohne die gemeinsame WK unter die bessere Einzel-WK zu senken', () => {
+    let character = characterWithKrummdolchUndKriegsbeil();
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_1');
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_2');
+    const [primary, secondary] = character.equipment;
+    character = {
+      ...character,
+      equipment: character.equipment.map((entry) => entry.id === secondary.id
+        ? {
+            ...entry,
+            computedStatsSnapshot: { ...entry.computedStatsSnapshot, wk: -0.5 },
+          }
+        : entry),
+    };
+
+    const result = resolveNk1hNk1h(
+      character, computeSheet(character), makeValueSource(character), primary.id, secondary.id,
+    );
+    if (!result.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(result.talentActive).toBe(true);
+    if (!result.talentActive) throw new Error('Erwartete Talent-Ergebnis');
+    expect(result.atWk).toBe(String(primary.computedStatsSnapshot!.wk * 1.5));
+    expect(result.paWk).toBe(String(primary.computedStatsSnapshot!.wk));
+
+    const swapped = resolveNk1hNk1h(
+      character, computeSheet(character), makeValueSource(character), secondary.id, primary.id,
+    );
+    if (!swapped.ok) throw new Error('Erwartete ein Ergebnis');
+    expect(swapped.talentActive).toBe(true);
+  });
+
+  it('verschlechtert bei zwei negativen WK weder AT noch PA gegenueber der besseren Einzel-WK', () => {
+    let character = baseCharacter();
+    character = buyTestWeapon(character, 'Messer klein');
+    character = buyTestWeapon(character, 'Messer klein');
+    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_1');
+    const [rechts, links] = character.equipment;
+
+    const result = resolveNk1hNk1h(
+      character, computeSheet(character), makeValueSource(character), rechts.id, links.id,
+    );
+    if (!result.ok || !result.talentActive) throw new Error('Erwartete Talent-Ergebnis');
+    expect(result.atWk).toBe('-1');
+    expect(result.paWk).toBe('-1');
+  });
+
   it('halbiert ohne Talent die komplette linke PA-Seite erst nach der Projektion (aufgerundet weg von Null, Punkt 8)', () => {
     let character = characterWithKrummdolchUndKriegsbeil();
     const [rechts, links] = character.equipment;
@@ -246,7 +292,7 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
   });
 });
 
-describe('resolveNk1hSchild (REWORKED 2026-07-23: unabhaengige Haende wie nk1h_nk1h, keine Amalgamation ohne Talent)', () => {
+describe('resolveNk1hSchild: unabhaengige Haende, Schildkampf und getrennte AT-/PA-WK', () => {
   it('summiert das n-Mod beider Seiten in JEDE Hand, mit eigener Hauptfertigkeit pro Hand, und halbiert die Nebenhand (abgerundet) - Waffe ist hier die Spieler-gewaehlte Primaerhand', () => {
     let character = baseCharacter();
     character = buyTestWeapon(character, 'Axt');
@@ -269,6 +315,8 @@ describe('resolveNk1hSchild (REWORKED 2026-07-23: unabhaengige Haende wie nk1h_n
     expect(result.primary.npa).toBe(Math.min(20, expectedWeapon.uncPaWeapon));
     expect(result.secondary.equipmentId).toBe(schild.id);
     expect(result.secondary.halved).toBe(true);
+    expect(result.atWk).toBe(String(axtSnap.wk));
+    expect(result.paWk).toBe(String(schildSnap.wk));
   });
 
   it('erlaubt dem Spieler, stattdessen das Schild als Primaerhand zu waehlen - dann ist die Waffe die (halbierte) Nebenhand', () => {
@@ -282,6 +330,8 @@ describe('resolveNk1hSchild (REWORKED 2026-07-23: unabhaengige Haende wie nk1h_n
     expect(result.primary.halved).toBe(false);
     expect(result.secondary.equipmentId).toBe(axt.id);
     expect(result.secondary.halved).toBe(true); // kein Talent deckt "Waffe in der Nebenhand" ab
+    expect(result.atWk).toBe(String(axt.computedStatsSnapshot!.wk));
+    expect(result.paWk).toBe(String(schild.computedStatsSnapshot!.wk));
   });
 
   it('Talent "Schildkampf" hebt die Halbierung auf, wenn das SCHILD in der Nebenhand ist', () => {
@@ -308,35 +358,18 @@ describe('resolveNk1hSchild (REWORKED 2026-07-23: unabhaengige Haende wie nk1h_n
     expect(result.secondary.halved).toBe(true);
   });
 
-  it('prueft das Talent-Gate ("Kampf mit zwei Waffen") gegen die ROHE (nicht halbierte) Schild-WK - ein Schild, dessen halbierte WK die Kappung erfuellen wuerde, aktiviert das Talent trotzdem NICHT', () => {
-    // Rundschild hat eine komponierte WK von 6,5 (> Stufe-1-Cap 3,5); halbiert waere sie 3,5
-    // (<= Cap) - das Gate MUSS trotzdem ablehnen, weil es die rohe WK prueft.
+  it('wendet "Kampf mit zwei Waffen" niemals auf eine Waffe der Spezialisierung Schild an', () => {
     let character = baseCharacter();
-    character = buyTestWeapon(character, 'Krummdolch schwer'); // WK 3,5
-    character = buyTestSchild(character, 'Rundschild'); // komponierte WK 6,5
+    character = buyTestWeapon(character, 'Dolch');
+    character = buyTestSchild(character, 'Faustschild/Buckler');
     character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_1');
     const [weapon, schild] = character.equipment;
-    expect(schild.computedStatsSnapshot!.wk).toBe(6.5);
 
     const result = resolveNk1hSchild(character, computeSheet(character), makeValueSource(character), weapon.id, schild.id);
     if (!result.ok) throw new Error('Erwartete ein Ergebnis');
     expect(result.talentActive).toBe(false);
-  });
-
-  it('halbiert die Schild-WK (aufgerundet auf 0,5) VOR den AT-WK/PA-WK-Formeln, wenn das Talent aktiv ist (Amalgamation unveraendert gegenueber der Vorversion)', () => {
-    let character = baseCharacter();
-    character = buyTestWeapon(character, 'Krummdolch schwer'); // WK 3,5
-    character = buyTestSchild(character, 'Faustschild/Buckler'); // komponierte WK 2,5
-    character = addSelection(character, 'talente_kampf_mit_zwei_waffen_stufe_1');
-    const [weapon, schild] = character.equipment;
-    expect(schild.computedStatsSnapshot!.wk).toBe(2.5);
-    const halvedSchildWk = 1.5; // aufrunden(2.5/2, auf 0.5) = 1.5
-
-    const result = resolveNk1hSchild(character, computeSheet(character), makeValueSource(character), weapon.id, schild.id);
-    if (!result.ok || !result.talentActive) throw new Error('Erwartete Talent-Ergebnis');
-    expect(result.atWk).toBe(String(Math.max(3.5, halvedSchildWk) * 1.5));
-    expect(result.paWk).toBe(String(3.5 + halvedSchildWk));
-    expect(result.minStaerke).toBe(weapon.computedStatsSnapshot!.minStaerke1H + schild.computedStatsSnapshot!.minStaerke);
+    expect(result.atWk).toBe(String(weapon.computedStatsSnapshot!.wk));
+    expect(result.paWk).toBe(String(schild.computedStatsSnapshot!.wk));
   });
 });
 

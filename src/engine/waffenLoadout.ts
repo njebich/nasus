@@ -1,8 +1,8 @@
 // Waffen-Loadout-Feature (Kampf-Tab, urspruenglich 2026-07-22, REWORKED 2026-07-23): reine
 // abgeleitete Sicht ueber bereits besessene Ausruestung (kein neues Kauf-/Ausrüst-System) fuer
 // fuenf dictierte Zwei-Item-Kombinationen - NK 1H + NK 1H, NK 1H + FK Pistole, NK 1H + Schild,
-// Pistole + Pistole, Schild + Pistole - jeweils mit/ohne die Talente "Kampf mit zwei Waffen Stufe
-// 1-4" (amalgamiert 1H+1H bzw. 1H+Schild zu EINER Kampf-Entitaet, WK-gated), "Linkshaendig
+// Pistole + Pistole, Schild + Pistole - mit den Talenten "Kampf mit zwei Waffen Stufe 1-4"
+// (amalgamiert ausschliesslich 1H+1H zu EINER Kampf-Entitaet, WK-gated), "Linkshaendig
 // Pistolenschiessen"/"Beidhaendig Pistolenschiessen" (heben die Nebenhand-Halbierung fuer eine
 // bzw. beide Pistolenhaende auf) und "Schildkampf" (hebt die Nebenhand-Halbierung fuer ein Schild
 // in der linken Hand auf). Regelwerk siehe Projekt-Memory project_waffen_loadout.md, mit dem
@@ -128,12 +128,15 @@ export function listEligiblePistolen(character: CharacterState): LoadoutPistoleI
   return out;
 }
 
-/** WK-Kappungsgrenze der hoechsten besessenen "Kampf mit zwei Waffen"-Stufe, beide raw (unmodifiziert
- *  gelisteten) WK muessen darunter liegen (Plan: Gate wird immer gegen die RAW WK geprueft, auch
- *  wenn - beim Schild-Fall - die WK anschliessend halbiert in die AT/PA-WK-Formel eingeht). */
-export function isZweiWaffenTalentEligiblePair(character: CharacterState, wkA: number, wkB: number): boolean {
+/** WK-Gate der hoechsten besessenen "Kampf mit zwei Waffen"-Stufe. Beide aktuellen WK muessen
+ *  unter der Kappungsgrenze liegen. Schilde werden bereits durch die aufrufende Kombination
+ *  ausgeschlossen. Negative WK sind erlaubt; die Ergebnisformeln koennen die bessere Einzel-WK
+ *  niemals verschlechtern. */
+export function isZweiWaffenTalentEligiblePair(
+  character: CharacterState, primaryWk: number, secondaryWk: number,
+): boolean {
   const cap = getZweiWaffenCap(character);
-  return cap !== undefined && wkA <= cap && wkB <= cap;
+  return cap !== undefined && primaryWk <= cap && secondaryWk <= cap;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -426,11 +429,12 @@ export function resolveNk1hNk1h(
     const schaden = primaryAvg >= secondaryAvg
       ? computeSchaden(primary.basis, primary.staerkeMalus, eigKStaerke)
       : computeSchaden(secondary.basis, secondary.staerkeMalus, eigKStaerke);
+    const higherWk = Math.max(primary.wk, secondary.wk);
     return {
       ok: true, comboType: 'nk1h_nk1h', talentActive: true,
       primaryEquipmentId, secondaryEquipmentId, nat, npa, poolValues: projected.poolValues,
-      atWk: String(Math.max(primary.wk, secondary.wk) * 1.5),
-      paWk: String(primary.wk + secondary.wk),
+      atWk: String(Math.max(higherWk, higherWk * 1.5)),
+      paWk: String(Math.max(higherWk, primary.wk + secondary.wk)),
       minStaerke: primary.minStaerke + secondary.minStaerke,
       schaden,
     };
@@ -623,11 +627,10 @@ export function resolvePistolePistole(
 }
 
 // ---------------------------------------------------------------------------------------------
-// nk1h_schild - NK 1H + Schild (REWORKED 2026-07-23: die No-Talent-Baseline ist jetzt wie
-// nk1h_nk1h eine unabhaengige Zwei-Haende-Behandlung mit Spielerwahl der Primaerhand, statt der
-// alten festen Amalgamierung - die Amalgamierung lebt jetzt AUSSCHLIESSLICH im talentActive-Zweig
-// unten, unveraendert gegenueber der Vorversion. Das neue Talent "Schildkampf" hebt die
-// Nebenhand-Halbierung auf, wenn das Schild in der Sekundaerhand landet).
+// nk1h_schild - NK 1H + Schild. Waffen der Spezialisierung "Schild" sind vom Talent "Kampf mit
+// zwei Waffen" ausgeschlossen. "Schildkampf" hebt weiterhin nur die Nebenhand-Halbierung auf,
+// wenn das Schild in der Sekundaerhand liegt. Fuer AT gilt die aktuelle Waffen-WK, fuer PA die
+// aktuelle Schild-WK.
 // ---------------------------------------------------------------------------------------------
 
 export interface SchildNoTalentResult {
@@ -639,24 +642,11 @@ export interface SchildNoTalentResult {
   nat: number;
   npa: number;
   poolValues: LoadoutPoolValues;
-}
-
-export interface SchildTalentResult {
-  ok: true;
-  comboType: 'nk1h_schild';
-  talentActive: true;
-  weaponEquipmentId: string;
-  schildEquipmentId: string;
-  nat: number;
-  npa: number;
-  poolValues: LoadoutPoolValues;
   atWk: string;
   paWk: string;
-  minStaerke: number;
-  schaden: string;
 }
 
-export type Nk1hSchildResult = LoadoutResolutionError | SchildNoTalentResult | SchildTalentResult;
+export type Nk1hSchildResult = LoadoutResolutionError | SchildNoTalentResult;
 
 export function resolveNk1hSchild(
   character: CharacterState, sheet: ComputedSheet, values: CharacterValueSource,
@@ -677,25 +667,6 @@ export function resolveNk1hSchild(
   const secondaryItem = weaponIsPrimary ? schild : weapon;
 
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
-  if (isZweiWaffenTalentEligiblePair(character, weapon.wk, schild.wk)) {
-    // Schild-WK wird VOR den AT/PA-WK-Formeln halbiert (aufgerundet auf 0.5 - gleiche Konvention
-    // wie die bestehende 2H-WK-Anzeige in views/kampf.ts) - das Talent-GATE oben prueft aber
-    // bewusst die RAW (nicht halbierte) Schild-WK, siehe isZweiWaffenTalentEligiblePair-Aufruf.
-    const halvedSchildWk = Math.ceil((schild.wk / 2) * 2) / 2;
-    const schaden = computeSchaden(weapon.basis, weapon.staerkeMalus, eigKStaerke);
-    const projected = computeTwoHandPoolValues(character, sheet, values, primaryItem, secondaryItem, false);
-    const { nat, npa } = projected.poolValues;
-    return {
-      ok: true, comboType: 'nk1h_schild', talentActive: true,
-      weaponEquipmentId: weapon.equipmentId, schildEquipmentId: schild.equipmentId,
-      nat, npa, poolValues: projected.poolValues,
-      atWk: String(Math.max(weapon.wk, halvedSchildWk) * 1.5),
-      paWk: String(weapon.wk + halvedSchildWk),
-      minStaerke: weapon.minStaerke + schild.minStaerke,
-      schaden,
-    };
-  }
-
   const schildkampfOwned = (character.selections['talente_schildkampf'] ?? 0) > 0;
   // Die Halbierungs-Ausnahme durch "Schildkampf" greift nur, wenn das SCHILD tatsaechlich in der
   // Sekundaerhand ist - landet stattdessen die Waffe in der Sekundaerhand, gibt es dafuer kein
@@ -706,6 +677,8 @@ export function resolveNk1hSchild(
   return {
     ok: true, comboType: 'nk1h_schild', talentActive: false,
     nat: projected.poolValues.nat, npa: projected.poolValues.npa, poolValues: projected.poolValues,
+    atWk: String(weapon.wk),
+    paWk: String(schild.wk),
     primary: {
       equipmentId: primaryItem.equipmentId, label: primaryItem.label, isPrimary: true, halved: false,
       nat: projected.rightRow.at.n, npa: projected.rightRow.pa.n,

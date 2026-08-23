@@ -32,4 +32,12 @@ describe('getOwnedKampfmodulTalentInfo (Nutzer 2026-07-21: Talente-Wirkung, Kamp
       expect(referenzSet.has(referenz)).toBe(true);
     }
   });
+
+  it('grenzt bewaffnete und rein unbewaffnete Nebenhand-Extra-Aktionen eindeutig ab', async () => {
+    const { RULES } = await import('../data/rules');
+    const wirkung = RULES.find((regel) =>
+      regel.referenz === 'talente_kampf_mit_zwei_waffen_stufe_1')?.wirkung ?? '';
+    expect(wirkung).toContain('Bewaffnete Nebenhand-Extra-Aktionen verwenden bei aktivem Talent den vollen Probenwert.');
+    expect(wirkung).toContain('Rein unbewaffnete Nebenhand-Extra-Aktionen verwenden unabhängig vom Talent immer den vollen Probenwert.');
+  });
 });

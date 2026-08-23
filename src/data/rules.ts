@@ -43,9 +43,15 @@ const ZWEI_WAFFEN_REFERENZEN = new Set([
 
 function applyRuntimeRuleCorrections(rule: RuleEntry): RuleEntry {
   if (!ZWEI_WAFFEN_REFERENZEN.has(rule.referenz)) return rule;
-  const zusatz = 'Waffen der Spezialisierung Schild sind ausgeschlossen. Die gemeinsame AT- und PA-WK kann niemals unter die höhere aktuelle Einzel-WK sinken. Bewaffnete und unbewaffnete Extra-Aktionen der Nebenhand verwenden den vollen Probenwert.';
-  if (rule.wirkung?.includes(zusatz)) return rule;
-  return { ...rule, wirkung: `${rule.wirkung ?? ''}\n${zusatz}`.trim() };
+  const korrekturen = [
+    'Waffen der Spezialisierung Schild sind ausgeschlossen.',
+    'Die gemeinsame AT- und PA-WK kann niemals unter die höhere aktuelle Einzel-WK sinken.',
+    'Bewaffnete Nebenhand-Extra-Aktionen verwenden bei aktivem Talent den vollen Probenwert.',
+    'Rein unbewaffnete Nebenhand-Extra-Aktionen verwenden unabhängig vom Talent immer den vollen Probenwert.',
+  ];
+  const fehlend = korrekturen.filter((korrektur) => !rule.wirkung?.includes(korrektur));
+  if (fehlend.length === 0) return rule;
+  return { ...rule, wirkung: `${rule.wirkung ?? ''}\n${fehlend.join(' ')}`.trim() };
 }
 
 export const RULES = (rulesJson as unknown as RuleEntry[])

@@ -121,13 +121,15 @@ Diese Werte wurden durch die neue WK-Untergrenze nicht verändert.
 
 ### 6.1 Mit aktivem „Kampf mit zwei Waffen“
 
-Bewaffnete und unbewaffnete Extra-Aktionen der Nebenhand verwenden den **vollen Probenwert**. Es gibt innerhalb des aktiven Talents keinen unterschiedlichen Halbierungsmalus für bewaffnete und unbewaffnete Extra-Aktionen.
+Bewaffnete Nebenhand-Extra-Aktionen verwenden bei aktivem Talent den **vollen Probenwert**. Rein unbewaffnete Nebenhand-Extra-Aktionen verwenden ebenfalls den vollen Probenwert; für sie gilt diese Ausnahme jedoch unabhängig davon, ob das Talent aktiv ist.
 
 Die bewaffnete Nebenhand wurde bei aktivem Talent bereits vor dieser Änderung ohne Halbierung berechnet. Neu ist die ausdrückliche Gleichstellung im Regeltext. Eine eigenständige ausführbare Engine-Mechanik für unbewaffnete Extra-Aktionen existiert derzeit nicht; diese Wirkung ist bislang textlich festgelegt.
 
 ### 6.2 Ohne aktives „Kampf mit zwei Waffen“
 
 Wird eine bewaffnete Zweithand ohne aktives Zwei-Waffen-Talent geführt, bleibt die bisherige Halbierung bestehen. Die Halbierung wird nach der Projektion getrennt auf normale, gute und meisterliche Werte angewendet und weg von null aufgerundet.
+
+Eine rein unbewaffnete Nebenhand-Extra-Aktion – etwa mit bloßer Faust, Fuß oder Biss und der Spezialisierung `Unbewaffnet` – verwendet auch ohne das Talent immer den vollen Probenwert. Der Probe-halbieren-Malus gilt damit ausschließlich für bewaffnete Nebenhand-Extra-Aktionen ohne passende Talentwirkung.
 
 Diese Abgrenzung erhält die eigenständige Wirkung von:
 
@@ -271,7 +273,8 @@ Die Wirkungstexte aller vier Stufen von „Kampf mit zwei Waffen“ wurden ergä
 
 - den Ausschluss der Spezialisierung `Schild`,
 - die Untergrenze der gemeinsamen AT- und PA-WK durch die höhere Einzel-WK,
-- den vollen Probenwert bewaffneter und unbewaffneter Nebenhand-Extra-Aktionen.
+- den vollen Probenwert bewaffneter Nebenhand-Extra-Aktionen bei aktivem Talent,
+- den stets vollen Probenwert rein unbewaffneter Nebenhand-Extra-Aktionen.
 
 Die Korrektur wird zusätzlich zur menschenlesbaren JSONL-Regelquelle zur Laufzeit auf die vier Talent-Referenzen angewendet, damit die Benutzeroberfläche nicht weiterhin den veralteten Wirkungstext anzeigt.
 

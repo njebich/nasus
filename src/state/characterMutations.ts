@@ -49,6 +49,17 @@ import {
 export class BudgetError extends Error {}
 export class MutationError extends Error {}
 
+function anfaelligkeitFamilie(referenz: string): string | undefined {
+  const stufenMatch = /^vn_anfaelligkeit_gegen_(.+)_(?:1|2)$/i.exec(referenz);
+  if (stufenMatch) return stufenMatch[1].toLowerCase();
+
+  const alchemieMatch = /^vn_(?:leicht|mittel|schwer|sehr_schwer|extrem)_anfaelligkeit_gegen_(.+)$/i.exec(referenz);
+  if (alchemieMatch) return alchemieMatch[1].toLowerCase();
+
+  const einstufigMatch = /^vn_anfaelligkeit_gegen_(.+)$/i.exec(referenz);
+  return einstufigMatch?.[1].toLowerCase();
+}
+
 /** Aktualisiert die Charakterheader-Felder (Name/Spezies/Beruf/...) - reine Identitaet,
  *  kein Budget-Bezug, daher keine assertBudgetOk-Pruefung noetig. */
 export function updateHeader(character: CharacterState, updates: Partial<CharacterHeader>): CharacterState {
@@ -305,18 +316,15 @@ export function addSelection(character: CharacterState, referenz: string): Chara
       if (sameFearGroup.test(selectedReference)) delete candidate.selections[selectedReference];
     }
   }
-  // Anfaelligkeits-Vor-/Nachteile (Nutzer 2026-07-24): Stufe 1/2 DESSELBEN Typs (Beherrschung/
-  // Erdbeschwoerung/Feuerbeschwoerung/Luftbeschwoerung/Magiebeschwoerung/Wasserbeschwoerung) sind
-  // exklusiv, analog zu den Angststufen oben - eine neue Auswahl ersetzt die bisherige Stufe des
-  // gleichen Typs. "Anfaelligkeit gegen profane Waffen" hat nur eine Stufe und braucht daher keine
-  // Sonderbehandlung; "Anfaelligkeit gegen Verzauberung" wurde auf Nutzerwunsch aus der xlsx
-  // entfernt (siehe rules-jsonl).
-  const anfaelligkeitMatch = /^vn_anfaelligkeit_gegen_(beherrschung|erdbeschwoerung|feuerbeschwoerung|luftbeschwoerung|magiebeschwoerung|wasserbeschwoerung)_(1|2)$/i.exec(rule.referenz);
-  if (anfaelligkeitMatch) {
-    const anfaelligkeitTyp = anfaelligkeitMatch[1].toLowerCase();
-    const sameAnfaelligkeitTyp = new RegExp(`^vn_anfaelligkeit_gegen_${anfaelligkeitTyp}_(1|2)$`, 'i');
+  // Innerhalb einer Anfaelligkeitsfamilie (demselben X) ist nur eine Stufe erlaubt.
+  // Verschiedene Anfaelligkeiten duerfen parallel gewaehlt werden. Das gilt auch fuer die
+  // benannten Alchemie-Stufen; eine neue Stufe ersetzt jeweils die bisherige derselben Familie.
+  const neueAnfaelligkeitFamilie = anfaelligkeitFamilie(rule.referenz);
+  if (neueAnfaelligkeitFamilie) {
     for (const selectedReference of Object.keys(candidate.selections)) {
-      if (sameAnfaelligkeitTyp.test(selectedReference)) delete candidate.selections[selectedReference];
+      if (anfaelligkeitFamilie(selectedReference) === neueAnfaelligkeitFamilie) {
+        delete candidate.selections[selectedReference];
+      }
     }
   }
   // Talente-Stufenketten (Nutzer 2026-07-24): "Stufe N" darf erst gewaehlt werden, wenn "Stufe

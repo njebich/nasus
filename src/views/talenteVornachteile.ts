@@ -102,6 +102,17 @@ function wirkungIcon(wirkung: string | undefined): string {
   return `<span class="stat-info-icon"${tooltipAttr(wirkung)}>ⓘ</span>`;
 }
 
+/** Vor-/Nachteile sollen immer einen sichtbaren Tooltip-Trigger haben. Bei noch nicht gepflegtem
+ * Wirkungstext verwenden wir vorhandene Nutzerinformationen bzw. Regelnotizen; wenn auch diese
+ * fehlen, wird die Datenluecke ausdrücklich angezeigt, statt Tooltip und Info-Icon zu verstecken. */
+function auswahlTooltipText(r: ComputedRule): string | undefined {
+  if (r.rule.wirkung?.trim()) return r.rule.wirkung;
+  if (r.rule.kategorie !== 'Vor- und Nachteile') return undefined;
+  if (r.rule.info?.trim()) return r.rule.info;
+  if (r.rule.flag?.trim()) return r.rule.flag;
+  return 'Für diesen Vor-/Nachteil ist noch keine Wirkungsbeschreibung hinterlegt.';
+}
+
 /** Ehemals (Nutzer 2026-07-22) ein dynamischer Grad-Titel-Praefix vor dem Basisnamen des EINEN
  *  Gate-Talents. Seit der Geweihte-Stufenkette (Nutzer-Ask 2026-08-06, siehe engine/geweihte.ts)
  *  traegt jede der 7 Stufen-Zeilen ihren Grad-Titel bereits fest im xlsx-Namen ("Geweihter von X,
@@ -140,6 +151,7 @@ function renderRow(
   charakterTyp: CharakterTyp,
 ): string {
   const label = escapeHtml(geweihterLabel(r));
+  const tooltipText = auswahlTooltipText(r);
   // Talente kosten TaP (eigener, von SP komplett getrennter Pool), alles andere (z.B.
   // Vor-/Nachteile) kostet SP - siehe characterSheet.ts.
   const waehrung = r.rule.kategorie === 'Talente' ? 'TaP' : 'SP';
@@ -169,9 +181,9 @@ function renderRow(
   } else if (!bezahlbar) sperrgrund = `Nicht genügend TaP (benötigt ${r.kostenSelect}, verfügbar ${sheet.tapRemaining})`;
   const sperrTitle = sperrgrund ? ` title="${escapeHtml(sperrgrund)}"` : '';
   return `
-    <label class="auswahl-row${rowClass ? ` ${rowClass}` : ''}" data-referenz="${r.rule.referenz}"${wirkungTooltip(r.rule.wirkung)}${sperrTitle}>
+    <label class="auswahl-row${rowClass ? ` ${rowClass}` : ''}" data-referenz="${r.rule.referenz}"${wirkungTooltip(tooltipText)}${sperrTitle}>
       <input type="checkbox" class="auswahl-checkbox" ${r.selected ? 'checked' : ''} ${!waehlbar ? 'disabled' : ''} />
-      <span class="stat-label">${label}${wirkungIcon(r.rule.wirkung)}${errorNote}</span>
+      <span class="stat-label">${label}${wirkungIcon(tooltipText)}${errorNote}</span>
       <span class="stat-cost">${cost}</span>
     </label>`;
 }

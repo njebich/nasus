@@ -95,7 +95,7 @@ describe('characterMutations', () => {
     expect(withTwoFears.selections['vn_angst_wasser_15']).toBe(1);
   });
 
-  it('Anfaelligkeitsstufen desselben Typs sind exklusiv und eine neue Stufe ersetzt die alte', () => {
+  it('Anfaelligkeitsstufen derselben Familie sind exklusiv und eine neue Stufe ersetzt die alte', () => {
     const character = withEpGesamt(0);
     const withStufe1 = addSelection(character, 'vn_anfaelligkeit_gegen_beherrschung_1');
     expect(withStufe1.selections['vn_anfaelligkeit_gegen_beherrschung_1']).toBe(1);
@@ -103,14 +103,23 @@ describe('characterMutations', () => {
     const withStufe2 = addSelection(withStufe1, 'vn_anfaelligkeit_gegen_beherrschung_2');
     expect(withStufe2.selections['vn_anfaelligkeit_gegen_beherrschung_1']).toBeUndefined();
     expect(withStufe2.selections['vn_anfaelligkeit_gegen_beherrschung_2']).toBe(1);
+
+    const withLeichterAlchemie = addSelection(withStufe2, 'vn_leicht_anfaelligkeit_gegen_alchemie');
+    const withSchwererAlchemie = addSelection(withLeichterAlchemie, 'vn_schwer_anfaelligkeit_gegen_alchemie');
+    expect(withSchwererAlchemie.selections['vn_leicht_anfaelligkeit_gegen_alchemie']).toBeUndefined();
+    expect(withSchwererAlchemie.selections['vn_schwer_anfaelligkeit_gegen_alchemie']).toBe(1);
   });
 
-  it('Anfaelligkeitsstufen unterschiedlicher Typen koennen gleichzeitig gewaehlt werden', () => {
+  it('Anfaelligkeiten unterschiedlicher Familien koennen gleichzeitig gewaehlt werden', () => {
     const character = withEpGesamt(0);
     const withBeherrschung = addSelection(character, 'vn_anfaelligkeit_gegen_beherrschung_1');
-    const withTwoTypes = addSelection(withBeherrschung, 'vn_anfaelligkeit_gegen_erdbeschwoerung_1');
-    expect(withTwoTypes.selections['vn_anfaelligkeit_gegen_beherrschung_1']).toBe(1);
-    expect(withTwoTypes.selections['vn_anfaelligkeit_gegen_erdbeschwoerung_1']).toBe(1);
+    const withErdbeschwoerung = addSelection(withBeherrschung, 'vn_anfaelligkeit_gegen_erdbeschwoerung_1');
+    const withAlchemie = addSelection(withErdbeschwoerung, 'vn_mittel_anfaelligkeit_gegen_alchemie');
+    const withProfaneWaffen = addSelection(withAlchemie, 'vn_anfaelligkeit_gegen_profane_waffen');
+    expect(withProfaneWaffen.selections['vn_anfaelligkeit_gegen_beherrschung_1']).toBe(1);
+    expect(withProfaneWaffen.selections['vn_anfaelligkeit_gegen_erdbeschwoerung_1']).toBe(1);
+    expect(withProfaneWaffen.selections['vn_mittel_anfaelligkeit_gegen_alchemie']).toBe(1);
+    expect(withProfaneWaffen.selections['vn_anfaelligkeit_gegen_profane_waffen']).toBe(1);
   });
 
   it('Talente-Stufenkette: eine hoehere Stufe ohne die Vorstufe wird abgelehnt', () => {

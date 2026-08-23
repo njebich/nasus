@@ -26,6 +26,35 @@ describe('Talente-Auswahl', () => {
     expect(container.querySelector('[data-referenz="vn_kind_der_froehlichkeit"]')).toBeNull();
   });
 
+  it('zeigt bei jedem Vor-/Nachteil einen Tooltip und ein Info-Icon, auch ohne Wirkungstext', () => {
+    const character = createCharacter('Tooltiptest');
+    renderAuswahlView(
+      container,
+      computeSheet(character),
+      'Vor- und Nachteile',
+      false,
+      vi.fn(),
+      character.religion,
+      character.charakterTyp,
+    );
+
+    const ohneWirkung = container.querySelector<HTMLElement>(
+      '[data-referenz="vn_leicht_anfaelligkeit_gegen_alchemie"]',
+    )!;
+    expect(ohneWirkung.dataset.tooltip).toBe(
+      'Für diesen Vor-/Nachteil ist noch keine Wirkungsbeschreibung hinterlegt.',
+    );
+    expect(ohneWirkung.querySelector<HTMLElement>('.stat-info-icon')?.dataset.tooltip).toBe(
+      ohneWirkung.dataset.tooltip,
+    );
+
+    const mitWirkung = container.querySelector<HTMLElement>(
+      '[data-referenz="vn_anfaelligkeit_gegen_beherrschung_1"]',
+    )!;
+    expect(mitWirkung.dataset.tooltip).toContain('SP × 1,5');
+    expect(mitWirkung.querySelector('.stat-info-icon')).not.toBeNull();
+  });
+
   it('zeigt auch nicht wählbare Talente, aber ausgegraut und deaktiviert', () => {
     const sheet = computeSheet(createCharacter('Talenttest', undefined, 'normal'));
     renderAuswahlView(container, sheet, 'Talente', true, vi.fn());

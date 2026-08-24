@@ -1,5 +1,7 @@
 import { computeSheet, type CharacterValidationIssue } from '../engine/characterSheet';
-import { restoreCharacterSnapshot, type CharacterState } from './characterStore';
+import {
+  AUTOMATISCHER_SC_VORTEIL, restoreCharacterSnapshot, type CharacterState,
+} from './characterStore';
 
 export const NASUS_CHARACTER_FORMAT = 'nasus-character' as const;
 export const NASUS_CHARACTER_SCHEMA_VERSION = 1 as const;
@@ -204,6 +206,26 @@ export function parseCharacterFile(raw: string): NasusCharacterFile {
   }
   if (parsed.schemaVersion !== NASUS_CHARACTER_SCHEMA_VERSION) {
     throw new CharacterFileError(`Nicht unterstützte Schemaversion: ${String(parsed.schemaVersion)}.`);
+  }
+  // Kurz nach Einfuehrung des Formats konnten bereits vorhandene localStorage-Charaktere ohne
+  // das spaeter ergaenzte charakterTyp-Feld exportiert werden. Solche v1-Dateien bleiben ladbar;
+  // vor der SC/NSC-Funktion existierten ausschliesslich SC.
+  if (isRecord(parsed.character) && parsed.character.charakterTyp === undefined) {
+    parsed.character.charakterTyp = 'SC';
+    if (isRecord(parsed.character.selections)) {
+      parsed.character.selections[AUTOMATISCHER_SC_VORTEIL] = 1;
+    }
+    if (isRecord(parsed.foundry)) parsed.foundry.actorType = 'pc';
+  }
+  if (Array.isArray(parsed.history)) {
+    for (const revision of parsed.history) {
+      if (isRecord(revision) && isRecord(revision.snapshot) && revision.snapshot.charakterTyp === undefined) {
+        revision.snapshot.charakterTyp = 'SC';
+        if (isRecord(revision.snapshot.selections)) {
+          revision.snapshot.selections[AUTOMATISCHER_SC_VORTEIL] = 1;
+        }
+      }
+    }
   }
   if (!isRecord(parsed.character) || typeof parsed.character.id !== 'string'
     || typeof parsed.character.name !== 'string'

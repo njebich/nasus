@@ -64,6 +64,21 @@ describe('portable Nasus-Charakterdatei', () => {
     expect(characterFileName(character)).toBe('Stadtwache-Ahrenfurt.nasus.json');
   });
 
+  it('lädt den kurzzeitig erzeugbaren v1-Export eines Altdaten-Charakters ohne charakterTyp', () => {
+    const saved = createCharacterCheckpoint(makeValidCharacter('Alter SC'), 'Vor der Migration');
+    const legacy = JSON.parse(serializeCharacterFile(saved)) as Record<string, any>;
+    delete legacy.character.charakterTyp;
+    delete legacy.history[0].snapshot.charakterTyp;
+    legacy.foundry.actorType = 'npc'; // so wurde das fehlende Feld im fehlerhaften Export abgebildet
+
+    const migrated = parseCharacterFile(JSON.stringify(legacy));
+
+    expect(migrated.character.charakterTyp).toBe('SC');
+    expect(migrated.character.selections.vn_kind_der_froehlichkeit).toBe(1);
+    expect(migrated.history[0].snapshot.charakterTyp).toBe('SC');
+    expect(migrated.foundry.actorType).toBe('pc');
+  });
+
   it('lehnt fremde und beschädigte Dateien kontrolliert ab', () => {
     expect(() => parseCharacterFile('{kaputt')).toThrow(/kein gültiges JSON/);
     expect(() => parseCharacterFile('{"format":"anderes"}')).toThrow(/keine Nasus-Charakterdatei/);

@@ -286,6 +286,10 @@ export function loadCharacter(id: string): CharacterState | null {
   const raw = localStorage.getItem(characterKey(id));
   if (!raw) return null;
   const parsed = JSON.parse(raw) as CharacterState & { heimat?: string; region?: string };
+  // Altdaten von vor der SC/NSC-Auswahl waren ausnahmslos Spielercharaktere. Ohne diesen
+  // Fallback konnte der Dateiexport das technisch fehlende Feld ausgeben und derselbe Export
+  // wurde beim erneuten Laden anschliessend als unvollstaendig abgelehnt.
+  if (!parsed.charakterTyp) parsed.charakterTyp = 'SC';
   // Herkunftsmigration: Das alte `region`-Feld enthielt technisch nur Alte/Neue Welt; der
   // alte Heimat-Freitext wird zum stabilen Ortsnamen. Eine geografische Region kann aus den
   // Altdaten nicht verlaesslich rekonstruiert werden und bleibt deshalb leer.
@@ -412,6 +416,8 @@ export function loadCharacter(id: string): CharacterState | null {
     }
   }
   for (const { reference } of fearSelections.values()) migratedSelections[reference] = 1;
+  if (parsed.charakterTyp === 'SC') migratedSelections[AUTOMATISCHER_SC_VORTEIL] = 1;
+  else delete migratedSelections[AUTOMATISCHER_SC_VORTEIL];
   parsed.selections = migratedSelections;
   return parsed;
 }

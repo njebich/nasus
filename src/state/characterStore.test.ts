@@ -130,6 +130,7 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     expect(loaded?.selections).toEqual({
       vn_angst_magie_30: 1,
       vn_angst_wasser_15: 1,
+      vn_kind_der_froehlichkeit: 1,
     });
   });
 
@@ -143,7 +144,10 @@ describe('loadCharacter Migrations-Fallback (Regression 2026-07-17: ruestungSlot
     localStorage.setItem(`nasus:character:${id}`, JSON.stringify(alterCharakter));
 
     const loaded = loadCharacter(id);
-    expect(loaded?.selections).toEqual({ talente_beidhaendig_pistolenschiessen: 1 });
+    expect(loaded?.selections).toEqual({
+      talente_beidhaendig_pistolenschiessen: 1,
+      vn_kind_der_froehlichkeit: 1,
+    });
   });
 
   it('migriert Heimat und das alte Welt-Feld verlustarm in den Herkunftssnapshot', () => {

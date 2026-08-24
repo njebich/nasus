@@ -416,13 +416,22 @@ export function loadCharacter(id: string): CharacterState | null {
   return parsed;
 }
 
-export function saveCharacter(state: CharacterState): void {
-  state.updatedAt = new Date().toISOString();
+function persistCharacter(state: CharacterState): void {
   localStorage.setItem(characterKey(state.id), JSON.stringify(state));
   const index = readIndex();
   if (!index.includes(state.id)) {
     writeIndex([...index, state.id]);
   }
+}
+
+export function saveCharacter(state: CharacterState): void {
+  state.updatedAt = new Date().toISOString();
+  persistCharacter(state);
+}
+
+/** Importiert einen Dateisnapshot ohne dessen historischen Zeitstempel zu veraendern. */
+export function restoreCharacterSnapshot(state: CharacterState): void {
+  persistCharacter(state);
 }
 
 export function createCharacter(
@@ -483,5 +492,6 @@ export function createCharacter(
 
 export function deleteCharacter(id: string): void {
   localStorage.removeItem(characterKey(id));
+  localStorage.removeItem(`nasus:save-document:${id}`);
   writeIndex(readIndex().filter((existingId) => existingId !== id));
 }

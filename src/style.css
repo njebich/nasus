@@ -113,6 +113,69 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.character-save-form {
+  align-items: flex-end;
+  flex-wrap: wrap;
+  padding: 0.65rem;
+  border: 1px solid #8886;
+  border-radius: 6px;
+  background: #8881;
+}
+
+.character-save-form label {
+  display: flex;
+  flex: 1 1 22rem;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.character-save-form input {
+  min-width: 16rem;
+  padding: 0.35rem 0.45rem;
+}
+
+.save-validation-errors {
+  flex-basis: 100%;
+  color: #b00020;
+}
+
+.save-validation-errors ul {
+  margin: 0.25rem 0 0;
+}
+
+.save-count {
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.save-history {
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #8884;
+  border-radius: 4px;
+}
+
+.save-history summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.save-history ol {
+  margin: 0.45rem 0 0;
+  padding-left: 1.75rem;
+}
+
+.save-history li {
+  padding: 0.15rem 0;
+}
+
+.save-history time,
+.save-history li > span,
+.save-history li > small {
+  margin-left: 0.55rem;
+  opacity: 0.75;
+}
+
 .budget-bar {
   display: flex;
   gap: 1.5rem;
@@ -141,6 +204,15 @@ body {
   color: #b00020;
   background: #ffe4e6;
   border: 1px solid #b00020;
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.status-message {
+  color: #1f6b32;
+  background: #e7f6eb;
+  border: 1px solid #3d8b52;
   border-radius: 4px;
   padding: 0.4rem 0.6rem;
   margin-bottom: 0.5rem;

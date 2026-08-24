@@ -1,5 +1,5 @@
 import './style.css';
-import { listCharacters, loadCharacter, getLastActiveCharacterId, setLastActiveCharacterId } from './state/characterStore';
+import { listCharacters, loadCharacter, getLastActiveCharacterId, setLastActiveCharacterId, type CharacterState } from './state/characterStore';
 import { computeSheet, makeValueSource, SSK_MINDEST_SP } from './engine/characterSheet';
 import { formatDublonenNumber } from './utils/format';
 import { buildNahkampfRows } from './views/kampf';
@@ -14,6 +14,10 @@ import {
   type MainTab, type SubTab,
 } from './navigation';
 import { renderNavigationMarkup } from './navigationMarkup';
+import {
+  CharacterFileError, createCharacterCheckpoint, downloadCharacterFile, getCharacterSaveDocument,
+  installCharacterFile, parseCharacterFile, type NasusCharacterFile,
+} from './state/characterFile';
 
 declare const __LAST_UPDATED_AT__: string;
 
@@ -53,6 +57,48 @@ if (lastActiveId && !initialCharacter) setLastActiveCharacterId(null); // Charak
 const appState = createInitialAppState(initialCharacter);
 const handlers = createMutationHandlers(appState, render);
 
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function getConformityIssues(character: CharacterState) {
+  const sheet = computeSheet(character);
+  return [
+    ...sheet.validationIssues,
+    ...buildNahkampfRows(character, sheet)
+      .filter((row, index, rows) => !row.poolValid
+        && rows.findIndex((candidate) => candidate.key === row.key && candidate.grip === row.grip) === index)
+      .map((row) => ({
+        source: `Kampf › ${row.label} (${row.grip})`,
+        message: `AT/PA-Pool unausgeglichen: ${row.atSpent} auf AT, ${row.paSpent} auf PA`,
+      })),
+  ];
+}
+
+function signedChange(value: number | null, unit: string): string {
+  if (value === null) return 'Ausgangsstand';
+  const sign = value > 0 ? '+' : value < 0 ? '−' : '±';
+  return `${sign}${Math.abs(value)} ${unit}`;
+}
+
+function renderSaveHistory(saveDocument: NasusCharacterFile): string {
+  return `
+    <details class="save-history">
+      <summary>Speicherhistorie (${saveDocument.history.length})</summary>
+      <ol reversed>
+        ${[...saveDocument.history].reverse().map((revision) => `
+          <li>
+            <strong>${escapeHtml(revision.note)}</strong>
+            <time datetime="${revision.savedAt}">${escapeHtml(formatLastUpdated(revision.savedAt))}</time>
+            <span>${signedChange(revision.changes.experience.delta, 'EP')} · ${signedChange(revision.changes.currency.funds.delta, 'D')}</span>
+            ${revision.changes.values.length > 0 ? `<small>${revision.changes.values.length} Wert${revision.changes.values.length === 1 ? '' : 'e'} verändert</small>` : ''}
+            ${revision.changes.sections.length > 0 ? `<small>${escapeHtml(revision.changes.sections.join(', '))}</small>` : ''}
+          </li>`).join('')}
+      </ol>
+    </details>`;
+}
+
 function render(): void {
   const characters = listCharacters();
   const sheet = appState.currentCharacter ? computeSheet(appState.currentCharacter) : null;
@@ -64,18 +110,10 @@ function render(): void {
   const showGeweihte = sheet !== null && isGeweihterTalentSelectedInSheet(sheet);
   appState.navigationState = normalizeNavigation(appState.navigationState, showGeweihte);
   const visibleSubTabs = getVisibleSubTabs(appState.navigationState.activeMainTab, showGeweihte);
-  const conformityIssues = sheet && appState.currentCharacter
-    ? [
-      ...sheet.validationIssues,
-      ...buildNahkampfRows(appState.currentCharacter, sheet)
-        .filter((row, index, rows) => !row.poolValid
-          && rows.findIndex((candidate) => candidate.key === row.key && candidate.grip === row.grip) === index)
-        .map((row) => ({
-          source: `Kampf › ${row.label} (${row.grip})`,
-          message: `AT/PA-Pool unausgeglichen: ${row.atSpent} auf AT, ${row.paSpent} auf PA`,
-        })),
-    ]
-    : [];
+  const conformityIssues = appState.currentCharacter ? getConformityIssues(appState.currentCharacter) : [];
+  const saveDocument = appState.currentCharacter
+    ? getCharacterSaveDocument(appState.currentCharacter.id)
+    : null;
   const characterWarning = conformityIssues.length > 0
     ? `<span class="character-conformity-warning" role="img" aria-label="Charakter nicht konform"${tooltipAttr(
       conformityIssues.map((issue) => `${issue.source}: ${issue.message}`).join('\n'),
@@ -94,6 +132,10 @@ function render(): void {
         ${characterWarning}
         <button type="button" id="new-character">Neuer Charakter</button>
         <button type="button" id="new-character-bestehend">Bestehenden Charakter erstellen</button>
+        <button type="button" id="load-character-file">Datei laden</button>
+        <input type="file" id="character-file-input" accept=".json,.nasus.json,application/json" hidden />
+        ${appState.currentCharacter ? '<button type="button" id="save-character-file">Speichern</button>' : ''}
+        ${saveDocument ? `<small class="save-count">${saveDocument.history.length} Speicherpunkt${saveDocument.history.length === 1 ? '' : 'e'}</small>` : ''}
         ${appState.currentCharacter ? '<button type="button" id="delete-character">Löschen</button>' : ''}
       </div>
       ${appState.showNewCharacterForm ? renderNewCharacterForm(appState.newCharacterBestehend) : ''}
@@ -103,6 +145,20 @@ function render(): void {
           <button type="button" id="delete-confirm">Ja, löschen</button>
           <button type="button" id="delete-cancel">Abbrechen</button>
         </div>` : ''}
+      ${appState.showSaveForm && appState.currentCharacter ? `
+        <form id="character-save-form" class="inline-form character-save-form">
+          <label>Vermerk *
+            <input type="text" id="character-save-note" required maxlength="500" autofocus
+              placeholder="z. B. EP und Beute aus Sitzung 14" />
+          </label>
+          <button type="submit" ${conformityIssues.length > 0 ? 'disabled' : ''}>Speicherpunkt erstellen und Datei herunterladen</button>
+          <button type="button" id="character-save-cancel">Abbrechen</button>
+          ${conformityIssues.length > 0 ? `<div class="save-validation-errors">
+            <strong>Speichern erst nach Behebung:</strong>
+            <ul>${conformityIssues.map((issue) => `<li>${escapeHtml(issue.source)}: ${escapeHtml(issue.message)}</li>`).join('')}</ul>
+          </div>` : ''}
+        </form>` : ''}
+      ${saveDocument ? renderSaveHistory(saveDocument) : ''}
       ${sheet ? `
         <div class="budget-bar">
           <span title="Lebenszeit-Gesamterfahrung, speist Stufe/Kreis – ${sheet.epNaechsteStufeAb !== undefined ? `nächste Stufe ab ${sheet.epNaechsteStufeAb} EP` : 'höchste Stufe erreicht'}">EP: <span class="numeric-field-output numeric-field-signed-five">${sheet.epGesamt}</span></span>
@@ -112,6 +168,7 @@ function render(): void {
           <span title="Dublonen: Käufe ziehen erst vom Bargeld, danach vom Bankguthaben ab – insgesamt verbraucht ${formatDublonenNumber(sheet.dublonenSpent)} von ${formatDublonenNumber(sheet.dublonenTotal)}">Dublonen: <span class="numeric-field-output numeric-field-formatted-five">${formatDublonenNumber(sheet.dublonenBarRemaining)}</span> bar / <span class="numeric-field-output numeric-field-formatted-five">${formatDublonenNumber(sheet.dublonenBankRemaining)}</span> Bank</span>
         </div>` : ''}
       ${appState.errorMessage ? `<div class="error-message">${appState.errorMessage}</div>` : ''}
+      ${appState.statusMessage ? `<div class="status-message">${escapeHtml(appState.statusMessage)}</div>` : ''}
       ${appState.currentCharacter ? renderNavigationMarkup(
         appState.navigationState, visibleSubTabs, (tab) => tooltipAttr(TAB_INTRO[tab]),
       ) : ''}
@@ -120,6 +177,66 @@ function render(): void {
   `;
 
   wireCharacterLifecycleEvents(appState, render);
+
+  document.querySelector('#save-character-file')?.addEventListener('click', () => {
+    appState.showSaveForm = true;
+    appState.errorMessage = '';
+    appState.statusMessage = '';
+    render();
+  });
+
+  document.querySelector('#character-save-cancel')?.addEventListener('click', () => {
+    appState.showSaveForm = false;
+    render();
+  });
+
+  document.querySelector<HTMLFormElement>('#character-save-form')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!appState.currentCharacter) return;
+    try {
+      const note = document.querySelector<HTMLInputElement>('#character-save-note')?.value ?? '';
+      const documentFile = createCharacterCheckpoint(
+        appState.currentCharacter, note, getConformityIssues(appState.currentCharacter),
+      );
+      downloadCharacterFile(documentFile);
+      appState.showSaveForm = false;
+      appState.errorMessage = '';
+      appState.statusMessage = `Speicherpunkt angelegt: ${note.trim()}`;
+    } catch (error) {
+      appState.errorMessage = error instanceof Error ? error.message : String(error);
+      appState.statusMessage = '';
+    }
+    render();
+  });
+
+  const fileInput = document.querySelector<HTMLInputElement>('#character-file-input');
+  document.querySelector('#load-character-file')?.addEventListener('click', () => fileInput?.click());
+  fileInput?.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    try {
+      const documentFile = parseCharacterFile(await file.text());
+      const issues = getConformityIssues(documentFile.character);
+      if (issues.length > 0) {
+        throw new CharacterFileError(`Die Datei kann nicht geladen werden, weil der Charakter nicht regelkonform ist:\n${issues
+          .map((issue) => `${issue.source}: ${issue.message}`).join('\n')}`);
+      }
+      const alreadyExists = listCharacters().some((character) => character.id === documentFile.character.id);
+      if (alreadyExists && !window.confirm(`Den vorhandenen Charakter „${documentFile.character.name}“ durch den Dateistand ersetzen?`)) return;
+      appState.currentCharacter = installCharacterFile(documentFile);
+      setLastActiveCharacterId(appState.currentCharacter.id);
+      appState.showSaveForm = false;
+      appState.confirmingDelete = false;
+      appState.errorMessage = '';
+      appState.statusMessage = `Datei geladen: ${file.name}`;
+    } catch (error) {
+      appState.errorMessage = error instanceof Error ? error.message : String(error);
+      appState.statusMessage = '';
+    } finally {
+      fileInput.value = '';
+    }
+    render();
+  });
 
   document.querySelectorAll<HTMLButtonElement>('.main-tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {

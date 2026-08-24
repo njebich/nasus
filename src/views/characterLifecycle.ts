@@ -98,19 +98,23 @@ export function wireCharacterLifecycleEvents(appState: AppState, render: () => v
     setLastActiveCharacterId(id || null);
     appState.navigationState = { ...DEFAULT_NAVIGATION };
     appState.errorMessage = '';
+    appState.statusMessage = '';
     appState.confirmingDelete = false;
+    appState.showSaveForm = false;
     render();
   });
 
   document.querySelector('#new-character')?.addEventListener('click', () => {
     appState.showNewCharacterForm = true;
     appState.newCharacterBestehend = false;
+    appState.showSaveForm = false;
     render();
   });
 
   document.querySelector('#new-character-bestehend')?.addEventListener('click', () => {
     appState.showNewCharacterForm = true;
     appState.newCharacterBestehend = true;
+    appState.showSaveForm = false;
     render();
   });
 
@@ -249,6 +253,8 @@ export function wireCharacterLifecycleEvents(appState: AppState, render: () => v
     appState.currentCharacter = null;
     setLastActiveCharacterId(null);
     appState.confirmingDelete = false;
+    appState.showSaveForm = false;
+    appState.statusMessage = '';
     render();
   });
 }

@@ -12,6 +12,8 @@ export interface AppState {
    *  Charakter, das alle Verfuegbarkeit-Kaufsperren deaktiviert (siehe characterMutations.ts). */
   newCharacterBestehend: boolean;
   confirmingDelete: boolean;
+  showSaveForm: boolean;
+  statusMessage: string;
 }
 
 export function createInitialAppState(currentCharacter: CharacterState | null): AppState {
@@ -22,5 +24,7 @@ export function createInitialAppState(currentCharacter: CharacterState | null): 
     showNewCharacterForm: false,
     newCharacterBestehend: false,
     confirmingDelete: false,
+    showSaveForm: false,
+    statusMessage: '',
   };
 }

@@ -527,6 +527,27 @@ input.numeric-field-formatted-five {
   cursor: pointer;
 }
 
+/* In der oberen Gekauft-Sektion ist nur der Haken interaktiv. Der Talentname darf dort nicht
+   versehentlich abwählen; die normalen Listenzeilen darunter bleiben vollständig klickbar. */
+.gekauft-row {
+  cursor: default;
+}
+
+.gekauft-row > .auswahl-checkbox {
+  cursor: pointer;
+}
+
+.gekauft-wirkung {
+  grid-column: 2 / -1;
+  line-height: 1.35;
+  opacity: 0.85;
+  white-space: pre-line;
+}
+
+.gekauft-wirkung-label {
+  font-weight: 600;
+}
+
 .pool-category {
   display: grid;
   grid-template-columns: 1fr;

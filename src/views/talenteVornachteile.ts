@@ -149,6 +149,7 @@ function renderRow(
   sheet: ComputedSheet,
   characterReligion: string | undefined,
   charakterTyp: CharakterTyp,
+  gekauftDarstellung = false,
 ): string {
   const label = escapeHtml(geweihterLabel(r));
   const tooltipText = auswahlTooltipText(r);
@@ -180,6 +181,18 @@ function renderRow(
     sperrgrund = `Erfordert zuerst "${vorstufeRule?.beschreibung ?? vorstufe}"`;
   } else if (!bezahlbar) sperrgrund = `Nicht genügend TaP (benötigt ${r.kostenSelect}, verfügbar ${sheet.tapRemaining})`;
   const sperrTitle = sperrgrund ? ` title="${escapeHtml(sperrgrund)}"` : '';
+  if (gekauftDarstellung) {
+    const wirkung = tooltipText?.trim()
+      ? `<span class="gekauft-wirkung"><span class="gekauft-wirkung-label">Wirkung:</span> ${escapeHtml(tooltipText)}</span>`
+      : '';
+    return `
+      <div class="auswahl-row gekauft-row${rowClass ? ` ${rowClass}` : ''}" data-referenz="${r.rule.referenz}"${wirkungTooltip(tooltipText)}${sperrTitle}>
+        <input type="checkbox" class="auswahl-checkbox" aria-label="${label} abwählen" ${r.selected ? 'checked' : ''} ${!waehlbar ? 'disabled' : ''} />
+        <span class="stat-label">${label}${wirkungIcon(tooltipText)}${errorNote}</span>
+        <span class="stat-cost">${cost}</span>
+        ${wirkung}
+      </div>`;
+  }
   return `
     <label class="auswahl-row${rowClass ? ` ${rowClass}` : ''}" data-referenz="${r.rule.referenz}"${wirkungTooltip(tooltipText)}${sperrTitle}>
       <input type="checkbox" class="auswahl-checkbox" ${r.selected ? 'checked' : ''} ${!waehlbar ? 'disabled' : ''} />
@@ -210,7 +223,13 @@ function renderGekauftSection(
     <div class="stat-card">
       <div class="stat-group gekauft-group">
         <div class="gekauft-header">Gekauft <span class="stat-group-count">(${sichtbar.length})</span></div>
-        <div class="auswahl-category">${sichtbar.map((r) => renderRow(r, sheet, characterReligion, charakterTyp)).join('')}</div>
+        <div class="auswahl-category">${sichtbar.map((r) => renderRow(
+          r,
+          sheet,
+          characterReligion,
+          charakterTyp,
+          r.rule.kategorie === 'Talente',
+        )).join('')}</div>
       </div>
     </div>`;
 }

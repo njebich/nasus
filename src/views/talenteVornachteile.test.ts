@@ -81,6 +81,28 @@ describe('Talente-Auswahl', () => {
     expect(gekauft.querySelector('.stat-group-count')?.textContent).toBe('(1)');
   });
 
+  it('zeigt bei gekauften Talenten die Wirkung direkt und koppelt nur die untere Zeile an den Namen', () => {
+    const character = createCharacter('Talenttest', undefined, 'gehoben');
+    character.selections.talente_zaeher_bursche_stufe_1 = 1;
+    const onToggle = vi.fn();
+    renderAuswahlView(container, computeSheet(character), 'Talente', true, onToggle);
+
+    const gekauft = container.querySelector<HTMLElement>(
+      '.gekauft-group [data-referenz="talente_zaeher_bursche_stufe_1"]',
+    )!;
+    expect(gekauft.tagName).toBe('DIV');
+    expect(gekauft.querySelector('.gekauft-wirkung')?.textContent).toContain('Wirkung:');
+
+    gekauft.querySelector<HTMLElement>('.stat-label')!.click();
+    expect(onToggle).not.toHaveBeenCalled();
+
+    const untereZeile = [...container.querySelectorAll<HTMLElement>(
+      '[data-referenz="talente_zaeher_bursche_stufe_1"]',
+    )].find((row) => !row.closest('.gekauft-group'))!;
+    untereZeile.querySelector<HTMLElement>('.stat-label')!.click();
+    expect(onToggle).toHaveBeenCalledWith('talente_zaeher_bursche_stufe_1', false);
+  });
+
   // Nutzer-Ask 2026-08-06: religionsabhaengige Geweihte-Talente ausblenden statt nur zu sperren.
   describe('Geweihte-Talente: religionsabhaengige Zeilen ausblenden', () => {
     it('blendet alle 35 Geweihter-Stufen aus, wenn keine Religion gewaehlt ist', () => {

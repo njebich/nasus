@@ -34,30 +34,9 @@ const GEWICHTSBELASTUNG_KOMPAT: RuleEntry = {
   abkuerzung: 'GBE', art: 'Formel', formelRaw: 'MAX(0;RBE)', sourceRow: 266,
 };
 
-const ZWEI_WAFFEN_REFERENZEN = new Set([
-  'talente_kampf_mit_zwei_waffen_stufe_1',
-  'talente_kampf_mit_zwei_waffen_stufe_2',
-  'talente_kampf_mit_zwei_waffen_stufe_3',
-  'talente_kampf_mit_zwei_waffen_stufe_4',
-]);
-
-function applyRuntimeRuleCorrections(rule: RuleEntry): RuleEntry {
-  if (!ZWEI_WAFFEN_REFERENZEN.has(rule.referenz)) return rule;
-  const korrekturen = [
-    'Waffen der Spezialisierung Schild sind ausgeschlossen.',
-    'Die gemeinsame AT- und PA-WK kann niemals unter die höhere aktuelle Einzel-WK sinken.',
-    'Bewaffnete Nebenhand-Extra-Aktionen verwenden bei aktivem Talent den vollen Probenwert.',
-    'Rein unbewaffnete Nebenhand-Extra-Aktionen verwenden unabhängig vom Talent immer den vollen Probenwert.',
-  ];
-  const fehlend = korrekturen.filter((korrektur) => !rule.wirkung?.includes(korrektur));
-  if (fehlend.length === 0) return rule;
-  return { ...rule, wirkung: `${rule.wirkung ?? ''}\n${fehlend.join(' ')}`.trim() };
-}
-
 export const RULES = (rulesJson as unknown as RuleEntry[])
   .filter((rule) => rule.referenz !== 'nk_pool_unbewaffnet')
-  .concat(GEWICHTSBELASTUNG_KOMPAT)
-  .map(applyRuntimeRuleCorrections);
+  .concat(GEWICHTSBELASTUNG_KOMPAT);
 
 // Codegen-Warnungen (siehe Konsolen-Ausgabe beim Generieren):
 // - Zeile 2: Referenz '#spruchmagie_erdbeschwoerung_1_splitterwand' mit '#' auskommentiert - uebersprungen

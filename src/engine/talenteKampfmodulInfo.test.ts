@@ -33,11 +33,25 @@ describe('getOwnedKampfmodulTalentInfo (Nutzer 2026-07-21: Talente-Wirkung, Kamp
     }
   });
 
-  it('grenzt bewaffnete und rein unbewaffnete Nebenhand-Extra-Aktionen eindeutig ab', async () => {
+  it('Kampf mit zwei Waffen Stufe 1 erlaubt nur unbewaffnete Nebenhand-Extra-Aktionen und schliesst Schild/Stangenwaffen aus', async () => {
     const { RULES } = await import('../data/rules');
     const wirkung = RULES.find((regel) =>
       regel.referenz === 'talente_kampf_mit_zwei_waffen_stufe_1')?.wirkung ?? '';
-    expect(wirkung).toContain('Bewaffnete Nebenhand-Extra-Aktionen verwenden bei aktivem Talent den vollen Probenwert.');
-    expect(wirkung).toContain('Rein unbewaffnete Nebenhand-Extra-Aktionen verwenden unabhängig vom Talent immer den vollen Probenwert.');
+    expect(wirkung).toContain('unbewaffnete Extra-Aktionen mit der Nebenhand auszuführen');
+    expect(wirkung).toContain('Waffen der Spezialisierung Schild und Stangenwaffen sind ausgeschlossen.');
+    expect(wirkung).toContain('Die gemeinsame AT- und PA-WK kann niemals unter die höhere aktuelle Einzel-WK sinken.');
+  });
+
+  it('Kampf mit zwei Waffen Stufe 2-4 schliessen Schild und Stangenwaffen aus', async () => {
+    const { RULES } = await import('../data/rules');
+    for (const referenz of [
+      'talente_kampf_mit_zwei_waffen_stufe_2',
+      'talente_kampf_mit_zwei_waffen_stufe_3',
+      'talente_kampf_mit_zwei_waffen_stufe_4',
+    ]) {
+      const wirkung = RULES.find((regel) => regel.referenz === referenz)?.wirkung ?? '';
+      expect(wirkung).toContain('Waffen der Spezialisierung Schild und Stangenwaffen sind ausgeschlossen.');
+      expect(wirkung).toContain('Die gemeinsame AT- und PA-WK kann niemals unter die höhere aktuelle Einzel-WK sinken.');
+    }
   });
 });

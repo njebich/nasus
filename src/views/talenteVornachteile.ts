@@ -228,7 +228,7 @@ function renderGekauftSection(
           sheet,
           characterReligion,
           charakterTyp,
-          r.rule.kategorie === 'Talente',
+          true,
         )).join('')}</div>
       </div>
     </div>`;

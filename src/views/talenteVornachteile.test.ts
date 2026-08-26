@@ -39,7 +39,7 @@ describe('Talente-Auswahl', () => {
     );
 
     const ohneWirkung = container.querySelector<HTMLElement>(
-      '[data-referenz="vn_leicht_anfaelligkeit_gegen_alchemie"]',
+      '[data-referenz="vn_fettleibig"]',
     )!;
     expect(ohneWirkung.dataset.tooltip).toBe(
       'Für diesen Vor-/Nachteil ist noch keine Wirkungsbeschreibung hinterlegt.',
@@ -101,6 +101,33 @@ describe('Talente-Auswahl', () => {
     )].find((row) => !row.closest('.gekauft-group'))!;
     untereZeile.querySelector<HTMLElement>('.stat-label')!.click();
     expect(onToggle).toHaveBeenCalledWith('talente_zaeher_bursche_stufe_1', false);
+  });
+
+  it('zeigt bei gekauften Vor-/Nachteilen den Text direkt und lässt nur über den Haken abwählen', () => {
+    const character = createCharacter('Vorteilstest', undefined, 'gehoben');
+    character.selections.vn_anfaelligkeit_gegen_beherrschung_1 = 1;
+    const onToggle = vi.fn();
+    renderAuswahlView(
+      container,
+      computeSheet(character),
+      'Vor- und Nachteile',
+      false,
+      onToggle,
+      character.religion,
+      character.charakterTyp,
+    );
+
+    const gekauft = container.querySelector<HTMLElement>(
+      '.gekauft-group [data-referenz="vn_anfaelligkeit_gegen_beherrschung_1"]',
+    )!;
+    expect(gekauft.tagName).toBe('DIV');
+    expect(gekauft.querySelector('.gekauft-wirkung')?.textContent).toContain('Wirkung:');
+
+    gekauft.querySelector<HTMLElement>('.stat-label')!.click();
+    expect(onToggle).not.toHaveBeenCalled();
+
+    gekauft.querySelector<HTMLInputElement>('.auswahl-checkbox')!.click();
+    expect(onToggle).toHaveBeenCalledWith('vn_anfaelligkeit_gegen_beherrschung_1', false);
   });
 
   // Nutzer-Ask 2026-08-06: religionsabhaengige Geweihte-Talente ausblenden statt nur zu sperren.

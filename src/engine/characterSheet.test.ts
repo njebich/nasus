@@ -7,6 +7,19 @@ import { GESINNUNG_TRAITS } from '../data/gesinnung';
 // vitest.config.ts) ist das verfuegbar; wir nutzen nur die zurueckgegebene In-Memory-Instanz.
 
 describe('computeSheet', () => {
+  it('wendet den Blindheitsrabatt nur auf Blinder Kampf I an', () => {
+    const normal = createCharacter('Normal');
+    const normalRow = computeSheet(normal).byKategorie['Vor- und Nachteile']
+      .find((row) => row.rule.referenz === 'vn_sicht_blinder_kampf_i');
+    expect(normalRow?.kostenSelect).toBe(150);
+
+    const blind = createCharacter('Blind');
+    blind.selections.vn_sicht_blindheit = 1;
+    const blindRows = computeSheet(blind).byKategorie['Vor- und Nachteile'];
+    expect(blindRows.find((row) => row.rule.referenz === 'vn_sicht_blinder_kampf_i')?.kostenSelect).toBe(75);
+    expect(blindRows.find((row) => row.rule.referenz === 'vn_sicht_blinder_kampf_2')?.kostenSelect).toBe(25);
+  });
+
   it('SP = 6400 + EP fuer einen frischen Charakter (ep_gesamt=0 -> SP=6400, feste Konstante in der Formel)', () => {
     const character = createCharacter('Test');
     const sheet = computeSheet(character);

@@ -1,9 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import { computeSheet, makeValueSource } from '../engine/characterSheet';
 import { createCharacter } from '../state/characterStore';
-import { renderCategoryRouteView } from './categoryView';
+import { renderCategoryRouteView, renderCategoryView } from './categoryView';
 
 describe('Charakterwerte-Routenansicht', () => {
+  it('zeigt Krankheitsresistenz erst nach Wahl des freischaltenden Vorteils', () => {
+    const character = createCharacter('Test');
+    const container = document.createElement('div');
+    renderCategoryView(container, computeSheet(character), 'Grundfertigkeit', vi.fn(), vi.fn());
+    expect(container.querySelector('[data-referenz="gr_krankheitsresistenz"]')).toBeNull();
+
+    character.selections.vn_gf_krankheitsresistenz = 1;
+    renderCategoryView(container, computeSheet(character), 'Grundfertigkeit', vi.fn(), vi.fn());
+    expect(container.querySelector('[data-referenz="gr_krankheitsresistenz"]')).not.toBeNull();
+  });
+
   it('integriert Bewegung und Gewichtsbelastung vollständig in Berechnete Werte', () => {
     const character = createCharacter('Test');
     const container = document.createElement('div');

@@ -21,6 +21,7 @@ import { getEigenschaftGrenzen } from './eigenschaftenGrenzen';
 import { getTalentMaximumBonus } from './talenteMaximum';
 import { getFertigkeitBaseMax } from './fertigkeitenGrenzen';
 import { getSchlechteEigenschaftMax, hasSchlechteEigenschaft } from './schlechteEigenschaft';
+import { getAuswahlKosten, getAuswahlSperrgrund, getWertSperrgrund } from './auswahlVoraussetzungen';
 import { ruestungSlotKey, type CharacterState, type PoolAllocation, type RuestungSlotEntry, type CustomWhkEintrag } from '../state/characterStore';
 import { GESINNUNG_TRAITS, countGesinnungGesetzt } from '../data/gesinnung';
 import type { RsGruppe } from '../data/trefferzonen';
@@ -83,6 +84,9 @@ export interface ComputedRule {
    *  hier zusaetzlich fuers UI (max-Attribut + deaktivierter "+"-Button), damit ein Nutzer nicht
    *  erst auf eine Fehlermeldung stoesst, ohne vorher zu sehen, dass ein Talent noetig waere. */
   fertigkeitMax?: number;
+  /** Redaktionell gepflegte Voraussetzung, die einen Kauf bzw. eine Steigerung sperrt. */
+  auswahlGesperrtGrund?: string;
+  steigerungGesperrtGrund?: string;
   error?: string;
 }
 
@@ -183,6 +187,8 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
   if (rule.art === 'Wert') {
     const currentValue = character.values[key] ?? 0;
     const result: ComputedRule = { rule, currentValue };
+    result.steigerungGesperrtGrund = getWertSperrgrund(rule, character);
+    if (currentValue > 0 && result.steigerungGesperrtGrund) result.error = result.steigerungGesperrtGrund;
     const fertigkeitBaseMax = getFertigkeitBaseMax(rule.kategorie);
     if (fertigkeitBaseMax !== undefined) {
       result.fertigkeitMax = fertigkeitBaseMax + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
@@ -251,11 +257,14 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
   if (rule.art === 'Auswahl') {
     const selected = (character.selections[key] ?? 0) > 0;
     const result: ComputedRule = { rule, selected };
+    result.auswahlGesperrtGrund = getAuswahlSperrgrund(rule, character);
+    if (selected && result.auswahlGesperrtGrund) result.error = result.auswahlGesperrtGrund;
     if (rule.kostenRaw) {
       try {
-        result.kostenSelect = Number(evalKostenFor(rule.referenz, 1, values));
+        result.kostenSelect = getAuswahlKosten(rule, character, Number(evalKostenFor(rule.referenz, 1, values)));
       } catch (err) {
-        result.error = err instanceof Error ? err.message : String(err);
+        const kostenError = err instanceof Error ? err.message : String(err);
+        result.error = result.error ? `${result.error}; ${kostenError}` : kostenError;
       }
     }
     return result;

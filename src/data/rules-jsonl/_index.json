@@ -28,7 +28,7 @@
     "file": "gewichtsbelastung.jsonl"
   },
   "Grundfertigkeit": {
-    "count": 20,
+    "count": 21,
     "file": "grundfertigkeit.jsonl"
   },
   "KI": {
@@ -64,7 +64,7 @@
     "file": "talente.jsonl"
   },
   "Vor- und Nachteile": {
-    "count": 274,
+    "count": 282,
     "file": "vor-und-nachteile.jsonl"
   },
   "WHK": {

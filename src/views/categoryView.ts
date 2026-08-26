@@ -169,7 +169,8 @@ function renderEditableRow(r: ComputedRule, kategorie: string, maxValue?: number
   // z.B. Attribute duerfen ohne ein "Maximum"-Talent nicht ueber 7 hinaus gesteigert werden
   // (Nutzer-Ask "nicht übersteigern ohne Talent"). Vorher war dieser Deckel nur im Mutations-Layer
   // hart durchgesetzt (Fehlermeldung nach dem Klick), ohne dass der "+"-Button das vorher zeigte.
-  const combinedMax = [maxValue, r.fertigkeitMax].filter((v): v is number => v !== undefined);
+  const prerequisiteMax = r.steigerungGesperrtGrund ? value : undefined;
+  const combinedMax = [maxValue, r.fertigkeitMax, prerequisiteMax].filter((v): v is number => v !== undefined);
   const effectiveMax = combinedMax.length > 0 ? Math.min(...combinedMax) : undefined;
   const maxAttr = effectiveMax !== undefined ? ` max="${effectiveMax}"` : '';
   const atMax = effectiveMax !== undefined && value >= effectiveMax;
@@ -806,7 +807,10 @@ export function renderCategoryView(
   // gewaehlt ist (Nutzer 2026-07-22, "rang 0" = "hiding of att_karma from the app").
   const rows = (sheet.byKategorie[kategorie] ?? [])
     .filter((r) => !HIDDEN_REFERENZEN.has(r.rule.referenz))
-    .filter((r) => r.rule.referenz !== 'att_karma' || isGeweihterTalentSelectedInSheet(sheet));
+    .filter((r) => r.rule.referenz !== 'att_karma' || isGeweihterTalentSelectedInSheet(sheet))
+    // Vorteilsgebundene Grundfertigkeiten erscheinen erst nach dem Freischalten. Bereits
+    // vorhandene ungültige Altwerte bleiben zur Korrektur sichtbar und können gesenkt werden.
+    .filter((r) => !r.steigerungGesperrtGrund || (r.currentValue ?? 0) > 0);
   const editable = rows.filter((r) => r.rule.art === 'Wert');
   const readOnly = rows.filter((r) => r.rule.art === 'Fixwert' || r.rule.art === 'Formel' || r.rule.art === 'Lookup');
   const pools = rows.filter((r) => r.rule.art === 'Pool');

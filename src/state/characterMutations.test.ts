@@ -27,6 +27,58 @@ describe('characterMutations', () => {
     expect(() => addSelection(nsc, 'vn_kind_der_froehlichkeit')).toThrow(MutationError);
   });
 
+  it('setzt redaktionelle Vorteils-Voraussetzungen durch und entfernt abhängige Stufen', () => {
+    const character = withEpGesamt(1000);
+    expect(() => addSelection(character, 'vn_aura_verhuellen_ii')).toThrow(/Aura verhüllen I/);
+
+    const withFirst = addSelection(character, 'vn_aura_verhuellen_i');
+    const withSecond = addSelection(withFirst, 'vn_aura_verhuellen_ii');
+    expect(withSecond.selections.vn_aura_verhuellen_ii).toBe(1);
+
+    const removed = removeSelection(withSecond, 'vn_aura_verhuellen_i');
+    expect(removed.selections.vn_aura_verhuellen_ii).toBeUndefined();
+  });
+
+  it('prüft Attribut- und Sprachvoraussetzungen', () => {
+    const character = withEpGesamt(1000);
+    expect(() => addSelection(character, 'vn_weltgewandt')).toThrow(/AUS 15/);
+    character.values.eig_k_ausstrahlung = 15;
+    expect(() => addSelection(character, 'vn_weltgewandt')).toThrow(/INT 15/);
+    character.values.eig_g_intelligenz = 15;
+    expect(() => addSelection(character, 'vn_weltgewandt')).toThrow(/Grundkenntnisse/);
+    character.values.ssk_sprache_zwergisch = 1;
+    expect(addSelection(character, 'vn_weltgewandt').selections.vn_weltgewandt).toBe(1);
+  });
+
+  it('sperrt Meister-Auswahlen für SC, aber nicht für NSC', () => {
+    const sc = withEpGesamt(1000);
+    expect(() => addSelection(sc, 'vn_resistenz_gegen_magie')).toThrow(/nur für den Meister/);
+
+    const nsc = createCharacter('NSC', undefined, undefined, false, 'NSC');
+    nsc.values.ep_gesamt = 1000;
+    expect(addSelection(nsc, 'vn_resistenz_gegen_magie').selections.vn_resistenz_gegen_magie).toBe(1);
+  });
+
+  it('ersetzt innerhalb derselben Kurz- oder Weitsichtigkeitsstufe die alte Auswahl', () => {
+    const character = withEpGesamt(1000);
+    const leicht = addSelection(character, 'vn_sicht_leicht_kurzsichtigkeit');
+    const schwer = addSelection(leicht, 'vn_sicht_schwer_kurzsichtigkeit');
+    expect(schwer.selections.vn_sicht_leicht_kurzsichtigkeit).toBeUndefined();
+    expect(schwer.selections.vn_sicht_schwer_kurzsichtigkeit).toBe(1);
+  });
+
+  it('bindet die GF Krankheitsresistenz an ihren Vorteil und räumt sie beim Entfernen auf', () => {
+    const character = withEpGesamt(1000);
+    expect(() => setValue(character, 'gr_krankheitsresistenz', 1)).toThrow(/GF: Krankheitsresistenz/);
+
+    const unlocked = addSelection(character, 'vn_gf_krankheitsresistenz');
+    const trained = setValue(unlocked, 'gr_krankheitsresistenz', 3);
+    expect(trained.values.gr_krankheitsresistenz).toBe(3);
+
+    const removed = removeSelection(trained, 'vn_gf_krankheitsresistenz');
+    expect(removed.values.gr_krankheitsresistenz).toBeUndefined();
+  });
+
   it('setValue erhoeht einen Wert, wenn genug SP vorhanden sind', () => {
     const character = withEpGesamt(1000);
     const updated = setValue(character, 'eig_g_mut', 5);

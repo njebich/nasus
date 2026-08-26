@@ -7,6 +7,10 @@ import { getRule, findParentRule, findChildRules, evalReferenz } from '../engine
 import { computeSheet, makeValueSource } from '../engine/characterSheet';
 import { getFertigkeitBaseMax } from '../engine/fertigkeitenGrenzen';
 import { getTalentMaximumBonus } from '../engine/talenteMaximum';
+import {
+  getAuswahlSperrgrund, getExklusivgruppe, getFreigeschalteteWertReferenz,
+  getWertSperrgrund, removeAbhaengigeAuswahlen,
+} from '../engine/auswahlVoraussetzungen';
 import { getSchlechteEigenschaftZielReferenz, getSchlechteEigenschaftMax } from '../engine/schlechteEigenschaft';
 import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent, isGeweihterReferenzErlaubt } from '../engine/geweihte';
 import { getVorstufeReferenz, getHoehereStufenReferenzen, getTalentStufeInfo } from '../engine/talenteStufenKette';
@@ -128,6 +132,9 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
     throw new MutationError(`'${referenz}' ist Art='${rule.art}', kein direkt setzbarer Wert`);
   }
   if (wert < 0) throw new MutationError('Wert darf nicht negativ sein');
+  const currentValue = character.values[rule.referenz.toLowerCase()] ?? 0;
+  const wertSperrgrund = getWertSperrgrund(rule, character);
+  if (wert > currentValue && wertSperrgrund) throw new MutationError(wertSperrgrund);
 
   // Regel (Nutzer 2026-07-17): eine Spezialisierung darf hoechstens so hoch sein wie der TaW
   // ihrer Hauptfertigkeit - deckt implizit auch "Spezialisierung erst ab TaW>0 verfuegbar" ab,
@@ -296,6 +303,11 @@ export function addSelection(character: CharacterState, referenz: string): Chara
   if (rule.referenz.toLowerCase() === AUTOMATISCHER_SC_VORTEIL && character.charakterTyp !== 'SC') {
     throw new MutationError(`'${rule.beschreibung ?? referenz}' ist automatisch SC vorbehalten`);
   }
+  if (rule.verfuegbarkeit === 'M' && character.charakterTyp === 'SC') {
+    throw new MutationError(`'${rule.beschreibung ?? referenz}' ist nur für den Meister verfügbar`);
+  }
+  const auswahlSperrgrund = getAuswahlSperrgrund(rule, character);
+  if (auswahlSperrgrund) throw new MutationError(auswahlSperrgrund);
 
   // Regel (Nutzer 2026-07-22, Geweihte-Feature): ein Gate-Talent darf nur gekauft werden, wenn es
   // zur im Charakterheader gewaehlten Religion+Sekte passt - siehe engine/geweihte.ts.
@@ -306,6 +318,15 @@ export function addSelection(character: CharacterState, referenz: string): Chara
   }
 
   const candidate = clone(character);
+  const exklusivgruppe = getExklusivgruppe(rule);
+  if (exklusivgruppe) {
+    for (const selectedReference of Object.keys(candidate.selections)) {
+      const selectedRule = getRule(selectedReference);
+      if (selectedRule && getExklusivgruppe(selectedRule) === exklusivgruppe) {
+        delete candidate.selections[selectedReference];
+      }
+    }
+  }
   // Angststufen verwenden das Schema vn_angst_<thema>_<5|10|15|20|25|30>. Innerhalb eines
   // Angstthemas ist genau eine Stufe erlaubt; eine neue Auswahl ersetzt die bisherige.
   const fearMatch = /^vn_angst_(.+)_(5|10|15|20|25|30)$/i.exec(rule.referenz);
@@ -387,12 +408,15 @@ export function removeSelection(character: CharacterState, referenz: string): Ch
 
   const candidate = clone(character);
   delete candidate.selections[rule.referenz.toLowerCase()];
+  const unlockedValue = getFreigeschalteteWertReferenz(rule);
+  if (unlockedValue) delete candidate.values[unlockedValue];
   // Talente-Stufenketten (siehe addSelection): faellt eine Stufe weg, sind alle hoeheren Stufen
   // derselben Familie nicht mehr durch eine gueltige Kette gedeckt - werden automatisch mit
   // entfernt statt eine luecke-in-der-Kette-Situation stehen zu lassen.
   for (const hoehereReferenz of getHoehereStufenReferenzen(rule.referenz)) {
     delete candidate.selections[hoehereReferenz];
   }
+  removeAbhaengigeAuswahlen(candidate);
   return candidate; // Entfernen macht das Budget nie schlechter, keine Pruefung noetig
 }
 

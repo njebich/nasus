@@ -39,11 +39,9 @@ describe('Talente-Auswahl', () => {
     );
 
     const ohneWirkung = container.querySelector<HTMLElement>(
-      '[data-referenz="vn_fettleibig"]',
+      '[data-referenz="vn_aussehen_normal"]',
     )!;
-    expect(ohneWirkung.dataset.tooltip).toBe(
-      'Für diesen Vor-/Nachteil ist noch keine Wirkungsbeschreibung hinterlegt.',
-    );
+    expect(ohneWirkung.dataset.tooltip).toBe('Neutrale Aussehensstufe.');
     expect(ohneWirkung.querySelector<HTMLElement>('.stat-info-icon')?.dataset.tooltip).toBe(
       ohneWirkung.dataset.tooltip,
     );
@@ -53,6 +51,25 @@ describe('Talente-Auswahl', () => {
     )!;
     expect(mitWirkung.dataset.tooltip).toContain('SP × 1,5');
     expect(mitWirkung.querySelector('.stat-info-icon')).not.toBeNull();
+  });
+
+  it('blendet Meister-Auswahlen für SC aus und zeigt sie NSC', () => {
+    const sc = createCharacter('SC');
+    renderAuswahlView(container, computeSheet(sc), 'Vor- und Nachteile', false, vi.fn(), sc.religion, sc.charakterTyp);
+    expect(container.querySelector('[data-referenz="vn_resistenz_gegen_magie"]')).toBeNull();
+
+    const nsc = createCharacter('NSC', undefined, undefined, false, 'NSC');
+    renderAuswahlView(container, computeSheet(nsc), 'Vor- und Nachteile', false, vi.fn(), nsc.religion, nsc.charakterTyp);
+    expect(container.querySelector('[data-referenz="vn_resistenz_gegen_magie"]')).not.toBeNull();
+  });
+
+  it('zeigt nicht erfüllte Vorteils-Voraussetzungen gesperrt an', () => {
+    const character = createCharacter('Voraussetzung');
+    renderAuswahlView(container, computeSheet(character), 'Vor- und Nachteile', false, vi.fn(), character.religion, character.charakterTyp);
+    const row = container.querySelector<HTMLElement>('[data-referenz="vn_aura_verhuellen_ii"]')!;
+    expect(row.classList.contains('auswahl-row-locked')).toBe(true);
+    expect(row.querySelector('input')?.disabled).toBe(true);
+    expect(row.title).toContain('Aura verhüllen I');
   });
 
   it('zeigt auch nicht wählbare Talente, aber ausgegraut und deaktiviert', () => {

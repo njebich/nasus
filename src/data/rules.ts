@@ -485,4 +485,7 @@ export const RULES = (rulesJson as unknown as RuleEntry[])
 // - Zeile 913: Referenz '#talente_ladeschuetze_schleuder' mit '#' auskommentiert - uebersprungen
 // - Zeile 988: Referenz '#vn_anfaelligkeit_gegen_verzauberung_1' mit '#' auskommentiert - uebersprungen
 // - Zeile 989: Referenz '#vn_anfaelligkeit_gegen_verzauberung_2' mit '#' auskommentiert - uebersprungen
+// - Zeile 1093: Referenz '#vn_fettleibig' mit '#' auskommentiert - uebersprungen
+// - Zeile 1124: Referenz '#vn_sicht_nachtsicht' mit '#' auskommentiert - uebersprungen
+// - Zeile 1131: Referenz '#vn_traege_reflexe' mit '#' auskommentiert - uebersprungen
 // - Zeile 1132: Referenz '#vn_unempfindlichkeit_gegen_alchemie' mit '#' auskommentiert - uebersprungen

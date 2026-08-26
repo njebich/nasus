@@ -168,13 +168,16 @@ function renderRow(
   // Gekaufte Einträge bleiben stets aktiv, damit sie auch bei inzwischen fehlendem Budget oder
   // einer weggefallenen Voraussetzung wieder abgewählt werden können.
   const automatischSc = r.rule.verfuegbarkeit === 'SC' && charakterTyp === 'SC';
-  const waehlbar = !automatischSc && (r.selected || (religionErlaubt && vorstufeGekauft && bezahlbar));
+  const voraussetzungErfuellt = !r.auswahlGesperrtGrund;
+  const waehlbar = !automatischSc
+    && (r.selected || (religionErlaubt && vorstufeGekauft && voraussetzungErfuellt && bezahlbar));
   // Nicht wählbare Einträge bleiben vollständig sichtbar, werden aber gedimmt und deaktiviert.
   // Bereits gekaufte Einträge bleiben abwählbar, auch wenn eine Voraussetzung später wegfällt.
   const rowClass = waehlbar ? '' : 'auswahl-row-locked';
   let sperrgrund = '';
   if (automatischSc) sperrgrund = 'Für jeden Spielercharakter automatisch gewählt und nicht abwählbar';
   else if (!religionErlaubt) sperrgrund = geweihterSperrTitle(r.rule.referenz);
+  else if (!voraussetzungErfuellt) sperrgrund = r.auswahlGesperrtGrund!;
   else if (!vorstufeGekauft && vorstufe) {
     const vorstufeRule = (sheet.byKategorie['Talente'] ?? [])
       .find((talent) => talent.rule.referenz.toLowerCase() === vorstufe)?.rule;
@@ -301,12 +304,14 @@ export function renderAuswahlView(
   const allRows = (sheet.byKategorie[kategorie] ?? [])
     .filter((r) => r.rule.art === 'Auswahl'
       && !(r.rule.verfuegbarkeit === 'SC' && charakterTyp === 'NSC')
+      && !(r.rule.verfuegbarkeit === 'M' && charakterTyp === 'SC' && !r.selected)
       && !isAusgeblendetesGeweihterTalent(r, characterReligion));
   const searchText = searchTextByKategorie.get(kategorie) ?? '';
   const needle = searchText.trim().toLowerCase();
   let rows = needle ? allRows.filter((r) => geweihterLabel(r).toLowerCase().includes(needle)) : allRows;
   if (nurKaufbare) {
-    rows = rows.filter((r) => r.selected || r.kostenSelect === undefined || r.kostenSelect <= budgetRemaining);
+    rows = rows.filter((r) => r.selected
+      || (!r.auswahlGesperrtGrund && (r.kostenSelect === undefined || r.kostenSelect <= budgetRemaining)));
   }
 
   const filtersHtml = `

@@ -1,0 +1,607 @@
+{
+  "id": "2eed2a52-061f-49af-85a2-416d106e1551",
+  "name": "Bauer Goblin – Kampfstab und Muskete",
+  "spezies": "Goblins",
+  "herkunftOrtId": "straitmor",
+  "herkunftSnapshot": {
+    "name": "Straitmor",
+    "region": "Orkisches Protektorat Straitmor",
+    "welt": "NW"
+  },
+  "beruf": "Bauer",
+  "alter": "21",
+  "religion": "Isch, Orthodox",
+  "createdAt": "2026-09-05T23:57:25.684Z",
+  "updatedAt": "2026-09-06T20:23:11.418Z",
+  "charakterTyp": "NSC",
+  "values": {
+    "ep_gesamt": 0,
+    "dublonen_bank": 500,
+    "eig_g_intelligenz": 13,
+    "eig_g_mut": 5,
+    "eig_g_sinneschaerfe": 11,
+    "eig_g_willenskraft": 7,
+    "eig_k_athletik": 13,
+    "eig_k_ausstrahlung": 11,
+    "eig_k_geschicklichkeit": 15,
+    "eig_k_konstitution": 13,
+    "eig_k_schnelligkeit": 16,
+    "eig_k_staerke": 15,
+    "ssk_kultur_goblins": 3,
+    "ssk_sprache_goblinisch": 3,
+    "ssk_schrift_zwerge": 1,
+    "whk_holzbearbeitung": 6,
+    "whk_spez_holzbearbeitung_holzfaeller": 5,
+    "whk_spez_holzbearbeitung_tischler": 2,
+    "whk_ueberleben": 3,
+    "whk_administration": 3,
+    "whk_buchhaltung": 3,
+    "whk_spez_buchhaltung_kostenrechnung": 3,
+    "whk_fuhrmann": 5,
+    "whk_spez_fuhrmann_lastfuhrmann": 5,
+    "whk_kaufmann": 3,
+    "whk_spez_kaufmann_haushaltswarenhaendler": 2,
+    "whk_spez_kaufmann_rohstoffhaendler": 3,
+    "whk_baecker": 4,
+    "whk_spez_baecker_brotbaecker": 4,
+    "whk_brenner": 5,
+    "whk_spez_brenner_geist": 4,
+    "whk_fischer": 3,
+    "whk_spez_fischer_angler": 3,
+    "whk_koch": 3,
+    "whk_spez_koch_raeuchern": 3,
+    "whk_spez_koch_konservieren": 3,
+    "whk_spez_koch_braten": 3,
+    "whk_spez_koch_backen": 3,
+    "whk_metzger": 4,
+    "whk_spez_metzger_schlachtung": 2,
+    "whk_spez_metzger_poekeln": 3,
+    "whk_spez_metzger_wursterei": 4,
+    "whk_spez_metzger_trocknen": 4,
+    "whk_abrichten": 4,
+    "whk_spez_abrichten_horntraeger": 4,
+    "whk_spez_abrichten_schweine": 4,
+    "whk_landwirtschaft": 16,
+    "whk_spez_landwirtschaft_gemuesebauer": 12,
+    "whk_spez_landwirtschaft_getreidebauer": 16,
+    "whk_spez_landwirtschaft_ruebenbauer": 12,
+    "whk_pflanzenkunde": 4,
+    "whk_viehwirtschaft": 12,
+    "whk_spez_viehwirtschaft_gefluegelzuechter": 12,
+    "whk_hauswirtschaft": 4,
+    "whk_spez_hauswirtschaft_haushaelter": 4,
+    "sf_ausdauer": 6,
+    "sf_gefahreninstinkt": 6,
+    "sf_selbstbeherrschung": 4,
+    "sf_tragen": 12,
+    "gr_faehrtensuche": 2,
+    "gr_klettern": 1,
+    "gr_koerperbeherrschung": 5,
+    "gr_laufen": 4,
+    "gr_menschenkenntnis": 2,
+    "gr_orientierung": 5,
+    "gr_reiten": 2,
+    "gr_schaetzen": 4,
+    "gr_schwimmen": 3,
+    "gr_springen": 2,
+    "gr_werfen": 5,
+    "nk_hiebwaffen": 4,
+    "nk_stangenwaffen": 8,
+    "nk_unbewaffnet": 4,
+    "nk_spez_unbewaffnet_unbewaffnet": 4,
+    "nk_spez_stangenwaffen_staebe": 12,
+    "nk_spez_hiebwaffen_aexte": 4,
+    "fk_feuerwaffen": 6,
+    "fk_spez_feuerwaffen_musketen": 13,
+    "att_vitalitaet": 3,
+    "sf_ruestungsmanoever": 3,
+    "sf_ladeschuetze_vorderlader": 6,
+    "sf_ausweichen": 1
+  },
+  "selections": {
+    "talente_zaeher_bursche_stufe_1": 1,
+    "talente_vorderlader_ladeschuetze_stufe1": 1,
+    "vn_schlaf_normal": 1
+  },
+  "poolAllocations": {
+    "nk_pool_unbewaffnet_unbewaffnet::unbewaffnet": {
+      "gat": 0,
+      "gpa": 0,
+      "mat": 0,
+      "mpa": 0,
+      "nat": 2,
+      "npa": 2
+    },
+    "nk_pool_hiebwaffen_aexte::6905875c-22d2-420c-87e8-1f3935761c13": {
+      "gat": 0,
+      "gpa": 0,
+      "mat": 0,
+      "mpa": 0,
+      "nat": 2,
+      "npa": 2
+    },
+    "nk_pool_stangenwaffen_staebe::2f80683a-031a-4f2a-a9c2-d9f7432849c0": {
+      "gat": 0,
+      "gpa": 0,
+      "mat": 0,
+      "mpa": 0,
+      "nat": 6,
+      "npa": 6
+    }
+  },
+  "equipment": [
+    {
+      "id": "6905875c-22d2-420c-87e8-1f3935761c13",
+      "family": "weapon",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "5",
+      "displayNameSnapshot": "Axt",
+      "specializationId": "nk_spez_hiebwaffen_aexte",
+      "selections": {
+        "material": "2",
+        "fertigung": "3",
+        "anpassung": "2",
+        "schaftmaterial": "2"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 93,
+      "computedStatsSnapshot": {
+        "at": -4,
+        "pa": -5,
+        "wk": 6,
+        "staerkeMalus": -6,
+        "minStaerke1H": 17,
+        "minStaerke2H": 10,
+        "klingenbrecher": 15,
+        "klingenschutz": 4,
+        "rezeptMod": 18,
+        "rb": 0
+      }
+    },
+    {
+      "id": "e6ad8e7e-485a-46f6-9c81-c61eb40c8941",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "523",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1.32
+    },
+    {
+      "id": "93491f50-e83a-4df6-b5c0-71a03b11ac0e",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "525",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.98
+    },
+    {
+      "id": "6758d0de-5311-4613-b77f-663dbd15e88c",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "52",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1
+    },
+    {
+      "id": "5c1467fe-e47d-4711-ae4d-3b30eeab49ca",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "265",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.022
+    },
+    {
+      "id": "53b8b313-fbdc-4a4e-b5d2-1034a4810379",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "663",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.4
+    },
+    {
+      "id": "4b3a7e75-f130-494e-87f8-3eed30a91015",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "674",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 3.1
+    },
+    {
+      "id": "115f7667-c9f0-4b7a-9bed-00d47abc0a71",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "684",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.027
+    },
+    {
+      "id": "ed147284-8b5d-4ea9-8751-df642b4708a9",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "268",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.075
+    },
+    {
+      "id": "964f4632-065d-4688-ba94-b70108259322",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "273",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.1
+    },
+    {
+      "id": "eaf734bf-097c-4a1f-9e2e-5f12f863a85c",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "473",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1.3
+    },
+    {
+      "id": "26023aa4-1ec8-40b3-8c71-6cad26688879",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "475",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.5
+    },
+    {
+      "id": "9c1b01ed-4811-40e0-b27a-90e8f430725f",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "477",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1.2
+    },
+    {
+      "id": "ee76b783-dc1d-403a-b14b-cd1eafa7db85",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "553",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1
+    },
+    {
+      "id": "2fc9c752-b284-487c-971a-cc060ac2dc4a",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "763",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.13
+    },
+    {
+      "id": "c5f3129b-5ebd-4008-a572-70c985e36830",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "780",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 3.5
+    },
+    {
+      "id": "fb937082-a431-47dc-952b-475aa7e0254a",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "796",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.2
+    },
+    {
+      "id": "da336b0a-5d43-4ae9-b293-fa59c7254e37",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "885",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.5
+    },
+    {
+      "id": "0bd9cc5d-358d-4f67-a5d4-3e6fa964d3b4",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "821",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1.4
+    },
+    {
+      "id": "c82aee7d-fe1d-4c5c-9741-fb0831f87e07",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "891",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.075
+    },
+    {
+      "id": "d5dc642e-4295-44e0-8c44-2401376ada1d",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "896",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1.6
+    },
+    {
+      "id": "9c65ef02-61bd-4395-a03a-b242d2637fc5",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "896",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1.6
+    },
+    {
+      "id": "47380400-7217-41c7-944f-646cf89b9cdd",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "230",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.88
+    },
+    {
+      "id": "84fe7a14-fae1-4e86-962e-c8fe18cfbaf1",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "922",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.022
+    },
+    {
+      "id": "bd1c5131-4104-4035-a61d-a60dcf9dea50",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "880",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.022
+    },
+    {
+      "id": "cd2ee0b8-87ed-4a4a-a037-095dc9a90235",
+      "family": "weapon",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "130",
+      "displayNameSnapshot": "Mistgabel einfach",
+      "specializationId": "nk_spez_stangenwaffen_speere",
+      "selections": {
+        "material": "2",
+        "fertigung": "3",
+        "anpassung": "2",
+        "schaftmaterial": "2"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 18,
+      "computedStatsSnapshot": {
+        "at": -5,
+        "pa": -4,
+        "wk": 4,
+        "staerkeMalus": -6,
+        "minStaerke1H": 16,
+        "minStaerke2H": 6,
+        "klingenbrecher": 7,
+        "klingenschutz": -1,
+        "rezeptMod": 15,
+        "rb": 0
+      }
+    },
+    {
+      "id": "2f80683a-031a-4f2a-a9c2-d9f7432849c0",
+      "family": "weapon",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "85",
+      "displayNameSnapshot": "Kampfstab  eisenbeschlagen",
+      "specializationId": "nk_spez_stangenwaffen_staebe",
+      "selections": {
+        "material": "2",
+        "fertigung": "3",
+        "anpassung": "2",
+        "schaftmaterial": "2"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 28,
+      "computedStatsSnapshot": {
+        "at": -2,
+        "pa": -2,
+        "wk": 3.5,
+        "staerkeMalus": -2,
+        "minStaerke1H": 18,
+        "minStaerke2H": 7,
+        "klingenbrecher": 0,
+        "klingenschutz": 4,
+        "rezeptMod": 13,
+        "rb": 0
+      }
+    },
+    {
+      "id": "5b07c595-78c2-4f52-8683-8decb30cb452",
+      "family": "feuerwaffe",
+      "baseTable": "feuerwaffen",
+      "baseId": "33",
+      "displayNameSnapshot": "Garr",
+      "specializationId": "nk_spez_stangenwaffen_improvisierte_stangenwaffen",
+      "ammunitionTypeId": "feuerwaffe:vorderlader",
+      "selections": {
+        "verarbeitung": "37",
+        "anpassung": "46"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 174.5,
+      "computedStatsSnapshot": {
+        "gewicht": 3.0999999999999996,
+        "minStaerke": 7,
+        "fixschaden": 1,
+        "rb": 14,
+        "kaliber": 16,
+        "rw": 40,
+        "nachladezeit": 30,
+        "nachladenTawTeiler": 3,
+        "patzermodifikator": 4,
+        "verfuegbarkeitRaw": 140,
+        "verfuegbarkeitStufe": 3,
+        "herstellungszeit": 1.2000000000000002,
+        "materialpreis": 169.7,
+        "ini": 0,
+        "rw10m": 2,
+        "rw30m": -3,
+        "rw60m": -8,
+        "rw100m": -15,
+        "rw150m": -22,
+        "rw210m": -30
+      }
+    },
+    {
+      "id": "4c1f5447-a41a-41dc-acec-a44a71b09dd8",
+      "family": "ammo",
+      "baseTable": "feuerwaffen-munition",
+      "baseId": "blei_pulver",
+      "displayNameSnapshot": "Blei&Pulver",
+      "ammunitionTypeId": "feuerwaffe:vorderlader",
+      "selections": {
+        "kaliber": "16"
+      },
+      "quantity": 100,
+      "computedPriceSnapshot": 0.397488,
+      "computedStatsSnapshot": {
+        "kaliber": 16
+      }
+    }
+  ],
+  "ruestungSlots": {
+    "torso:2": {
+      "basisSourceRow": 5,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 26,
+      "computedStatsSnapshot": {
+        "rs": 3,
+        "rh": 3,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "beine:2": {
+      "basisSourceRow": 5,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 26,
+      "computedStatsSnapshot": {
+        "rs": 3,
+        "rh": 3,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "torso:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "arme:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "beine:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    }
+  },
+  "grundfertigkeitAuswahl": {},
+  "waffenLoadouts": [
+    {
+      "id": "2c65f5ff-9d4b-4e89-a5f9-517a24f0d0b6",
+      "comboType": "nk2h",
+      "primaryEquipmentId": "6905875c-22d2-420c-87e8-1f3935761c13",
+      "secondaryEquipmentId": "6905875c-22d2-420c-87e8-1f3935761c13",
+      "favorite": true
+    },
+    {
+      "id": "13d554f3-15ef-4ab5-bd8d-b6ff918c2731",
+      "comboType": "nk2h",
+      "primaryEquipmentId": "cd2ee0b8-87ed-4a4a-a037-095dc9a90235",
+      "secondaryEquipmentId": "cd2ee0b8-87ed-4a4a-a037-095dc9a90235",
+      "favorite": true
+    },
+    {
+      "id": "6634b6df-5da1-4e93-91dd-ca28a2b8163c",
+      "comboType": "nk2h",
+      "primaryEquipmentId": "2f80683a-031a-4f2a-a9c2-d9f7432849c0",
+      "secondaryEquipmentId": "2f80683a-031a-4f2a-a9c2-d9f7432849c0",
+      "favorite": true
+    },
+    {
+      "id": "f3e9180a-f411-4fb4-afe4-4df52654aa9d",
+      "comboType": "muskete",
+      "primaryEquipmentId": "5b07c595-78c2-4f52-8683-8decb30cb452",
+      "secondaryEquipmentId": "5b07c595-78c2-4f52-8683-8decb30cb452",
+      "favorite": true
+    }
+  ],
+  "customWhkHauptfertigkeiten": [],
+  "customWhkSpezialisierungen": {},
+  "gesinnung": {
+    "ehrlichkeit_unehrlichkeit": 3,
+    "gut_boese": -1,
+    "prinzipientreue_opportunismus": 3,
+    "gesetze_recht_des_staerkeren": -2,
+    "toleranz_rassismus": -1,
+    "pazifismus_bellizismus": -3,
+    "lebensbewahrung_toetungsbereitschaft": -1,
+    "altruismus_egoismus": 5,
+    "gleichberechtigung_sexismus": 7,
+    "hierarchie_anarchie": -6,
+    "staaten_gilden_clans_haeuser": 6,
+    "kommunismus_kapitalismus": 7,
+    "gruppenmensch_einzelgaenger": -6,
+    "vertrauen_misstrauen": -2,
+    "kompromissbereitschaft_sturheit": 2,
+    "strebsamkeit_faulheit": 1,
+    "disziplin_triebhaftigkeit": 3,
+    "introvertiert_extrovertiert": -1,
+    "humor_ernst": 2,
+    "willensfreiheit_fatalismus": 3,
+    "religiositaet_atheismus": -5,
+    "optimismus_pessimismus": 1
+  },
+  "gesinnungNotiz": ""
+}

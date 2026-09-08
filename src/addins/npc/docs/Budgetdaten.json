@@ -1,0 +1,2331 @@
+{
+  "details": [
+    {
+      "volk": "Dalkini",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Intelligenz",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Willenskraft",
+          "original": 15,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Konstitution",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        }
+      ],
+      "total": 2583,
+      "afterSsk": 2447
+    },
+    {
+      "volk": "Dalkini",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Intelligenz",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Willenskraft",
+          "original": 15,
+          "minimum": 14,
+          "cost": 438
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Konstitution",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        }
+      ],
+      "total": 2838,
+      "afterSsk": 2832
+    },
+    {
+      "volk": "Dalkini",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 9,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Intelligenz",
+          "original": 9,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Willenskraft",
+          "original": 15,
+          "minimum": 15,
+          "cost": 480
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Konstitution",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        }
+      ],
+      "total": 3150,
+      "afterSsk": 3160
+    },
+    {
+      "volk": "Draw",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Intelligenz",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Mut",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Willenskraft",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Konstitution",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Staerke",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        }
+      ],
+      "total": 2640,
+      "afterSsk": 2390
+    },
+    {
+      "volk": "Draw",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Intelligenz",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Mut",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Willenskraft",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Konstitution",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Staerke",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        }
+      ],
+      "total": 2826,
+      "afterSsk": 2844
+    },
+    {
+      "volk": "Draw",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Intelligenz",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Mut",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Willenskraft",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Konstitution",
+          "original": 9,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Staerke",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        }
+      ],
+      "total": 3144,
+      "afterSsk": 3166
+    },
+    {
+      "volk": "Elfen",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 14,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Intelligenz",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Mut",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 14,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Willenskraft",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Konstitution",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Staerke",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        }
+      ],
+      "total": 2646,
+      "afterSsk": 2384
+    },
+    {
+      "volk": "Elfen",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 14,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Intelligenz",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Mut",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 14,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Willenskraft",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Konstitution",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Staerke",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        }
+      ],
+      "total": 2838,
+      "afterSsk": 2832
+    },
+    {
+      "volk": "Elfen",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 14,
+          "minimum": 14,
+          "cost": 438
+        },
+        {
+          "property": "Intelligenz",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Mut",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 14,
+          "minimum": 14,
+          "cost": 438
+        },
+        {
+          "property": "Willenskraft",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Konstitution",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Staerke",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        }
+      ],
+      "total": 3165,
+      "afterSsk": 3145
+    },
+    {
+      "volk": "Gnome",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Intelligenz",
+          "original": 16,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Mut",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Willenskraft",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Athletik",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 16,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Konstitution",
+          "original": 3,
+          "minimum": 1,
+          "cost": 30
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Staerke",
+          "original": 3,
+          "minimum": 1,
+          "cost": 30
+        }
+      ],
+      "total": 2508,
+      "afterSsk": 2522
+    },
+    {
+      "volk": "Gnome",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Intelligenz",
+          "original": 16,
+          "minimum": 15,
+          "cost": 480
+        },
+        {
+          "property": "Mut",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Willenskraft",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Athletik",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 16,
+          "minimum": 15,
+          "cost": 480
+        },
+        {
+          "property": "Konstitution",
+          "original": 3,
+          "minimum": 2,
+          "cost": 60
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Staerke",
+          "original": 3,
+          "minimum": 2,
+          "cost": 60
+        }
+      ],
+      "total": 2883,
+      "afterSsk": 2787
+    },
+    {
+      "volk": "Gnome",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Intelligenz",
+          "original": 16,
+          "minimum": 16,
+          "cost": 525
+        },
+        {
+          "property": "Mut",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Willenskraft",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Athletik",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 16,
+          "minimum": 16,
+          "cost": 525
+        },
+        {
+          "property": "Konstitution",
+          "original": 3,
+          "minimum": 3,
+          "cost": 90
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Staerke",
+          "original": 3,
+          "minimum": 3,
+          "cost": 90
+        }
+      ],
+      "total": 3222,
+      "afterSsk": 3088
+    },
+    {
+      "volk": "Goblins",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Intelligenz",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Mut",
+          "original": 5,
+          "minimum": 4,
+          "cost": 120
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Willenskraft",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 15,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Konstitution",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 16,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Staerke",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        }
+      ],
+      "total": 2592,
+      "afterSsk": 2438
+    },
+    {
+      "volk": "Goblins",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Intelligenz",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Mut",
+          "original": 5,
+          "minimum": 4,
+          "cost": 120
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Willenskraft",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 15,
+          "minimum": 14,
+          "cost": 438
+        },
+        {
+          "property": "Konstitution",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 16,
+          "minimum": 15,
+          "cost": 480
+        },
+        {
+          "property": "Staerke",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        }
+      ],
+      "total": 2871,
+      "afterSsk": 2799
+    },
+    {
+      "volk": "Goblins",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Intelligenz",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Mut",
+          "original": 5,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Willenskraft",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 15,
+          "minimum": 15,
+          "cost": 480
+        },
+        {
+          "property": "Konstitution",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 16,
+          "minimum": 16,
+          "cost": 525
+        },
+        {
+          "property": "Staerke",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        }
+      ],
+      "total": 3207,
+      "afterSsk": 3103
+    },
+    {
+      "volk": "Indianer",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Intelligenz",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Willenskraft",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Konstitution",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Staerke",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        }
+      ],
+      "total": 2580,
+      "afterSsk": 2450
+    },
+    {
+      "volk": "Indianer",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Intelligenz",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Willenskraft",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Konstitution",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Staerke",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        }
+      ],
+      "total": 2820,
+      "afterSsk": 2850
+    },
+    {
+      "volk": "Indianer",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 9,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Intelligenz",
+          "original": 9,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Willenskraft",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Konstitution",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Staerke",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        }
+      ],
+      "total": 3126,
+      "afterSsk": 3184
+    },
+    {
+      "volk": "Katzen",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Intelligenz",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Mut",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Willenskraft",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Athletik",
+          "original": 15,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Konstitution",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        }
+      ],
+      "total": 2613,
+      "afterSsk": 2417
+    },
+    {
+      "volk": "Katzen",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Intelligenz",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Mut",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Willenskraft",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Athletik",
+          "original": 15,
+          "minimum": 14,
+          "cost": 438
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Konstitution",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        }
+      ],
+      "total": 2844,
+      "afterSsk": 2826
+    },
+    {
+      "volk": "Katzen",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Intelligenz",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Mut",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Willenskraft",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Athletik",
+          "original": 15,
+          "minimum": 15,
+          "cost": 480
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 6,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Konstitution",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        }
+      ],
+      "total": 3171,
+      "afterSsk": 3139
+    },
+    {
+      "volk": "Orks",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Intelligenz",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Mut",
+          "original": 16,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Willenskraft",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Konstitution",
+          "original": 14,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Staerke",
+          "original": 15,
+          "minimum": 12,
+          "cost": 363
+        }
+      ],
+      "total": 2625,
+      "afterSsk": 2405
+    },
+    {
+      "volk": "Orks",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Intelligenz",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Mut",
+          "original": 16,
+          "minimum": 15,
+          "cost": 480
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Willenskraft",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Konstitution",
+          "original": 14,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Staerke",
+          "original": 15,
+          "minimum": 14,
+          "cost": 438
+        }
+      ],
+      "total": 2877,
+      "afterSsk": 2793
+    },
+    {
+      "volk": "Orks",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 6,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Intelligenz",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Mut",
+          "original": 16,
+          "minimum": 16,
+          "cost": 525
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Willenskraft",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Athletik",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Konstitution",
+          "original": 14,
+          "minimum": 14,
+          "cost": 438
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Staerke",
+          "original": 15,
+          "minimum": 15,
+          "cost": 480
+        }
+      ],
+      "total": 3216,
+      "afterSsk": 3094
+    },
+    {
+      "volk": "Trolle",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Intelligenz",
+          "original": 4,
+          "minimum": 2,
+          "cost": 60
+        },
+        {
+          "property": "Mut",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Willenskraft",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 4,
+          "minimum": 2,
+          "cost": 60
+        },
+        {
+          "property": "Konstitution",
+          "original": 19,
+          "minimum": 16,
+          "cost": 525
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 5,
+          "minimum": 4,
+          "cost": 120
+        },
+        {
+          "property": "Staerke",
+          "original": 19,
+          "minimum": 16,
+          "cost": 525
+        }
+      ],
+      "total": 2610,
+      "afterSsk": 2420
+    },
+    {
+      "volk": "Trolle",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Intelligenz",
+          "original": 4,
+          "minimum": 3,
+          "cost": 90
+        },
+        {
+          "property": "Mut",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Willenskraft",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 4,
+          "minimum": 3,
+          "cost": 90
+        },
+        {
+          "property": "Konstitution",
+          "original": 19,
+          "minimum": 18,
+          "cost": 624
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 5,
+          "minimum": 4,
+          "cost": 120
+        },
+        {
+          "property": "Staerke",
+          "original": 19,
+          "minimum": 18,
+          "cost": 624
+        }
+      ],
+      "total": 2991,
+      "afterSsk": 2679
+    },
+    {
+      "volk": "Trolle",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Intelligenz",
+          "original": 4,
+          "minimum": 4,
+          "cost": 120
+        },
+        {
+          "property": "Mut",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 6,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Willenskraft",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Athletik",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 4,
+          "minimum": 4,
+          "cost": 120
+        },
+        {
+          "property": "Konstitution",
+          "original": 19,
+          "minimum": 19,
+          "cost": 678
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 5,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Staerke",
+          "original": 19,
+          "minimum": 19,
+          "cost": 678
+        }
+      ],
+      "total": 3351,
+      "afterSsk": 2959
+    },
+    {
+      "volk": "Zentauren",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Intelligenz",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Mut",
+          "original": 14,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Willenskraft",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Athletik",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Konstitution",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 9,
+          "cost": 270
+        }
+      ],
+      "total": 2613,
+      "afterSsk": 2417
+    },
+    {
+      "volk": "Zentauren",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Intelligenz",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Mut",
+          "original": 14,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Willenskraft",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Athletik",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Konstitution",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 6,
+          "minimum": 5,
+          "cost": 150
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 10,
+          "cost": 300
+        }
+      ],
+      "total": 2835,
+      "afterSsk": 2835
+    },
+    {
+      "volk": "Zentauren",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Intelligenz",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Mut",
+          "original": 14,
+          "minimum": 14,
+          "cost": 438
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 9,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Willenskraft",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Athletik",
+          "original": 6,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Konstitution",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 6,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Staerke",
+          "original": 11,
+          "minimum": 11,
+          "cost": 330
+        }
+      ],
+      "total": 3156,
+      "afterSsk": 3154
+    },
+    {
+      "volk": "Zwerge",
+      "stage": "0",
+      "budget": 5120,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Intelligenz",
+          "original": 14,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Willenskraft",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Athletik",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Konstitution",
+          "original": 13,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Staerke",
+          "original": 12,
+          "minimum": 10,
+          "cost": 300
+        }
+      ],
+      "total": 2643,
+      "afterSsk": 2387
+    },
+    {
+      "volk": "Zwerge",
+      "stage": "0+",
+      "budget": 5760,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Intelligenz",
+          "original": 14,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 9,
+          "cost": 270
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 8,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Willenskraft",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        },
+        {
+          "property": "Athletik",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Konstitution",
+          "original": 13,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 7,
+          "minimum": 6,
+          "cost": 180
+        },
+        {
+          "property": "Staerke",
+          "original": 12,
+          "minimum": 11,
+          "cost": 330
+        }
+      ],
+      "total": 2835,
+      "afterSsk": 2835
+    },
+    {
+      "volk": "Zwerge",
+      "stage": "1",
+      "budget": 6400,
+      "properties": [
+        {
+          "property": "Ausstrahlung",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Intelligenz",
+          "original": 14,
+          "minimum": 14,
+          "cost": 438
+        },
+        {
+          "property": "Mut",
+          "original": 10,
+          "minimum": 10,
+          "cost": 300
+        },
+        {
+          "property": "Sinnesschaerfe",
+          "original": 8,
+          "minimum": 8,
+          "cost": 240
+        },
+        {
+          "property": "Willenskraft",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        },
+        {
+          "property": "Athletik",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Geschicklichkeit",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Konstitution",
+          "original": 13,
+          "minimum": 13,
+          "cost": 399
+        },
+        {
+          "property": "Schnelligkeit",
+          "original": 7,
+          "minimum": 7,
+          "cost": 210
+        },
+        {
+          "property": "Staerke",
+          "original": 12,
+          "minimum": 12,
+          "cost": 363
+        }
+      ],
+      "total": 3162,
+      "afterSsk": 3148
+    }
+  ],
+  "examples": [
+    {
+      "id": "bauer",
+      "gf": 315,
+      "sf": 342,
+      "total": 657,
+      "budget": 6400,
+      "percent": 10.27
+    },
+    {
+      "id": "wachmann",
+      "gf": 432,
+      "sf": 540,
+      "total": 972,
+      "budget": 6400,
+      "percent": 15.19
+    },
+    {
+      "id": "hauptmann",
+      "gf": 783,
+      "sf": 567,
+      "total": 1350,
+      "budget": 8000,
+      "percent": 16.88
+    },
+    {
+      "id": "schuetze",
+      "gf": 549,
+      "sf": 576,
+      "total": 1125,
+      "budget": 6400,
+      "percent": 17.58
+    },
+    {
+      "id": "nahkaempfer",
+      "gf": 387,
+      "sf": 468,
+      "total": 855,
+      "budget": 6400,
+      "percent": 13.36
+    },
+    {
+      "id": "ki",
+      "gf": 315,
+      "sf": 630,
+      "total": 945,
+      "budget": 8000,
+      "percent": 11.82
+    }
+  ]
+}

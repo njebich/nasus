@@ -105,6 +105,7 @@ export function wireCharacterLifecycleEvents(appState: AppState, render: () => v
   });
 
   document.querySelector('#new-character')?.addEventListener('click', () => {
+    appState.npcWizard = null;
     appState.showNewCharacterForm = true;
     appState.newCharacterBestehend = false;
     appState.showSaveForm = false;
@@ -112,6 +113,7 @@ export function wireCharacterLifecycleEvents(appState: AppState, render: () => v
   });
 
   document.querySelector('#new-character-bestehend')?.addEventListener('click', () => {
+    appState.npcWizard = null;
     appState.showNewCharacterForm = true;
     appState.newCharacterBestehend = true;
     appState.showSaveForm = false;

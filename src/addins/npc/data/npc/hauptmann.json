@@ -1,0 +1,391 @@
+{
+  "id": "a5ef530a-0226-45ea-811b-58e87baa3a61",
+  "name": "Goblin Räuberhauptmann",
+  "spezies": "Goblins",
+  "beruf": "Räuberhauptmann",
+  "createdAt": "2026-09-06T20:18:44.865Z",
+  "updatedAt": "2026-09-07T19:11:05.221Z",
+  "charakterTyp": "NSC",
+  "values": {
+    "ep_gesamt": 1600,
+    "dublonen_bank": 404.9,
+    "eig_g_intelligenz": 13,
+    "eig_g_mut": 13,
+    "eig_g_sinneschaerfe": 12,
+    "eig_g_willenskraft": 13,
+    "eig_k_athletik": 15,
+    "eig_k_ausstrahlung": 13,
+    "eig_k_geschicklichkeit": 15,
+    "eig_k_konstitution": 13,
+    "eig_k_schnelligkeit": 16,
+    "eig_k_staerke": 15,
+    "ssk_kultur_goblins": 3,
+    "ssk_sprache_goblinisch": 3,
+    "ssk_schrift_zwerge": 1,
+    "sf_ausdauer": 9,
+    "sf_ausweichen": 8,
+    "sf_gefahreninstinkt": 6,
+    "sf_selbstbeherrschung": 15,
+    "sf_tragen": 6,
+    "sf_ruestungsmanoever": 7,
+    "gr_koerperbeherrschung": 8,
+    "gr_laufen": 6,
+    "gr_klettern": 3,
+    "gr_orientierung": 8,
+    "gr_schleichen": 5,
+    "gr_verstecken": 5,
+    "gr_schwimmen": 2,
+    "gr_springen": 2,
+    "gr_menschenkenntnis": 10,
+    "gr_einschuechtern": 11,
+    "whk_ueberleben": 8,
+    "whk_spez_ueberleben_wald": 8,
+    "whk_spez_ueberleben_stadt": 3,
+    "nk_klingenwaffen": 12,
+    "nk_spez_klingenwaffen_kurzschwerter": 22,
+    "nk_unbewaffnet": 12,
+    "nk_spez_unbewaffnet_unbewaffnet": 4,
+    "fk_feuerwaffen": 10,
+    "fk_spez_feuerwaffen_pistolen": 20,
+    "sf_ladeschuetze_vorderlader": 12,
+    "gr_ueberzeugen": 16,
+    "gr_luegen": 6,
+    "gr_schaetzen": 5,
+    "whk_militaertheorie": 10,
+    "whk_spez_militaertheorie_taktik": 15,
+    "whk_administration": 4,
+    "whk_kaufmann": 8,
+    "whk_spez_kaufmann_rohstoffhaendler": 4,
+    "att_vitalitaet": 3,
+    "nk_spez_unbewaffnet_schild": 24
+  },
+  "selections": {
+    "talente_fernkampfgeschick_stufe_1": 1,
+    "talente_vorderlader_ladeschuetze_stufe1": 1,
+    "talente_charismatischer_fuehrer": 1,
+    "talente_selbstbeherrschung_stufe_1": 1,
+    "talente_offensiver_kampfstil_stufe_1": 1,
+    "talente_schildkampf": 1,
+    "talente_zaeher_bursche_stufe_1": 1,
+    "talente_zaeher_bursche_stufe_2": 1,
+    "talente_fernkampfgeschick_stufe_2": 1,
+    "talente_fernkampfgeschick_stufe_3": 1
+  },
+  "poolAllocations": {
+    "nk_pool_unbewaffnet_unbewaffnet::unbewaffnet": {
+      "nat": 1,
+      "gat": 1,
+      "mat": 0,
+      "npa": 2,
+      "gpa": 0,
+      "mpa": 0
+    },
+    "nk_pool_klingenwaffen_kurzschwerter::6a0497f8-cac2-4b30-9dcc-b0429a8583eb": {
+      "nat": 3,
+      "gat": 6,
+      "mat": 2,
+      "npa": 5,
+      "gpa": 4,
+      "mpa": 2
+    },
+    "nk_pool_unbewaffnet_schild::16fb134e-4221-4760-8a52-1accbcec770f": {
+      "nat": 3,
+      "gat": 6,
+      "mat": 3,
+      "npa": 1,
+      "gpa": 7,
+      "mpa": 4
+    }
+  },
+  "equipment": [
+    {
+      "id": "95f56248-5c27-4a08-898a-6e74cb232064",
+      "family": "feuerwaffe",
+      "baseTable": "feuerwaffen",
+      "baseId": "47",
+      "displayNameSnapshot": "Booskueek",
+      "specializationId": "nk_spez_hiebwaffen_improvisierte_hiebwaffen",
+      "ammunitionTypeId": "feuerwaffe:vorderlader",
+      "selections": {
+        "verarbeitung": "37",
+        "anpassung": "46"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 104.35,
+      "computedStatsSnapshot": {
+        "gewicht": 1.1500000000000001,
+        "minStaerke": 6,
+        "fixschaden": 3,
+        "rb": 6,
+        "kaliber": 16,
+        "rw": 20,
+        "nachladezeit": 32,
+        "nachladenTawTeiler": 3,
+        "patzermodifikator": 4,
+        "verfuegbarkeitRaw": 130,
+        "verfuegbarkeitStufe": 3,
+        "herstellungszeit": 2,
+        "materialpreis": 96.35,
+        "ini": 0,
+        "rw10m": 5,
+        "rw30m": -8,
+        "rw60m": -23,
+        "rw100m": -41,
+        "rw150m": -60,
+        "rw210m": -81
+      }
+    },
+    {
+      "id": "563c6783-52e2-417d-b185-614d2b83280d",
+      "family": "ammo",
+      "baseTable": "feuerwaffen-munition",
+      "baseId": "papierpatrone_vl",
+      "displayNameSnapshot": "Papierpatrone",
+      "ammunitionTypeId": "feuerwaffe:vorderlader",
+      "selections": {
+        "kaliber": "16"
+      },
+      "quantity": 10,
+      "computedPriceSnapshot": 0.434145,
+      "computedStatsSnapshot": {
+        "kaliber": 16
+      }
+    },
+    {
+      "id": "6a0497f8-cac2-4b30-9dcc-b0429a8583eb",
+      "family": "weapon",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "53",
+      "displayNameSnapshot": "Entermesser",
+      "specializationId": "nk_spez_klingenwaffen_kurzschwerter",
+      "selections": {
+        "material": "2",
+        "fertigung": "4",
+        "anpassung": "2",
+        "schaftmaterial": "2"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 45,
+      "computedStatsSnapshot": {
+        "at": -2,
+        "pa": -3,
+        "wk": 4,
+        "staerkeMalus": -4,
+        "minStaerke1H": 9,
+        "minStaerke2H": 6,
+        "klingenbrecher": 13,
+        "klingenschutz": 13,
+        "rezeptMod": 22,
+        "rb": 0
+      }
+    },
+    {
+      "id": "31b2bb0c-2e9b-4059-8e25-5c4a2fb21070",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "526",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1.76
+    },
+    {
+      "id": "d1003c00-6712-4803-8afa-436c98d7e587",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "533",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.2
+    },
+    {
+      "id": "ff2c1034-7924-41a2-a3a9-791c219e2cb4",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "663",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.4
+    },
+    {
+      "id": "319a2a10-031c-42b4-bd2c-b02206ce469c",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "684",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.027
+    },
+    {
+      "id": "f27ade9d-694e-468c-872e-596bbf55dab6",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "747",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.8200000000000001
+    },
+    {
+      "id": "16fb134e-4221-4760-8a52-1accbcec770f",
+      "family": "shield",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "55",
+      "displayNameSnapshot": "Faustschild/Buckler",
+      "specializationId": "nk_spez_unbewaffnet_schild",
+      "selections": {
+        "material": "2",
+        "fertigung": "4",
+        "bespannung": "4"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 40,
+      "computedStatsSnapshot": {
+        "rs": 8,
+        "klingenbrecher": 2,
+        "klingenschutz": 7,
+        "at": 0,
+        "pa": 4,
+        "wk": 2.5,
+        "staerkeMalus": -14,
+        "minStaerke": 7.15
+      }
+    }
+  ],
+  "ruestungSlots": {
+    "kopf:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "torso:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "arme:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "beine:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "torso:2": {
+      "basisSourceRow": 6,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 40,
+      "computedStatsSnapshot": {
+        "rs": 4,
+        "rh": 4,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "arme:2": {
+      "basisSourceRow": 6,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 40,
+      "computedStatsSnapshot": {
+        "rs": 4,
+        "rh": 4,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "beine:2": {
+      "basisSourceRow": 6,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 40,
+      "computedStatsSnapshot": {
+        "rs": 4,
+        "rh": 4,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    }
+  },
+  "grundfertigkeitAuswahl": {},
+  "waffenLoadouts": [
+    {
+      "id": "2fcb5cc1-2da8-4b7e-b792-3f85235fac54",
+      "comboType": "pistole",
+      "primaryEquipmentId": "95f56248-5c27-4a08-898a-6e74cb232064",
+      "secondaryEquipmentId": "95f56248-5c27-4a08-898a-6e74cb232064",
+      "favorite": true
+    },
+    {
+      "id": "013fad7e-4780-4d9c-b003-72c8cc22dc96",
+      "comboType": "nk1h",
+      "primaryEquipmentId": "6a0497f8-cac2-4b30-9dcc-b0429a8583eb",
+      "secondaryEquipmentId": "6a0497f8-cac2-4b30-9dcc-b0429a8583eb",
+      "favorite": true
+    },
+    {
+      "id": "c9bed163-1994-4276-ab79-70bffd17ce46",
+      "comboType": "nk1h_schild",
+      "primaryEquipmentId": "6a0497f8-cac2-4b30-9dcc-b0429a8583eb",
+      "secondaryEquipmentId": "16fb134e-4221-4760-8a52-1accbcec770f",
+      "favorite": true
+    }
+  ],
+  "customWhkHauptfertigkeiten": [],
+  "customWhkSpezialisierungen": {},
+  "gesinnung": {
+    "gut_boese": 0,
+    "ehrlichkeit_unehrlichkeit": 0,
+    "prinzipientreue_opportunismus": 0,
+    "gesetze_recht_des_staerkeren": 0,
+    "toleranz_rassismus": 0,
+    "pazifismus_bellizismus": 0,
+    "lebensbewahrung_toetungsbereitschaft": 0,
+    "altruismus_egoismus": 0,
+    "gleichberechtigung_sexismus": 0,
+    "hierarchie_anarchie": 0,
+    "staaten_gilden_clans_haeuser": 0,
+    "kommunismus_kapitalismus": 0,
+    "gruppenmensch_einzelgaenger": 0,
+    "vertrauen_misstrauen": 0,
+    "kompromissbereitschaft_sturheit": 0,
+    "strebsamkeit_faulheit": 0,
+    "disziplin_triebhaftigkeit": 0,
+    "introvertiert_extrovertiert": 0,
+    "humor_ernst": 0,
+    "willensfreiheit_fatalismus": 0,
+    "religiositaet_atheismus": 0,
+    "optimismus_pessimismus": 0
+  },
+  "gesinnungNotiz": "",
+  "notes": "NSC-Vorlage Stufe 15, 8000 SP Gesamtbudget. Ausruestungsbudget vorlaeufig exakt auf Anschaffungskosten aufgerundet. Gesinnung neutraler Platzhalter. Keine Vor- und Nachteile."
+}

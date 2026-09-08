@@ -1,0 +1,401 @@
+{
+  "id": "2bbb0d2c-e496-4b9a-acbd-7639badd7a73",
+  "name": "Goblin Wachmann",
+  "spezies": "Goblins",
+  "beruf": "Wachmann",
+  "createdAt": "2026-09-06T19:44:33.448Z",
+  "updatedAt": "2026-09-06T20:07:01.044Z",
+  "charakterTyp": "NSC",
+  "values": {
+    "ep_gesamt": 0,
+    "dublonen_bank": 2488.27,
+    "eig_g_intelligenz": 13,
+    "eig_g_mut": 10,
+    "eig_g_sinneschaerfe": 14,
+    "eig_g_willenskraft": 10,
+    "eig_k_athletik": 13,
+    "eig_k_ausstrahlung": 11,
+    "eig_k_geschicklichkeit": 15,
+    "eig_k_konstitution": 13,
+    "eig_k_schnelligkeit": 16,
+    "eig_k_staerke": 15,
+    "ssk_kultur_goblins": 3,
+    "ssk_sprache_goblinisch": 3,
+    "ssk_schrift_zwerge": 1,
+    "nk_stangenwaffen": 8,
+    "nk_spez_stangenwaffen_speere": 12,
+    "nk_unbewaffnet": 4,
+    "nk_spez_unbewaffnet_unbewaffnet": 4,
+    "fk_feuerwaffen": 8,
+    "fk_spez_feuerwaffen_musketen": 10,
+    "fk_spez_feuerwaffen_pistolen": 10,
+    "sf_ausdauer": 7,
+    "sf_ausweichen": 4,
+    "sf_gefahreninstinkt": 8,
+    "sf_selbstbeherrschung": 7,
+    "sf_tragen": 8,
+    "sf_ruestungsmanoever": 14,
+    "sf_ladeschuetze_vorderlader": 12,
+    "gr_einschuechtern": 5,
+    "gr_menschenkenntnis": 7,
+    "gr_orientierung": 6,
+    "gr_koerperbeherrschung": 6,
+    "gr_laufen": 5,
+    "gr_klettern": 2,
+    "gr_faehrtensuche": 3,
+    "gr_schaetzen": 3,
+    "gr_schwimmen": 2,
+    "gr_springen": 2,
+    "gr_ueberzeugen": 4,
+    "gr_werfen": 3,
+    "whk_rechtskunde": 7,
+    "whk_spez_rechtskunde_strafrecht": 8,
+    "whk_spez_rechtskunde_buergerrecht": 4,
+    "whk_ermittlung": 7,
+    "whk_spez_ermittlung_observation": 8,
+    "whk_spez_ermittlung_spurenlesen": 4,
+    "whk_spez_ermittlung_verhoer": 4,
+    "whk_administration": 5,
+    "whk_ueberleben": 4,
+    "whk_spez_ueberleben_stadt": 6,
+    "whk_militaertheorie": 4,
+    "nk_spez_stangenwaffen_staebe": 23
+  },
+  "selections": {
+    "talente_fernkampfgeschick_stufe_1": 1,
+    "talente_vorderlader_ladeschuetze_stufe1": 1,
+    "talente_schnell_ziehen_muskete": 1,
+    "talente_ruestungsmanoever_stufe_1": 1
+  },
+  "poolAllocations": {
+    "nk_pool_unbewaffnet_unbewaffnet::unbewaffnet": {
+      "nat": 2,
+      "npa": 2,
+      "gat": 0,
+      "gpa": 0,
+      "mat": 0,
+      "mpa": 0
+    },
+    "nk_pool_stangenwaffen_speere::c55d8fa4-70c3-4a40-8d23-a45f5bd47130": {
+      "nat": 6,
+      "npa": 6,
+      "gat": 0,
+      "gpa": 0,
+      "mat": 0,
+      "mpa": 0
+    },
+    "nk_pool_stangenwaffen_staebe::2f3ad81b-7e99-4260-a4f0-16f26b72a64a": {
+      "nat": 7,
+      "npa": 8,
+      "gat": 4,
+      "gpa": 4,
+      "mat": 0,
+      "mpa": 0
+    }
+  },
+  "equipment": [
+    {
+      "id": "d26a05bf-6ff7-45e3-b7e3-e4a5dab2a34b",
+      "family": "feuerwaffe",
+      "baseTable": "feuerwaffen",
+      "baseId": "33",
+      "displayNameSnapshot": "Garr",
+      "specializationId": "nk_spez_stangenwaffen_improvisierte_stangenwaffen",
+      "ammunitionTypeId": "feuerwaffe:vorderlader",
+      "selections": {
+        "verarbeitung": "37",
+        "anpassung": "46"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 174.5,
+      "computedStatsSnapshot": {
+        "gewicht": 3.0999999999999996,
+        "minStaerke": 7,
+        "fixschaden": 1,
+        "rb": 14,
+        "kaliber": 16,
+        "rw": 40,
+        "nachladezeit": 30,
+        "nachladenTawTeiler": 3,
+        "patzermodifikator": 4,
+        "verfuegbarkeitRaw": 140,
+        "verfuegbarkeitStufe": 3,
+        "herstellungszeit": 1.2000000000000002,
+        "materialpreis": 169.7,
+        "ini": 0,
+        "rw10m": 2,
+        "rw30m": -3,
+        "rw60m": -8,
+        "rw100m": -15,
+        "rw150m": -22,
+        "rw210m": -30
+      }
+    },
+    {
+      "id": "769b43e3-c55e-45c0-bc89-8a54cb5e399d",
+      "family": "feuerwaffe",
+      "baseTable": "feuerwaffen",
+      "baseId": "47",
+      "displayNameSnapshot": "Booskueek",
+      "specializationId": "nk_spez_hiebwaffen_improvisierte_hiebwaffen",
+      "ammunitionTypeId": "feuerwaffe:vorderlader",
+      "selections": {
+        "verarbeitung": "37",
+        "anpassung": "46"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 104.35,
+      "computedStatsSnapshot": {
+        "gewicht": 1.1500000000000001,
+        "minStaerke": 6,
+        "fixschaden": 3,
+        "rb": 6,
+        "kaliber": 16,
+        "rw": 20,
+        "nachladezeit": 32,
+        "nachladenTawTeiler": 3,
+        "patzermodifikator": 4,
+        "verfuegbarkeitRaw": 130,
+        "verfuegbarkeitStufe": 3,
+        "herstellungszeit": 2,
+        "materialpreis": 96.35,
+        "ini": 0,
+        "rw10m": 5,
+        "rw30m": -8,
+        "rw60m": -23,
+        "rw100m": -41,
+        "rw150m": -60,
+        "rw210m": -81
+      }
+    },
+    {
+      "id": "c27c0fcf-c096-4c8c-9203-8f46c8c2f533",
+      "family": "ammo",
+      "baseTable": "feuerwaffen-munition",
+      "baseId": "papierpatrone_vl",
+      "displayNameSnapshot": "Papierpatrone",
+      "ammunitionTypeId": "feuerwaffe:vorderlader",
+      "selections": {
+        "kaliber": "16"
+      },
+      "quantity": 100,
+      "computedPriceSnapshot": 0.434145,
+      "computedStatsSnapshot": {
+        "kaliber": 16
+      }
+    },
+    {
+      "id": "c55d8fa4-70c3-4a40-8d23-a45f5bd47130",
+      "family": "weapon",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "183",
+      "displayNameSnapshot": "Speer  Eisenblatt",
+      "specializationId": "nk_spez_stangenwaffen_speere",
+      "selections": {
+        "material": "2",
+        "fertigung": "4",
+        "anpassung": "2",
+        "schaftmaterial": "2"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 30,
+      "computedStatsSnapshot": {
+        "at": -4,
+        "pa": -3,
+        "wk": 4,
+        "staerkeMalus": -5,
+        "minStaerke1H": 14,
+        "minStaerke2H": 9,
+        "klingenbrecher": 2,
+        "klingenschutz": 6,
+        "rezeptMod": 15,
+        "rb": 0
+      }
+    },
+    {
+      "id": "2f3ad81b-7e99-4260-a4f0-16f26b72a64a",
+      "family": "weapon",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "188",
+      "displayNameSnapshot": "Stab (60cm) eisenbeschlagen",
+      "specializationId": "nk_spez_stangenwaffen_staebe",
+      "selections": {
+        "material": "2",
+        "fertigung": "4",
+        "anpassung": "2",
+        "schaftmaterial": "2"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 30,
+      "computedStatsSnapshot": {
+        "at": -2,
+        "pa": -5,
+        "wk": 3,
+        "staerkeMalus": -3,
+        "minStaerke1H": 8,
+        "minStaerke2H": 5,
+        "klingenbrecher": 2,
+        "klingenschutz": 5,
+        "rezeptMod": 12,
+        "rb": 0
+      }
+    }
+  ],
+  "ruestungSlots": {
+    "kopf:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "torso:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "arme:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "beine:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "torso:3": {
+      "basisSourceRow": 8,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 360,
+      "computedStatsSnapshot": {
+        "rs": 4,
+        "rh": 4,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "arme:3": {
+      "basisSourceRow": 8,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 360,
+      "computedStatsSnapshot": {
+        "rs": 4,
+        "rh": 4,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "torso:4": {
+      "basisSourceRow": 16,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 649,
+      "computedStatsSnapshot": {
+        "rs": 6,
+        "rh": 6,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "kopf:4": {
+      "basisSourceRow": 16,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 649,
+      "computedStatsSnapshot": {
+        "rs": 6,
+        "rh": 6,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    }
+  },
+  "grundfertigkeitAuswahl": {},
+  "waffenLoadouts": [
+    {
+      "id": "a4ac64bb-6d6e-4be4-89c0-50b8b1a545a2",
+      "comboType": "muskete",
+      "primaryEquipmentId": "d26a05bf-6ff7-45e3-b7e3-e4a5dab2a34b",
+      "secondaryEquipmentId": "d26a05bf-6ff7-45e3-b7e3-e4a5dab2a34b",
+      "favorite": true
+    },
+    {
+      "id": "5c5a50b8-ec54-44fb-9c37-0fffb706f63b",
+      "comboType": "pistole",
+      "primaryEquipmentId": "769b43e3-c55e-45c0-bc89-8a54cb5e399d",
+      "secondaryEquipmentId": "769b43e3-c55e-45c0-bc89-8a54cb5e399d",
+      "favorite": true
+    },
+    {
+      "id": "267e5be7-d20a-4444-add0-a770d013d077",
+      "comboType": "nk2h",
+      "primaryEquipmentId": "c55d8fa4-70c3-4a40-8d23-a45f5bd47130",
+      "secondaryEquipmentId": "c55d8fa4-70c3-4a40-8d23-a45f5bd47130",
+      "favorite": true
+    },
+    {
+      "id": "a084ce06-10e9-4166-a01a-39b05f3a2eff",
+      "comboType": "nk1h",
+      "primaryEquipmentId": "2f3ad81b-7e99-4260-a4f0-16f26b72a64a",
+      "secondaryEquipmentId": "2f3ad81b-7e99-4260-a4f0-16f26b72a64a",
+      "favorite": true
+    }
+  ],
+  "customWhkHauptfertigkeiten": [],
+  "customWhkSpezialisierungen": {},
+  "gesinnung": {
+    "gut_boese": 0,
+    "ehrlichkeit_unehrlichkeit": 0,
+    "prinzipientreue_opportunismus": 0,
+    "gesetze_recht_des_staerkeren": 0,
+    "toleranz_rassismus": 0,
+    "pazifismus_bellizismus": 0,
+    "lebensbewahrung_toetungsbereitschaft": 0,
+    "altruismus_egoismus": 0,
+    "gleichberechtigung_sexismus": 0,
+    "hierarchie_anarchie": 0,
+    "staaten_gilden_clans_haeuser": 0,
+    "kommunismus_kapitalismus": 0,
+    "gruppenmensch_einzelgaenger": 0,
+    "vertrauen_misstrauen": 0,
+    "kompromissbereitschaft_sturheit": 0,
+    "strebsamkeit_faulheit": 0,
+    "disziplin_triebhaftigkeit": 0,
+    "introvertiert_extrovertiert": 0,
+    "humor_ernst": 0,
+    "willensfreiheit_fatalismus": 0,
+    "religiositaet_atheismus": 0,
+    "optimismus_pessimismus": 0
+  },
+  "gesinnungNotiz": "",
+  "notes": "NSC-Vorlage Stufe 0. Ausruestungsbudget vorlaeufig auf Anschaffungskosten (Cent aufgerundet) gesetzt, kein festgelegtes allgemeines NSC-Geldbudget. 100 Papierpatronen Kaliber 16 gemeinsam fuer Garr und Booskueek. Leichter Plattenpanzer als normaler Eisenpanzer umgesetzt; Ruestung Gesellenarbeit von der Stange. Waffen Massenfabrikation. WHK: Rechtskunde/Strafrecht, Ermittlung/Observation, Administration und Ueberleben Stadt. Gesinnung neutral als Platzhalter."
+}

@@ -1,0 +1,330 @@
+{
+  "id": "f116aea4-da2d-4ddb-a9aa-1ea9eef5e07b",
+  "name": "Goblin Räuber-Nahkämpfer",
+  "spezies": "Goblins",
+  "beruf": "Räuber-Nahkämpfer",
+  "createdAt": "2026-09-06T20:18:46.563Z",
+  "updatedAt": "2026-09-06T20:18:46.563Z",
+  "charakterTyp": "NSC",
+  "values": {
+    "ep_gesamt": 0,
+    "dublonen_bank": 1560.21,
+    "eig_g_intelligenz": 13,
+    "eig_g_mut": 12,
+    "eig_g_sinneschaerfe": 12,
+    "eig_g_willenskraft": 8,
+    "eig_k_athletik": 15,
+    "eig_k_ausstrahlung": 11,
+    "eig_k_geschicklichkeit": 15,
+    "eig_k_konstitution": 13,
+    "eig_k_schnelligkeit": 16,
+    "eig_k_staerke": 17,
+    "ssk_kultur_goblins": 3,
+    "ssk_sprache_goblinisch": 3,
+    "ssk_schrift_zwerge": 1,
+    "sf_ausdauer": 9,
+    "sf_ausweichen": 6,
+    "sf_gefahreninstinkt": 6,
+    "sf_selbstbeherrschung": 7,
+    "sf_tragen": 10,
+    "sf_ruestungsmanoever": 14,
+    "gr_koerperbeherrschung": 7,
+    "gr_laufen": 4,
+    "gr_klettern": 3,
+    "gr_orientierung": 5,
+    "gr_schleichen": 5,
+    "gr_verstecken": 5,
+    "gr_schwimmen": 2,
+    "gr_springen": 2,
+    "gr_menschenkenntnis": 3,
+    "gr_einschuechtern": 7,
+    "whk_ueberleben": 8,
+    "whk_spez_ueberleben_wald": 11,
+    "whk_spez_ueberleben_stadt": 3,
+    "nk_stangenwaffen": 10,
+    "nk_spez_stangenwaffen_speere": 16,
+    "nk_spez_stangenwaffen_staebe": 12,
+    "nk_unbewaffnet": 6,
+    "nk_spez_unbewaffnet_unbewaffnet": 10,
+    "att_vitalitaet": 3,
+    "whk_militaertheorie": 6,
+    "whk_spez_militaertheorie_taktik": 4
+  },
+  "selections": {
+    "talente_zaeher_bursche_stufe_1": 1,
+    "talente_offensiver_kampfstil_stufe_1": 1,
+    "talente_ruestungsmanoever_stufe_1": 1
+  },
+  "poolAllocations": {
+    "nk_pool_unbewaffnet_unbewaffnet::unbewaffnet": {
+      "nat": 3,
+      "npa": 3,
+      "gat": 1,
+      "gpa": 1,
+      "mat": 1,
+      "mpa": 1
+    },
+    "nk_pool_stangenwaffen_speere::090042b0-8959-4424-855b-a9e71e793ddd": {
+      "nat": 4,
+      "npa": 4,
+      "gat": 3,
+      "gpa": 3,
+      "mat": 1,
+      "mpa": 1
+    },
+    "nk_pool_stangenwaffen_staebe::96430cc6-85a2-442a-aa6c-93387c69b9f6": {
+      "nat": 3,
+      "npa": 3,
+      "gat": 2,
+      "gpa": 2,
+      "mat": 1,
+      "mpa": 1
+    }
+  },
+  "equipment": [
+    {
+      "id": "090042b0-8959-4424-855b-a9e71e793ddd",
+      "family": "weapon",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "192",
+      "displayNameSnapshot": "Stoßspeer",
+      "specializationId": "nk_spez_stangenwaffen_speere",
+      "selections": {
+        "material": "2",
+        "fertigung": "4",
+        "anpassung": "2",
+        "schaftmaterial": "2"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 30,
+      "computedStatsSnapshot": {
+        "at": -5,
+        "pa": -4,
+        "wk": 5,
+        "staerkeMalus": -8,
+        "minStaerke1H": 18,
+        "minStaerke2H": 11,
+        "klingenbrecher": 2,
+        "klingenschutz": 6,
+        "rezeptMod": 13,
+        "rb": 0
+      }
+    },
+    {
+      "id": "96430cc6-85a2-442a-aa6c-93387c69b9f6",
+      "family": "weapon",
+      "baseTable": "nk_waffen_basis",
+      "baseId": "188",
+      "displayNameSnapshot": "Stab (60cm) eisenbeschlagen",
+      "specializationId": "nk_spez_stangenwaffen_staebe",
+      "selections": {
+        "material": "2",
+        "fertigung": "4",
+        "anpassung": "2",
+        "schaftmaterial": "2"
+      },
+      "quantity": 1,
+      "computedPriceSnapshot": 30,
+      "computedStatsSnapshot": {
+        "at": -2,
+        "pa": -5,
+        "wk": 3,
+        "staerkeMalus": -3,
+        "minStaerke1H": 8,
+        "minStaerke2H": 5,
+        "klingenbrecher": 2,
+        "klingenschutz": 5,
+        "rezeptMod": 12,
+        "rb": 0
+      }
+    },
+    {
+      "id": "b3d972ab-b2fa-49e5-be5e-3e4040d47f6e",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "526",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 1.76
+    },
+    {
+      "id": "8583a849-1924-4703-b130-2b716674f331",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "533",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.2
+    },
+    {
+      "id": "d8ba4d1c-e5ab-4737-8944-cf30577d2c01",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "663",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.4
+    },
+    {
+      "id": "1887e90d-e4b6-4a0d-8260-3947efa46a0c",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "684",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.027
+    },
+    {
+      "id": "3dcfb676-3b03-4951-9e60-09f7cf97f5af",
+      "family": "preisliste",
+      "baseTable": "preisliste",
+      "baseId": "747",
+      "selections": {},
+      "quantity": 1,
+      "computedPriceSnapshot": 0.8200000000000001
+    }
+  ],
+  "ruestungSlots": {
+    "kopf:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "torso:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "arme:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "beine:1": {
+      "basisSourceRow": 2,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 22,
+      "computedStatsSnapshot": {
+        "rs": 1,
+        "rh": 1,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "torso:3": {
+      "basisSourceRow": 8,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 360,
+      "computedStatsSnapshot": {
+        "rs": 4,
+        "rh": 4,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "arme:3": {
+      "basisSourceRow": 8,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 360,
+      "computedStatsSnapshot": {
+        "rs": 4,
+        "rh": 4,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "beine:2": {
+      "basisSourceRow": 6,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 40,
+      "computedStatsSnapshot": {
+        "rs": 4,
+        "rh": 4,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    },
+    "kopf:4": {
+      "basisSourceRow": 16,
+      "verarbeitungSourceRow": 2,
+      "anpassungSourceRow": 3,
+      "computedPriceSnapshot": 649,
+      "computedStatsSnapshot": {
+        "rs": 6,
+        "rh": 6,
+        "verfuegbarkeitNw": 1,
+        "verfuegbarkeitAw": 1
+      }
+    }
+  },
+  "grundfertigkeitAuswahl": {},
+  "waffenLoadouts": [
+    {
+      "id": "70162c7f-35de-4015-bc84-58e1f9c97ba7",
+      "comboType": "nk2h",
+      "primaryEquipmentId": "090042b0-8959-4424-855b-a9e71e793ddd",
+      "secondaryEquipmentId": "090042b0-8959-4424-855b-a9e71e793ddd",
+      "favorite": true
+    },
+    {
+      "id": "a98ae4a9-3d49-4475-b4a8-9446a95e597c",
+      "comboType": "nk1h",
+      "primaryEquipmentId": "96430cc6-85a2-442a-aa6c-93387c69b9f6",
+      "secondaryEquipmentId": "96430cc6-85a2-442a-aa6c-93387c69b9f6",
+      "favorite": true
+    }
+  ],
+  "customWhkHauptfertigkeiten": [],
+  "customWhkSpezialisierungen": {},
+  "gesinnung": {
+    "gut_boese": 0,
+    "ehrlichkeit_unehrlichkeit": 0,
+    "prinzipientreue_opportunismus": 0,
+    "gesetze_recht_des_staerkeren": 0,
+    "toleranz_rassismus": 0,
+    "pazifismus_bellizismus": 0,
+    "lebensbewahrung_toetungsbereitschaft": 0,
+    "altruismus_egoismus": 0,
+    "gleichberechtigung_sexismus": 0,
+    "hierarchie_anarchie": 0,
+    "staaten_gilden_clans_haeuser": 0,
+    "kommunismus_kapitalismus": 0,
+    "gruppenmensch_einzelgaenger": 0,
+    "vertrauen_misstrauen": 0,
+    "kompromissbereitschaft_sturheit": 0,
+    "strebsamkeit_faulheit": 0,
+    "disziplin_triebhaftigkeit": 0,
+    "introvertiert_extrovertiert": 0,
+    "humor_ernst": 0,
+    "willensfreiheit_fatalismus": 0,
+    "religiositaet_atheismus": 0,
+    "optimismus_pessimismus": 0
+  },
+  "gesinnungNotiz": "",
+  "notes": "NSC-Vorlage Stufe 0, 6400 SP. Ausruestungsbudget vorlaeufig exakt auf Anschaffungskosten aufgerundet. Gesinnung neutraler Platzhalter. Keine Vor- und Nachteile."
+}

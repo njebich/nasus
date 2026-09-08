@@ -1,0 +1,9 @@
+.npc-wizard { margin: 1rem 0; padding: 1.25rem; border: 1px solid currentColor; border-radius: 8px; max-width: 900px; }
+.npc-steps { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; list-style: none; padding: 0; }
+.npc-steps [aria-current="step"] { font-weight: bold; text-decoration: underline; text-underline-offset: .3em; }
+.npc-step-content { margin: 1.25rem 0; }
+.npc-step-content label { display: flex; flex-direction: column; gap: .4rem; margin: 1rem 0; max-width: 32rem; }
+.npc-step-content input, .npc-step-content select { padding: .5rem; max-width: 100%; }
+.npc-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+.npc-summary dd { margin: 0; }
+.npc-actions { display: flex; flex-wrap: wrap; gap: .75rem; }

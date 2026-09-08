@@ -1,8 +1,10 @@
 import type { CharacterState } from './characterStore';
 import { DEFAULT_NAVIGATION, type NavigationState } from '../navigation';
+import type { NpcWizardState } from '../addins/npc';
 
 /** Gebündelter Top-Level-UI-Zustand von main.ts (vorher lose Modul-`let`s). */
 export interface AppState {
+  npcWizard: NpcWizardState | null;
   currentCharacter: CharacterState | null;
   errorMessage: string;
   navigationState: NavigationState;
@@ -18,6 +20,7 @@ export interface AppState {
 
 export function createInitialAppState(currentCharacter: CharacterState | null): AppState {
   return {
+    npcWizard: null,
     currentCharacter,
     errorMessage: '',
     navigationState: { ...DEFAULT_NAVIGATION },

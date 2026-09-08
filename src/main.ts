@@ -6,6 +6,7 @@ import { buildNahkampfRows } from './views/kampf';
 import { isGeweihterTalentSelectedInSheet } from './engine/geweihte';
 import { initTooltips, tooltipAttr } from './views/tooltip';
 import { renderNewCharacterForm, wireCharacterLifecycleEvents } from './views/characterLifecycle';
+import { renderNpcWizard, wireNpcWizard } from './addins/npc';
 import { renderActiveView } from './views/viewRouter';
 import { createInitialAppState } from './state/appState';
 import { createMutationHandlers } from './state/mutationHandlers';
@@ -131,6 +132,7 @@ function render(): void {
         </select>
         ${characterWarning}
         <button type="button" id="new-character">Neuer Charakter</button>
+        <button type="button" id="new-npc">NPC erstellen</button>
         <button type="button" id="new-character-bestehend">Bestehenden Charakter erstellen</button>
         <button type="button" id="load-character-file">Datei laden</button>
         <input type="file" id="character-file-input" accept=".json,.nasus.json,application/json" hidden />
@@ -139,6 +141,7 @@ function render(): void {
         ${appState.currentCharacter ? '<button type="button" id="delete-character">Löschen</button>' : ''}
       </div>
       ${appState.showNewCharacterForm ? renderNewCharacterForm(appState.newCharacterBestehend) : ''}
+      ${appState.npcWizard ? renderNpcWizard(appState.npcWizard) : ''}
       ${appState.confirmingDelete && appState.currentCharacter ? `
         <div class="inline-form">
           <span>Charakter "${appState.currentCharacter.name}" wirklich löschen?</span>
@@ -177,6 +180,7 @@ function render(): void {
   `;
 
   wireCharacterLifecycleEvents(appState, render);
+  wireNpcWizard(appState, render);
 
   document.querySelector('#save-character-file')?.addEventListener('click', () => {
     appState.showSaveForm = true;

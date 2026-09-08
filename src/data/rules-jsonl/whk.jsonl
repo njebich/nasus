@@ -317,12 +317,15 @@
 {"art": "Wert", "beschreibung": "Überleben", "kategorie": "WHK", "kostenRaw": "WENN(wert=0;0;10+(wert-1)*wert/2)", "parent": "Führung/Reise", "referenz": "whk_ueberleben", "sourceRow": 2057}
 {"art": "Wert", "beschreibung": "-> Berge", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_berge", "sourceRow": 2058}
 {"art": "Wert", "beschreibung": "-> Dschungel", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_dschungel", "sourceRow": 2059}
-{"art": "Wert", "beschreibung": "-> Ebene", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_ebene", "sourceRow": 2060}
+{"art": "Wert", "beschreibung": "-> Steppe", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_steppe", "sourceRow": 2060}
 {"art": "Wert", "beschreibung": "-> Eis", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_eis", "sourceRow": 2061}
 {"art": "Wert", "beschreibung": "-> Stadt", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_stadt", "sourceRow": 2062}
 {"art": "Wert", "beschreibung": "-> Unterirdisch", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_unterirdisch", "sourceRow": 2063}
 {"art": "Wert", "beschreibung": "-> Wald", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_wald", "sourceRow": 2064}
 {"art": "Wert", "beschreibung": "-> Wüste", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_wueste", "sourceRow": 2065}
+{"art": "Wert", "beschreibung": "-> Küste", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_kueste", "sourceRow": 2250}
+{"art": "Wert", "beschreibung": "-> Feuchtgebiete", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_feuchtgebiete", "sourceRow": 2251}
+{"art": "Wert", "beschreibung": "-> Tundra", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Überleben", "referenz": "whk_spez_ueberleben_tundra", "sourceRow": 2252}
 {"art": "Wert", "beschreibung": "Telegrafie", "kategorie": "WHK", "kostenRaw": "WENN(wert=0;0;10+(wert-1)*wert/2)", "parent": "Führung/Reise", "referenz": "whk_telegrafie", "sourceRow": 2066}
 {"art": "Wert", "beschreibung": "-> Telegrafist", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Telegrafie", "referenz": "whk_spez_telegrafie_telegrafist", "sourceRow": 2067}
 {"art": "Wert", "beschreibung": "-> Leitungsbauer", "kategorie": "WHK", "kostenRaw": "SVERWEIS(wert;'WHK-Spez-Kosten';3;1)", "parent": "Telegrafie", "referenz": "whk_spez_telegrafie_leitungsbauer", "sourceRow": 2068}

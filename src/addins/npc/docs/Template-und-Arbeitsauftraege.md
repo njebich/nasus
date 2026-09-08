@@ -10,7 +10,7 @@ Stand: 8. September 2026. Entwurf für die nächste Ausbaustufe. Die folgenden R
 |---|---|
 | Identität | Name oder Platzhalter, Volk, Geschlecht, Alter |
 | Lebenswelt | Städter, Dörfler, Bauer, Nomade, Jäger & Sammler, Seefahrer, Wandernder, Oberschicht |
-| Herkunft | Herkunftsort, Region, Welt; getrennt davon Herkunftsgelände aus WHK Überleben: Berge, Dschungel, Ebene, Eis, Stadt, Unterirdisch, Wald, Wüste |
+| Herkunft | Herkunftsort, Region, Welt; getrennt davon Herkunftsgelände aus WHK Überleben: Berge, Dschungel, Steppe, Küste, Feuchtgebiete, Tundra, Eis, Stadt, Unterirdisch, Wald, Wüste; vereinbarte Beiträge und Zufallsauswahl siehe [Terrain-Katalog](Terrain-Katalog.md) |
 | Beruf | Hauptrolle, gegebenenfalls Teilberufe; Aufgabe im Alltag, beruflicher Schwerpunkt, typische Schwächen |
 | Erfahrung | Kreis und Position im Kreis (Kreis/Kreis+); berufliches Kompetenzziel separat vom Kampfziel |
 | Eigenschaften | Bis zu drei Schwerpunkte, den jeweiligen Gruppen zugeordnet; optional eine schlechte Eigenschaft bei knappem SP-Budget zulassen und benennen; keine Werte im Template |

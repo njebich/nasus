@@ -5,6 +5,7 @@ Eigener Funktionsbereich innerhalb der clientseitigen Nasus-App. Das Add-in wird
 ## Ablage
 
 - `docs/Template-und-Arbeitsauftraege.md`: werteloses Template, sieben Rollenprofile und Arbeitsaufträge; verbindliche Entscheidungen und Vorschläge gekennzeichnet.
+- `docs/Terrain-Katalog.md`: vereinbarte elf Terrains, vollständige WHK-Auswahlkataloge und Regeln für drei zufällige Zusatzfertigkeiten; Generator noch nicht implementiert.
 - `docs/Budgetgrundlage.md`: berechnete Volksminima, Pflichtbündel und Referenzmessungen.
 - `docs/Budgetdaten.json`: dieselben Berechnungsdaten einschließlich Einzelwerten.
 - `scripts/budget-baseline.mjs`: reproduzierbare Erstellung der Budgetgrundlage. Vom Projektverzeichnis aus: `node src/addins/npc/scripts/budget-baseline.mjs`.

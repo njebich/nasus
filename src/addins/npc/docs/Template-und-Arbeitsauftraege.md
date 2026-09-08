@@ -13,7 +13,7 @@ Stand: 8. September 2026. Entwurf für die nächste Ausbaustufe. Die folgenden R
 | Soziale Lage | Elend, Arm, Einfach, Gesichert, Wohlhabend, Reich, Elite; unabhängig von Lebenswelt und Rechtsstand; siehe [Soziale Lage](Soziale-Lage.md) |
 | Rechtsstand | Privilegiert, Frei, Leibeigen, Schuldversklavt, Versklavt |
 | Herkunft | Herkunftsort, Region, Welt; getrennt davon Herkunftsgelände aus WHK Überleben: Berge, Dschungel, Steppe, Küste, Feuchtgebiete, Tundra, Eis, Stadt, Unterirdisch, Wald, Wüste; vereinbarte Beiträge und Zufallsauswahl siehe [Terrain-Katalog](Terrain-Katalog.md) |
-| Beruf | Hauptrolle, gegebenenfalls Teilberufe; Aufgabe im Alltag, beruflicher Schwerpunkt, typische Schwächen |
+| Beruf | Berufsgruppe → Beruf, separate Professionsgüte; optional Zweitberuf mit eigener Güte; Aufgabe im Alltag, beruflicher Schwerpunkt, typische Schwächen; siehe [Berufsstruktur](Berufsstruktur.md) |
 | Erfahrung | Kreis und Position im Kreis (Kreis/Kreis+); berufliches Kompetenzziel separat vom Kampfziel |
 | Eigenschaften | Bis zu drei Schwerpunkte, den jeweiligen Gruppen zugeordnet; optional eine schlechte Eigenschaft bei knappem SP-Budget zulassen und benennen; keine Werte im Template |
 | Pflichtmerkmale | Eine der fünf Aussehensstufen ohne Allerweltsgesicht und eine der vier Schlafstufen, jeweils fest gewählt oder einmalig aus einem festzulegenden Zufallsprofil gezogen |

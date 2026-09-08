@@ -22,9 +22,9 @@ Eigene Auswahl: Privilegiert · Frei · Leibeigen · Schuldversklavt · Versklav
 
 Lebenswelt, soziale Lage und Rechtsstand bilden gemeinsam den Hintergrund. Rechtsstand und soziale Lage sind unabhängig kombinierbar, beispielsweise als wohlhabender Leibeigener oder freier Bettler. Konkrete Sonderrechte für „Privilegiert“ sind noch nicht festgelegt.
 
-## GF und WHK der sozialen Lage – Entwurf
+## GF und WHK der sozialen Lage – bestätigt
 
-Vom Nutzer festgelegt: Führung gehört ab Wohlhabend zur WHK-Auswahl, also auch bei Reich und Elite. Die übrigen Poolzusammenstellungen sind Vorschläge.
+Die folgenden Fertigkeitspools und Wertebeiträge wurden vom Nutzer bestätigt. Führung gehört ab Wohlhabend zur WHK-Auswahl, also auch bei Reich und Elite.
 
 | Soziale Lage | GF-Auswahl | WHK-Auswahl |
 |---|---|---|
@@ -36,8 +36,8 @@ Vom Nutzer festgelegt: Führung gehört ab Wohlhabend zur WHK-Auswahl, also auch
 | Reich | Überzeugen, Menschenkenntnis, Reiten, Einschüchtern | Bankwesen, Administration, Kunsthandwerker, Etikette (Hochfinanz), Führung |
 | Elite | Überzeugen, Menschenkenntnis, Einschüchtern, Reiten | Führung, Rechtskunde, Geschichte, Etikette (Hochfinanz) |
 
-Vergabevorschlag: je zwei unterschiedliche GF und WHK mit jeweils +2; gegebenenfalls passende WHK-Spezialisierung +1. Gleicher Umfang für alle sozialen Lagen. Beiträge aus allen Bausteinen zusammenführen und regulär bezahlen. Eine Spezialisierung darf insgesamt ihre Hauptfertigkeit nicht übersteigen. Diebeskunst wird über den Kriminalitätsschwerpunkt angeboten. Eine Etikette-Spezialisierung Hofadel wäre eine mögliche Ergänzung, ist aber noch kein bestehender Katalogeintrag.
+Vergabe: je zwei unterschiedliche GF und zwei unterschiedliche WHK mit jeweils +2; gegebenenfalls passende WHK-Spezialisierung +1. Gleicher Umfang für alle sozialen Lagen. Beiträge aus allen Bausteinen zusammenführen und regulär bezahlen. Eine Spezialisierung darf insgesamt ihre Hauptfertigkeit nicht übersteigen. Diebeskunst wird über den Kriminalitätsschwerpunkt angeboten. Eine Etikette-Spezialisierung Hofadel wäre eine mögliche Ergänzung, ist aber noch kein bestehender Katalogeintrag.
 
 ## Noch offen
 
-Die vorgeschlagenen Fertigkeitspools und Wertebeiträge sowie Auswahlgewichte und weitere Auswirkungen der sozialen Lage sind noch zu vereinbaren. Führung ab Wohlhabend ist festgelegt.
+Auswahlgewichte und weitere Auswirkungen der sozialen Lage sind noch zu vereinbaren. Die Fertigkeitspools und Wertebeiträge sind festgelegt; die automatische Vergabe im Generator ist noch nicht implementiert.

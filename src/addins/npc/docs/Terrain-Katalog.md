@@ -72,4 +72,4 @@ Alle Kandidaten stammen aus dem vorhandenen GF-Katalog.
 
 ## Anschluss
 
-Als nächste Kategorie bietet sich Lebenswelt an: Städter, Dörfler, Bauer, Nomade, Jäger & Sammler, Seefahrer, Wandernder, Oberschicht. Sie beschreibt den Alltag im Gelände und ergänzt Terrain vor der beruflichen Vertiefung. Ihre konkreten Beiträge sind noch nicht vereinbart.
+Als nächste Kategorie folgt Lebenswelt: Städter, Dörfler, Bauer, Nomade, Jäger & Sammler, Seefahrer, Wandernder. Sie beschreibt den Alltag im Gelände und ergänzt Terrain vor der beruflichen Vertiefung. Oberschicht wird als eigene soziale Lage in sieben Stufen ausgegliedert. Städter umfasst auch mögliche Schwerpunkte Kriminalität und Observation. Siehe [Lebenswelt-Katalog](Lebenswelt-Katalog.md) für die bestätigten GF-/WHK-Pools und Beiträge sowie [Soziale Lage und Rechtsstand](Soziale-Lage.md) für die separate soziale Einordnung.

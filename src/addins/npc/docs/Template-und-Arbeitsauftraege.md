@@ -9,7 +9,9 @@ Stand: 8. September 2026. Entwurf für die nächste Ausbaustufe. Die folgenden R
 | Bereich | Auswahl / Inhalt |
 |---|---|
 | Identität | Name oder Platzhalter, Volk, Geschlecht, Alter |
-| Lebenswelt | Städter, Dörfler, Bauer, Nomade, Jäger & Sammler, Seefahrer, Wandernder, Oberschicht |
+| Lebenswelt | Städter, Dörfler, Bauer, Nomade, Jäger & Sammler, Seefahrer, Wandernder; Städter zusätzlich mit möglichen Schwerpunkten Kriminalität und Observation; siehe [Lebenswelt-Katalog](Lebenswelt-Katalog.md) |
+| Soziale Lage | Elend, Arm, Einfach, Gesichert, Wohlhabend, Reich, Elite; unabhängig von Lebenswelt und Rechtsstand; siehe [Soziale Lage](Soziale-Lage.md) |
+| Rechtsstand | Privilegiert, Frei, Leibeigen, Schuldversklavt, Versklavt |
 | Herkunft | Herkunftsort, Region, Welt; getrennt davon Herkunftsgelände aus WHK Überleben: Berge, Dschungel, Steppe, Küste, Feuchtgebiete, Tundra, Eis, Stadt, Unterirdisch, Wald, Wüste; vereinbarte Beiträge und Zufallsauswahl siehe [Terrain-Katalog](Terrain-Katalog.md) |
 | Beruf | Hauptrolle, gegebenenfalls Teilberufe; Aufgabe im Alltag, beruflicher Schwerpunkt, typische Schwächen |
 | Erfahrung | Kreis und Position im Kreis (Kreis/Kreis+); berufliches Kompetenzziel separat vom Kampfziel |

@@ -8,7 +8,7 @@ Berge, Dschungel, Steppe, Küste, Feuchtgebiete, Tundra, Eis, Stadt, Unterirdisc
 
 Steppe ersetzt Ebene. Küste, Feuchtgebiete und Tundra wurden ergänzt. Offenes Meer wurde vorgeschlagen, aber nicht aufgenommen. Excel-Quelle und App-Regeldaten enthalten dieselben elf Spezialisierungen. Steppe verwendet die Referenz `whk_spez_ueberleben_steppe`. Bestehende Charaktere müssen vor Version 1.0 nicht migriert werden.
 
-## Vergabe bei der Charaktererstellung
+## WHK-Vergabe bei der Charaktererstellung
 
 - Fest: Überleben +4 und passende Terrain-Spezialisierung +4.
 - Zusätzlich drei unterschiedliche Hauptfertigkeiten zufällig aus dem jeweiligen Katalog unten ziehen, ohne Zurücklegen. Die frühere Idee mit höchstens zwei zusätzlichen WHK ist damit ersetzt.
@@ -21,7 +21,7 @@ Steppe ersetzt Ebene. Küste, Feuchtgebiete und Tundra wurden ergänzt. Offenes 
 - Zufallsauswahl einmal bei der Erstellung durchführen und das Ergebnis am Charakter im bestehenden lokalen Speicher sichern. Beim erneuten Öffnen nicht neu auslosen.
 - Kosten aus den zusammengeführten Endwerten nach den normalen Spielregeln berechnen; Terrain-Beiträge sind keine kostenlosen Werte und keine mehrfach zu verbuchenden Kosten.
 
-## Vollständiger Auswahlkatalog
+## Vollständiger WHK-Auswahlkatalog
 
 Jede durch Semikolon getrennte Hauptfertigkeit ist ein eigener Kandidat. Alle Namen stammen aus dem bestehenden WHK-Katalog. Pro Terrain gibt es sechs oder sieben unterschiedliche Kandidaten.
 
@@ -38,6 +38,37 @@ Jede durch Semikolon getrennte Hauptfertigkeit ist ein eigener Kandidat. Alle Na
 | Unterirdisch | Geologie (Mineralogie); Pflanzenkunde (Pilzsammler); Bergbau; Ermittlung (Spurenlesen); Koch (Konservieren); Seiler |
 | Wald | Pflanzenkunde (Pilzsammler, Sträucher); Jäger (Fallensteller, Rotwildjäger); Holzbearbeitung (Holzfäller); Ermittlung (Spurenlesen); Fischer (Angler); Koch (Räuchern) |
 | Wüste | Geografie; Abrichten (Kamele); Astronomie (Navigationsastronomie); Viehwirtschaft (Weidehirte); Koch (Konservieren); Pflanzenkunde (Sträucher) |
+
+## GF-Vergabe bei der Charaktererstellung
+
+Zusätzlich zu den vereinbarten WHK-Beiträgen erhält jeder Charakter Terrain-Beiträge auf Grundfertigkeiten (GF). Der folgende Vorschlag wurde vom Nutzer akzeptiert; die Vergabe ist noch nicht implementiert.
+
+- GF haben einen Gesamtwertebereich von 0 bis 12.
+- Aus den fünf Kandidaten des jeweiligen Terrains zwei unterschiedliche GF zufällig ohne Zurücklegen ziehen und jeweils +2 vergeben.
+- Lebenswelt, Beruf und weitere Bausteine addieren ihre GF-Beiträge ebenfalls in Schritten von höchstens +2. Der Gesamtwert bleibt auf 12 begrenzt.
+- Eine GF, die bereits bei 12 liegt, durch eine andere passende GF aus dem Katalog ersetzen. Bei einem Ausgangswert von 11 nur +1 bis zum Maximum 12 vergeben.
+- Orientierung bei allen Terrains außer Stadt stärker gewichten. In der Stadt stattdessen Menschenkenntnis und Schätzen stärker gewichten. Die genauen Zufallsgewichte sind noch festzulegen.
+- Reiten ist bei Steppe und Wüste eine passende Alltagserfahrung; weitergehende Ausbildung kommt über Lebenswelt oder Beruf.
+- Die Auswahl einmal bei der Charaktererstellung durchführen und wie die WHK-Auswahl am Charakter speichern. Beim erneuten Öffnen nicht neu auslosen.
+- Kosten nach Zusammenführung aller Beiträge anhand der tatsächlichen Endwerte berechnen.
+
+### Vollständiger GF-Auswahlkatalog
+
+Alle Kandidaten stammen aus dem vorhandenen GF-Katalog.
+
+| Terrain | GF-Auswahl: zwei aus fünf |
+|---|---|
+| Berge | Klettern; Körperbeherrschung; Springen; Orientierung; Laufen |
+| Dschungel | Klettern; Orientierung; Schleichen; Fährtensuche; Schwimmen |
+| Steppe | Orientierung; Laufen; Reiten; Fährtensuche; Verstecken |
+| Küste | Schwimmen; Rudern; Luft anhalten; Körperbeherrschung; Orientierung |
+| Feuchtgebiete | Schwimmen; Rudern; Körperbeherrschung; Orientierung; Fährtensuche |
+| Tundra | Orientierung; Laufen; Fährtensuche; Schleichen; Verstecken |
+| Eis | Orientierung; Körperbeherrschung; Klettern; Fährtensuche; Laufen |
+| Stadt | Menschenkenntnis; Schätzen; Überzeugen; Orientierung; Laufen |
+| Unterirdisch | Orientierung; Klettern; Körperbeherrschung; Schleichen; Verstecken |
+| Wald | Fährtensuche; Orientierung; Schleichen; Klettern; Verstecken |
+| Wüste | Orientierung; Laufen; Reiten; Fährtensuche; Körperbeherrschung |
 
 ## Anschluss
 

@@ -1,0 +1,9 @@
+[
+  { "bereich": "Unterwäsche", "sourceRow": 896, "erkennt": "^Unterwäsche" },
+  { "bereich": "Strümpfe", "sourceRow": 891, "erkennt": "^Strümpfe" },
+  { "bereich": "Oberteil", "sourceRow": 796, "erkennt": "^(Hemd, Bluse|Tunika|Kleid,)" },
+  { "bereich": "Beinkleidung", "sourceRow": 784, "erkennt": "^(Beinkleider|Hose,|Rock,|Kleid,)" },
+  { "bereich": "Schuhe", "sourceRow": 553, "erkennt": "^(Schuhe,|Stiefel,|Sandalen,)" },
+  { "bereich": "Wetterschutz", "sourceRow": 821, "erkennt": "^(Mantel, (?!Haus-)|Umhang,|Anorak,)" },
+  { "bereich": "Kopfbedeckung", "sourceRow": 767, "erkennt": "^(Hut,|Haube,|Mütze, (?!Nacht))" }
+]

@@ -4,6 +4,9 @@ import { createNpcPreview, inspectNpc, instantiateNpc } from './npcCreation';
 import { listCharacters, loadCharacter, saveCharacter } from '../../../state/characterStore';
 import { createInitialAppState } from '../../../state/appState';
 import { renderNpcWizard, wireNpcWizard } from '../views/npcCreation';
+import { ergaenzeGrundkleidung } from './grundkleidung';
+import grundkleidung from '../data/grundkleidung.json';
+import { PREISLISTE } from '../../../data/equipment/preisliste';
 
 beforeEach(() => { localStorage.clear(); document.body.innerHTML = ''; });
 
@@ -11,6 +14,13 @@ describe('NPC-Vorlagen', () => {
   for (const template of NPC_TEMPLATES) {
     it(`${template.id}: unabhängige Kopie mit gültigen Verknüpfungen`, () => {
       const preview = createNpcPreview(template.id, 'Neuer NPC', '31');
+      for (const slot of grundkleidung) {
+        expect(preview.equipment.some((entry) => entry.family === 'preisliste' && entry.quantity > 0
+          && new RegExp(slot.erkennt).test(PREISLISTE.find((row) => String(row.sourceRow) === entry.baseId)?.name ?? ''))).toBe(true);
+      }
+      const originalCount = preview.equipment.length;
+      ergaenzeGrundkleidung(preview);
+      expect(preview.equipment).toHaveLength(originalCount);
       expect(listCharacters()).toEqual([]);
       const character = instantiateNpc(preview);
       expect(character.id).not.toBe(template.character.id);
@@ -38,6 +48,28 @@ describe('NPC-Vorlagen', () => {
       expect(template.character.name).not.toBe('Neuer NPC');
     });
   }
+
+  it('behält die vollständige Bauernkleidung und berechnet neue Kleidung regulär', () => {
+    const bauer = NPC_TEMPLATES.find((entry) => entry.id === 'bauer')!;
+    expect(createNpcPreview('bauer', '', '').equipment).toEqual(bauer.character.equipment);
+    const wache = NPC_TEMPLATES.find((entry) => entry.id === 'wachmann')!;
+    const original = JSON.stringify(wache.character);
+    const vorher = inspectNpc(wache.character).sheet;
+    const nachher = inspectNpc(createNpcPreview('wachmann', '', '')).sheet;
+    const preis = grundkleidung.reduce((sum, slot) => sum + PREISLISTE.find((row) => row.sourceRow === slot.sourceRow)!.preisDublonen!, 0);
+    expect(nachher.dublonenSpent - vorher.dublonenSpent).toBeCloseTo(preis);
+    expect(nachher.dublonenTotal - vorher.dublonenTotal).toBeCloseTo(Math.ceil(preis * 100) / 100);
+    expect(nachher.dublonenRemaining - vorher.dublonenRemaining).toBeLessThan(0.011);
+    expect(JSON.stringify(wache.character)).toBe(original);
+  });
+
+  it('rechnet ein vorhandenes Kleid als Ober- und Beinkleidung an', () => {
+    const character = JSON.parse(JSON.stringify(NPC_TEMPLATES.find((entry) => entry.id === 'wachmann')!.character));
+    character.equipment.push({ id: 'kleid', family: 'preisliste', baseTable: 'preisliste', baseId: '809', selections: {}, quantity: 1 });
+    ergaenzeGrundkleidung(character);
+    expect(character.equipment.some((entry: { baseId: string }) => entry.baseId === '796' || entry.baseId === '784')).toBe(false);
+    expect(character.equipment.some((entry: { baseId: string }) => entry.baseId === '553')).toBe(true);
+  });
 
   it('führt durch Auswahl, Zurück und Anlegen; Abbrechen speichert nichts', () => {
     const state = createInitialAppState(null);

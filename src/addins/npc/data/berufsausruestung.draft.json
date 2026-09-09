@@ -1,0 +1,4347 @@
+{
+  "status": "draft",
+  "datum": "2026-09-09",
+  "automatischeVergabe": false,
+  "profiles": [
+    {
+      "beruf": "Wache",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 673,
+          "name": "Laterne, Sturm-, Öl",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Feinschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 907,
+          "name": "Seil, Fessel- 1m",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 948,
+          "name": "Öl, Lampen-",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Tierische Fette"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 192,
+          "name": "Fernrohr",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D001"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D002"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D003"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D004"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D065"
+        }
+      ],
+      "transportUndBesitz": "Am Posten oder am Gürtel; Dienstmittel gesondert kennzeichnen.",
+      "pruefvermerkVorErgaenzung": "Handschellen und Dienstabzeichen fehlen als konkrete Artikel."
+    },
+    {
+      "beruf": "Soldat",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 384,
+          "name": "Pflegeutensilien, Waffen-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Kaufmann",
+          "spezialisierung": "Krämer"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 523,
+          "name": "Flasche, Feld-, 1L",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 526,
+          "name": "Rucksack, Leder-, 15Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 52,
+          "name": "Streichhölzer 25St,",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Brandbeschleuniger"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 749,
+          "name": "Schlafsack",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Decken"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 750,
+          "name": "Zelt, 2 Personen",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Decken"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 150,
+          "name": "Ladestock, Gewehr-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Feuerwaffenbauer",
+          "spezialisierung": "Vorlagen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 570,
+          "name": "Horn, Pulver-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Waffenzubehör"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 574,
+          "name": "Patronenbeutel, 30 Patronen",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Waffenzubehör"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D002"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D004"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D044"
+        }
+      ],
+      "transportUndBesitz": "Persönliches Marschgepäck; Lagerausstattung kann dem Verband gehören.",
+      "pruefvermerkVorErgaenzung": "Munition und Ladezubehör erst nach Waffenmechanik bestimmen."
+    },
+    {
+      "beruf": "Kopfgeldjäger",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 907,
+          "name": "Seil, Fessel- 1m",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 201,
+          "name": "Kompass, Hand-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Scheiben"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 526,
+          "name": "Rucksack, Leder-, 15Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 52,
+          "name": "Streichhölzer 25St,",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Brandbeschleuniger"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 192,
+          "name": "Fernrohr",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 909,
+          "name": "Seil, Hanf, 10m",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 12,
+          "name": "Pferd, Reit",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Abrichten",
+          "spezialisierung": "Pferd"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 535,
+          "name": "Sattel",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 494,
+          "name": "Zaum, einfach",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Riemer"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 543,
+          "name": "Taschen, Sattel-",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D001"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D003"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D004"
+        }
+      ],
+      "transportUndBesitz": "Zu Fuß oder beritten; Sattelzeug nur gemeinsam mit passendem Tier.",
+      "pruefvermerkVorErgaenzung": "Handschellen und Fahndungsunterlagen fehlen als eigene Artikel."
+    },
+    {
+      "beruf": "Revolverheld",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 384,
+          "name": "Pflegeutensilien, Waffen-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Kaufmann",
+          "spezialisierung": "Krämer"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 567,
+          "name": "Gürtel, Patronen-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Waffenzubehör"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 574,
+          "name": "Patronenbeutel, 30 Patronen",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Waffenzubehör"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 589,
+          "name": "Taschenuhr, zw,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Uhrmacher"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 523,
+          "name": "Flasche, Feld-, 1L",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 12,
+          "name": "Pferd, Reit",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Abrichten",
+          "spezialisierung": "Pferd"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 535,
+          "name": "Sattel",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 494,
+          "name": "Zaum, einfach",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Riemer"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D004"
+        }
+      ],
+      "transportUndBesitz": "Gürtel und kleine Reisetasche; Reitausstattung optional.",
+      "pruefvermerkVorErgaenzung": "Revolverholster fehlt; Patronengürtel ersetzt kein Holster. Munition waffenabhängig."
+    },
+    {
+      "beruf": "Kundschafter",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 201,
+          "name": "Kompass, Hand-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Scheiben"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 526,
+          "name": "Rucksack, Leder-, 15Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 523,
+          "name": "Flasche, Feld-, 1L",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 52,
+          "name": "Streichhölzer 25St,",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Brandbeschleuniger"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 192,
+          "name": "Fernrohr",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 909,
+          "name": "Seil, Hanf, 10m",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 749,
+          "name": "Schlafsack",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Decken"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 750,
+          "name": "Zelt, 2 Personen",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Decken"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 12,
+          "name": "Pferd, Reit",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Abrichten",
+          "spezialisierung": "Pferd"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 535,
+          "name": "Sattel",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 494,
+          "name": "Zaum, einfach",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Riemer"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D005"
+        }
+      ],
+      "transportUndBesitz": "Leichtes Reisegepäck; Tier nur bei berittenem Schwerpunkt.",
+      "pruefvermerkVorErgaenzung": "Regionale Karten fehlen als konkrete Artikel."
+    },
+    {
+      "beruf": "Jäger",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 730,
+          "name": "Messer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 906,
+          "name": "Schnur, 20m",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 526,
+          "name": "Rucksack, Leder-, 15Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 52,
+          "name": "Streichhölzer 25St,",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Brandbeschleuniger"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 320,
+          "name": "Horn, Jagd-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Instrumentenbauer",
+          "spezialisierung": "Blasinstrumente"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 708,
+          "name": "Angelhaken und Schnur",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 903,
+          "name": "Netz, Fischer- klein",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Netze"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 749,
+          "name": "Schlafsack",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Decken"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 750,
+          "name": "Zelt, 2 Personen",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Decken"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 12,
+          "name": "Pferd, Reit",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Abrichten",
+          "spezialisierung": "Pferd"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 527,
+          "name": "Sattel, Pack-",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 494,
+          "name": "Zaum, einfach",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Riemer"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D007"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D008"
+        }
+      ],
+      "transportUndBesitz": "Werkzeug und Beute getragen; Packtier optional.",
+      "pruefvermerkVorErgaenzung": "Jagdfallen fehlen; Angelschnur und Netz nur beim passenden Schwerpunkt."
+    },
+    {
+      "beruf": "Viehhirte",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 500,
+          "name": "Lasso, Leder",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Riemer"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 255,
+          "name": "Zeug, Striegel-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Bürstenbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 523,
+          "name": "Flasche, Feld-, 1L",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 753,
+          "name": "Decke, Pferde-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Decken"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 477,
+          "name": "Handschuhe, Leder, gewöhnlich",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Oberbekleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 909,
+          "name": "Seil, Hanf, 10m",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 12,
+          "name": "Pferd, Reit",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Abrichten",
+          "spezialisierung": "Pferd"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 535,
+          "name": "Sattel",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 494,
+          "name": "Zaum, einfach",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Riemer"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 543,
+          "name": "Taschen, Sattel-",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [],
+      "transportUndBesitz": "Beritten bei Viehtrieb; Herde ist Betriebsbestand, kein persönliches Inventar.",
+      "pruefvermerkVorErgaenzung": "Futter und Wasservorräte nach Tier und Reisedauer ergänzen."
+    },
+    {
+      "beruf": "Bauer",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 738,
+          "name": "Spaten",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 721,
+          "name": "Gabel, Mist-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 236,
+          "name": "Eimer, Holz",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 716,
+          "name": "Dreschflegel",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 736,
+          "name": "Sense",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 737,
+          "name": "Sichel",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 266,
+          "name": "Korb, 20Kg",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Korbflechter"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 879,
+          "name": "Sack, 50Kg",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Taschen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 313,
+          "name": "Wagen, Leiter-, 1spännig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D009"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D010"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D041"
+        }
+      ],
+      "transportUndBesitz": "Werkzeug am Hof; Wagen und Zugtier als Betriebsmittel.",
+      "pruefvermerkVorErgaenzung": "Saatgut nach Anbauschwerpunkt zuordnen; Wagen ohne Zugtier ist kein vollständiges Gespann."
+    },
+    {
+      "beruf": "Prospektor",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 722,
+          "name": "Hacke, Spitz-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 732,
+          "name": "Schaufel",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 876,
+          "name": "Beutel, Tuch-, 5 Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Taschen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 52,
+          "name": "Streichhölzer 25St,",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Brandbeschleuniger"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 195,
+          "name": "Lupe",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 201,
+          "name": "Kompass, Hand-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Scheiben"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 675,
+          "name": "Sieb",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Feinschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 12,
+          "name": "Pferd, Reit",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Abrichten",
+          "spezialisierung": "Pferd"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 527,
+          "name": "Sattel, Pack-",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 494,
+          "name": "Zaum, einfach",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Riemer"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D005"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D011"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D012"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D061"
+        }
+      ],
+      "transportUndBesitz": "Probenbeutel und Werkzeug getragen; Packtier bei längeren Reisen.",
+      "pruefvermerkVorErgaenzung": "Goldwaschpfanne und Prüfwaage fehlen; Haushaltssieb ist kein geprüftes Goldwaschset."
+    },
+    {
+      "beruf": "Bergmann",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 722,
+          "name": "Hacke, Spitz-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 725,
+          "name": "Hammer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 673,
+          "name": "Laterne, Sturm-, Öl",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Feinschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 948,
+          "name": "Öl, Lampen-",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Tierische Fette"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 728,
+          "name": "Keile",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 729,
+          "name": "Meißel, 5 sort,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 583,
+          "name": "Flaschenzug, 1t",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Einfache Mechanismen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 477,
+          "name": "Handschuhe, Leder, gewöhnlich",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Oberbekleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 299,
+          "name": "Karren, 2rädrig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D014"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D015"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D016"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D041"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D042"
+        }
+      ],
+      "transportUndBesitz": "Stollenwerkzeug; Fördermittel gehören zum Betrieb.",
+      "pruefvermerkVorErgaenzung": "Grubenhelm und vollständige Sicherheitsausstattung fehlen. Sprengmittel nicht pauschal zuweisen."
+    },
+    {
+      "beruf": "Fuhrmann",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 490,
+          "name": "Zaum und Leinen je Tier",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Riemer"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 255,
+          "name": "Zeug, Striegel-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Bürstenbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 725,
+          "name": "Hammer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 739,
+          "name": "Zange",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 949,
+          "name": "Deichselfett",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Tierische Fette"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 294,
+          "name": "Rad, Ersatz-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 293,
+          "name": "Deichsel",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 909,
+          "name": "Seil, Hanf, 10m",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 275,
+          "name": "Kiste, Transport-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Tischler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 312,
+          "name": "Wagen, Kasten-, 1- oder 2spännig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D005"
+        }
+      ],
+      "transportUndBesitz": "Wagen als Arbeitsmittel; Zugtier, Geschirr und Traglast separat abstimmen.",
+      "pruefvermerkVorErgaenzung": "Zugtier und Geschirr müssen zur konkreten Wagenbespannung passen."
+    },
+    {
+      "beruf": "Matrose",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 730,
+          "name": "Messer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 906,
+          "name": "Schnur, 20m",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 385,
+          "name": "Nadel und Faden, sort,",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Kaufmann",
+          "spezialisierung": "Krämer"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 748,
+          "name": "Hängematte",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Decken"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 913,
+          "name": "Tau, 20m",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 199,
+          "name": "Kompaß, Schiffs-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Scheiben"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 197,
+          "name": "Quadrant",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 583,
+          "name": "Flaschenzug, 1t",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Einfache Mechanismen"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D006"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D016"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D017"
+        }
+      ],
+      "transportUndBesitz": "Persönlicher Seesack; Navigation und Tauwerk können Schiffseigentum sein.",
+      "pruefvermerkVorErgaenzung": "Kein persönliches Schiff als Standard; Schiff, Rettungsmittel und Bordvorräte separat."
+    },
+    {
+      "beruf": "Schmuggler",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 275,
+          "name": "Kiste, Transport-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Tischler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 878,
+          "name": "Sack, 10Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Taschen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 909,
+          "name": "Seil, Hanf, 10m",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Seiler",
+          "spezialisierung": "Stricke"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 201,
+          "name": "Kompass, Hand-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Scheiben"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 673,
+          "name": "Laterne, Sturm-, Öl",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Feinschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 192,
+          "name": "Fernrohr",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 312,
+          "name": "Wagen, Kasten-, 1- oder 2spännig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D005"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D006"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D018"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D019"
+        }
+      ],
+      "transportUndBesitz": "Frachtbehälter; Wagen nur bei Landtransport, andere Transportwege separat.",
+      "pruefvermerkVorErgaenzung": "Versteckte Fächer und gefälschte Papiere fehlen als Artikel. Fracht ist kein persönlicher Besitz."
+    },
+    {
+      "beruf": "Händler",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 244,
+          "name": "Abakus",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 877,
+          "name": "Beutelchen, Geld-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Taschen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 54,
+          "name": "Tinte",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Farbstoffe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 146,
+          "name": "Papier, 10 Bögen",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Papierherstellung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 275,
+          "name": "Kiste, Transport-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Tischler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 586,
+          "name": "Addiermaschine",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Rechenmaschinen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 312,
+          "name": "Wagen, Kasten-, 1- oder 2spännig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D013"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D062"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D063"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D064"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D065"
+        }
+      ],
+      "transportUndBesitz": "Handelsunterlagen getragen; Warenbestand und Frachttransport separat.",
+      "pruefvermerkVorErgaenzung": "Handelswaage fehlt. Waren nach Warengruppe wählen, kein pauschaler Handelsbestand."
+    },
+    {
+      "beruf": "Wirt",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 921,
+          "name": "Krug, Ton-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Töpfer",
+          "spezialisierung": "Geschirr"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 919,
+          "name": "Becher, Trink- Ton",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Töpfer",
+          "spezialisierung": "Geschirr"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 239,
+          "name": "Löffel, Holz-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 690,
+          "name": "Topf, Eisen-, 12L",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 232,
+          "name": "Kelle, Schöpf-, Zinn",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Goldschmied",
+          "spezialisierung": "Zinngerät"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 237,
+          "name": "Becher, Trink- Holz",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 257,
+          "name": "Besen",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Bürstenbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D027"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D067"
+        }
+      ],
+      "transportUndBesitz": "Überwiegend stationärer Betrieb; Geschirr ist Betriebsausstattung.",
+      "pruefvermerkVorErgaenzung": "Lebensmittel, Getränke und Brennstoff nach Betrieb und Gästezahl ergänzen."
+    },
+    {
+      "beruf": "Journalist",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 54,
+          "name": "Tinte",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Farbstoffe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 146,
+          "name": "Papier, 10 Bögen",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Papierherstellung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 524,
+          "name": "Hülle, Pergament-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 195,
+          "name": "Lupe",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 589,
+          "name": "Taschenuhr, zw,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Uhrmacher"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D003"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D020"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D021"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D022"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D023"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D024"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D025"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D026"
+        }
+      ],
+      "transportUndBesitz": "Tragbares Schreibzeug; Druckerei als externer Betrieb.",
+      "pruefvermerkVorErgaenzung": "Kamera, Fotomaterial und Druckerpresse fehlen als konkrete Artikel."
+    },
+    {
+      "beruf": "Künstler",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 525,
+          "name": "Ranzen, Leder-, 8Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 318,
+          "name": "Flöte, Holz",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Instrumentenbauer",
+          "spezialisierung": "Blasinstrumente"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 325,
+          "name": "Laute, Bandurria",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Instrumentenbauer",
+          "spezialisierung": "Saiteninstrumente"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 247,
+          "name": "Jonglierbälle 3",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 248,
+          "name": "Jonglierkeulen 3",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 271,
+          "name": "Larve, gewöhnlich",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Schnitzen"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D027"
+        }
+      ],
+      "transportUndBesitz": "Ein Instrument oder passende Requisiten wählen; keine Pflicht zu allen Kunstformen.",
+      "pruefvermerkVorErgaenzung": "Bühnenkostüm aus Kleidung nach Auftritt wählen; Verbrauchsmittel abhängig von Kunstform."
+    },
+    {
+      "beruf": "Dieb",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 682,
+          "name": "Dietriche, sort,",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Feinschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 529,
+          "name": "Taschen, Gürtel-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 715,
+          "name": "Brecheisen",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 724,
+          "name": "Haken, Wurf- 10m Seil",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 200,
+          "name": "Spiegel, Hand- Glas",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Scheiben"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 673,
+          "name": "Laterne, Sturm-, Öl",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Feinschmied"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [],
+      "transportUndBesitz": "Kleine Werkzeuge getragen; sperriges Einbruchswerkzeug nur nach Auftrag.",
+      "pruefvermerkVorErgaenzung": "Keine automatische Kampffertigkeit durch Besitz eines Werkzeugs."
+    },
+    {
+      "beruf": "Glücksspieler",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 251,
+          "name": "Würfel, Bein, 3 Stück",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 877,
+          "name": "Beutelchen, Geld-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Taschen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 589,
+          "name": "Taschenuhr, zw,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Uhrmacher"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D027"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D028"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D029"
+        }
+      ],
+      "transportUndBesitz": "Kleine tragbare Spielausstattung; Würfel nur für Würfelspiel.",
+      "pruefvermerkVorErgaenzung": "Spielkarten und gezinkte Spielmittel fehlen als Artikel; Falschspiel bleibt optional."
+    },
+    {
+      "beruf": "Schmied",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 725,
+          "name": "Hammer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 741,
+          "name": "Zange, Schmiede-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 719,
+          "name": "Feile für Metall",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 263,
+          "name": "Kohle, Holz",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Köhler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 726,
+          "name": "Hammer, Vorschlag-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 729,
+          "name": "Meißel, 5 sort,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 477,
+          "name": "Handschuhe, Leder, gewöhnlich",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Oberbekleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 275,
+          "name": "Kiste, Transport-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Tischler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 299,
+          "name": "Karren, 2rädrig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D030"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D031"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D032"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D033"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D066"
+        }
+      ],
+      "transportUndBesitz": "Tragbare Werkzeuge plus stationäre Schmiede; Karren für schwere Lasten.",
+      "pruefvermerkVorErgaenzung": "Amboss, Esse und Blasebalg fehlen; Werkzeugliste ist noch keine vollständige Schmiede."
+    },
+    {
+      "beruf": "Waffenschmied",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 725,
+          "name": "Hammer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 719,
+          "name": "Feile für Metall",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 739,
+          "name": "Zange",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 384,
+          "name": "Pflegeutensilien, Waffen-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Kaufmann",
+          "spezialisierung": "Krämer"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 263,
+          "name": "Kohle, Holz",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Köhler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 741,
+          "name": "Zange, Schmiede-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 740,
+          "name": "Zange, Kugel-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 714,
+          "name": "Bleischmelzlöffel",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 150,
+          "name": "Ladestock, Gewehr-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Feuerwaffenbauer",
+          "spezialisierung": "Vorlagen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 151,
+          "name": "Ladestock, Pistolen-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Feuerwaffenbauer",
+          "spezialisierung": "Vorlagen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 195,
+          "name": "Lupe",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 299,
+          "name": "Karren, 2rädrig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D030"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D031"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D032"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D033"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D034"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D037"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D039"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D066"
+        }
+      ],
+      "transportUndBesitz": "Werkbank und Schmiede stationär; Wartungssatz tragbar.",
+      "pruefvermerkVorErgaenzung": "Amboss, Esse, Werkbank und Präzisionswerkzeuge fehlen. Lade- und Kugelwerkzeuge nur für passende Feuerwaffen."
+    },
+    {
+      "beruf": "Rüstschmied",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 725,
+          "name": "Hammer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 741,
+          "name": "Zange, Schmiede-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 719,
+          "name": "Feile für Metall",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 739,
+          "name": "Zange",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 263,
+          "name": "Kohle, Holz",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Köhler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 729,
+          "name": "Meißel, 5 sort,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 707,
+          "name": "Ahle",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 477,
+          "name": "Handschuhe, Leder, gewöhnlich",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Oberbekleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 299,
+          "name": "Karren, 2rädrig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D030"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D031"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D032"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D033"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D035"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D036"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D066"
+        }
+      ],
+      "transportUndBesitz": "Werkstattbetrieb; kleine Reparaturausstattung tragbar.",
+      "pruefvermerkVorErgaenzung": "Amboss, Esse, Formwerkzeuge und Rüstungsnieten fehlen als konkrete Artikel."
+    },
+    {
+      "beruf": "Mechaniker",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 739,
+          "name": "Zange",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 719,
+          "name": "Feile für Metall",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 725,
+          "name": "Hammer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 195,
+          "name": "Lupe",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 583,
+          "name": "Flaschenzug, 1t",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Einfache Mechanismen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 729,
+          "name": "Meißel, 5 sort,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 677,
+          "name": "Lineal, Messing",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Feinschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 275,
+          "name": "Kiste, Transport-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Tischler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 299,
+          "name": "Karren, 2rädrig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D033"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D037"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D038"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D039"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D040"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D059"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D066"
+        }
+      ],
+      "transportUndBesitz": "Werkzeugkasten tragbar; schwere Hebemittel stationär oder auf Karren.",
+      "pruefvermerkVorErgaenzung": "Schraubendreher, Schraubenschlüssel, Schrauben und Maschinenersatzteile fehlen als konkrete Artikel."
+    },
+    {
+      "beruf": "Zimmermann",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 725,
+          "name": "Hammer",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 720,
+          "name": "Fuchsschwanz",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 727,
+          "name": "Hobel",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 245,
+          "name": "Lineal, Holz",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 706,
+          "name": "50 Nägel, sort,",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 718,
+          "name": "Feile für Holz",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 728,
+          "name": "Keile",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 729,
+          "name": "Meißel, 5 sort,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 735,
+          "name": "Senkblei",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 709,
+          "name": "Axt, Holzfäller-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 299,
+          "name": "Karren, 2rädrig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D016"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D033"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D041"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D042"
+        }
+      ],
+      "transportUndBesitz": "Tragbares Werkzeug; Bauholz und Großgerät zur Baustelle liefern.",
+      "pruefvermerkVorErgaenzung": "Holzbedarf nach Bauauftrag bestimmen; keine pauschale mobile Vollwerkstatt."
+    },
+    {
+      "beruf": "Arzt",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 525,
+          "name": "Ranzen, Leder-, 8Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 181,
+          "name": "Flasche, Glas-, 0,1L",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 733,
+          "name": "Schere",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 195,
+          "name": "Lupe",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 54,
+          "name": "Tinte",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Farbstoffe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 146,
+          "name": "Papier, 10 Bögen",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Papierherstellung"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D043"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D044"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D045"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D046"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D047"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D048"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D049"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D051"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D055"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D059"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D067"
+        }
+      ],
+      "transportUndBesitz": "Tasche und Dokumentation tragbar; stationäre Behandlungsmittel separat.",
+      "pruefvermerkVorErgaenzung": "Arzttasche mit Innenausstattung, sterile Verbände, chirurgische Instrumente und medizinische Verbrauchsmittel fehlen. Allgemeine Schere ist kein geprüftes Operationsinstrument."
+    },
+    {
+      "beruf": "Heiler",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 266,
+          "name": "Korb, 20Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Korbflechter"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 181,
+          "name": "Flasche, Glas-, 0,1L",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 876,
+          "name": "Beutel, Tuch-, 5 Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Taschen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 57,
+          "name": "Fett, Salben-, pflanzlich",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Fettprodukte"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 733,
+          "name": "Schere",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Grobschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 525,
+          "name": "Ranzen, Leder-, 8Kg",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D043"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D044"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D045"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D048"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D050"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D051"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D052"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D067"
+        }
+      ],
+      "transportUndBesitz": "Sammelbehälter und Vorräte tragbar; Menge nach Versorgungsauftrag.",
+      "pruefvermerkVorErgaenzung": "Mörser, Verbände und geprüfte Heilkräuterzuordnung fehlen. Salbenfett allein hat keine Heilwirkung; DSA-Pflanzen nicht ohne Regelprüfung übernehmen."
+    },
+    {
+      "beruf": "Alchemist",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 181,
+          "name": "Flasche, Glas-, 0,1L",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 182,
+          "name": "Flasche, Glas-, 0,2L",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 180,
+          "name": "Stundenglas",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Alchemistische Apparaturen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 275,
+          "name": "Kiste, Transport-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Tischler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 136,
+          "name": "Alkohol, rein",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Brenner",
+          "spezialisierung": "Alchemistische Zutaten"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 195,
+          "name": "Lupe",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 675,
+          "name": "Sieb",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schmied",
+          "spezialisierung": "Feinschmied"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 57,
+          "name": "Fett, Salben-, pflanzlich",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Fettprodukte"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 125,
+          "name": "Salpeter, Salz",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Bergbau",
+          "spezialisierung": "Salze"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 126,
+          "name": "Schwefel",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Bergbau",
+          "spezialisierung": "Salze"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 299,
+          "name": "Karren, 2rädrig",
+          "kategorie": "Transportoption",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Wagner"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D012"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D050"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D052"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D053"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D054"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D055"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D067"
+        }
+      ],
+      "transportUndBesitz": "Geschützte Behälter; Labor überwiegend stationär, Karren optional.",
+      "pruefvermerkVorErgaenzung": "Retorten, Destillierapparat, Mörser und Feinwaage fehlen. Zutaten nur rezeptbezogen auswählen; kein automatisches Explosiv- oder Giftpaket."
+    },
+    {
+      "beruf": "Magier",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 525,
+          "name": "Ranzen, Leder-, 8Kg",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 54,
+          "name": "Tinte",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Farbstoffe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 146,
+          "name": "Papier, 10 Bögen",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Papierherstellung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 524,
+          "name": "Hülle, Pergament-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 195,
+          "name": "Lupe",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 196,
+          "name": "Prisma",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D056"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D057"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D058"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D060"
+        }
+      ],
+      "transportUndBesitz": "Tragbares Studienmaterial; tatsächliche Magieausstattung nach Ausbildungszweig.",
+      "pruefvermerkVorErgaenzung": "Regelgebundene Foki, Ritualmittel und Schulbücher müssen aus der gewählten Magie abgeleitet werden; kein pauschaler Zauberbonus."
+    },
+    {
+      "beruf": "Gelehrter",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 524,
+          "name": "Hülle, Pergament-",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Lederbearbeitung",
+          "spezialisierung": "Sattler"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 54,
+          "name": "Tinte",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Farbstoffe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 146,
+          "name": "Papier, 10 Bögen",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Papierherstellung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 195,
+          "name": "Lupe",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 201,
+          "name": "Kompass, Hand-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Scheiben"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 193,
+          "name": "Fernrohr, Himmels-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Glaser",
+          "spezialisierung": "Optiker"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 876,
+          "name": "Beutel, Tuch-, 5 Kg",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Schneider",
+          "spezialisierung": "Taschen"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D005"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D006"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D012"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D020"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D021"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D022"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D023"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D050"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D059"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D060"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D061"
+        }
+      ],
+      "transportUndBesitz": "Schreibzeug und wenige Fachmittel tragbar; große Instrumente stationär.",
+      "pruefvermerkVorErgaenzung": "Fachbücher, Karten und fachspezifische Probenausrüstung fehlen als konkrete Artikel."
+    },
+    {
+      "beruf": "Verwalter",
+      "items": [
+        {
+          "source": "preisliste",
+          "sourceRow": 145,
+          "name": "Buch, Tage-, Papier",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Buchbinder"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 927,
+          "name": "Gänsekiele, Griffel 10 St,",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Viehwirtschaft",
+          "spezialisierung": "Geflügelwirtschaft"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 244,
+          "name": "Abakus",
+          "kategorie": "Arbeitsmittel",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Alltagsgegenstände"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 54,
+          "name": "Tinte",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Alchemie",
+          "spezialisierung": "Farbstoffe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 146,
+          "name": "Papier, 10 Bögen",
+          "kategorie": "Verbrauchsmaterial",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Drucker",
+          "spezialisierung": "Papierherstellung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 586,
+          "name": "Addiermaschine",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Rechenmaschinen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 587,
+          "name": "Zinsspindel",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Rechenmaschinen"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 589,
+          "name": "Taschenuhr, zw,",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Mechanikus",
+          "spezialisierung": "Uhrmacher"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 275,
+          "name": "Kiste, Transport-",
+          "kategorie": "Optional / Schwerpunkt",
+          "katalogeinheiten": 1,
+          "whkCraftSkill": "Holzbearbeitung",
+          "spezialisierung": "Tischler"
+        }
+      ],
+      "grundkleidung": [
+        {
+          "source": "preisliste",
+          "sourceRow": 896,
+          "bereich": "Unterwäsche"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 891,
+          "bereich": "Strümpfe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 796,
+          "bereich": "Oberteil"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 784,
+          "bereich": "Beinkleidung"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 553,
+          "bereich": "Schuhe"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 821,
+          "bereich": "Wetterschutz"
+        },
+        {
+          "source": "preisliste",
+          "sourceRow": 767,
+          "bereich": "Kopfbedeckung"
+        }
+      ],
+      "entwurfsartikel": [
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D002"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D013"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D059"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D062"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D063"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D064"
+        },
+        {
+          "source": "artikelentwuerfe.draft",
+          "id": "D065"
+        }
+      ],
+      "transportUndBesitz": "Schreibzeug tragbar; Rechenmaschinen und Aktenlager stationär.",
+      "pruefvermerkVorErgaenzung": "Siegel, Stempel und amtliche Formulare fehlen als konkrete Artikel."
+    }
+  ]
+}

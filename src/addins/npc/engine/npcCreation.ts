@@ -2,6 +2,7 @@ import { NPC_TEMPLATES } from '../data/npcTemplates';
 import type { CharacterState } from '../../../state/characterStore';
 import { computeSheet } from '../../../engine/characterSheet';
 import { buildNahkampfRows } from '../../../views/kampf';
+import { ergaenzeGrundkleidung } from './grundkleidung';
 
 export function createNpcPreview(templateId: string, name: string, age: string): CharacterState {
   const template = NPC_TEMPLATES.find((entry) => entry.id === templateId);
@@ -10,6 +11,12 @@ export function createNpcPreview(templateId: string, name: string, age: string):
   character.name = name.trim() || template.label;
   character.alter = age.trim();
   character.charakterTyp = 'NSC';
+  const clothingCost = ergaenzeGrundkleidung(character);
+  if (clothingCost > 0) {
+    // Die Referenzen haben ein vorläufiges Anschaffungsbudget, kein festes NSC-Geldbudget.
+    character.values['dublonen_bank'] = (character.values['dublonen_bank'] ?? 0) + Math.ceil(clothingCost * 100) / 100;
+    character.notes += '\nGrundkleidung ergänzt; vorläufiges Anschaffungsbudget um ihre Katalogkosten (auf Cent aufgerundet) erweitert.';
+  }
   return character;
 }
 

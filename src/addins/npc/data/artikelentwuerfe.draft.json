@@ -1,0 +1,2141 @@
+{
+  "status": "bestaetigt",
+  "datum": "2026-09-09",
+  "spot": "werte 0.8-claude.xlsx",
+  "spotSheet": "Preisliste",
+  "appKatalogSynchronisiert": false,
+  "waehrung": "Dublonen",
+  "items": [
+    {
+      "id": "D001",
+      "status": "Bestätigt",
+      "spotSourceRow": 974,
+      "name": "Handschellen mit zwei Schlüsseln",
+      "art": "Dienstmittel",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 0.7,
+      "preisAvailable": true,
+      "preisDublonen": 60,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Wache",
+        "Kopfgeldjäger"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 701,
+          "preisDublonen": 140
+        },
+        {
+          "sourceRow": 682,
+          "preisDublonen": 52.8
+        }
+      ],
+      "begruendung": "Kurzes Kettenstück mit zwei präzisen Schlössern; Größenordnung des Dietrichsatzes.",
+      "notiz": "Passende Handgelenkgröße wählen; keine neue Fesselregel."
+    },
+    {
+      "id": "D002",
+      "status": "Bestätigt",
+      "spotSourceRow": 975,
+      "name": "Dienstabzeichen, geprägt",
+      "art": "Dienstmittel",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.03,
+      "preisAvailable": true,
+      "preisDublonen": 4,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Wache",
+        "Soldat",
+        "Verwalter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 676,
+          "preisDublonen": 8
+        },
+        {
+          "sourceRow": 677,
+          "preisDublonen": 1.3
+        }
+      ],
+      "begruendung": "Kleines Metallteil mit einfacher Prägung unter dem Preis eines Gravurwerkzeugs.",
+      "notiz": "Blanko oder autorisierte Prägung; Besitz verleiht keine Amtsbefugnisse."
+    },
+    {
+      "id": "D003",
+      "status": "Bestätigt",
+      "spotSourceRow": 976,
+      "name": "Fahndungsblatt, gedruckt",
+      "art": "Schreibwaren",
+      "anzahl": 1,
+      "einheit": "Blatt",
+      "gewichtKg": 0.01,
+      "preisAvailable": true,
+      "preisDublonen": 0.3,
+      "whkCraftSkill": "Drucker",
+      "whkCraftSkillRef": "whk_drucker",
+      "spezialisierung": "Lithograf",
+      "specializationRef": "whk_spez_drucker_lithograf",
+      "berufe": [
+        "Wache",
+        "Kopfgeldjäger",
+        "Journalist"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 146,
+          "preisDublonen": 1.3
+        }
+      ],
+      "begruendung": "Papierbogen plus einfacher Druck; Auflage vorausgesetzt.",
+      "notiz": "Druck eines vorhandenen Texts; Recherche und Belohnung nicht enthalten."
+    },
+    {
+      "id": "D004",
+      "status": "Bestätigt",
+      "spotSourceRow": 977,
+      "name": "Revolverholster, Gürtelmontage",
+      "art": "Waffenzubehör",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.25,
+      "preisAvailable": true,
+      "preisDublonen": 3,
+      "whkCraftSkill": "Lederbearbeitung",
+      "whkCraftSkillRef": "whk_lederbearbeitung",
+      "spezialisierung": "Sattler",
+      "specializationRef": "whk_spez_lederbearbeitung_sattler",
+      "berufe": [
+        "Revolverheld",
+        "Soldat",
+        "Wache",
+        "Kopfgeldjäger"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 567,
+          "preisDublonen": 5
+        },
+        {
+          "sourceRow": 525,
+          "preisDublonen": 0.98
+        }
+      ],
+      "begruendung": "Kleines angepasstes Lederbehältnis unter dem Patronengürtel.",
+      "notiz": "Für eine konkret gewählte Waffe; Gürtel und Waffe separat."
+    },
+    {
+      "id": "D005",
+      "status": "Bestätigt",
+      "spotSourceRow": 978,
+      "name": "Landkarte, Region",
+      "art": "Schreibwaren",
+      "anzahl": 1,
+      "einheit": "Blatt",
+      "gewichtKg": 0.04,
+      "preisAvailable": true,
+      "preisDublonen": 12,
+      "whkCraftSkill": "Geografie",
+      "whkCraftSkillRef": "whk_geografie",
+      "spezialisierung": "Kartografie",
+      "specializationRef": "whk_spez_geografie_kartografie",
+      "berufe": [
+        "Kundschafter",
+        "Prospektor",
+        "Fuhrmann",
+        "Schmuggler",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 145,
+          "preisDublonen": 15.4
+        },
+        {
+          "sourceRow": 146,
+          "preisDublonen": 1.3
+        }
+      ],
+      "begruendung": "Mehrere Druck- und Zeichenarbeiten; unter einem gebundenen Tagebuch.",
+      "notiz": "Veröffentlichte Karte, keine aktuelle Geheimaufklärung."
+    },
+    {
+      "id": "D006",
+      "status": "Bestätigt",
+      "spotSourceRow": 979,
+      "name": "Seekarte, Küstenabschnitt",
+      "art": "Schreibwaren",
+      "anzahl": 1,
+      "einheit": "Blatt",
+      "gewichtKg": 0.05,
+      "preisAvailable": true,
+      "preisDublonen": 20,
+      "whkCraftSkill": "Geografie",
+      "whkCraftSkillRef": "whk_geografie",
+      "spezialisierung": "Kartografie",
+      "specializationRef": "whk_spez_geografie_kartografie",
+      "berufe": [
+        "Matrose",
+        "Schmuggler",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 145,
+          "preisDublonen": 15.4
+        },
+        {
+          "sourceRow": 197,
+          "preisDublonen": 32
+        }
+      ],
+      "begruendung": "Fachliche Kartierung über dem Tagebuch, unter dem Quadranten.",
+      "notiz": "Bekannter Küstenabschnitt; Aktualität und Region festlegen."
+    },
+    {
+      "id": "D007",
+      "status": "Bestätigt",
+      "spotSourceRow": 980,
+      "name": "Jagdfalle, kleine Kastenfalle",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 2,
+      "preisAvailable": true,
+      "preisDublonen": 12,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Tischler",
+      "specializationRef": "whk_spez_holzbearbeitung_tischler",
+      "berufe": [
+        "Jäger"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 275,
+          "preisDublonen": 0.89
+        },
+        {
+          "sourceRow": 278,
+          "preisDublonen": 13
+        }
+      ],
+      "begruendung": "Stabile kleine Holzkonstruktion mit einfacher Auslösung.",
+      "notiz": "Für Kleinwild; keine automatisch festgelegten Fang- oder Schadenswerte."
+    },
+    {
+      "id": "D008",
+      "status": "Bestätigt",
+      "spotSourceRow": 981,
+      "name": "Jagdfalle, Federbügel",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 2.5,
+      "preisAvailable": true,
+      "preisDublonen": 35,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Jäger"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 725,
+          "preisDublonen": 20
+        },
+        {
+          "sourceRow": 739,
+          "preisDublonen": 5.3
+        }
+      ],
+      "begruendung": "Stahlbügel und Federmechanismus oberhalb einfacher Handwerkzeuge.",
+      "notiz": "Zielgröße wählen; konkrete Spielwirkung bleibt beim Jagdbaustein."
+    },
+    {
+      "id": "D009",
+      "status": "Bestätigt",
+      "spotSourceRow": 982,
+      "name": "Saatgetreide, gereinigt",
+      "art": "Saatgut",
+      "anzahl": 1,
+      "einheit": "Sack, 1 kg",
+      "gewichtKg": 1,
+      "preisAvailable": true,
+      "preisDublonen": 0.15,
+      "whkCraftSkill": "Landwirtschaft",
+      "whkCraftSkillRef": "whk_landwirtschaft",
+      "spezialisierung": "Getreidebauer",
+      "specializationRef": "whk_spez_landwirtschaft_getreidebauer",
+      "berufe": [
+        "Bauer"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 441,
+          "preisDublonen": 0.075
+        }
+      ],
+      "begruendung": "Doppelter Haferpreis für ausgewähltes Saatgut.",
+      "notiz": "Getreidesorte festlegen; kein pauschaler Flächenertrag."
+    },
+    {
+      "id": "D010",
+      "status": "Bestätigt",
+      "spotSourceRow": 983,
+      "name": "Gemüsesaat, sortenrein",
+      "art": "Saatgut",
+      "anzahl": 1,
+      "einheit": "Beutel, 50 g",
+      "gewichtKg": 0.05,
+      "preisAvailable": true,
+      "preisDublonen": 0.25,
+      "whkCraftSkill": "Landwirtschaft",
+      "whkCraftSkillRef": "whk_landwirtschaft",
+      "spezialisierung": "Gemüsebauer",
+      "specializationRef": "whk_spez_landwirtschaft_gemuesebauer",
+      "berufe": [
+        "Bauer"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 441,
+          "preisDublonen": 0.075
+        },
+        {
+          "sourceRow": 454,
+          "preisDublonen": 0.025
+        }
+      ],
+      "begruendung": "Kleine aufbereitete Saatgutmenge, mehr Arbeitsaufwand als Speiseware.",
+      "notiz": "Eine Sorte je Beutel; Aussaatbedarf sortenabhängig."
+    },
+    {
+      "id": "D011",
+      "status": "Bestätigt",
+      "spotSourceRow": 984,
+      "name": "Goldwaschpfanne",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.7,
+      "preisAvailable": true,
+      "preisDublonen": 5,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Grobschmied",
+      "specializationRef": "whk_spez_schmied_grobschmied",
+      "berufe": [
+        "Prospektor"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 675,
+          "preisDublonen": 2.2
+        },
+        {
+          "sourceRow": 732,
+          "preisDublonen": 7
+        }
+      ],
+      "begruendung": "Geformte Metallpfanne zwischen Sieb und Schaufel.",
+      "notiz": "Kein Ersatz für Prüfwaage oder Erzprobe."
+    },
+    {
+      "id": "D012",
+      "status": "Bestätigt",
+      "spotSourceRow": 985,
+      "name": "Feinwaage mit Gewichten",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 0.8,
+      "preisAvailable": true,
+      "preisDublonen": 90,
+      "whkCraftSkill": "Mechanikus",
+      "whkCraftSkillRef": "whk_mechanikus",
+      "spezialisierung": "Feinmechaniker",
+      "specializationRef": "whk_spez_mechanikus_feinmechaniker",
+      "berufe": [
+        "Prospektor",
+        "Alchemist",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 678,
+          "preisDublonen": 6.6
+        },
+        {
+          "sourceRow": 583,
+          "preisDublonen": 120
+        }
+      ],
+      "begruendung": "Feines Messgerät oberhalb Zirkel, unter schwerem Flaschenzug.",
+      "notiz": "Tragbare Prüfwaage; keine moderne Präzisionsklasse zugesichert."
+    },
+    {
+      "id": "D013",
+      "status": "Bestätigt",
+      "spotSourceRow": 986,
+      "name": "Handelswaage mit Gewichten",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 3,
+      "preisAvailable": true,
+      "preisDublonen": 40,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Händler",
+        "Verwalter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 725,
+          "preisDublonen": 20
+        },
+        {
+          "sourceRow": 678,
+          "preisDublonen": 6.6
+        }
+      ],
+      "begruendung": "Balkenwaage mit Gewichten, weniger fein als Laborwaage.",
+      "notiz": "Für Waren; keine automatische amtliche Eichung."
+    },
+    {
+      "id": "D014",
+      "status": "Bestätigt",
+      "spotSourceRow": 987,
+      "name": "Grubenhelm, Leder mit Verstärkung",
+      "art": "Arbeitskleidung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.6,
+      "preisAvailable": true,
+      "preisDublonen": 6,
+      "whkCraftSkill": "Lederbearbeitung",
+      "whkCraftSkillRef": "whk_lederbearbeitung",
+      "spezialisierung": "Oberbekleidung",
+      "specializationRef": "whk_spez_lederbearbeitung_oberbekleidung",
+      "berufe": [
+        "Bergmann"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 477,
+          "preisDublonen": 1.2
+        },
+        {
+          "sourceRow": 767,
+          "preisDublonen": 0.42
+        },
+        {
+          "sourceRow": 841,
+          "preisDublonen": 2.3
+        }
+      ],
+      "begruendung": "Verstärkte Lederkopfbedeckung oberhalb einfacher Kleidung.",
+      "notiz": "Arbeitshelm ohne automatisch gewährten RS/RH; ersetzt Hut."
+    },
+    {
+      "id": "D015",
+      "status": "Bestätigt",
+      "spotSourceRow": 988,
+      "name": "Grubenlampe, abgeschirmt",
+      "art": "Beleuchtung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 1,
+      "preisAvailable": true,
+      "preisDublonen": 18,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Bergmann"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 673,
+          "preisDublonen": 5.28
+        },
+        {
+          "sourceRow": 675,
+          "preisDublonen": 2.2
+        }
+      ],
+      "begruendung": "Robusteres Gehäuse und Abschirmung gegenüber gewöhnlicher Laterne.",
+      "notiz": "Keine Garantie gegen Grubengas; Licht- und Sicherheitsregeln separat. Öl nicht enthalten."
+    },
+    {
+      "id": "D016",
+      "status": "Bestätigt",
+      "spotSourceRow": 989,
+      "name": "Sicherungsgurt mit Anschlagringen",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 1.5,
+      "preisAvailable": true,
+      "preisDublonen": 18,
+      "whkCraftSkill": "Lederbearbeitung",
+      "whkCraftSkillRef": "whk_lederbearbeitung",
+      "spezialisierung": "Sattler",
+      "specializationRef": "whk_spez_lederbearbeitung_sattler",
+      "berufe": [
+        "Bergmann",
+        "Zimmermann",
+        "Matrose"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 535,
+          "preisDublonen": 17.6
+        },
+        {
+          "sourceRow": 567,
+          "preisDublonen": 5
+        }
+      ],
+      "begruendung": "Belastbarer Ledergurt mit Metallbeschlägen in Sattelpreisnähe.",
+      "notiz": "Seil und Verankerung separat; keine neue Traglastregel."
+    },
+    {
+      "id": "D017",
+      "status": "Bestätigt",
+      "spotSourceRow": 990,
+      "name": "Rettungsring, Kork und Segeltuch",
+      "art": "Schiffszubehör",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 2,
+      "preisAvailable": true,
+      "preisDublonen": 8,
+      "whkCraftSkill": "Schneider",
+      "whkCraftSkillRef": "whk_schneider",
+      "spezialisierung": "Segelmacher",
+      "specializationRef": "whk_spez_schneider_segelmacher",
+      "berufe": [
+        "Matrose"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 748,
+          "preisDublonen": 5.7
+        },
+        {
+          "sourceRow": 754,
+          "preisDublonen": 2.2
+        }
+      ],
+      "begruendung": "Vernähte Schwimmhilfe mit Füllung über einer Hängematte.",
+      "notiz": "Bordmittel; keine automatische Schwimmfertigkeit."
+    },
+    {
+      "id": "D018",
+      "status": "Bestätigt",
+      "spotSourceRow": 991,
+      "name": "Geheimfach für Transportkiste",
+      "art": "Fahrzeugzubehör",
+      "anzahl": 1,
+      "einheit": "Einbau",
+      "gewichtKg": 0.5,
+      "preisAvailable": true,
+      "preisDublonen": 10,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Tischler",
+      "specializationRef": "whk_spez_holzbearbeitung_tischler",
+      "berufe": [
+        "Schmuggler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 275,
+          "preisDublonen": 0.89
+        },
+        {
+          "sourceRow": 278,
+          "preisDublonen": 13
+        }
+      ],
+      "begruendung": "Anpassungsarbeit kostet mehr als die einfache Kiste.",
+      "notiz": "Preis und Zusatzgewicht nur für den Einbau; Kiste separat. Keine garantierte Tarnwirkung."
+    },
+    {
+      "id": "D019",
+      "status": "Bestätigt",
+      "spotSourceRow": 992,
+      "name": "Gefälschter Passierschein",
+      "art": "Schreibwaren",
+      "anzahl": 1,
+      "einheit": "Dokument",
+      "gewichtKg": 0.02,
+      "preisAvailable": true,
+      "preisDublonen": 25,
+      "whkCraftSkill": "Drucker",
+      "whkCraftSkillRef": "whk_drucker",
+      "spezialisierung": "Lithograf",
+      "specializationRef": "whk_spez_drucker_lithograf",
+      "berufe": [
+        "Schmuggler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 147,
+          "preisDublonen": 7.5
+        },
+        {
+          "sourceRow": 676,
+          "preisDublonen": 8
+        }
+      ],
+      "begruendung": "Einzelanfertigung mit nachgeahmter Gestaltung statt Auflagendruck.",
+      "notiz": "Nur Spielgegenstand; Gültigkeit und Entdeckungsprobe nicht im Kaufpreis enthalten."
+    },
+    {
+      "id": "D020",
+      "status": "Bestätigt",
+      "spotSourceRow": 993,
+      "name": "Kamera, Plattenapparat mit Objektiv",
+      "art": "Optik",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 5,
+      "preisAvailable": true,
+      "preisDublonen": 600,
+      "whkCraftSkill": "Mechanikus",
+      "whkCraftSkillRef": "whk_mechanikus",
+      "spezialisierung": "Feinmechaniker",
+      "specializationRef": "whk_spez_mechanikus_feinmechaniker",
+      "berufe": [
+        "Journalist",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 192,
+          "preisDublonen": 360
+        },
+        {
+          "sourceRow": 195,
+          "preisDublonen": 176
+        }
+      ],
+      "begruendung": "Optik plus lichtdichtes Gehäuse und Mechanik oberhalb eines Fernrohrs.",
+      "notiz": "Ohne Stativ, Platten und Entwicklungschemie; kein Fotografiebonus."
+    },
+    {
+      "id": "D021",
+      "status": "Bestätigt",
+      "spotSourceRow": 994,
+      "name": "Kamerastativ, Holz",
+      "art": "Optik",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 3,
+      "preisAvailable": true,
+      "preisDublonen": 20,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Tischler",
+      "specializationRef": "whk_spez_holzbearbeitung_tischler",
+      "berufe": [
+        "Journalist",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 278,
+          "preisDublonen": 13
+        },
+        {
+          "sourceRow": 289,
+          "preisDublonen": 5
+        }
+      ],
+      "begruendung": "Präzise klappbare Holzkonstruktion oberhalb einfacher Möbel.",
+      "notiz": "Auch für passende Vermessungsgeräte nutzbar."
+    },
+    {
+      "id": "D022",
+      "status": "Bestätigt",
+      "spotSourceRow": 995,
+      "name": "Fotoplatten, vorbereitet, sechs Stück",
+      "art": "Fotomaterial",
+      "anzahl": 1,
+      "einheit": "Schachtel",
+      "gewichtKg": 1,
+      "preisAvailable": true,
+      "preisDublonen": 12,
+      "whkCraftSkill": "Glaser",
+      "whkCraftSkillRef": "whk_glaser",
+      "spezialisierung": "Apparateglaser",
+      "specializationRef": "whk_spez_glaser_apparateglaser",
+      "berufe": [
+        "Journalist",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 182,
+          "preisDublonen": 2.42
+        }
+      ],
+      "begruendung": "Sechs kleine Glasplatten mit Beschichtung; Preis nahe sechs Glasgefäßen.",
+      "notiz": "Fotochemische Beschichtung als Zulieferarbeit enthalten; Belichtung und Entwicklung separat."
+    },
+    {
+      "id": "D023",
+      "status": "Bestätigt",
+      "spotSourceRow": 996,
+      "name": "Fotochemie, Entwicklungssatz",
+      "art": "Fotomaterial",
+      "anzahl": 1,
+      "einheit": "Satz für sechs Platten",
+      "gewichtKg": 0.5,
+      "preisAvailable": true,
+      "preisDublonen": 8,
+      "whkCraftSkill": "Alchemie",
+      "whkCraftSkillRef": "whk_alchemie",
+      "spezialisierung": "Pigmentmacher",
+      "specializationRef": "whk_spez_alchemie_pigmentmacher",
+      "berufe": [
+        "Journalist",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 54,
+          "preisDublonen": 0.98
+        },
+        {
+          "sourceRow": 136,
+          "preisDublonen": 20
+        }
+      ],
+      "begruendung": "Kleine aufbereitete Chemikalienmenge unter einer Flasche reinen Alkohols.",
+      "notiz": "Entwurfszuordnung für Bildchemie; genaue Rezeptur und Wirkungen nicht festgelegt."
+    },
+    {
+      "id": "D024",
+      "status": "Bestätigt",
+      "spotSourceRow": 997,
+      "name": "Druckerpresse, Handbetrieb",
+      "art": "Werkstattausstattung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 180,
+      "preisAvailable": true,
+      "preisDublonen": 1200,
+      "whkCraftSkill": "Mechanikus",
+      "whkCraftSkillRef": "whk_mechanikus",
+      "spezialisierung": "Maschinenbauer",
+      "specializationRef": "whk_spez_mechanikus_maschinenbauer",
+      "berufe": [
+        "Journalist"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 583,
+          "preisDublonen": 120
+        },
+        {
+          "sourceRow": 586,
+          "preisDublonen": 8800
+        }
+      ],
+      "begruendung": "Große mechanische Presse, deutlich unter der komplexen Addiermaschine.",
+      "notiz": "Stationär; Satzmaterial, Papier und Druckfarbe separat."
+    },
+    {
+      "id": "D025",
+      "status": "Bestätigt",
+      "spotSourceRow": 998,
+      "name": "Drucklettern, Grundsatz mit Setzkasten",
+      "art": "Werkstattausstattung",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 12,
+      "preisAvailable": true,
+      "preisDublonen": 180,
+      "whkCraftSkill": "Drucker",
+      "whkCraftSkillRef": "whk_drucker",
+      "spezialisierung": "Stereotypeur",
+      "specializationRef": "whk_spez_drucker_stereotypeur",
+      "berufe": [
+        "Journalist"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 676,
+          "preisDublonen": 8
+        },
+        {
+          "sourceRow": 583,
+          "preisDublonen": 120
+        }
+      ],
+      "begruendung": "Viele wiederverwendbare präzise Druckteile.",
+      "notiz": "Eine Schrift und festgelegter Zeichenvorrat; ergänzt D024."
+    },
+    {
+      "id": "D026",
+      "status": "Bestätigt",
+      "spotSourceRow": 999,
+      "name": "Druckfarbe, schwarz",
+      "art": "Fotomaterial",
+      "anzahl": 1,
+      "einheit": "Dose",
+      "gewichtKg": 0.5,
+      "preisAvailable": true,
+      "preisDublonen": 4,
+      "whkCraftSkill": "Alchemie",
+      "whkCraftSkillRef": "whk_alchemie",
+      "spezialisierung": "Pigmentmacher",
+      "specializationRef": "whk_spez_alchemie_pigmentmacher",
+      "berufe": [
+        "Journalist"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 54,
+          "preisDublonen": 0.98
+        }
+      ],
+      "begruendung": "Dickflüssige Druckfarbe in größerer Menge als Schreib-Tinte.",
+      "notiz": "Für Druckerpresse; nicht mit Fotochemie gleichsetzen."
+    },
+    {
+      "id": "D027",
+      "status": "Bestätigt",
+      "spotSourceRow": 1000,
+      "name": "Spielkarten, vollständiges Blatt",
+      "art": "Spielwaren",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 0.08,
+      "preisAvailable": true,
+      "preisDublonen": 2,
+      "whkCraftSkill": "Drucker",
+      "whkCraftSkillRef": "whk_drucker",
+      "spezialisierung": "Lithograf",
+      "specializationRef": "whk_spez_drucker_lithograf",
+      "berufe": [
+        "Glücksspieler",
+        "Wirt",
+        "Künstler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 146,
+          "preisDublonen": 1.3
+        },
+        {
+          "sourceRow": 251,
+          "preisDublonen": 0.88
+        }
+      ],
+      "begruendung": "Mehrfach bedruckter Karton, teurer als einfacher Würfelsatz.",
+      "notiz": "Ein regional übliches Kartenspiel; keine Falschspielwirkung."
+    },
+    {
+      "id": "D028",
+      "status": "Bestätigt",
+      "spotSourceRow": 1001,
+      "name": "Spielkarten, markiertes Blatt",
+      "art": "Spielwaren",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 0.08,
+      "preisAvailable": true,
+      "preisDublonen": 8,
+      "whkCraftSkill": "Drucker",
+      "whkCraftSkillRef": "whk_drucker",
+      "spezialisierung": "Lithograf",
+      "specializationRef": "whk_spez_drucker_lithograf",
+      "berufe": [
+        "Glücksspieler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 146,
+          "preisDublonen": 1.3
+        },
+        {
+          "sourceRow": 251,
+          "preisDublonen": 0.88
+        }
+      ],
+      "begruendung": "Aufwendigere Sonderanfertigung gegenüber normalen Spielkarten.",
+      "notiz": "Markierung als erzählerische Eigenschaft; Entdeckung und Nutzen regelabhängig."
+    },
+    {
+      "id": "D029",
+      "status": "Bestätigt",
+      "spotSourceRow": 1002,
+      "name": "Würfel, präpariert, drei Stück",
+      "art": "Spielwaren",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 0.02,
+      "preisAvailable": true,
+      "preisDublonen": 5,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Schnitzer",
+      "specializationRef": "whk_spez_holzbearbeitung_schnitzer",
+      "berufe": [
+        "Glücksspieler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 251,
+          "preisDublonen": 0.88
+        }
+      ],
+      "begruendung": "Mehrfache Kosten normaler Würfel für verdeckte Bearbeitung.",
+      "notiz": "Keine garantierten Ergebnisse."
+    },
+    {
+      "id": "D030",
+      "status": "Bestätigt",
+      "spotSourceRow": 1003,
+      "name": "Amboss, Werkstatt",
+      "art": "Werkstattausstattung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 60,
+      "preisAvailable": true,
+      "preisDublonen": 180,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Grobschmied",
+      "specializationRef": "whk_spez_schmied_grobschmied",
+      "berufe": [
+        "Schmied",
+        "Waffenschmied",
+        "Rüstschmied"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 725,
+          "preisDublonen": 20
+        },
+        {
+          "sourceRow": 741,
+          "preisDublonen": 22
+        }
+      ],
+      "begruendung": "Großer bearbeiteter Stahlkörper; deutlich oberhalb Handwerkzeugen.",
+      "notiz": "Stationärer Amboss ohne Unterbau."
+    },
+    {
+      "id": "D031",
+      "status": "Bestätigt",
+      "spotSourceRow": 1004,
+      "name": "Esse, fest, mit Feuerbett",
+      "art": "Werkstattausstattung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 80,
+      "preisAvailable": true,
+      "preisDublonen": 120,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Grobschmied",
+      "specializationRef": "whk_spez_schmied_grobschmied",
+      "berufe": [
+        "Schmied",
+        "Waffenschmied",
+        "Rüstschmied"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 686,
+          "preisDublonen": 8.8
+        },
+        {
+          "sourceRow": 583,
+          "preisDublonen": 120
+        }
+      ],
+      "begruendung": "Großer feuerfester Werkstattaufbau; Montage im Richtpreis enthalten.",
+      "notiz": "Blasebalg, Brennstoff und Gebäude separat; Mauerarbeiten als Zulieferarbeit."
+    },
+    {
+      "id": "D032",
+      "status": "Bestätigt",
+      "spotSourceRow": 1005,
+      "name": "Blasebalg, Schmiede",
+      "art": "Werkstattausstattung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 8,
+      "preisAvailable": true,
+      "preisDublonen": 45,
+      "whkCraftSkill": "Lederbearbeitung",
+      "whkCraftSkillRef": "whk_lederbearbeitung",
+      "spezialisierung": "Sattler",
+      "specializationRef": "whk_spez_lederbearbeitung_sattler",
+      "berufe": [
+        "Schmied",
+        "Waffenschmied",
+        "Rüstschmied"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 535,
+          "preisDublonen": 17.6
+        },
+        {
+          "sourceRow": 741,
+          "preisDublonen": 22
+        }
+      ],
+      "begruendung": "Große dichte Leder-Holz-Konstruktion oberhalb Sattelpreis.",
+      "notiz": "Holzteile enthalten; Anschluss an Esse separat anpassen."
+    },
+    {
+      "id": "D033",
+      "status": "Bestätigt",
+      "spotSourceRow": 1006,
+      "name": "Werkbank mit Schraubstock",
+      "art": "Werkstattausstattung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 35,
+      "preisAvailable": true,
+      "preisDublonen": 100,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Tischler",
+      "specializationRef": "whk_spez_holzbearbeitung_tischler",
+      "berufe": [
+        "Schmied",
+        "Waffenschmied",
+        "Rüstschmied",
+        "Mechaniker",
+        "Zimmermann"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 290,
+          "preisDublonen": 80
+        },
+        {
+          "sourceRow": 739,
+          "preisDublonen": 5.3
+        }
+      ],
+      "begruendung": "Stabile Bank mit zugeliefertem Schraubstock etwas über Schreibtisch.",
+      "notiz": "Stationär; Schraubstock bereits enthalten."
+    },
+    {
+      "id": "D034",
+      "status": "Bestätigt",
+      "spotSourceRow": 1007,
+      "name": "Präzisionswerkzeug, Waffenbau",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 1.2,
+      "preisAvailable": true,
+      "preisDublonen": 65,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Waffenschmied"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 719,
+          "preisDublonen": 11
+        },
+        {
+          "sourceRow": 676,
+          "preisDublonen": 8
+        },
+        {
+          "sourceRow": 682,
+          "preisDublonen": 52.8
+        }
+      ],
+      "begruendung": "Mehrere kleine Feilen, Prüflehren und Halter; oberhalb Dietrichsatz.",
+      "notiz": "Ergänzt grobe Werkzeuge; keine universelle Eignung für jede Waffenmechanik."
+    },
+    {
+      "id": "D035",
+      "status": "Bestätigt",
+      "spotSourceRow": 1008,
+      "name": "Formwerkzeuge, Rüstungsbau",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 5,
+      "preisAvailable": true,
+      "preisDublonen": 55,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Grobschmied",
+      "specializationRef": "whk_spez_schmied_grobschmied",
+      "berufe": [
+        "Rüstschmied"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 725,
+          "preisDublonen": 20
+        },
+        {
+          "sourceRow": 729,
+          "preisDublonen": 5
+        },
+        {
+          "sourceRow": 741,
+          "preisDublonen": 22
+        }
+      ],
+      "begruendung": "Treibhammer und drei kleine Formeinsätze.",
+      "notiz": "Ergänzt Amboss; keine fertige Rüstung enthalten."
+    },
+    {
+      "id": "D036",
+      "status": "Bestätigt",
+      "spotSourceRow": 1009,
+      "name": "Rüstungsnieten, fünfzig Stück",
+      "art": "Werkstattmaterial",
+      "anzahl": 1,
+      "einheit": "Schachtel",
+      "gewichtKg": 0.3,
+      "preisAvailable": true,
+      "preisDublonen": 5,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Rüstschmied"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 706,
+          "preisDublonen": 4
+        }
+      ],
+      "begruendung": "Kleine passend geformte Nieten leicht oberhalb Nagelschachtel.",
+      "notiz": "Material und Durchmesser beim Auftrag festlegen."
+    },
+    {
+      "id": "D037",
+      "status": "Bestätigt",
+      "spotSourceRow": 1010,
+      "name": "Schraubendreher, drei Größen",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 0.4,
+      "preisAvailable": true,
+      "preisDublonen": 9,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Mechaniker",
+        "Waffenschmied"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 707,
+          "preisDublonen": 4.4
+        },
+        {
+          "sourceRow": 739,
+          "preisDublonen": 5.3
+        }
+      ],
+      "begruendung": "Drei einfache Werkzeuge mit Griffen.",
+      "notiz": "Passende Schraubenköpfe vorausgesetzt."
+    },
+    {
+      "id": "D038",
+      "status": "Bestätigt",
+      "spotSourceRow": 1011,
+      "name": "Schraubenschlüssel, vier Größen",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 1.2,
+      "preisAvailable": true,
+      "preisDublonen": 16,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Grobschmied",
+      "specializationRef": "whk_spez_schmied_grobschmied",
+      "berufe": [
+        "Mechaniker"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 739,
+          "preisDublonen": 5.3
+        },
+        {
+          "sourceRow": 719,
+          "preisDublonen": 11
+        }
+      ],
+      "begruendung": "Mehrere geformte Werkzeuge unter einem Hammer.",
+      "notiz": "Größen nach Maschine wählen."
+    },
+    {
+      "id": "D039",
+      "status": "Bestätigt",
+      "spotSourceRow": 1012,
+      "name": "Schrauben und Muttern, zwanzig Paare",
+      "art": "Werkstattmaterial",
+      "anzahl": 1,
+      "einheit": "Schachtel",
+      "gewichtKg": 0.3,
+      "preisAvailable": true,
+      "preisDublonen": 6,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Mechaniker",
+        "Waffenschmied"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 706,
+          "preisDublonen": 4
+        }
+      ],
+      "begruendung": "Gewindearbeit macht die kleinere Menge teurer als Nägel.",
+      "notiz": "Ein abgestimmter Größensatz, kein Ersatz für jede Maschine."
+    },
+    {
+      "id": "D040",
+      "status": "Bestätigt",
+      "spotSourceRow": 1013,
+      "name": "Maschinenersatzteile, einfache Auswahl",
+      "art": "Werkstattmaterial",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 2,
+      "preisAvailable": true,
+      "preisDublonen": 30,
+      "whkCraftSkill": "Mechanikus",
+      "whkCraftSkillRef": "whk_mechanikus",
+      "spezialisierung": "Maschinenbauer",
+      "specializationRef": "whk_spez_mechanikus_maschinenbauer",
+      "berufe": [
+        "Mechaniker"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 739,
+          "preisDublonen": 5.3
+        },
+        {
+          "sourceRow": 719,
+          "preisDublonen": 11
+        },
+        {
+          "sourceRow": 583,
+          "preisDublonen": 120
+        }
+      ],
+      "begruendung": "Kleine Federn, Bolzen und Buchsen unter großem Hebezeug.",
+      "notiz": "Für eine benannte Maschine; keine pauschale Reparaturgarantie."
+    },
+    {
+      "id": "D041",
+      "status": "Bestätigt",
+      "spotSourceRow": 1014,
+      "name": "Bauholz, Bretter, trocken",
+      "art": "Baumaterial",
+      "anzahl": 1,
+      "einheit": "Bündel",
+      "gewichtKg": 10,
+      "preisAvailable": true,
+      "preisDublonen": 4,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Holzfäller",
+      "specializationRef": "whk_spez_holzbearbeitung_holzfaeller",
+      "berufe": [
+        "Zimmermann",
+        "Bergmann",
+        "Bauer"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 289,
+          "preisDublonen": 5
+        },
+        {
+          "sourceRow": 278,
+          "preisDublonen": 13
+        }
+      ],
+      "begruendung": "Rohmaterial unter einem einfachen fertigen Tisch.",
+      "notiz": "Abmessungen projektbezogen; trockenes Nutzholz, kein fertiger Bausatz."
+    },
+    {
+      "id": "D042",
+      "status": "Bestätigt",
+      "spotSourceRow": 1015,
+      "name": "Bauholz, Stützbalken",
+      "art": "Baumaterial",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 15,
+      "preisAvailable": true,
+      "preisDublonen": 6,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Holzfäller",
+      "specializationRef": "whk_spez_holzbearbeitung_holzfaeller",
+      "berufe": [
+        "Zimmermann",
+        "Bergmann"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 289,
+          "preisDublonen": 5
+        },
+        {
+          "sourceRow": 278,
+          "preisDublonen": 13
+        }
+      ],
+      "begruendung": "Großer zugeschnittener Holzbalken ohne Möbelarbeit.",
+      "notiz": "Passenden Querschnitt und Länge vor Einbau wählen."
+    },
+    {
+      "id": "D043",
+      "status": "Bestätigt",
+      "spotSourceRow": 1016,
+      "name": "Arzttasche, leer mit Innenfächern",
+      "art": "Behälter",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 1,
+      "preisAvailable": true,
+      "preisDublonen": 5,
+      "whkCraftSkill": "Lederbearbeitung",
+      "whkCraftSkillRef": "whk_lederbearbeitung",
+      "spezialisierung": "Täschner",
+      "specializationRef": "whk_spez_lederbearbeitung_taeschner",
+      "berufe": [
+        "Arzt",
+        "Heiler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 525,
+          "preisDublonen": 0.98
+        },
+        {
+          "sourceRow": 567,
+          "preisDublonen": 5
+        }
+      ],
+      "begruendung": "Fächer und Verschlüsse oberhalb einfachem Ranzen.",
+      "notiz": "Ersetzt für diesen Zweck P525; medizinischer Inhalt separat."
+    },
+    {
+      "id": "D044",
+      "status": "Bestätigt",
+      "spotSourceRow": 1017,
+      "name": "Verbände, sauber verpackt",
+      "art": "Medizinischer Bedarf",
+      "anzahl": 1,
+      "einheit": "Satz mit fünf Binden",
+      "gewichtKg": 0.15,
+      "preisAvailable": true,
+      "preisDublonen": 1.5,
+      "whkCraftSkill": "Weber",
+      "whkCraftSkillRef": "whk_weber",
+      "spezialisierung": "Leinweber",
+      "specializationRef": "whk_spez_weber_leinweber",
+      "berufe": [
+        "Arzt",
+        "Heiler",
+        "Soldat"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 963,
+          "preisDublonen": 3
+        },
+        {
+          "sourceRow": 385,
+          "preisDublonen": 3.5
+        }
+      ],
+      "begruendung": "Kleine Leinenmenge mit Zuschnitt und Verpackung.",
+      "notiz": "Sauber ist nicht steril; keine Heilwirkung allein durch Besitz."
+    },
+    {
+      "id": "D045",
+      "status": "Bestätigt",
+      "spotSourceRow": 1018,
+      "name": "Verbände, sterilisiert und versiegelt",
+      "art": "Medizinischer Bedarf",
+      "anzahl": 1,
+      "einheit": "Satz mit fünf Binden",
+      "gewichtKg": 0.15,
+      "preisAvailable": true,
+      "preisDublonen": 3,
+      "whkCraftSkill": "Weber",
+      "whkCraftSkillRef": "whk_weber",
+      "spezialisierung": "Leinweber",
+      "specializationRef": "whk_spez_weber_leinweber",
+      "berufe": [
+        "Arzt",
+        "Heiler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 963,
+          "preisDublonen": 3
+        },
+        {
+          "sourceRow": 136,
+          "preisDublonen": 20
+        }
+      ],
+      "begruendung": "Zuschnitt plus Aufbereitung und versiegelte Verpackung.",
+      "notiz": "Sterilisationsleistung im Entwurf eingepreist, keine Anleitung; nach Öffnung Verbrauchsgut."
+    },
+    {
+      "id": "D046",
+      "status": "Bestätigt",
+      "spotSourceRow": 1019,
+      "name": "Chirurgische Instrumente, Grundsatz",
+      "art": "Medizinischer Bedarf",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 0.8,
+      "preisAvailable": true,
+      "preisDublonen": 75,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Arzt"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 733,
+          "preisDublonen": 13.2
+        },
+        {
+          "sourceRow": 719,
+          "preisDublonen": 11
+        },
+        {
+          "sourceRow": 676,
+          "preisDublonen": 8
+        }
+      ],
+      "begruendung": "Skalpell, medizinische Schere, Pinzette und zwei Klemmen mit feiner Bearbeitung.",
+      "notiz": "Ersetzt P733 im chirurgischen Einsatz; keine allgemeine Werkzeugschere als Operationsinstrument."
+    },
+    {
+      "id": "D047",
+      "status": "Bestätigt",
+      "spotSourceRow": 1020,
+      "name": "Nahtmaterial, medizinisch",
+      "art": "Medizinischer Bedarf",
+      "anzahl": 1,
+      "einheit": "Packung für fünf Versorgungen",
+      "gewichtKg": 0.05,
+      "preisAvailable": true,
+      "preisDublonen": 4,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Arzt"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 707,
+          "preisDublonen": 4.4
+        },
+        {
+          "sourceRow": 385,
+          "preisDublonen": 3.5
+        }
+      ],
+      "begruendung": "Feine Nadeln mit geeignetem Faden und Verpackung.",
+      "notiz": "Faden als Zuliefermaterial enthalten; Spielbedarf ohne Behandlungsanleitung."
+    },
+    {
+      "id": "D048",
+      "status": "Bestätigt",
+      "spotSourceRow": 1021,
+      "name": "Reinigungsmittel, medizinisch",
+      "art": "Medizinischer Bedarf",
+      "anzahl": 1,
+      "einheit": "Flasche, 0,2 l",
+      "gewichtKg": 0.25,
+      "preisAvailable": true,
+      "preisDublonen": 4,
+      "whkCraftSkill": "Alchemie",
+      "whkCraftSkillRef": "whk_alchemie",
+      "spezialisierung": "Seifensieder",
+      "specializationRef": "whk_spez_alchemie_seifensieder",
+      "berufe": [
+        "Arzt",
+        "Heiler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 60,
+          "preisDublonen": 0.1
+        },
+        {
+          "sourceRow": 136,
+          "preisDublonen": 20
+        }
+      ],
+      "begruendung": "Kleine aufbereitete Lösung samt Behälter.",
+      "notiz": "Entwurf eines Spielartikels; keine festgelegte Rezeptur oder Heilwirkung."
+    },
+    {
+      "id": "D049",
+      "status": "Bestätigt",
+      "spotSourceRow": 1022,
+      "name": "Instrumentenkessel mit Einsatz",
+      "art": "Medizinischer Bedarf",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 2,
+      "preisAvailable": true,
+      "preisDublonen": 18,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Arzt"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 686,
+          "preisDublonen": 8.8
+        },
+        {
+          "sourceRow": 675,
+          "preisDublonen": 2.2
+        }
+      ],
+      "begruendung": "Kleiner passender Kessel mit herausnehmbarem Einsatz.",
+      "notiz": "Wärmequelle separat; kein automatischer Sterilitätsbonus."
+    },
+    {
+      "id": "D050",
+      "status": "Bestätigt",
+      "spotSourceRow": 1023,
+      "name": "Mörser mit Stößel, Keramik",
+      "art": "Werkzeug",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 1,
+      "preisAvailable": true,
+      "preisDublonen": 4,
+      "whkCraftSkill": "Töpfer",
+      "whkCraftSkillRef": "whk_toepfer",
+      "spezialisierung": "Geschirr",
+      "specializationRef": "whk_spez_toepfer_geschirr",
+      "berufe": [
+        "Heiler",
+        "Alchemist",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 920,
+          "preisDublonen": 0.88
+        },
+        {
+          "sourceRow": 675,
+          "preisDublonen": 2.2
+        }
+      ],
+      "begruendung": "Dickwandiges zweiteiliges Arbeitsgefäß.",
+      "notiz": "Kein Rezept oder Wirkstoff enthalten."
+    },
+    {
+      "id": "D051",
+      "status": "Bestätigt",
+      "spotSourceRow": 1024,
+      "name": "Heilkräuter, getrocknet und beschriftet",
+      "art": "Kräuter",
+      "anzahl": 1,
+      "einheit": "Beutel",
+      "gewichtKg": 0.1,
+      "preisAvailable": true,
+      "preisDublonen": 2,
+      "whkCraftSkill": "Pflanzenkunde",
+      "whkCraftSkillRef": "whk_pflanzenkunde",
+      "spezialisierung": "Kräuterkundler",
+      "specializationRef": "whk_spez_pflanzenkunde_kraeuterkundler",
+      "berufe": [
+        "Heiler",
+        "Arzt"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 57,
+          "preisDublonen": 13
+        },
+        {
+          "sourceRow": 454,
+          "preisDublonen": 0.025
+        }
+      ],
+      "begruendung": "Sortierung, Trocknung und Herkunftsangabe gegenüber gewöhnlicher Pflanzenware.",
+      "notiz": "Eine lokale Pflanze je Beutel; konkrete Art und regelkonforme Verwendung beim Auftrag benennen. Keine erfundene DSA-Heilwirkung."
+    },
+    {
+      "id": "D052",
+      "status": "Bestätigt",
+      "spotSourceRow": 1025,
+      "name": "Kräuterkasten mit sechs Dosen",
+      "art": "Behälter",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 1,
+      "preisAvailable": true,
+      "preisDublonen": 6,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Tischler",
+      "specializationRef": "whk_spez_holzbearbeitung_tischler",
+      "berufe": [
+        "Heiler",
+        "Alchemist"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 275,
+          "preisDublonen": 0.89
+        },
+        {
+          "sourceRow": 920,
+          "preisDublonen": 0.88
+        }
+      ],
+      "begruendung": "Unterteilter Kasten mit sechs kleinen Behältern.",
+      "notiz": "Leer; ersetzt separate Behälter gleicher Funktion, Inhalt nicht doppelt zählen."
+    },
+    {
+      "id": "D053",
+      "status": "Bestätigt",
+      "spotSourceRow": 1026,
+      "name": "Retorte mit Stopfen, Glas",
+      "art": "Laborbedarf",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.5,
+      "preisAvailable": true,
+      "preisDublonen": 12,
+      "whkCraftSkill": "Glaser",
+      "whkCraftSkillRef": "whk_glaser",
+      "spezialisierung": "Apparateglaser",
+      "specializationRef": "whk_spez_glaser_apparateglaser",
+      "berufe": [
+        "Alchemist"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 180,
+          "preisDublonen": 15
+        },
+        {
+          "sourceRow": 182,
+          "preisDublonen": 2.42
+        }
+      ],
+      "begruendung": "Geformtes Arbeitsglas aufwendiger als einfache Flasche.",
+      "notiz": "Ohne Zutaten und Wärmequelle."
+    },
+    {
+      "id": "D054",
+      "status": "Bestätigt",
+      "spotSourceRow": 1027,
+      "name": "Destillierapparat, kleiner Tischaufbau",
+      "art": "Laborbedarf",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 5,
+      "preisAvailable": true,
+      "preisDublonen": 80,
+      "whkCraftSkill": "Glaser",
+      "whkCraftSkillRef": "whk_glaser",
+      "spezialisierung": "Apparateglaser",
+      "specializationRef": "whk_spez_glaser_apparateglaser",
+      "berufe": [
+        "Alchemist"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 180,
+          "preisDublonen": 15
+        },
+        {
+          "sourceRow": 182,
+          "preisDublonen": 2.42
+        },
+        {
+          "sourceRow": 686,
+          "preisDublonen": 8.8
+        }
+      ],
+      "begruendung": "Mehrere passende Glasgefäße, Kühlteil, Verbindungen und Ständer.",
+      "notiz": "Grundgefäße enthalten; nicht zusätzlich dieselbe Retorte kaufen. Wärmequelle und Zutaten separat."
+    },
+    {
+      "id": "D055",
+      "status": "Bestätigt",
+      "spotSourceRow": 1028,
+      "name": "Laborbrenner, Spiritus",
+      "art": "Laborbedarf",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.4,
+      "preisAvailable": true,
+      "preisDublonen": 8,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Alchemist",
+        "Arzt"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 671,
+          "preisDublonen": 1.32
+        },
+        {
+          "sourceRow": 182,
+          "preisDublonen": 2.42
+        }
+      ],
+      "begruendung": "Kleine geregelte Wärmequelle mit Docht und Deckel.",
+      "notiz": "Brennstoff separat; keine moderne Sicherheitszertifizierung behauptet."
+    },
+    {
+      "id": "D056",
+      "status": "Bestätigt",
+      "spotSourceRow": 1029,
+      "name": "Fokusrohling, geschnitztes Holz",
+      "art": "Magiebedarf",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.2,
+      "preisAvailable": true,
+      "preisDublonen": 4,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Schnitzer",
+      "specializationRef": "whk_spez_holzbearbeitung_schnitzer",
+      "berufe": [
+        "Magier"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 243,
+          "preisDublonen": 0.022
+        },
+        {
+          "sourceRow": 676,
+          "preisDublonen": 8
+        }
+      ],
+      "begruendung": "Verziertes kleines Werkstück, unter Werkzeugpreis.",
+      "notiz": "Profaner Rohling; erst nach Magieregeln auswählen. Keine Zauberfähigkeit oder Verzauberung enthalten."
+    },
+    {
+      "id": "D057",
+      "status": "Bestätigt",
+      "spotSourceRow": 1030,
+      "name": "Ritualkreide, Farbsatz",
+      "art": "Magiebedarf",
+      "anzahl": 1,
+      "einheit": "Schachtel",
+      "gewichtKg": 0.1,
+      "preisAvailable": true,
+      "preisDublonen": 0.5,
+      "whkCraftSkill": "Alchemie",
+      "whkCraftSkillRef": "whk_alchemie",
+      "spezialisierung": "Pigmentmacher",
+      "specializationRef": "whk_spez_alchemie_pigmentmacher",
+      "berufe": [
+        "Magier"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 119,
+          "preisDublonen": 0.018
+        },
+        {
+          "sourceRow": 54,
+          "preisDublonen": 0.98
+        }
+      ],
+      "begruendung": "Mehrere Pigmente und Kreidestücke über einfacher Schreibkreide.",
+      "notiz": "Profanes Zeichenmaterial; keine automatische Ritualwirkung."
+    },
+    {
+      "id": "D058",
+      "status": "Bestätigt",
+      "spotSourceRow": 1031,
+      "name": "Räucherwerk, schlicht",
+      "art": "Magiebedarf",
+      "anzahl": 1,
+      "einheit": "Beutel",
+      "gewichtKg": 0.05,
+      "preisAvailable": true,
+      "preisDublonen": 1,
+      "whkCraftSkill": "Pflanzenkunde",
+      "whkCraftSkillRef": "whk_pflanzenkunde",
+      "spezialisierung": "Alchemistische Zutaten",
+      "specializationRef": "whk_spez_pflanzenkunde_alchemistische_zutaten",
+      "berufe": [
+        "Magier"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 946,
+          "preisDublonen": 0.003
+        },
+        {
+          "sourceRow": 57,
+          "preisDublonen": 13
+        }
+      ],
+      "begruendung": "Getrocknete aromatische Pflanzenteile, aufbereitete Kleinmenge.",
+      "notiz": "Nur atmosphärisches Verbrauchsmittel, keine magische Wirkung festgelegt."
+    },
+    {
+      "id": "D059",
+      "status": "Bestätigt",
+      "spotSourceRow": 1032,
+      "name": "Fachbuch, gedruckt",
+      "art": "Bücher",
+      "anzahl": 1,
+      "einheit": "Band",
+      "gewichtKg": 0.8,
+      "preisAvailable": true,
+      "preisDublonen": 30,
+      "whkCraftSkill": "Drucker",
+      "whkCraftSkillRef": "whk_drucker",
+      "spezialisierung": "Buchbinder",
+      "specializationRef": "whk_spez_drucker_buchbinder",
+      "berufe": [
+        "Gelehrter",
+        "Arzt",
+        "Verwalter",
+        "Mechaniker"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 145,
+          "preisDublonen": 15.4
+        }
+      ],
+      "begruendung": "Etwa doppeltes leeres Tagebuch für Satz, Inhalt und Bindung.",
+      "notiz": "Ein benanntes Fachgebiet; keine automatische Fertigkeitssteigerung."
+    },
+    {
+      "id": "D060",
+      "status": "Bestätigt",
+      "spotSourceRow": 1033,
+      "name": "Magisches Lehrbuch, gedruckt",
+      "art": "Bücher",
+      "anzahl": 1,
+      "einheit": "Band",
+      "gewichtKg": 1,
+      "preisAvailable": true,
+      "preisDublonen": 60,
+      "whkCraftSkill": "Drucker",
+      "whkCraftSkillRef": "whk_drucker",
+      "spezialisierung": "Buchbinder",
+      "specializationRef": "whk_spez_drucker_buchbinder",
+      "berufe": [
+        "Magier",
+        "Gelehrter"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 145,
+          "preisDublonen": 15.4
+        }
+      ],
+      "begruendung": "Kleinere Fachauflage und komplexe Darstellungen oberhalb gewöhnlicher Fachliteratur.",
+      "notiz": "Magieform, Schule und Lehrinhalt benennen; weder Zauberkauf noch Artefakt im Buchpreis."
+    },
+    {
+      "id": "D061",
+      "status": "Bestätigt",
+      "spotSourceRow": 1034,
+      "name": "Probenausrüstung, Feldsatz",
+      "art": "Forschungsbedarf",
+      "anzahl": 1,
+      "einheit": "Satz",
+      "gewichtKg": 1.2,
+      "preisAvailable": true,
+      "preisDublonen": 12,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Tischler",
+      "specializationRef": "whk_spez_holzbearbeitung_tischler",
+      "berufe": [
+        "Gelehrter",
+        "Prospektor"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 275,
+          "preisDublonen": 0.89
+        },
+        {
+          "sourceRow": 181,
+          "preisDublonen": 1.2
+        },
+        {
+          "sourceRow": 146,
+          "preisDublonen": 1.3
+        }
+      ],
+      "begruendung": "Kleiner Kasten, vier Glasfläschchen, sechs Beutel und Etiketten.",
+      "notiz": "Leer; Glas und Textil als Zulieferteile enthalten. Ersetzt entsprechende Einzelbehälter."
+    },
+    {
+      "id": "D062",
+      "status": "Bestätigt",
+      "spotSourceRow": 1035,
+      "name": "Siegelstempel, persönliche Gravur",
+      "art": "Schreibwaren",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.1,
+      "preisAvailable": true,
+      "preisDublonen": 12,
+      "whkCraftSkill": "Schmied",
+      "whkCraftSkillRef": "whk_schmied",
+      "spezialisierung": "Feinschmied",
+      "specializationRef": "whk_spez_schmied_feinschmied",
+      "berufe": [
+        "Verwalter",
+        "Händler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 676,
+          "preisDublonen": 8
+        },
+        {
+          "sourceRow": 677,
+          "preisDublonen": 1.3
+        }
+      ],
+      "begruendung": "Kleiner gravierter Stempel samt Entwurfsarbeit.",
+      "notiz": "Kein amtlicher Status durch Erwerb; rechtmäßige Berechtigung separat."
+    },
+    {
+      "id": "D063",
+      "status": "Bestätigt",
+      "spotSourceRow": 1036,
+      "name": "Stempel, Schriftzug",
+      "art": "Schreibwaren",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.08,
+      "preisAvailable": true,
+      "preisDublonen": 4,
+      "whkCraftSkill": "Holzbearbeitung",
+      "whkCraftSkillRef": "whk_holzbearbeitung",
+      "spezialisierung": "Schnitzer",
+      "specializationRef": "whk_spez_holzbearbeitung_schnitzer",
+      "berufe": [
+        "Verwalter",
+        "Händler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 676,
+          "preisDublonen": 8
+        },
+        {
+          "sourceRow": 245,
+          "preisDublonen": 0.037
+        }
+      ],
+      "begruendung": "Einfacher geschnittener Druckstock.",
+      "notiz": "Farbe separat; keine behördliche Berechtigung enthalten."
+    },
+    {
+      "id": "D064",
+      "status": "Bestätigt",
+      "spotSourceRow": 1037,
+      "name": "Siegellack",
+      "art": "Schreibwaren",
+      "anzahl": 1,
+      "einheit": "Stange",
+      "gewichtKg": 0.05,
+      "preisAvailable": true,
+      "preisDublonen": 0.5,
+      "whkCraftSkill": "Alchemie",
+      "whkCraftSkillRef": "whk_alchemie",
+      "spezialisierung": "Leimsieder",
+      "specializationRef": "whk_spez_alchemie_leimsieder",
+      "berufe": [
+        "Verwalter",
+        "Händler"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 64,
+          "preisDublonen": 3.5
+        },
+        {
+          "sourceRow": 54,
+          "preisDublonen": 0.98
+        }
+      ],
+      "begruendung": "Kleine gefärbte Harz-Leim-Menge.",
+      "notiz": "Verbrauchsmaterial zum Siegeln."
+    },
+    {
+      "id": "D065",
+      "status": "Bestätigt",
+      "spotSourceRow": 1038,
+      "name": "Formulare, unbeschrieben, zehn Stück",
+      "art": "Schreibwaren",
+      "anzahl": 1,
+      "einheit": "Schachtel",
+      "gewichtKg": 0.08,
+      "preisAvailable": true,
+      "preisDublonen": 2,
+      "whkCraftSkill": "Drucker",
+      "whkCraftSkillRef": "whk_drucker",
+      "spezialisierung": "Lithograf",
+      "specializationRef": "whk_spez_drucker_lithograf",
+      "berufe": [
+        "Verwalter",
+        "Händler",
+        "Wache"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 146,
+          "preisDublonen": 1.3
+        }
+      ],
+      "begruendung": "Papierkosten plus wiederholter einfacher Druck.",
+      "notiz": "Kein ausgestelltes amtliches Dokument; Inhalt und Unterzeichnung separat."
+    },
+    {
+      "id": "D066",
+      "status": "Bestätigt",
+      "spotSourceRow": 1039,
+      "name": "Arbeitsschürze, Leder",
+      "art": "Arbeitskleidung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.7,
+      "preisAvailable": true,
+      "preisDublonen": 2.5,
+      "whkCraftSkill": "Lederbearbeitung",
+      "whkCraftSkillRef": "whk_lederbearbeitung",
+      "spezialisierung": "Oberbekleidung",
+      "specializationRef": "whk_spez_lederbearbeitung_oberbekleidung",
+      "berufe": [
+        "Schmied",
+        "Waffenschmied",
+        "Rüstschmied",
+        "Mechaniker"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 477,
+          "preisDublonen": 1.2
+        },
+        {
+          "sourceRow": 841,
+          "preisDublonen": 2.3
+        }
+      ],
+      "begruendung": "Einfaches robustes Lederstück mit Riemen nahe Lederweste.",
+      "notiz": "Über Alltagskleidung tragen; kein RS/RH."
+    },
+    {
+      "id": "D067",
+      "status": "Bestätigt",
+      "spotSourceRow": 1040,
+      "name": "Arbeitsschürze, Leinen",
+      "art": "Arbeitskleidung",
+      "anzahl": 1,
+      "einheit": "Stück",
+      "gewichtKg": 0.2,
+      "preisAvailable": true,
+      "preisDublonen": 0.4,
+      "whkCraftSkill": "Schneider",
+      "whkCraftSkillRef": "whk_schneider",
+      "spezialisierung": "Konfektionsschneider",
+      "specializationRef": "whk_spez_schneider_konfektionsschneider",
+      "berufe": [
+        "Wirt",
+        "Heiler",
+        "Arzt",
+        "Alchemist"
+      ],
+      "preisanker": [
+        {
+          "sourceRow": 796,
+          "preisDublonen": 0.2
+        },
+        {
+          "sourceRow": 784,
+          "preisDublonen": 0.5
+        }
+      ],
+      "begruendung": "Einfacher Zuschnitt zwischen Hemd und Hose.",
+      "notiz": "Waschbare Arbeitsschürze, keine Schutzwirkung gegen Chemikalien zugesichert."
+    }
+  ]
+}

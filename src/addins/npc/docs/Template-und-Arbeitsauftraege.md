@@ -13,7 +13,8 @@ Stand: 8. September 2026. Entwurf für die nächste Ausbaustufe. Die folgenden R
 | Soziale Lage | Elend, Arm, Einfach, Gesichert, Wohlhabend, Reich, Elite; unabhängig von Lebenswelt und Rechtsstand; siehe [Soziale Lage](Soziale-Lage.md) |
 | Rechtsstand | Privilegiert, Frei, Leibeigen, Schuldversklavt, Versklavt |
 | Herkunft | Herkunftsort, Region, Welt; getrennt davon Herkunftsgelände aus WHK Überleben: Berge, Dschungel, Steppe, Küste, Feuchtgebiete, Tundra, Eis, Stadt, Unterirdisch, Wald, Wüste; vereinbarte Beiträge und Zufallsauswahl siehe [Terrain-Katalog](Terrain-Katalog.md) |
-| Beruf | Berufsgruppe → Beruf, separate Professionsgüte; optional Zweitberuf mit eigener Güte; Aufgabe im Alltag, beruflicher Schwerpunkt, typische Schwächen; siehe [Berufsstruktur](Berufsstruktur.md) |
+| Beruf | Direkte Auswahl aus 30 festen Berufen (Draft), separate Professionsgüte; optional Zweitberuf mit eigener Güte; Aufgabe im Alltag, Schwerpunkt, typische Schwächen; siehe [Berufsstruktur](Berufsstruktur.md) |
+| Amt | Optional, unabhängig von Beruf und Rang; Bezeichnung, Institution, Zuständigkeit, Befugnisse und Pflichten; siehe [Amt](Amt.md) |
 | Erfahrung | Kreis und Position im Kreis (Kreis/Kreis+); berufliches Kompetenzziel separat vom Kampfziel |
 | Eigenschaften | Bis zu drei Schwerpunkte, den jeweiligen Gruppen zugeordnet; optional eine schlechte Eigenschaft bei knappem SP-Budget zulassen und benennen; keine Werte im Template |
 | Pflichtmerkmale | Eine der fünf Aussehensstufen ohne Allerweltsgesicht und eine der vier Schlafstufen, jeweils fest gewählt oder einmalig aus einem festzulegenden Zufallsprofil gezogen |
@@ -26,8 +27,10 @@ Stand: 8. September 2026. Entwurf für die nächste Ausbaustufe. Die folgenden R
 | Spruchmagie | Drei bis fünf Schulen abhängig vom Kreis, eine Schwerpunktschule; genaue Kreis-Zuordnung der Schulanzahl ist noch festzulegen |
 | Geweihter | Ja/nein, Religion und gegebenenfalls Sekte, Grad 1–7; Vorbelegung aus Volksreligion nur bei vorhandener Zuordnung |
 | Rüstung | Stoff, Leder, Kette oder „Blechdose“ als Konzept; Material und Güte; später eindeutige Katalogteile und belegte Lagen/Trefferzonen zuordnen |
+| Kleidung | Gemeinsame vollständige [Grundkleidung](Artikelentwuerfe.md), vorhandene Teile anrechnen; berufliche und klimatische Varianten, von Rüstung getrennt |
 | Artefakte | Keine oder konkret gewünschte Wirkung/Gegenstände; Voraussetzung oder optionaler Zusatz unterscheiden |
-| Ausrüstung | Berufs- und Lebensweltkatalog, Qualität billig/gewöhnlich/gehoben/elitär; benötigte Verbrauchsmittel |
+| Ausrüstung | [Berufsausrüstung](Berufsausruestung.md) als Draft mit vorhandenen Artikel-Spezialisierungen; Lebenswelt ergänzen, Qualität billig/gewöhnlich/gehoben/elitär und Besitz separat; benötigte Verbrauchsmittel und Transport |
+| Neue Artikel | [67 Artikelentwürfe](Artikelentwuerfe.md) mit vorgeschlagenen Preisen, Gewichten und WHK-Spezialisierungen; vorerst außerhalb der aktiven Preisliste |
 | Geldbeutel | arm/billig/gewöhnlich/gehoben/elitär/reich; von Ausrüstungsqualität getrennt; Betragszuordnung noch festzulegen |
 | Vorgaben | Unveränderliche Anforderungen, erlaubte Ersatzmöglichkeiten, optionale Wünsche |
 | Bausteinherkunft | Verwendete Beispielstubs mit Version und Geltungsbereich; geprüfte Referenz, abgeleiteter Vorschlag oder fehlender Stub |

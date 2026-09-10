@@ -7,3 +7,14 @@
 .npc-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
 .npc-summary dd { margin: 0; }
 .npc-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.npc-step-content .npc-checkbox { flex-direction: row; align-items: baseline; }
+.npc-table-scroll { overflow-x: auto; }
+.npc-armor-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.npc-armor-table caption { text-align: left; font-weight: bold; margin-bottom: .5rem; }
+.npc-armor-table th, .npc-armor-table td { text-align: left; padding: .4rem .75rem; border-bottom: 1px solid currentColor; }
+.npc-armor-choices fieldset { min-width: 0; margin: .75rem 0; }
+.npc-armor-choices select { width: 100%; }
+@media (max-width: 500px) {
+  .npc-summary { grid-template-columns: 1fr; }
+  .npc-summary dd { margin-bottom: .5rem; }
+}

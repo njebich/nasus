@@ -38,7 +38,10 @@ describe('NPC-Vorlagen', () => {
         if (equipmentId && !equipmentId.startsWith('unbewaffnet')) expect(ids.has(equipmentId)).toBe(true);
       }
       const { sheet, issues } = inspectNpc(character);
-      expect(issues).toEqual([]);
+      expect(issues).toEqual(template.id === 'wachmann'
+        ? ['Rüstung: 1 BE statt 0. Bei dieser Ausstattung ist mindestens Rüstungsmanöver 16 nötig.']
+        : template.id === 'hauptmann'
+          ? ['Rüstung: 1 BE statt 0. Bei dieser Ausstattung ist mindestens Rüstungsmanöver 8 nötig.'] : []);
       expect(sheet.spRemaining).toBeGreaterThanOrEqual(0);
       expect(sheet.tapRemaining).toBeGreaterThanOrEqual(0);
       expect(sheet.dublonenRemaining).toBeGreaterThanOrEqual(0);
@@ -86,7 +89,7 @@ describe('NPC-Vorlagen', () => {
     click('#new-npc');
     document.querySelector<HTMLSelectElement>('[name="role"]')!.value = 'Räuber';
     next();
-    document.querySelector<HTMLSelectElement>('[name="templateId"]')!.value = 'hauptmann';
+    document.querySelector<HTMLSelectElement>('[name="templateId"]')!.value = 'nahkaempfer';
     next();
     document.querySelector<HTMLInputElement>('[name="name"]')!.value = 'Testhauptmann';
     next();
@@ -99,5 +102,69 @@ describe('NPC-Vorlagen', () => {
     expect(state.npcWizard).toBeNull();
     expect(state.currentCharacter?.name).toBe('Testhauptmann');
     expect(listCharacters()).toHaveLength(1);
+  });
+
+  it('verhindert Anlegen trotz programmgesteuertem Absenden bei positiver RBE oder Budgetlücke', () => {
+    const state = createInitialAppState(null);
+    state.npcWizard = { step: 3, role: 'Wache', templateId: 'wachmann', name: 'Wache', age: '' };
+    const render = () => {
+      document.body.innerHTML = renderNpcWizard(state.npcWizard!);
+      wireNpcWizard(state, render);
+    };
+    render();
+    expect(document.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(true);
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(listCharacters()).toHaveLength(0);
+    expect(state.errorMessage).toContain('1 BE statt 0');
+    state.npcWizard = { step: 3, role: 'Zivilist', templateId: 'bauer', name: 'Bauer', age: '', armorPackageId: 'handwerker' };
+    render();
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(listCharacters()).toHaveLength(0);
+    expect(state.errorMessage).toContain('SP-Budget');
+  });
+
+  it('rechnet Anpassung je Teil neu und behält sie nach Zurück sowie beim Speichern', () => {
+    const state = createInitialAppState(null);
+    state.npcWizard = { step: 3, role: 'Räuber', templateId: 'nahkaempfer', name: 'Gerüstet', age: '', armorPackageId: 'nahkaempfer-lederpanzer', automaticArmor: false };
+    const render = () => {
+      document.body.innerHTML = state.npcWizard ? renderNpcWizard(state.npcWizard) : '';
+      wireNpcWizard(state, render);
+    };
+    render();
+    const adaptation = document.getElementsByName('armor-anpassung:torso:2')[0] as HTMLSelectElement;
+    adaptation.value = '3'; // von der Stange: +1 RH, -12 D; die vorhandenen RM 14 reichen weiterhin.
+    adaptation.dispatchEvent(new Event('change'));
+    expect(state.npcWizard.armorOverrides?.['torso:2'].anpassungSourceRow).toBe(3);
+    expect(document.querySelector<HTMLDetailsElement>('.npc-armor-choices')!.open).toBe(true);
+    document.querySelector<HTMLButtonElement>('#npc-back')!.click();
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect((document.getElementsByName('armor-anpassung:torso:2')[0] as HTMLSelectElement).value).toBe('3');
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(state.npcWizard).toBeNull();
+    expect(listCharacters()).toHaveLength(1);
+    expect(state.currentCharacter!.ruestungSlots['torso:2'].computedStatsSnapshot.rh).toBe(3);
+    expect(inspectNpc(state.currentCharacter!).armor.rbe).toBe(0);
+  });
+
+  it('optimiert automatisch vor der Vorschau und speichert genau diese Auswahl', () => {
+    const state = createInitialAppState(null);
+    state.npcWizard = { step: 2, role: 'Räuber', templateId: 'nahkaempfer', name: 'Automatisch', age: '', armorPackageId: 'nahkaempfer-lederpanzer' };
+    const render = () => {
+      document.body.innerHTML = state.npcWizard ? renderNpcWizard(state.npcWizard) : '';
+      wireNpcWizard(state, render);
+    };
+    render();
+    expect(document.querySelector<HTMLInputElement>('[name="automaticArmor"]')!.checked).toBe(true);
+    expect(document.querySelector<HTMLSelectElement>('[name="armorPackageId"]')!.value).toBe('nahkaempfer-lederpanzer');
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(document.body.textContent).toContain('Automatische Auswahl:');
+    const wizard = state.npcWizard!;
+    expect(Object.keys(wizard.armorOverrides ?? {})).toHaveLength(11);
+    const chosen = createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides);
+    expect(Object.values(chosen.ruestungSlots).some((slot) => slot.verarbeitungSourceRow > 2)).toBe(true);
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(state.npcWizard).toBeNull();
+    expect(state.currentCharacter!.ruestungSlots).toEqual(chosen.ruestungSlots);
+    expect(inspectNpc(state.currentCharacter!).issues).toEqual([]);
   });
 });

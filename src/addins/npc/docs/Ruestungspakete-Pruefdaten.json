@@ -1,0 +1,3056 @@
+{
+  "status": "Ausarbeitungsvorschlag; noch keine automatische Vergabe im Generator",
+  "pakete": [
+    {
+      "id": "handwerker",
+      "name": "Handwerker – Stoff und Leder vollständig",
+      "teile": [
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange",
+          "lage": 1,
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "rs": 1,
+          "rh": 1,
+          "preis": 22,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst",
+          "lage": 2,
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "rs": 3,
+          "rh": 2,
+          "preis": 38,
+          "verfuegbarkeitNw": 3,
+          "verfuegbarkeitAw": 2
+        }
+      ],
+      "slots": {
+        "kopf:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "torso:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "arme:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "beine:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "kopf:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "torso:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "arme:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "beine:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        }
+      },
+      "preis": 240,
+      "rh": 12
+    },
+    {
+      "id": "handwerker-stange",
+      "name": "Handwerker – günstigere Anschaffung, mehr Ausbildung",
+      "teile": [
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange",
+          "lage": 1,
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "rs": 1,
+          "rh": 1,
+          "preis": 22,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange",
+          "lage": 2,
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "rs": 3,
+          "rh": 3,
+          "preis": 26,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        }
+      ],
+      "slots": {
+        "kopf:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "torso:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "arme:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "beine:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "kopf:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 26,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 3,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "torso:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 26,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 3,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "arme:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 26,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 3,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "beine:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 26,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 3,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        }
+      },
+      "preis": 192,
+      "rh": 16
+    },
+    {
+      "id": "nahkaempfer-lederpanzer",
+      "name": "Nahkämpfer – Kette und Lederpanzer",
+      "teile": [
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange",
+          "lage": 1,
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "rs": 1,
+          "rh": 1,
+          "preis": 22,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst",
+          "lage": 2,
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "rs": 3,
+          "rh": 2,
+          "preis": 38,
+          "verfuegbarkeitNw": 3,
+          "verfuegbarkeitAw": 2
+        },
+        {
+          "zonen": [
+            "torso",
+            "arme"
+          ],
+          "basis": "Eisen-Kettenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst",
+          "lage": 3,
+          "basisSourceRow": 8,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "rs": 4,
+          "rh": 3,
+          "preis": 372,
+          "verfuegbarkeitNw": 3,
+          "verfuegbarkeitAw": 2
+        },
+        {
+          "zonen": [
+            "torso"
+          ],
+          "basis": "Lederpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange",
+          "lage": 4,
+          "basisSourceRow": 14,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "rs": 4,
+          "rh": 4,
+          "preis": 148,
+          "verfuegbarkeitNw": 2,
+          "verfuegbarkeitAw": 2
+        }
+      ],
+      "slots": {
+        "kopf:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "torso:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "arme:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "beine:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "kopf:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "torso:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "arme:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "beine:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "torso:3": {
+          "basisSourceRow": 8,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 372,
+          "computedStatsSnapshot": {
+            "rs": 4,
+            "rh": 3,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "arme:3": {
+          "basisSourceRow": 8,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 372,
+          "computedStatsSnapshot": {
+            "rs": 4,
+            "rh": 3,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "torso:4": {
+          "basisSourceRow": 14,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 148,
+          "computedStatsSnapshot": {
+            "rs": 4,
+            "rh": 4,
+            "verfuegbarkeitNw": 2,
+            "verfuegbarkeitAw": 2
+          }
+        }
+      },
+      "preis": 1132,
+      "rh": 22
+    },
+    {
+      "id": "nahkaempfer-eisenpanzer",
+      "name": "Nahkämpfer – Kette und Eisenpanzer",
+      "teile": [
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange",
+          "lage": 1,
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "rs": 1,
+          "rh": 1,
+          "preis": 22,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst",
+          "lage": 2,
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "rs": 3,
+          "rh": 2,
+          "preis": 38,
+          "verfuegbarkeitNw": 3,
+          "verfuegbarkeitAw": 2
+        },
+        {
+          "zonen": [
+            "torso",
+            "arme"
+          ],
+          "basis": "Eisen-Kettenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst",
+          "lage": 3,
+          "basisSourceRow": 8,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "rs": 4,
+          "rh": 3,
+          "preis": 372,
+          "verfuegbarkeitNw": 3,
+          "verfuegbarkeitAw": 2
+        },
+        {
+          "zonen": [
+            "torso"
+          ],
+          "basis": "Eisenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst",
+          "lage": 4,
+          "basisSourceRow": 16,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "rs": 6,
+          "rh": 5,
+          "preis": 661,
+          "verfuegbarkeitNw": 3,
+          "verfuegbarkeitAw": 2
+        }
+      ],
+      "slots": {
+        "kopf:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "torso:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "arme:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "beine:1": {
+          "basisSourceRow": 2,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 3,
+          "computedPriceSnapshot": 22,
+          "computedStatsSnapshot": {
+            "rs": 1,
+            "rh": 1,
+            "verfuegbarkeitNw": 1,
+            "verfuegbarkeitAw": 1
+          }
+        },
+        "kopf:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "torso:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "arme:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "beine:2": {
+          "basisSourceRow": 5,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 38,
+          "computedStatsSnapshot": {
+            "rs": 3,
+            "rh": 2,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "torso:3": {
+          "basisSourceRow": 8,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 372,
+          "computedStatsSnapshot": {
+            "rs": 4,
+            "rh": 3,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "arme:3": {
+          "basisSourceRow": 8,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 372,
+          "computedStatsSnapshot": {
+            "rs": 4,
+            "rh": 3,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        },
+        "torso:4": {
+          "basisSourceRow": 16,
+          "verarbeitungSourceRow": 2,
+          "anpassungSourceRow": 4,
+          "computedPriceSnapshot": 661,
+          "computedStatsSnapshot": {
+            "rs": 6,
+            "rh": 5,
+            "verfuegbarkeitNw": 3,
+            "verfuegbarkeitAw": 2
+          }
+        }
+      },
+      "preis": 1645,
+      "rh": 23
+    }
+  ],
+  "referenzen": [
+    {
+      "id": "bauer",
+      "name": "Bauer · Stufe 0",
+      "rh": 9,
+      "kon": 13,
+      "staerke": 15,
+      "rm": 3,
+      "rbe": 0,
+      "be": 0,
+      "rs": {
+        "kopf": 0,
+        "torso": 4,
+        "arme": 1,
+        "beine": 4
+      },
+      "rmMaximum": 12,
+      "sp": {
+        "gesamt": 6400,
+        "ausgaben": 6400,
+        "rest": 0
+      },
+      "tap": {
+        "gesamt": 20,
+        "ausgaben": 20,
+        "rest": 0
+      },
+      "geld": {
+        "gesamt": 500,
+        "ausgaben": 492.2018,
+        "rest": 7.7982000000000085
+      },
+      "fehler": [],
+      "ungueltigeNahkampfpools": []
+    },
+    {
+      "id": "wachmann",
+      "name": "Wachmann · Stufe 0",
+      "rh": 24,
+      "kon": 13,
+      "staerke": 15,
+      "rm": 14,
+      "rbe": 0.19999999999999987,
+      "be": 1,
+      "rs": {
+        "kopf": 7,
+        "torso": 11,
+        "arme": 5,
+        "beine": 1
+      },
+      "rmMaximum": 16,
+      "sp": {
+        "gesamt": 6400,
+        "ausgaben": 6400,
+        "rest": 0
+      },
+      "tap": {
+        "gesamt": 20,
+        "ausgaben": 20,
+        "rest": 0
+      },
+      "geld": {
+        "gesamt": 2488.27,
+        "ausgaben": 2488.2645,
+        "rest": 0.005499999999756255
+      },
+      "fehler": [],
+      "ungueltigeNahkampfpools": []
+    },
+    {
+      "id": "schuetze",
+      "name": "Schütze · Stufe 0",
+      "rh": 7,
+      "kon": 13,
+      "staerke": 15,
+      "rm": 5,
+      "rbe": 0,
+      "be": 0,
+      "rs": {
+        "kopf": 1,
+        "torso": 4,
+        "arme": 1,
+        "beine": 1
+      },
+      "rmMaximum": 12,
+      "sp": {
+        "gesamt": 6400,
+        "ausgaben": 6400,
+        "rest": 0
+      },
+      "tap": {
+        "gesamt": 20,
+        "ausgaben": 20,
+        "rest": 0
+      },
+      "geld": {
+        "gesamt": 297.03,
+        "ausgaben": 297.02149999999995,
+        "rest": 0.008500000000026375
+      },
+      "fehler": [],
+      "ungueltigeNahkampfpools": []
+    },
+    {
+      "id": "nahkaempfer",
+      "name": "Nahkämpfer · Stufe 0",
+      "rh": 22,
+      "kon": 13,
+      "staerke": 17,
+      "rm": 14,
+      "rbe": 0,
+      "be": 0,
+      "rs": {
+        "kopf": 7,
+        "torso": 5,
+        "arme": 5,
+        "beine": 5
+      },
+      "rmMaximum": 16,
+      "sp": {
+        "gesamt": 6400,
+        "ausgaben": 6400,
+        "rest": 0
+      },
+      "tap": {
+        "gesamt": 20,
+        "ausgaben": 20,
+        "rest": 0
+      },
+      "geld": {
+        "gesamt": 1560.21,
+        "ausgaben": 1560.207,
+        "rest": 0.0029999999999290594
+      },
+      "fehler": [],
+      "ungueltigeNahkampfpools": []
+    },
+    {
+      "id": "hauptmann",
+      "name": "Hauptmann · Stufe 15",
+      "rh": 16,
+      "kon": 13,
+      "staerke": 15,
+      "rm": 7,
+      "rbe": 0.033333333333333215,
+      "be": 1,
+      "rs": {
+        "kopf": 1,
+        "torso": 5,
+        "arme": 5,
+        "beine": 5
+      },
+      "rmMaximum": 12,
+      "sp": {
+        "gesamt": 8000,
+        "ausgaben": 8000,
+        "rest": 0
+      },
+      "tap": {
+        "gesamt": 95,
+        "ausgaben": 95,
+        "rest": 0
+      },
+      "geld": {
+        "gesamt": 404.9,
+        "ausgaben": 404.8984499999999,
+        "rest": 0.0015500000000656655
+      },
+      "fehler": [],
+      "ungueltigeNahkampfpools": []
+    },
+    {
+      "id": "ki",
+      "name": "KI-Spezialist · Stufe 15",
+      "rh": 27,
+      "kon": 13,
+      "staerke": 20,
+      "rm": 16,
+      "rbe": 0,
+      "be": 0,
+      "rs": {
+        "kopf": 5,
+        "torso": 14,
+        "arme": 8,
+        "beine": 8
+      },
+      "rmMaximum": 16,
+      "sp": {
+        "gesamt": 8000,
+        "ausgaben": 8000,
+        "rest": 0
+      },
+      "tap": {
+        "gesamt": 95,
+        "ausgaben": 95,
+        "rest": 0
+      },
+      "geld": {
+        "gesamt": 11619.02,
+        "ausgaben": 11619.018250000001,
+        "rest": 0.0017499999994470272
+      },
+      "fehler": [],
+      "ungueltigeNahkampfpools": []
+    }
+  ],
+  "gegenproben": [
+    {
+      "paket": "handwerker",
+      "referenz": "bauer",
+      "minimalRm": 4,
+      "vorher": {
+        "id": "bauer",
+        "name": "Bauer · Stufe 0",
+        "rh": 9,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 3,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 0,
+          "torso": 4,
+          "arme": 1,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 500,
+          "ausgaben": 492.2018,
+          "rest": 7.7982000000000085
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 12,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 4,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6409,
+          "rest": -9
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 500,
+          "ausgaben": 614.2018,
+          "rest": -114.20180000000005
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "9 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "114.2 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 9,
+      "mehrGeld": 122,
+      "budgetOk": false,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "handwerker",
+      "referenz": "wachmann",
+      "minimalRm": 4,
+      "vorher": {
+        "id": "wachmann",
+        "name": "Wachmann · Stufe 0",
+        "rh": 24,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0.19999999999999987,
+        "be": 1,
+        "rs": {
+          "kopf": 7,
+          "torso": 11,
+          "arme": 5,
+          "beine": 1
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 2488.27,
+          "ausgaben": 2488.2645,
+          "rest": 0.005499999999756255
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 12,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 2488.27,
+          "ausgaben": 622.2645,
+          "rest": 1866.0055
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -1866,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "handwerker",
+      "referenz": "schuetze",
+      "minimalRm": 4,
+      "vorher": {
+        "id": "schuetze",
+        "name": "Schütze · Stufe 0",
+        "rh": 7,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 5,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 1,
+          "torso": 4,
+          "arme": 1,
+          "beine": 1
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 297.03,
+          "ausgaben": 297.02149999999995,
+          "rest": 0.008500000000026375
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 12,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 5,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 297.03,
+          "ausgaben": 423.02149999999995,
+          "rest": -125.99149999999997
+        },
+        "fehler": [
+          {
+            "source": "Dublonen-Budget",
+            "message": "125.99 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": 126,
+      "budgetOk": false,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "handwerker",
+      "referenz": "nahkaempfer",
+      "minimalRm": 3,
+      "vorher": {
+        "id": "nahkaempfer",
+        "name": "Nahkämpfer · Stufe 0",
+        "rh": 22,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 7,
+          "torso": 5,
+          "arme": 5,
+          "beine": 5
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1560.207,
+          "rest": 0.0029999999999290594
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 12,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 303.207,
+          "rest": 1257.0030000000002
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -1257,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "handwerker",
+      "referenz": "hauptmann",
+      "minimalRm": 4,
+      "vorher": {
+        "id": "hauptmann",
+        "name": "Hauptmann · Stufe 15",
+        "rh": 16,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 7,
+        "rbe": 0.033333333333333215,
+        "be": 1,
+        "rs": {
+          "kopf": 1,
+          "torso": 5,
+          "arme": 5,
+          "beine": 5
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 404.9,
+          "ausgaben": 404.8984499999999,
+          "rest": 0.0015500000000656655
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 12,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 7,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 404.9,
+          "ausgaben": 436.8984499999999,
+          "rest": -31.998449999999934
+        },
+        "fehler": [
+          {
+            "source": "Dublonen-Budget",
+            "message": "32 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": 32,
+      "budgetOk": false,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "handwerker",
+      "referenz": "ki",
+      "minimalRm": 1,
+      "vorher": {
+        "id": "ki",
+        "name": "KI-Spezialist · Stufe 15",
+        "rh": 27,
+        "kon": 13,
+        "staerke": 20,
+        "rm": 16,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 5,
+          "torso": 14,
+          "arme": 8,
+          "beine": 8
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 11619.02,
+          "ausgaben": 11619.018250000001,
+          "rest": 0.0017499999994470272
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 12,
+        "kon": 13,
+        "staerke": 20,
+        "rm": 16,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 11619.02,
+          "ausgaben": 9460.018250000001,
+          "rest": 2159.0017499999994
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -2159,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "handwerker-stange",
+      "referenz": "bauer",
+      "minimalRm": 8,
+      "vorher": {
+        "id": "bauer",
+        "name": "Bauer · Stufe 0",
+        "rh": 9,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 3,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 0,
+          "torso": 4,
+          "arme": 1,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 500,
+          "ausgaben": 492.2018,
+          "rest": 7.7982000000000085
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 16,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 8,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6445,
+          "rest": -45
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 500,
+          "ausgaben": 566.2018,
+          "rest": -66.20180000000005
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "45 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "66.2 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 45,
+      "mehrGeld": 74,
+      "budgetOk": false,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "handwerker-stange",
+      "referenz": "wachmann",
+      "minimalRm": 8,
+      "vorher": {
+        "id": "wachmann",
+        "name": "Wachmann · Stufe 0",
+        "rh": 24,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0.19999999999999987,
+        "be": 1,
+        "rs": {
+          "kopf": 7,
+          "torso": 11,
+          "arme": 5,
+          "beine": 1
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 2488.27,
+          "ausgaben": 2488.2645,
+          "rest": 0.005499999999756255
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 16,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 2488.27,
+          "ausgaben": 574.2645,
+          "rest": 1914.0055
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -1914,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "handwerker-stange",
+      "referenz": "schuetze",
+      "minimalRm": 8,
+      "vorher": {
+        "id": "schuetze",
+        "name": "Schütze · Stufe 0",
+        "rh": 7,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 5,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 1,
+          "torso": 4,
+          "arme": 1,
+          "beine": 1
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 297.03,
+          "ausgaben": 297.02149999999995,
+          "rest": 0.008500000000026375
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 16,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 8,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6427,
+          "rest": -27
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 297.03,
+          "ausgaben": 375.02149999999995,
+          "rest": -77.99149999999997
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "27 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "77.99 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 27,
+      "mehrGeld": 78,
+      "budgetOk": false,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "handwerker-stange",
+      "referenz": "nahkaempfer",
+      "minimalRm": 7,
+      "vorher": {
+        "id": "nahkaempfer",
+        "name": "Nahkämpfer · Stufe 0",
+        "rh": 22,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 7,
+          "torso": 5,
+          "arme": 5,
+          "beine": 5
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1560.207,
+          "rest": 0.0029999999999290594
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 16,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 255.207,
+          "rest": 1305.0030000000002
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -1305,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "handwerker-stange",
+      "referenz": "hauptmann",
+      "minimalRm": 8,
+      "vorher": {
+        "id": "hauptmann",
+        "name": "Hauptmann · Stufe 15",
+        "rh": 16,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 7,
+        "rbe": 0.033333333333333215,
+        "be": 1,
+        "rs": {
+          "kopf": 1,
+          "torso": 5,
+          "arme": 5,
+          "beine": 5
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 404.9,
+          "ausgaben": 404.8984499999999,
+          "rest": 0.0015500000000656655
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 16,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 8,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8009,
+          "rest": -9
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 404.9,
+          "ausgaben": 388.8984499999999,
+          "rest": 16.001550000000066
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "9 SP zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 9,
+      "mehrGeld": -16,
+      "budgetOk": false,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "handwerker-stange",
+      "referenz": "ki",
+      "minimalRm": 5,
+      "vorher": {
+        "id": "ki",
+        "name": "KI-Spezialist · Stufe 15",
+        "rh": 27,
+        "kon": 13,
+        "staerke": 20,
+        "rm": 16,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 5,
+          "torso": 14,
+          "arme": 8,
+          "beine": 8
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 11619.02,
+          "ausgaben": 11619.018250000001,
+          "rest": 0.0017499999994470272
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 16,
+        "kon": 13,
+        "staerke": 20,
+        "rm": 16,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 4,
+          "arme": 4,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 11619.02,
+          "ausgaben": 9412.018250000001,
+          "rest": 2207.0017499999994
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -2207,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "nahkaempfer-lederpanzer",
+      "referenz": "bauer",
+      "minimalRm": 14,
+      "vorher": {
+        "id": "bauer",
+        "name": "Bauer · Stufe 0",
+        "rh": 9,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 3,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 0,
+          "torso": 4,
+          "arme": 1,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 500,
+          "ausgaben": 492.2018,
+          "rest": 7.7982000000000085
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 22,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 12,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6499,
+          "rest": -99
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 500,
+          "ausgaben": 1506.2018,
+          "rest": -1006.2018
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "99 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "1006.2 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 99,
+      "mehrGeld": 1014,
+      "budgetOk": false,
+      "regelOk": false,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "nahkaempfer-lederpanzer",
+      "referenz": "wachmann",
+      "minimalRm": 14,
+      "vorher": {
+        "id": "wachmann",
+        "name": "Wachmann · Stufe 0",
+        "rh": 24,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0.19999999999999987,
+        "be": 1,
+        "rs": {
+          "kopf": 7,
+          "torso": 11,
+          "arme": 5,
+          "beine": 1
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 2488.27,
+          "ausgaben": 2488.2645,
+          "rest": 0.005499999999756255
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 22,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 12,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 2488.27,
+          "ausgaben": 1514.2645,
+          "rest": 974.0055
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -974,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "nahkaempfer-lederpanzer",
+      "referenz": "schuetze",
+      "minimalRm": 14,
+      "vorher": {
+        "id": "schuetze",
+        "name": "Schütze · Stufe 0",
+        "rh": 7,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 5,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 1,
+          "torso": 4,
+          "arme": 1,
+          "beine": 1
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 297.03,
+          "ausgaben": 297.02149999999995,
+          "rest": 0.008500000000026375
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 22,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 12,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6481,
+          "rest": -81
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 297.03,
+          "ausgaben": 1315.0215,
+          "rest": -1017.9915000000001
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "81 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "1017.99 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 81,
+      "mehrGeld": 1018,
+      "budgetOk": false,
+      "regelOk": false,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "nahkaempfer-lederpanzer",
+      "referenz": "nahkaempfer",
+      "minimalRm": 13,
+      "vorher": {
+        "id": "nahkaempfer",
+        "name": "Nahkämpfer · Stufe 0",
+        "rh": 22,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 7,
+          "torso": 5,
+          "arme": 5,
+          "beine": 5
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1560.207,
+          "rest": 0.0029999999999290594
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 22,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 12,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1195.207,
+          "rest": 365.00299999999993
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -365,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "nahkaempfer-lederpanzer",
+      "referenz": "hauptmann",
+      "minimalRm": 14,
+      "vorher": {
+        "id": "hauptmann",
+        "name": "Hauptmann · Stufe 15",
+        "rh": 16,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 7,
+        "rbe": 0.033333333333333215,
+        "be": 1,
+        "rs": {
+          "kopf": 1,
+          "torso": 5,
+          "arme": 5,
+          "beine": 5
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 404.9,
+          "ausgaben": 404.8984499999999,
+          "rest": 0.0015500000000656655
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 22,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 12,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8063,
+          "rest": -63
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 404.9,
+          "ausgaben": 1328.89845,
+          "rest": -923.9984499999999
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "63 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "924 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 63,
+      "mehrGeld": 924,
+      "budgetOk": false,
+      "regelOk": false,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "nahkaempfer-lederpanzer",
+      "referenz": "ki",
+      "minimalRm": 11,
+      "vorher": {
+        "id": "ki",
+        "name": "KI-Spezialist · Stufe 15",
+        "rh": 27,
+        "kon": 13,
+        "staerke": 20,
+        "rm": 16,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 5,
+          "torso": 14,
+          "arme": 8,
+          "beine": 8
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 11619.02,
+          "ausgaben": 11619.018250000001,
+          "rest": 0.0017499999994470272
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 22,
+        "kon": 13,
+        "staerke": 20,
+        "rm": 16,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 12,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 11619.02,
+          "ausgaben": 10352.018250000001,
+          "rest": 1267.0017499999994
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -1267,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    },
+    {
+      "paket": "nahkaempfer-eisenpanzer",
+      "referenz": "bauer",
+      "minimalRm": 15,
+      "vorher": {
+        "id": "bauer",
+        "name": "Bauer · Stufe 0",
+        "rh": 9,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 3,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 0,
+          "torso": 4,
+          "arme": 1,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 500,
+          "ausgaben": 492.2018,
+          "rest": 7.7982000000000085
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 23,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 15,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 14,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6508,
+          "rest": -108
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 500,
+          "ausgaben": 2019.2018,
+          "rest": -1519.2018
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "108 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "1519.2 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 108,
+      "mehrGeld": 1527,
+      "budgetOk": false,
+      "regelOk": false,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "nahkaempfer-eisenpanzer",
+      "referenz": "wachmann",
+      "minimalRm": 15,
+      "vorher": {
+        "id": "wachmann",
+        "name": "Wachmann · Stufe 0",
+        "rh": 24,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 14,
+        "rbe": 0.19999999999999987,
+        "be": 1,
+        "rs": {
+          "kopf": 7,
+          "torso": 11,
+          "arme": 5,
+          "beine": 1
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 2488.27,
+          "ausgaben": 2488.2645,
+          "rest": 0.005499999999756255
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 23,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 15,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 14,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6409,
+          "rest": -9
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 2488.27,
+          "ausgaben": 2027.2645,
+          "rest": 461.0055
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "9 SP zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 9,
+      "mehrGeld": -461,
+      "budgetOk": false,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "nahkaempfer-eisenpanzer",
+      "referenz": "schuetze",
+      "minimalRm": 15,
+      "vorher": {
+        "id": "schuetze",
+        "name": "Schütze · Stufe 0",
+        "rh": 7,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 5,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 1,
+          "torso": 4,
+          "arme": 1,
+          "beine": 1
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 297.03,
+          "ausgaben": 297.02149999999995,
+          "rest": 0.008500000000026375
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 23,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 15,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 14,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6490,
+          "rest": -90
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 297.03,
+          "ausgaben": 1828.0215,
+          "rest": -1530.9915
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "90 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "1530.99 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 90,
+      "mehrGeld": 1531,
+      "budgetOk": false,
+      "regelOk": false,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "nahkaempfer-eisenpanzer",
+      "referenz": "nahkaempfer",
+      "minimalRm": 14,
+      "vorher": {
+        "id": "nahkaempfer",
+        "name": "Nahkämpfer · Stufe 0",
+        "rh": 22,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 7,
+          "torso": 5,
+          "arme": 5,
+          "beine": 5
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1560.207,
+          "rest": 0.0029999999999290594
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 23,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 14,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1708.207,
+          "rest": -147.99700000000007
+        },
+        "fehler": [
+          {
+            "source": "Dublonen-Budget",
+            "message": "148 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": 148,
+      "budgetOk": false,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "nahkaempfer-eisenpanzer",
+      "referenz": "hauptmann",
+      "minimalRm": 15,
+      "vorher": {
+        "id": "hauptmann",
+        "name": "Hauptmann · Stufe 15",
+        "rh": 16,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 7,
+        "rbe": 0.033333333333333215,
+        "be": 1,
+        "rs": {
+          "kopf": 1,
+          "torso": 5,
+          "arme": 5,
+          "beine": 5
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 404.9,
+          "ausgaben": 404.8984499999999,
+          "rest": 0.0015500000000656655
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 23,
+        "kon": 13,
+        "staerke": 15,
+        "rm": 15,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 14,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 12,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8072,
+          "rest": -72
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 404.9,
+          "ausgaben": 1841.89845,
+          "rest": -1436.99845
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "72 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "1437 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 72,
+      "mehrGeld": 1437,
+      "budgetOk": false,
+      "regelOk": false,
+      "kaufbar": true,
+      "mutationsGeprueft": false
+    },
+    {
+      "paket": "nahkaempfer-eisenpanzer",
+      "referenz": "ki",
+      "minimalRm": 12,
+      "vorher": {
+        "id": "ki",
+        "name": "KI-Spezialist · Stufe 15",
+        "rh": 27,
+        "kon": 13,
+        "staerke": 20,
+        "rm": 16,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 5,
+          "torso": 14,
+          "arme": 8,
+          "beine": 8
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 11619.02,
+          "ausgaben": 11619.018250000001,
+          "rest": 0.0017499999994470272
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachher": {
+        "rh": 23,
+        "kon": 13,
+        "staerke": 20,
+        "rm": 16,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 4,
+          "torso": 14,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 8000,
+          "ausgaben": 8000,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 95,
+          "ausgaben": 95,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 11619.02,
+          "ausgaben": 10865.018250000001,
+          "rest": 754.0017499999994
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "mehrSp": 0,
+      "mehrGeld": -754,
+      "budgetOk": true,
+      "regelOk": true,
+      "kaufbar": true,
+      "mutationsGeprueft": true
+    }
+  ],
+  "kopfschutz": [
+    {
+      "paket": "nahkaempfer-lederpanzer",
+      "referenz": "nahkaempfer",
+      "teil": "Lederpanzer am Kopf, Gesellenarbeit, von der Stange",
+      "preis": 148,
+      "rh": 4,
+      "vorAusbildung": {
+        "rh": 26,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0.36666666666666653,
+        "be": 1,
+        "rs": {
+          "kopf": 8,
+          "torso": 12,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1343.207,
+          "rest": 217.00299999999993
+        },
+        "fehler": [],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachAusbildung": {
+        "rh": 26,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 17,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 8,
+          "torso": 12,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6427,
+          "rest": -27
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1343.207,
+          "rest": 217.00299999999993
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "27 SP zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      }
+    },
+    {
+      "paket": "nahkaempfer-eisenpanzer",
+      "referenz": "nahkaempfer",
+      "teil": "Lederpanzer am Kopf, Gesellenarbeit, von der Stange",
+      "preis": 148,
+      "rh": 4,
+      "vorAusbildung": {
+        "rh": 27,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 14,
+        "rbe": 0.5333333333333332,
+        "be": 1,
+        "rs": {
+          "kopf": 8,
+          "torso": 14,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6400,
+          "rest": 0
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1856.207,
+          "rest": -295.99700000000007
+        },
+        "fehler": [
+          {
+            "source": "Dublonen-Budget",
+            "message": "296 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      },
+      "nachAusbildung": {
+        "rh": 27,
+        "kon": 13,
+        "staerke": 17,
+        "rm": 18,
+        "rbe": 0,
+        "be": 0,
+        "rs": {
+          "kopf": 8,
+          "torso": 14,
+          "arme": 8,
+          "beine": 4
+        },
+        "rmMaximum": 16,
+        "sp": {
+          "gesamt": 6400,
+          "ausgaben": 6436,
+          "rest": -36
+        },
+        "tap": {
+          "gesamt": 20,
+          "ausgaben": 20,
+          "rest": 0
+        },
+        "geld": {
+          "gesamt": 1560.21,
+          "ausgaben": 1856.207,
+          "rest": -295.99700000000007
+        },
+        "fehler": [
+          {
+            "source": "SP-Budget",
+            "message": "36 SP zu viel ausgegeben"
+          },
+          {
+            "source": "Dublonen-Budget",
+            "message": "296 Dublonen zu viel ausgegeben"
+          }
+        ],
+        "ungueltigeNahkampfpools": []
+      }
+    }
+  ]
+}

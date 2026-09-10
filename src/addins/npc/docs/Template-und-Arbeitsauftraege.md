@@ -26,7 +26,7 @@ Stand: 8. September 2026. Entwurf für die nächste Ausbaustufe. Die folgenden R
 | Magie | Keine, KI, Spruchmagie oder PSI; konkrete Funktion und passender Ausbildungsstub |
 | Spruchmagie | Drei bis fünf Schulen abhängig vom Kreis, eine Schwerpunktschule; genaue Kreis-Zuordnung der Schulanzahl ist noch festzulegen |
 | Geweihter | Ja/nein, Religion und gegebenenfalls Sekte, Grad 1–7; Vorbelegung aus Volksreligion nur bei vorhandener Zuordnung |
-| Rüstung | Stoff, Leder, Kette oder „Blechdose“ als Konzept; Material und Güte; später eindeutige Katalogteile und belegte Lagen/Trefferzonen zuordnen |
+| Rüstung | Vier kombinierbare Lagen: Stoff, Leder, Kette und Leder-/Metallpanzer; siehe [Rüstung](Ruestung.md). Erste Pakete im Referenzassistenten auswählbar; Fertigung und Anpassung pro Teil veränderbar. Ziel: 0 BE aus Rüstung innerhalb aller Budgets. Automatische Berufszuordnung noch offen. |
 | Kleidung | Gemeinsame vollständige [Grundkleidung](Artikelentwuerfe.md), vorhandene Teile anrechnen; berufliche und klimatische Varianten, von Rüstung getrennt |
 | Artefakte | Keine oder konkret gewünschte Wirkung/Gegenstände; Voraussetzung oder optionaler Zusatz unterscheiden |
 | Ausrüstung | [Berufsausrüstung](Berufsausruestung.md) als Draft mit vorhandenen Artikel-Spezialisierungen; Lebenswelt ergänzen, Qualität billig/gewöhnlich/gehoben/elitär und Besitz separat; benötigte Verbrauchsmittel und Transport |

@@ -1,0 +1,42 @@
+{
+  "status": "Ausarbeitungsvorschlag; noch keine automatische Vergabe im Generator",
+  "zielRbe": 0,
+  "pakete": [
+    {
+      "id": "handwerker",
+      "name": "Handwerker – Stoff und Leder vollständig",
+      "teile": [
+        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Stoffrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" },
+        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Lederrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" }
+      ]
+    },
+    {
+      "id": "handwerker-stange",
+      "name": "Handwerker – günstigere Anschaffung, mehr Ausbildung",
+      "teile": [
+        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Stoffrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" },
+        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Lederrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" }
+      ]
+    },
+    {
+      "id": "nahkaempfer-lederpanzer",
+      "name": "Nahkämpfer – Kette und Lederpanzer",
+      "teile": [
+        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Stoffrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" },
+        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Lederrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" },
+        { "zonen": ["torso", "arme"], "basis": "Eisen-Kettenpanzer", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" },
+        { "zonen": ["torso"], "basis": "Lederpanzer", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" }
+      ]
+    },
+    {
+      "id": "nahkaempfer-eisenpanzer",
+      "name": "Nahkämpfer – Kette und Eisenpanzer",
+      "teile": [
+        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Stoffrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" },
+        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Lederrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" },
+        { "zonen": ["torso", "arme"], "basis": "Eisen-Kettenpanzer", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" },
+        { "zonen": ["torso"], "basis": "Eisenpanzer", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" }
+      ]
+    }
+  ]
+}

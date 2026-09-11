@@ -3,7 +3,14 @@ import { effektiveVerfuegbarkeit, ortsModifikator, volkAusAdjektiv } from './ver
 import { VORDEFINIERTE_ORTE } from '../data/orte';
 
 const straitmor = VORDEFINIERTE_ORTE.find((ort) => ort.id === 'straitmor')!;
-const zwogon = VORDEFINIERTE_ORTE.find((ort) => ort.id === 'zwogon')!;
+// Isch-Isch: ehem. Zwogón, zwergische Hauptstadt - Nutzer 2026-09-12: Zwerge vertrieben, jetzt
+// goblinisches Kernland (hauptspezies 'Goblins'). Rest (Metropole/Handelszentrum/Herstellung vor
+// Ort/Grosshaendler je Warengruppe) unveraendert - siehe data/orte.ts.
+const ischIsch = VORDEFINIERTE_ORTE.find((ort) => ort.id === 'isch-isch')!;
+// Katharsis: die (neue) zwergische Hauptstadt, "absolutes Optimum an Verfuegbarkeit fuer
+// Artefakte, zwergische Waffen und ungewoehnliche Materialien" (Nutzer 2026-09-12) - uebernimmt
+// das "Großkönigliche Kernprovinz"-Profil von der gefallenen Zwogón.
+const katharsis = VORDEFINIERTE_ORTE.find((ort) => ort.id === 'katharsis')!;
 const phoenixFeste = VORDEFINIERTE_ORTE.find((ort) => ort.id === 'phoenix-feste')!;
 
 describe('Ortsmodifikator auf die 1-7-Verfuegbarkeitsskala', () => {
@@ -43,8 +50,8 @@ describe('Ortsmodifikator auf die 1-7-Verfuegbarkeitsskala', () => {
     expect(ohneVolk).toBeLessThan(mitVolk);
   });
 
-  it('verrechnet Siedlungsgroesse, Handelsstufe, Herstellung direkt vor Ort und Großer-spezialisierter-Haendler zusammen (Zwogón)', () => {
-    const effektiv = effektiveVerfuegbarkeit(4, { ort: zwogon, warengruppe: 'Rüstungen', tarif: 'ruestungenWaffen' });
+  it('verrechnet Siedlungsgroesse, Handelsstufe, Herstellung direkt vor Ort und Großer-spezialisierter-Haendler zusammen (Isch-Isch)', () => {
+    const effektiv = effektiveVerfuegbarkeit(4, { ort: ischIsch, warengruppe: 'Rüstungen', tarif: 'ruestungenWaffen' });
     // Metropole (-4) + Handelszentrum (-2) + Herstellung direkt vor Ort (-2) + Großer
     // spezialisierter Haendler (-2) + ALLE (0) = -10 auf Basis 4 -> clamp bei 1.
     expect(effektiv).toBe(1);
@@ -80,6 +87,23 @@ describe('Ortsmodifikator auf die 1-7-Verfuegbarkeitsskala', () => {
 
   it('laesst eine fehlende Basisstufe (OFFEN) unveraendert undefined, auch mit gutem Ortsbonus', () => {
     expect(effektiveVerfuegbarkeit(undefined, { ort: straitmor, warengruppe: 'Feuerwaffen', tarif: 'ruestungenWaffen', gegenstandVolk: 'Orks' })).toBeUndefined();
+  });
+
+  it('Floor bei Basisstufe 7 ("Einzigartig", Nutzer 2026-09-12): faellt selbst in Katharsis nicht unter 5', () => {
+    // Katharsis: absolutes Optimum in allen 5 Kategorien (Metropole + Handelszentrum +
+    // Herstellung vor Ort + eigener Grosshaendler + Hauptspezies-Match) auf Mithril/Nasium
+    // (Basis 7) - Nutzer: "wenn mithril/nasium unter 5 fallen, dann ist was falsch".
+    const effektiv = effektiveVerfuegbarkeit(7, {
+      ort: katharsis, warengruppe: 'NK-Waffen', tarif: 'ruestungenWaffen', gegenstandVolk: 'Zwerge',
+    });
+    expect(effektiv).toBe(5);
+  });
+
+  it('Floor bei Basisstufe 7 aendert das bestehende Verhalten fuer niedrigere Basisstufen nicht (Basis 6 faellt weiterhin auf 1)', () => {
+    const effektiv = effektiveVerfuegbarkeit(6, {
+      ort: straitmor, warengruppe: 'Feuerwaffen', tarif: 'ruestungenWaffen', gegenstandVolk: 'Orks',
+    });
+    expect(effektiv).toBe(1);
   });
 
   it('begrenzt das Ergebnis nach oben auf 7, auch bei sehr schlechtem Ort', () => {

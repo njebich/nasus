@@ -63,7 +63,9 @@ describe('Waffen-Loadout-Spiegelung auf dem Charakterbogen (nur favorisierte Loa
   }
 
   function characterMitZweiWaffen() {
-    let character = createCharacter('Test');
+    // spezies='Dalkini': siehe kampf.test.ts baseCharacter - sonst ist Standard-Eisen-Material
+    // (NK-Waffen-Verfuegbarkeit) fuer eine spezieslose Testfigur nicht mehr kaufbar.
+    let character = createCharacter('Test', { spezies: 'Dalkini' });
     character.values['ep_gesamt'] = 100000;
     character.values['dublonen_bank'] = 100000;
     character = setValue(character, 'eig_k_staerke', 30);

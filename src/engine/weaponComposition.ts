@@ -36,6 +36,29 @@ function numOrNull(row: GenericRow | undefined, header: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Verfuegbarkeit je Komponente: numerisch (1-7), `M` (Meisterverfuegbarkeit) oder
+ *  `NICHT KAUFBAR` (natuerliche Angriffe/Kampfstile, siehe add_nk_waffen_verfuegbarkeit.py). */
+export type Verfuegbarkeitswert = number | 'M' | 'NICHT KAUFBAR';
+
+function parseVerfuegbarkeit(row: GenericRow | undefined, header: string): Verfuegbarkeitswert | undefined {
+  if (!row) return undefined;
+  const raw = row[header];
+  if (raw === undefined) return undefined;
+  if (raw === 'M' || raw === 'NICHT KAUFBAR') return raw;
+  const n = Number(raw.replace(',', '.'));
+  return Number.isFinite(n) ? n : undefined;
+}
+
+/** Spec-Punkt 23 (zusammengesetzte Ausrüstung): numerisches Maximum (schlechtestes Ergebnis),
+ *  `M` schlaegt jeden numerischen Wert, `NICHT KAUFBAR` schlaegt alles. */
+function combineVerfuegbarkeit(...values: (Verfuegbarkeitswert | undefined)[]): Verfuegbarkeitswert | undefined {
+  const defined = values.filter((v): v is Verfuegbarkeitswert => v !== undefined);
+  if (defined.length === 0) return undefined;
+  if (defined.includes('NICHT KAUFBAR')) return 'NICHT KAUFBAR';
+  if (defined.includes('M')) return 'M';
+  return Math.max(...(defined as number[]));
+}
+
 export interface ComposedWeapon {
   at: number;
   pa: number;
@@ -53,6 +76,12 @@ export interface ComposedWeapon {
   /** null = nicht automatisch bepreisbar (unbewaffnete Kampfstile / Ruestungsmodifikatoren ohne
    *  eigenes Material-Preisfaktor, siehe Datei-Kommentar). */
   preis: number | null;
+  /** Maximum (schlechtestes Ergebnis) ueber Basis/Material/Fertigung/Anpassung/Schaftmaterial,
+   *  siehe combineVerfuegbarkeit. undefined = keiner der Bestandteile traegt eine Verfuegbarkeit
+   *  (z.B. Sheets vor der Spec-Uebernahme, sollte nach add_nk_waffen_verfuegbarkeit.py nicht mehr
+   *  vorkommen). */
+  verfuegbarkeitAw: Verfuegbarkeitswert | undefined;
+  verfuegbarkeitNw: Verfuegbarkeitswert | undefined;
 }
 
 export function composeWeapon(
@@ -80,7 +109,21 @@ export function composeWeapon(
     : materialpreisFaktor * num(material, 'Preis') + num(fertigung, 'Preis') + num(anpassung, 'Preis')
       + num(schaftmaterial, 'Preis/m') * num(basis, 'Laenge-m');
 
-  return { at, pa, wk, staerkeMalus, minStaerke1H, minStaerke2H, klingenbrecher, klingenschutz, rb, rezeptMod, preis };
+  const verfuegbarkeitAw = combineVerfuegbarkeit(
+    parseVerfuegbarkeit(basis, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(material, 'Verfuegbarkeit-AW'),
+    parseVerfuegbarkeit(fertigung, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(anpassung, 'Verfuegbarkeit-AW'),
+    parseVerfuegbarkeit(schaftmaterial, 'Verfuegbarkeit-AW'),
+  );
+  const verfuegbarkeitNw = combineVerfuegbarkeit(
+    parseVerfuegbarkeit(basis, 'Verfuegbarkeit-NW'), parseVerfuegbarkeit(material, 'Verfuegbarkeit-NW'),
+    parseVerfuegbarkeit(fertigung, 'Verfuegbarkeit-NW'), parseVerfuegbarkeit(anpassung, 'Verfuegbarkeit-NW'),
+    parseVerfuegbarkeit(schaftmaterial, 'Verfuegbarkeit-NW'),
+  );
+
+  return {
+    at, pa, wk, staerkeMalus, minStaerke1H, minStaerke2H, klingenbrecher, klingenschutz, rb, rezeptMod, preis,
+    verfuegbarkeitAw, verfuegbarkeitNw,
+  };
 }
 
 const VOLK_ALIASE: Record<string, string> = { Drow: 'Draw', Goblin: 'Goblins' };
@@ -93,5 +136,7 @@ const VOLK_ALIASE: Record<string, string> = { Drow: 'Draw', Goblin: 'Goblins' };
 export function istWaffenKomponenteVerfuegbar(row: GenericRow, spezies: string): boolean {
   const volk = row['Volk'];
   if (!volk || volk === 'ALLE' || volk === 'Standard') return true;
-  return (VOLK_ALIASE[volk] ?? volk) === spezies;
+  // Seit der globalen Materialreferenz (Punkt 32/34/37 der Spec) tragen manche Zeilen eine
+  // Komma-Liste zulaessiger Voelker statt eines Einzelwerts (z.B. "Dalkini, Draw, Elfen, ...").
+  return volk.split(',').map((v) => v.trim()).some((v) => (VOLK_ALIASE[v] ?? v) === spezies);
 }

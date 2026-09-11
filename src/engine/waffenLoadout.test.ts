@@ -31,7 +31,9 @@ function findRow<T extends { name: string; sourceRow: number }>(rows: readonly T
 }
 
 function baseCharacter(): CharacterState {
-  let character = createCharacter('Test');
+  // spezies='Dalkini': siehe kampf.test.ts baseCharacter - sonst ist Standard-Eisen-Material
+  // (NK-Waffen-Verfuegbarkeit) fuer eine spezieslose Testfigur nicht mehr kaufbar.
+  let character = createCharacter('Test', { spezies: 'Dalkini' });
   character.values['ep_gesamt'] = 100000;
   character.values['dublonen_bank'] = 100000;
   character.values['eig_g_mut'] = 30;

@@ -20,7 +20,9 @@ function row<T extends { name: string }>(rows: readonly T[], name: string): T {
 }
 
 function characterWithAxt() {
-  let character = createCharacter('X-Klinge Test');
+  // spezies='Dalkini': siehe kampf.test.ts baseCharacter - sonst ist Standard-Eisen-Material
+  // (NK-Waffen-Verfuegbarkeit) fuer eine spezieslose Testfigur nicht mehr kaufbar.
+  let character = createCharacter('X-Klinge Test', { spezies: 'Dalkini' });
   character.values['dublonen_bank'] = 100000;
   character.values['eig_k_staerke'] = 30;
   character.bestehenderCharakter = true;

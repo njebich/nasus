@@ -17,7 +17,7 @@ import { getVorstufeReferenz, getHoehereStufenReferenzen, getTalentStufeInfo } f
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
 import { composeArmor } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
-import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
+import { composeWeapon, istWaffenKomponenteVerfuegbar, type Verfuegbarkeitswert } from '../engine/weaponComposition';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
@@ -31,6 +31,7 @@ import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwa
 import { effektiveVerfuegbarkeit, volkAusAdjektiv } from '../engine/verfuegbarkeitOrt';
 import { getOrtById } from './orteStore';
 import type { Volk } from '../data/orte';
+import { VOELKER_NAMEN } from '../engine/voelker';
 import { computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier } from '../engine/waffenPool';
 import { gutBudget, meisterlichBudget } from '../engine/poolCaps';
 import type { FernkampfRow } from '../data/equipment/fernkampf';
@@ -824,6 +825,36 @@ export function buyShield(
   return candidate;
 }
 
+/** Basis-Zeilen tragen ihre kulturelle Zuweisung (Spec-Punkt 39) bereits als kanonischen
+ *  Volk-Plural (z.B. "Orks") direkt in der Spalte - anders als die Material/Fertigung/Anpassung/
+ *  Schaftmaterial-Tabellen braucht es hier keine Alias-Uebersetzung, nur eine Typ-Absicherung
+ *  gegen die uebrigen (nicht-kaufbaren) Freitext-Werte wie "andere Voelker". */
+function weaponGegenstandVolk(volkRoh: string | undefined): Volk | undefined {
+  return volkRoh && (VOELKER_NAMEN as readonly string[]).includes(volkRoh) ? (volkRoh as Volk) : undefined;
+}
+
+/** Analog zu equipRuestung/assertFernkampfVerfuegbar: AW/NW nach Herkunfts-Welt waehlen, dann
+ *  Ortsmodifikator anwenden. `M` und `NICHT KAUFBAR` sind nicht numerisch (siehe
+ *  engine/verfuegbarkeitOrt.ts) und werden fuer die Charaktererschaffung direkt gesperrt - dieses
+ *  Tool hat (noch) keinen Meister-Modul-Freigabepfad, ueber den `M` je zulaessig waere. */
+function assertWeaponVerfuegbar(
+  character: CharacterState, name: string,
+  aw: Verfuegbarkeitswert | undefined, nw: Verfuegbarkeitswert | undefined, gegenstandVolk: Volk | undefined,
+): void {
+  if (character.bestehenderCharakter) return;
+  const welt = character.herkunftSnapshot?.welt;
+  const roh = welt === 'NW' ? nw : welt === 'AW' ? aw : undefined;
+  if (roh === undefined) return;
+  if (roh === 'NICHT KAUFBAR') throw new MutationError(`'${name}' ist nicht käuflich`);
+  if (roh === 'M') throw new MutationError(`'${name}' ist nur im Meister-Modul verfügbar (Verfügbarkeit M)`);
+  const effektiv = effektiveVerfuegbarkeit(roh, {
+    ort: getOrtById(character.herkunftOrtId), warengruppe: 'NK-Waffen', tarif: 'ruestungenWaffen', gegenstandVolk,
+  });
+  if (effektiv !== undefined && effektiv >= VERFUEGBARKEIT_SPERRE_AB) {
+    throw new MutationError(`'${name}' ist in ${welt} nicht verfügbar (Verfügbarkeit ${effektiv})`);
+  }
+}
+
 /**
  * Kauft eine Nahkampfwaffe, komponiert aus Basis x Material x Fertigung x Anpassung x
  * Schaftmaterial (Regel Nutzer 2026-07-18: "fang an damit, die nk-waffen inkl. herstellungs-
@@ -864,6 +895,9 @@ export function buyWeapon(
   if (composed.preis === null) {
     throw new MutationError(`Kein automatischer Preis für '${row.name}' (kein Materialpreis-Faktor hinterlegt)`);
   }
+  assertWeaponVerfuegbar(
+    character, row.name, composed.verfuegbarkeitAw, composed.verfuegbarkeitNw, weaponGegenstandVolk(row['Volk']),
+  );
 
   const candidate = clone(character);
   const entry: EquipmentEntry = {

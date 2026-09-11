@@ -13,10 +13,11 @@ describe('Ortsmodell und kontrollierte Auswahllisten', () => {
     }
   });
 
-  it('liefert die drei validen Beispielorte mit den vereinbarten Haendlern', () => {
-    expect(VORDEFINIERTE_ORTE.map((ort) => ort.name)).toEqual(['Straitmor', 'Zwogón', 'Phoenix-Feste']);
+  it('liefert die vier validen Beispielorte mit den vereinbarten Haendlern', () => {
+    expect(VORDEFINIERTE_ORTE.map((ort) => ort.name)).toEqual(['Straitmor', 'Isch-Isch', 'Katharsis', 'Phoenix-Feste']);
     expect(VORDEFINIERTE_ORTE.find((ort) => ort.id === 'straitmor')?.haendler).toHaveLength(6);
-    expect(VORDEFINIERTE_ORTE.find((ort) => ort.id === 'zwogon')?.haendler).toHaveLength(38);
+    expect(VORDEFINIERTE_ORTE.find((ort) => ort.id === 'isch-isch')?.haendler).toHaveLength(38);
+    expect(VORDEFINIERTE_ORTE.find((ort) => ort.id === 'katharsis')?.haendler).toHaveLength(38);
     for (const ort of VORDEFINIERTE_ORTE) expect(validateOrt(ort)).toEqual([]);
   });
 

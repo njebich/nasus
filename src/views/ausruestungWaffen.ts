@@ -6,7 +6,7 @@ import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATE
 import { MELEE_WEAPON_BY_SOURCE_ROW } from '../engine/weaponCatalog';
 import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
 import { describeWeaponSelection } from './weaponDisplay';
-import { escapeHtml, kaufenLabel, statSnapshotTooltip } from './ausruestungShared';
+import { escapeHtml, kaufenLabel, gesperrtLabel, bestehenderCharakterMode, statSnapshotTooltip } from './ausruestungShared';
 import type { AusruestungCallbacks } from './ausruestung';
 
 export const WEAPONS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] !== 'Schild');
@@ -59,6 +59,12 @@ export function renderWeaponRow(row: (typeof WEAPONS)[number], character: Charac
     minStaerke1H: composed.minStaerke1H, minStaerke2H: composed.minStaerke2H,
     klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz, rb: composed.rb,
   });
+  // Nur ein grober Vor-Check (analog zu Alchemika/Fernkampf) - ohne Ortsmodifikator, der bleibt
+  // dem eigentlichen Kauf in characterMutations.ts vorbehalten (siehe assertWeaponVerfuegbar).
+  const weltVerfuegbarkeit = character.herkunftSnapshot?.welt === 'NW' ? composed.verfuegbarkeitNw
+    : character.herkunftSnapshot?.welt === 'AW' ? composed.verfuegbarkeitAw : undefined;
+  const gesperrt = !bestehenderCharakterMode && weltVerfuegbarkeit !== undefined
+    && (weltVerfuegbarkeit === 'M' || weltVerfuegbarkeit === 'NICHT KAUFBAR' || weltVerfuegbarkeit >= 5);
 
   return `
     <div class="ausruestung-row" data-weapon="${row.sourceRow}"${statTooltip}>
@@ -78,7 +84,7 @@ export function renderWeaponRow(row: (typeof WEAPONS)[number], character: Charac
       </select>` : ''}
       <span class="stat-cost">n-Mod ${composed.at}/${composed.pa}${composed.preis === null ? ' | kein Preis (kein Materialpreis-Faktor)' : ''}</span>
       ${composed.preis !== null
-    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-weapon" data-weapon="${row.sourceRow}">${kaufenLabel(composed.preis)}</button>`
+    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-weapon${gesperrt ? ' ausruestung-buy-locked' : ''}" data-weapon="${row.sourceRow}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(weltVerfuegbarkeit!) : kaufenLabel(composed.preis)}</button>`
     : '<span></span>'}
     </div>
     <div class="waffe-details">

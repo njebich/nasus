@@ -21,7 +21,10 @@ function findFeuerwaffe(name: string) {
 }
 
 function baseCharacter() {
-  let character = createCharacter('Test');
+  // spezies='Dalkini': faellt unter die "allgemeine Metallliste" (Spec-Punkt 34), sonst waeren
+  // Standard-Testwaffen (Eisen-Material) fuer eine spezieslose Testfigur nicht mehr kaufbar
+  // (siehe NK-Waffen-Verfuegbarkeit, engine/weaponComposition.ts istWaffenKomponenteVerfuegbar).
+  let character = createCharacter('Test', { spezies: 'Dalkini' });
   character.values['ep_gesamt'] = 100000;
   character.values['dublonen_bank'] = 100000;
   return character;

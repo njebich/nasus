@@ -14,8 +14,10 @@ export function kaufenLabel(preis: number): string {
   return `Kaufen (${formatDublonen(preis)})`;
 }
 
-export function gesperrtLabel(verfuegbarkeit: number): string {
-  return `(gesperrt) Verfügbarkeit ${verfuegbarkeit}`;
+/** `number | 'M' | 'NICHT KAUFBAR'` statt engine/weaponComposition.ts's `Verfuegbarkeitswert`
+ *  importiert, um diese Low-Level-Datei nicht an ein einzelnes Ausruestungsmodul zu koppeln. */
+export function gesperrtLabel(verfuegbarkeit: number | 'M' | 'NICHT KAUFBAR'): string {
+  return verfuegbarkeit === 'NICHT KAUFBAR' ? '(gesperrt) nicht käuflich' : `(gesperrt) Verfügbarkeit ${verfuegbarkeit}`;
 }
 
 /** "Bestehenden Charakter erstellen"-Modus (Nutzer 2026-07-24): deaktiviert alle Verfuegbarkeit-

@@ -315,6 +315,7 @@ describe('characterMutations', () => {
   describe('Fertigkeitsmaximum (Nutzer 2026-07-18, Talente-Wirkung-Analyse): Basis-Max je Kategorie + Talent-Boni', () => {
     it('lehnt einen Wert oberhalb des Basis-Max fuer Sonderfertigkeit (12) ab', () => {
       const character = withEpGesamt(1000);
+      character.selections.vn_sf_alchemieresistenz = 1;
       expect(() => setValue(character, 'sf_alchemieresistenz', 13)).toThrow(MutationError);
       const updated = setValue(character, 'sf_alchemieresistenz', 12);
       expect(updated.values['sf_alchemieresistenz']).toBe(12);
@@ -322,6 +323,7 @@ describe('characterMutations', () => {
 
     it('erlaubt einen hoeheren Wert, wenn das passende Maximum-Talent gewaehlt ist (Alchemieresistenz Stufe 1 -> sf_alchemieresistenz +6)', () => {
       let character = withEpGesamt(1000);
+      character.selections.vn_sf_alchemieresistenz = 1;
       character.selections['talente_alchemieresistenz_stufe_1'] = 1;
       const updated = setValue(character, 'sf_alchemieresistenz', 18);
       expect(updated.values['sf_alchemieresistenz']).toBe(18);
@@ -400,7 +402,9 @@ describe('setWaffenPoolAllocation', () => {
 
   // Axt: AT=-4, PA=-5 (Eisen/Gesellenarbeit/Von der Stange/Standard, siehe weaponComposition.test.ts).
   function characterWithZweiAexten(nkHiebwaffen: number) {
-    let character = createCharacter('Test');
+    // spezies='Dalkini': siehe kampf.test.ts baseCharacter - sonst ist Standard-Eisen-Material
+    // (NK-Waffen-Verfuegbarkeit) fuer eine spezieslose Testfigur nicht mehr kaufbar.
+    let character = createCharacter('Test', { spezies: 'Dalkini' });
     character.values['ep_gesamt'] = 100000;
     character.values['dublonen_bank'] = 100000;
     character = setValue(character, 'eig_g_mut', 30);
@@ -623,6 +627,9 @@ describe('Waffen-Loadout-Mutationen', () => {
 
   function loadoutBaseCharacter() {
     let character = withEpGesamt(100000);
+    // spezies='Dalkini': siehe kampf.test.ts baseCharacter - sonst ist Standard-Eisen-Material
+    // (NK-Waffen-Verfuegbarkeit) fuer eine spezieslose Testfigur nicht mehr kaufbar.
+    character.spezies = 'Dalkini';
     character.values['dublonen_bank'] = 100000;
     character.values['eig_k_staerke'] = 30;
     return character;
@@ -928,5 +935,45 @@ describe('Verfuegbarkeits-Kaufsperre inkl. Ortsmodifikator (Nutzer-Ask 2026-09-1
     const character = begueterterCharakter();
     character.bestehenderCharakter = true;
     expect(() => buyFeuerwaffe(character, durass.sourceRow, feuerwaffenStandardauswahl(durass))).not.toThrow();
+  });
+
+  describe('NK-Waffen (add_nk_waffen_verfuegbarkeit.py: Basis/Material/Fertigung/Anpassung/Schaftmaterial 1/1, Mithril 7/7)', () => {
+    const axt = NK_WAFFEN_BASIS.find((r) => r.name === 'Axt')!;
+    const eisen = NK_MATERIAL.find((r) => r.name === 'Eisen')!;
+    const mithril = NK_MATERIAL.find((r) => r.name === 'Mithril')!;
+    const gesellenarbeit = NK_FERTIGUNG.find((r) => r.name === 'Gesellenarbeit')!;
+    const vonDerStange = NK_ANPASSUNG.find((r) => r.name === 'Von der Stange')!;
+    const standard = NK_SCHAFTMATERIAL.find((r) => r.name === 'Standard')!;
+
+    function withWelt(welt: 'AW' | 'NW', spezies: string) {
+      const character = createCharacter('Test', {
+        spezies, herkunftOrtId: 'test-ort', herkunftSnapshot: { name: 'Testort', region: 'Testregion', welt },
+      });
+      character.values['dublonen_bank'] = 100000;
+      return character;
+    }
+
+    it('Eisen-Axt (1/1) ist in beiden Welten kaufbar', () => {
+      expect(() => buyWeapon(
+        withWelt('AW', 'Dalkini'), axt.sourceRow, eisen.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow, standard.sourceRow,
+      )).not.toThrow();
+      expect(() => buyWeapon(
+        withWelt('NW', 'Dalkini'), axt.sourceRow, eisen.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow, standard.sourceRow,
+      )).not.toThrow();
+    });
+
+    it('Mithril-Axt (7/7, nur Elfen/Zwerge) ist fuer einen Zwerg gesperrt (Verfuegbarkeit 7 >= 5)', () => {
+      expect(() => buyWeapon(
+        withWelt('AW', 'Zwerge'), axt.sourceRow, mithril.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow, standard.sourceRow,
+      )).toThrow(/nicht verfügbar/);
+    });
+
+    it('bestehende Charaktere bleiben von der Mithril-Kaufsperre ausgenommen', () => {
+      const character = withWelt('AW', 'Zwerge');
+      character.bestehenderCharakter = true;
+      expect(() => buyWeapon(
+        character, axt.sourceRow, mithril.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow, standard.sourceRow,
+      )).not.toThrow();
+    });
   });
 });

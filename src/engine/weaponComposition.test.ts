@@ -66,6 +66,47 @@ describe('composeWeapon (Nutzer 2026-07-18: NK-Waffen inkl. Herstellungs-Modifik
   });
 });
 
+describe('composeWeapon Verfuegbarkeit (Spec-Punkte 32-40, add_nk_waffen_verfuegbarkeit.py)', () => {
+  const axt = find(NK_WAFFEN_BASIS, 'Axt');
+
+  it('neutrale Kombination: Basis/Material/Fertigung/Anpassung/Schaftmaterial sind alle 1/1 -> Maximum 1', () => {
+    const composed = composeWeapon(
+      axt, find(NK_MATERIAL, 'Eisen'), find(NK_FERTIGUNG, 'Gesellenarbeit'),
+      find(NK_ANPASSUNG, 'Von der Stange'), find(NK_SCHAFTMATERIAL, 'Standard'),
+    );
+    expect(composed.verfuegbarkeitAw).toBe(1);
+    expect(composed.verfuegbarkeitNw).toBe(1);
+  });
+
+  it('numerisches Maximum: Meisterarbeit (2/3) schlaegt die uebrigen 1/1-Komponenten', () => {
+    const composed = composeWeapon(
+      axt, find(NK_MATERIAL, 'Eisen'), find(NK_FERTIGUNG, 'Meisterarbeit'),
+      find(NK_ANPASSUNG, 'Von der Stange'), find(NK_SCHAFTMATERIAL, 'Standard'),
+    );
+    expect(composed.verfuegbarkeitAw).toBe(2);
+    expect(composed.verfuegbarkeitNw).toBe(3);
+  });
+
+  it('`M` (Adamandit) schlaegt jeden numerischen Wert (Spec-Punkt 23)', () => {
+    const composed = composeWeapon(
+      axt, find(NK_MATERIAL, 'Adamandit'), find(NK_FERTIGUNG, 'Meisterarbeit'),
+      find(NK_ANPASSUNG, 'Von der Stange'), find(NK_SCHAFTMATERIAL, 'Standard'),
+    );
+    expect(composed.verfuegbarkeitAw).toBe('M');
+    expect(composed.verfuegbarkeitNw).toBe('M');
+  });
+
+  it('`NICHT KAUFBAR` (natuerlicher Angriff) schlaegt selbst `M`', () => {
+    const unbewaffnet = NK_WAFFEN_BASIS.find((r) => r.name === 'Unbewaffnet' && r['Volk'] === 'Ork')!;
+    const composed = composeWeapon(
+      unbewaffnet, find(NK_MATERIAL, 'Adamandit'), find(NK_FERTIGUNG, 'Gesellenarbeit'),
+      find(NK_ANPASSUNG, 'Von der Stange'), find(NK_SCHAFTMATERIAL, 'Standard'),
+    );
+    expect(composed.verfuegbarkeitAw).toBe('NICHT KAUFBAR');
+    expect(composed.verfuegbarkeitNw).toBe('NICHT KAUFBAR');
+  });
+});
+
 describe('istWaffenKomponenteVerfuegbar (Nutzer 2026-07-18: Volk-Spalte je Material/Fertigung/Anpassung/Schaftmaterial)', () => {
   it('ALLE/Standard sind fuer jede Spezies verfuegbar', () => {
     expect(istWaffenKomponenteVerfuegbar(find(NK_MATERIAL, 'Eisen'), 'Zwerge')).toBe(true); // Volk=Standard
@@ -82,5 +123,18 @@ describe('istWaffenKomponenteVerfuegbar (Nutzer 2026-07-18: Volk-Spalte je Mater
     const goblinFertigung = find(NK_FERTIGUNG, 'Goblin Massenfab.');
     expect(istWaffenKomponenteVerfuegbar(goblinFertigung, 'Goblins')).toBe(true);
     expect(istWaffenKomponenteVerfuegbar(goblinFertigung, 'Zwerge')).toBe(false);
+  });
+
+  it('Komma-Liste (Spec-Punkt 32/34): Mithril ist nur fuer Elfen/Zwerge verfuegbar', () => {
+    const mithril = find(NK_MATERIAL, 'Mithril');
+    expect(istWaffenKomponenteVerfuegbar(mithril, 'Elfen')).toBe(true);
+    expect(istWaffenKomponenteVerfuegbar(mithril, 'Zwerge')).toBe(true);
+    expect(istWaffenKomponenteVerfuegbar(mithril, 'Orks')).toBe(false);
+  });
+
+  it('Komma-Liste: die allgemeine Metallliste (Eisen) schliesst Katzen/Indianer/Zentauren/Gnome aus', () => {
+    const eisen = find(NK_MATERIAL, 'Eisen');
+    expect(istWaffenKomponenteVerfuegbar(eisen, 'Orks')).toBe(true);
+    expect(istWaffenKomponenteVerfuegbar(eisen, 'Katzen')).toBe(false);
   });
 });

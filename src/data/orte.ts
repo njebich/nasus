@@ -134,8 +134,22 @@ const VORDEFINIERTE_ORTE_ROH: Ort[] = [
     erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
   },
   {
-    id: 'zwogon', name: 'Zwogón', welt: 'AW', region: 'Großkönigliche Kernprovinz Zwogón',
-    siedlungsgroesse: 'Metropole', hauptspezies: 'Zwerge', etablierteMinderheiten: ['Orks', 'Elfen', 'Gnome'],
+    // Nutzer 2026-09-12: Zwogón (ehem. zwergische Hauptstadt) existiert nicht mehr - die Zwerge
+    // wurden vertrieben, das Kernland ist jetzt goblinisch und heisst Isch-Isch. Rest (Metropole/
+    // Handelszentrum/Herstellung vor Ort/Grosshaendler je Warengruppe/Welt) bleibt unveraendert.
+    id: 'isch-isch', name: 'Isch-Isch', welt: 'AW', region: 'Goblinisches Kernland Isch-Isch',
+    siedlungsgroesse: 'Metropole', hauptspezies: 'Goblins', etablierteMinderheiten: ['Orks', 'Elfen', 'Gnome'],
+    handelsstufe: 'Handelszentrum', herstellungsort: 'Herstellung direkt vor Ort',
+    haendler: SPEZIALISIERBARE_WARENGRUPPEN.map((gruppe) => spezialisiert(gruppe, 'Großer spezialisierter Händler')),
+    lokaleProduktion: [], erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
+  },
+  {
+    // Nutzer 2026-09-12: Katharsis, die (neue) Hauptstadt der Zwerge - "absolutes Optimum an
+    // Verfuegbarkeit fuer Artefakte, zwergische Waffen und ungewoehnliche Materialien" (uebernimmt
+    // den Titel "Großkönigliche Kernprovinz" von der gefallenen Zwogón/Isch-Isch). Welt ist noch
+    // nicht vom Nutzer bestaetigt - Annahme (AW), bei Bedarf anpassen.
+    id: 'katharsis', name: 'Katharsis', welt: 'AW', region: 'Großkönigliche Kernprovinz Katharsis',
+    siedlungsgroesse: 'Metropole', hauptspezies: 'Zwerge', etablierteMinderheiten: ['Elfen', 'Trolle', 'Zentauren', 'Orks'],
     handelsstufe: 'Handelszentrum', herstellungsort: 'Herstellung direkt vor Ort',
     haendler: SPEZIALISIERBARE_WARENGRUPPEN.map((gruppe) => spezialisiert(gruppe, 'Großer spezialisierter Händler')),
     lokaleProduktion: [], erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,

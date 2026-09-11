@@ -128,8 +128,20 @@ export function ortsModifikator({ ort, warengruppe, tarif, gegenstandVolk }: Ort
 
 /** Grundwert (1-7) + Ortsmodifikator, auf 1..7 begrenzt. Ein fehlender Grundwert (Katalogeintrag
  *  ohne gepflegte Basis-Verfuegbarkeit, z.B. aktuell alle Boegen/Armbrust) bleibt unveraendert
- *  undefined - "OFFEN" darf durch einen Ortsbonus nicht stillschweigend kaufbar werden. */
+ *  undefined - "OFFEN" darf durch einen Ortsbonus nicht stillschweigend kaufbar werden.
+ *
+ *  Floor bei Basisstufe 7 ("Einzigartig", Nutzer 2026-09-12): 5 Ortskategorien mit bis zu +-5
+ *  pro Kategorie koennen sich zu weit mehr als der gesamten 1..7-Spanne aufsummieren - trifft ein
+ *  Ort gleichzeitig alle fuenf Bestwerte (z.B. Katharsis, die zwergische Hauptstadt: Metropole +
+ *  Handelszentrum + Herstellung vor Ort + eigener Grosshaendler + Hauptspezies-Match), wuerde
+ *  jede Basisstufe auf 1 fallen - fuer ein echtes Meisterwerk-Material wie Mithril/Nasium (7/7)
+ *  waere das falsch, das bliebe laut Nutzer selbst dort noch bei 5 ("gesperrt", nur ueber's
+ *  Meister-Modul freigebbar, Spec-Punkt 22). Niedrigere Basisstufen (z.B. die bereits bestehende,
+ *  getestete orkische Feuerwaffe mit Basis 6, die in ihrer Heimat-Metropole auf 1 faellt - siehe
+ *  verfuegbarkeitOrt.test.ts) duerfen weiterhin die volle Spanne durchlaufen; nur die Basisstufe
+ *  7 selbst bekommt diesen Floor. */
 export function effektiveVerfuegbarkeit(basisStufe: number | undefined, params: OrtsModifikatorParams): number | undefined {
   if (basisStufe === undefined) return undefined;
-  return Math.min(7, Math.max(1, basisStufe + ortsModifikator(params)));
+  const floor = basisStufe >= 7 ? 5 : 1;
+  return Math.min(7, Math.max(floor, basisStufe + ortsModifikator(params)));
 }

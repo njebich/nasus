@@ -71,7 +71,7 @@
     "whk_hauswirtschaft": 4,
     "whk_spez_hauswirtschaft_haushaelter": 4,
     "sf_ausdauer": 6,
-    "sf_gefahreninstinkt": 6,
+    "sf_gefahreninstinkt": 3,
     "sf_selbstbeherrschung": 4,
     "sf_tragen": 12,
     "gr_faehrtensuche": 2,
@@ -86,14 +86,14 @@
     "gr_springen": 2,
     "gr_werfen": 5,
     "nk_hiebwaffen": 4,
-    "nk_stangenwaffen": 8,
+    "nk_stangenwaffen": 12,
     "nk_unbewaffnet": 4,
     "nk_spez_unbewaffnet_unbewaffnet": 4,
     "nk_spez_stangenwaffen_staebe": 12,
     "nk_spez_hiebwaffen_aexte": 4,
-    "fk_feuerwaffen": 6,
-    "fk_spez_feuerwaffen_musketen": 13,
-    "att_vitalitaet": 3,
+    "fk_feuerwaffen": 10,
+    "fk_spez_feuerwaffen_musketen": 10,
+    "att_vitalitaet": 2,
     "sf_ruestungsmanoever": 3,
     "sf_ladeschuetze_vorderlader": 6,
     "sf_ausweichen": 1
@@ -603,5 +603,6 @@
     "religiositaet_atheismus": -5,
     "optimismus_pessimismus": 1
   },
-  "gesinnungNotiz": ""
+  "gesinnungNotiz": "",
+  "notes": "\nRegelkorrektur 11.09.2026: Spezialisierung <= Hauptfertigkeit. Finanzierung aus Nebenwerten bei unveränderten Budgets. Details: Referenzkorrektur-2026-09-11.md."
 }

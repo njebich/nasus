@@ -1,0 +1,1295 @@
+{
+  "format": "nasus-character",
+  "schemaVersion": 1,
+  "rulesetVersion": "0.8",
+  "exportedAt": "2026-09-11T19:01:51.536Z",
+  "latestRevisionId": "2f59d0aa-37fc-4687-b13b-3620e58ee368",
+  "foundry": {
+    "systemId": "nasus",
+    "actorType": "npc"
+  },
+  "character": {
+    "id": "c18aa329-696d-47ee-8672-8b0583a8df4c",
+    "name": "Goblin Räuber-Schütze",
+    "spezies": "Goblins",
+    "beruf": "Räuber-Schütze",
+    "createdAt": "2026-09-06T20:18:45.781Z",
+    "updatedAt": "2026-09-06T20:18:45.781Z",
+    "charakterTyp": "NSC",
+    "values": {
+      "ep_gesamt": 0,
+      "dublonen_bank": 297.03,
+      "eig_g_intelligenz": 13,
+      "eig_g_mut": 7,
+      "eig_g_sinneschaerfe": 16,
+      "eig_g_willenskraft": 7,
+      "eig_k_athletik": 13,
+      "eig_k_ausstrahlung": 11,
+      "eig_k_geschicklichkeit": 17,
+      "eig_k_konstitution": 13,
+      "eig_k_schnelligkeit": 16,
+      "eig_k_staerke": 15,
+      "ssk_kultur_goblins": 3,
+      "ssk_sprache_goblinisch": 3,
+      "ssk_schrift_zwerge": 1,
+      "sf_ausdauer": 9,
+      "sf_ausweichen": 8,
+      "sf_gefahreninstinkt": 13,
+      "sf_selbstbeherrschung": 5,
+      "sf_tragen": 6,
+      "sf_ruestungsmanoever": 5,
+      "gr_koerperbeherrschung": 9,
+      "gr_laufen": 4,
+      "gr_klettern": 1,
+      "gr_orientierung": 9,
+      "gr_schleichen": 10,
+      "gr_verstecken": 10,
+      "gr_schwimmen": 2,
+      "gr_springen": 1,
+      "gr_menschenkenntnis": 3,
+      "gr_einschuechtern": 3,
+      "whk_ueberleben": 8,
+      "whk_spez_ueberleben_wald": 8,
+      "whk_spez_ueberleben_stadt": 3,
+      "nk_stangenwaffen": 6,
+      "nk_spez_stangenwaffen_staebe": 6,
+      "fk_feuerwaffen": 24,
+      "fk_spez_feuerwaffen_musketen": 24,
+      "sf_ladeschuetze_vorderlader": 18,
+      "gr_faehrtensuche": 6,
+      "whk_ermittlung": 10,
+      "whk_spez_ermittlung_observation": 10,
+      "whk_spez_ermittlung_spurenlesen": 7,
+      "att_vitalitaet": 1
+    },
+    "selections": {
+      "talente_fernkampfgeschick_stufe_1": 1,
+      "talente_vorderlader_ladeschuetze_stufe1": 1,
+      "talente_vorderlader_ladeschuetze_stufe2": 1,
+      "talente_gefahrensinn": 1
+    },
+    "poolAllocations": {
+      "nk_pool_stangenwaffen_staebe::911bec86-32f0-40a6-8884-d78cbcdcac19": {
+        "nat": 2,
+        "npa": 2,
+        "gat": 0,
+        "gpa": 0,
+        "mat": 1,
+        "mpa": 1
+      }
+    },
+    "equipment": [
+      {
+        "id": "49e26b42-0e51-49b9-ad3e-dd056cbdfed2",
+        "family": "feuerwaffe",
+        "baseTable": "feuerwaffen",
+        "baseId": "43",
+        "displayNameSnapshot": "Slipgarr",
+        "specializationId": "nk_spez_stangenwaffen_improvisierte_stangenwaffen",
+        "ammunitionTypeId": "feuerwaffe:vorderlader",
+        "selections": {
+          "verarbeitung": "37",
+          "anpassung": "46"
+        },
+        "quantity": 1,
+        "computedPriceSnapshot": 106.4,
+        "computedStatsSnapshot": {
+          "gewicht": 2.3499999999999996,
+          "minStaerke": 6,
+          "fixschaden": 1,
+          "rb": 14,
+          "kaliber": 16,
+          "rw": 60,
+          "nachladezeit": 28,
+          "nachladenTawTeiler": 3,
+          "patzermodifikator": 3,
+          "verfuegbarkeitRaw": 110,
+          "verfuegbarkeitStufe": 4,
+          "herstellungszeit": 3.7,
+          "materialpreis": 91.59999999999998,
+          "ini": 0,
+          "rw10m": 7,
+          "rw30m": 1,
+          "rw60m": -6,
+          "rw100m": -16,
+          "rw150m": -26,
+          "rw210m": -36
+        }
+      },
+      {
+        "id": "5e4649c2-8b61-414a-ab85-38ff571c9ff7",
+        "family": "ammo",
+        "baseTable": "feuerwaffen-munition",
+        "baseId": "papierpatrone_vl",
+        "displayNameSnapshot": "Papierpatrone",
+        "ammunitionTypeId": "feuerwaffe:vorderlader",
+        "selections": {
+          "kaliber": "16"
+        },
+        "quantity": 100,
+        "computedPriceSnapshot": 0.434145,
+        "computedStatsSnapshot": {
+          "kaliber": 16
+        }
+      },
+      {
+        "id": "911bec86-32f0-40a6-8884-d78cbcdcac19",
+        "family": "weapon",
+        "baseTable": "nk_waffen_basis",
+        "baseId": "188",
+        "displayNameSnapshot": "Stab (60cm) eisenbeschlagen",
+        "specializationId": "nk_spez_stangenwaffen_staebe",
+        "selections": {
+          "material": "2",
+          "fertigung": "4",
+          "anpassung": "2",
+          "schaftmaterial": "2"
+        },
+        "quantity": 1,
+        "computedPriceSnapshot": 30,
+        "computedStatsSnapshot": {
+          "at": -2,
+          "pa": -5,
+          "wk": 3,
+          "staerkeMalus": -3,
+          "minStaerke1H": 8,
+          "minStaerke2H": 5,
+          "klingenbrecher": 2,
+          "klingenschutz": 5,
+          "rezeptMod": 12,
+          "rb": 0
+        }
+      },
+      {
+        "id": "e9064c7a-cbd3-46a5-a7ed-15e6785488f7",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "526",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 1.76
+      },
+      {
+        "id": "120474d7-da34-4cba-9e16-98e8a4f44805",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "533",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.2
+      },
+      {
+        "id": "a0e933e2-2ecd-4cc2-897f-c1321fac1d5e",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "663",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.4
+      },
+      {
+        "id": "bbef9c17-ea21-4df1-b172-c35826bdea4e",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "684",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.027
+      },
+      {
+        "id": "0cad0d04-7256-4867-a9f5-ca3b53c69084",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "747",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.8200000000000001
+      }
+    ],
+    "ruestungSlots": {
+      "kopf:1": {
+        "basisSourceRow": 2,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 22,
+        "computedStatsSnapshot": {
+          "rs": 1,
+          "rh": 1,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        }
+      },
+      "torso:1": {
+        "basisSourceRow": 2,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 22,
+        "computedStatsSnapshot": {
+          "rs": 1,
+          "rh": 1,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        }
+      },
+      "arme:1": {
+        "basisSourceRow": 2,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 22,
+        "computedStatsSnapshot": {
+          "rs": 1,
+          "rh": 1,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        }
+      },
+      "beine:1": {
+        "basisSourceRow": 2,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 22,
+        "computedStatsSnapshot": {
+          "rs": 1,
+          "rh": 1,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        }
+      },
+      "torso:2": {
+        "basisSourceRow": 5,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 26,
+        "computedStatsSnapshot": {
+          "rs": 3,
+          "rh": 3,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        }
+      }
+    },
+    "grundfertigkeitAuswahl": {},
+    "waffenLoadouts": [
+      {
+        "id": "26cc3dd4-f06b-4d82-94b2-652c88bc8589",
+        "comboType": "muskete",
+        "primaryEquipmentId": "49e26b42-0e51-49b9-ad3e-dd056cbdfed2",
+        "secondaryEquipmentId": "49e26b42-0e51-49b9-ad3e-dd056cbdfed2",
+        "favorite": true
+      },
+      {
+        "id": "6293ab21-0a1e-47e6-960f-4d2ccf0bf92a",
+        "comboType": "nk1h",
+        "primaryEquipmentId": "911bec86-32f0-40a6-8884-d78cbcdcac19",
+        "secondaryEquipmentId": "911bec86-32f0-40a6-8884-d78cbcdcac19",
+        "favorite": true
+      }
+    ],
+    "customWhkHauptfertigkeiten": [],
+    "customWhkSpezialisierungen": {},
+    "gesinnung": {
+      "gut_boese": 0,
+      "ehrlichkeit_unehrlichkeit": 0,
+      "prinzipientreue_opportunismus": 0,
+      "gesetze_recht_des_staerkeren": 0,
+      "toleranz_rassismus": 0,
+      "pazifismus_bellizismus": 0,
+      "lebensbewahrung_toetungsbereitschaft": 0,
+      "altruismus_egoismus": 0,
+      "gleichberechtigung_sexismus": 0,
+      "hierarchie_anarchie": 0,
+      "staaten_gilden_clans_haeuser": 0,
+      "kommunismus_kapitalismus": 0,
+      "gruppenmensch_einzelgaenger": 0,
+      "vertrauen_misstrauen": 0,
+      "kompromissbereitschaft_sturheit": 0,
+      "strebsamkeit_faulheit": 0,
+      "disziplin_triebhaftigkeit": 0,
+      "introvertiert_extrovertiert": 0,
+      "humor_ernst": 0,
+      "willensfreiheit_fatalismus": 0,
+      "religiositaet_atheismus": 0,
+      "optimismus_pessimismus": 0
+    },
+    "gesinnungNotiz": "",
+    "notes": "NSC-Vorlage Stufe 0, 6400 SP. Ausruestungsbudget vorlaeufig exakt auf Anschaffungskosten aufgerundet. Gesinnung neutraler Platzhalter. Keine Vor- und Nachteile.\nRegelkorrektur 11.09.2026: Spezialisierung <= Hauptfertigkeit. Finanzierung aus Nebenwerten bei unveränderten Budgets. Details: Referenzkorrektur-2026-09-11.md."
+  },
+  "history": [
+    {
+      "revisionId": "2f59d0aa-37fc-4687-b13b-3620e58ee368",
+      "previousRevisionId": null,
+      "savedAt": "2026-09-11T19:01:51.536Z",
+      "note": "Regelkorrektur: Spezialisierungsgrenzen und budgetgerechte Umschichtung",
+      "changes": {
+        "experience": {
+          "before": null,
+          "after": 0,
+          "delta": null
+        },
+        "currency": {
+          "funds": {
+            "before": null,
+            "after": 297.03,
+            "delta": null
+          },
+          "spent": {
+            "before": null,
+            "after": 297.02149999999995,
+            "delta": null
+          },
+          "remaining": {
+            "before": null,
+            "after": 0.008500000000026375,
+            "delta": null
+          }
+        },
+        "values": [
+          {
+            "reference": "att_vitalitaet",
+            "before": null,
+            "after": 1
+          },
+          {
+            "reference": "dublonen_bank",
+            "before": null,
+            "after": 297.03
+          },
+          {
+            "reference": "eig_g_intelligenz",
+            "before": null,
+            "after": 13
+          },
+          {
+            "reference": "eig_g_mut",
+            "before": null,
+            "after": 7
+          },
+          {
+            "reference": "eig_g_sinneschaerfe",
+            "before": null,
+            "after": 16
+          },
+          {
+            "reference": "eig_g_willenskraft",
+            "before": null,
+            "after": 7
+          },
+          {
+            "reference": "eig_k_athletik",
+            "before": null,
+            "after": 13
+          },
+          {
+            "reference": "eig_k_ausstrahlung",
+            "before": null,
+            "after": 11
+          },
+          {
+            "reference": "eig_k_geschicklichkeit",
+            "before": null,
+            "after": 17
+          },
+          {
+            "reference": "eig_k_konstitution",
+            "before": null,
+            "after": 13
+          },
+          {
+            "reference": "eig_k_schnelligkeit",
+            "before": null,
+            "after": 16
+          },
+          {
+            "reference": "eig_k_staerke",
+            "before": null,
+            "after": 15
+          },
+          {
+            "reference": "ep_gesamt",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "fk_blasrohre",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "fk_boegen",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "fk_feuerwaffen",
+            "before": null,
+            "after": 24
+          },
+          {
+            "reference": "fk_schusswaffen",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "fk_spez_feuerwaffen_musketen",
+            "before": null,
+            "after": 24
+          },
+          {
+            "reference": "gr_einschuechtern",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "gr_faehrtensuche",
+            "before": null,
+            "after": 6
+          },
+          {
+            "reference": "gr_klettern",
+            "before": null,
+            "after": 1
+          },
+          {
+            "reference": "gr_koerperbeherrschung",
+            "before": null,
+            "after": 9
+          },
+          {
+            "reference": "gr_laufen",
+            "before": null,
+            "after": 4
+          },
+          {
+            "reference": "gr_menschenkenntnis",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "gr_orientierung",
+            "before": null,
+            "after": 9
+          },
+          {
+            "reference": "gr_schleichen",
+            "before": null,
+            "after": 10
+          },
+          {
+            "reference": "gr_schwimmen",
+            "before": null,
+            "after": 2
+          },
+          {
+            "reference": "gr_springen",
+            "before": null,
+            "after": 1
+          },
+          {
+            "reference": "gr_verstecken",
+            "before": null,
+            "after": 10
+          },
+          {
+            "reference": "nk_hiebwaffen",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "nk_klingenwaffen",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "nk_spez_stangenwaffen_staebe",
+            "before": null,
+            "after": 6
+          },
+          {
+            "reference": "nk_stangenwaffen",
+            "before": null,
+            "after": 6
+          },
+          {
+            "reference": "nk_stichwaffen",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "nk_unbewaffnet",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "sf_ausdauer",
+            "before": null,
+            "after": 9
+          },
+          {
+            "reference": "sf_ausweichen",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "sf_gefahreninstinkt",
+            "before": null,
+            "after": 13
+          },
+          {
+            "reference": "sf_ladeschuetze_vorderlader",
+            "before": null,
+            "after": 18
+          },
+          {
+            "reference": "sf_ruestungsmanoever",
+            "before": null,
+            "after": 5
+          },
+          {
+            "reference": "sf_selbstbeherrschung",
+            "before": null,
+            "after": 5
+          },
+          {
+            "reference": "sf_tragen",
+            "before": null,
+            "after": 6
+          },
+          {
+            "reference": "ssk_kultur_goblins",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "ssk_schrift_zwerge",
+            "before": null,
+            "after": 1
+          },
+          {
+            "reference": "ssk_sprache_goblinisch",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "whk_abrichten",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_administration",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_alchemie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_architektur",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_astronomie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_baecker",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_bankwesen",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_barbier",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_bergbau",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_bestattungswesen",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_biologie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_bogenbauer",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_bootsbauer",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_brenner",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_buchhaltung",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_buntmetallschmied",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_chemie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_diebeskunst",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_drucker",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_eisenbahner",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_ermittlung",
+            "before": null,
+            "after": 10
+          },
+          {
+            "reference": "whk_etikette",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_feuerwaffenbauer",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_fischer",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_fotografie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_fuehrung",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_fuhrmann",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_gastgewerbe",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_geografie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_geologie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_giesser",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_glaser",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_hauswirtschaft",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_holzbearbeitung",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_instrumentenbauer",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_jaeger",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_kaufmann",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_koch",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_kunsthandwerker",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_landwirtschaft",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_lederbearbeitung",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_logistik",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_luftschiffbauer",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_luftschifffahrt",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_magietheorie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_maler",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_mathematik",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_maurerhandwerk",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_mechanikus",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_medizin",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_metallurgie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_metzger",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_militaertheorie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_musizieren",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_pflanzenkunde",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_philosophie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_physik",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_rechtskunde",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_ruestungsschmied",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_schauspielkunst",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_schmied",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_schneider",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_schriftstellerei",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_seefahrt",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_seiler",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_soziologie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_spez_ermittlung_observation",
+            "before": null,
+            "after": 10
+          },
+          {
+            "reference": "whk_spez_ermittlung_spurenlesen",
+            "before": null,
+            "after": 7
+          },
+          {
+            "reference": "whk_spez_ueberleben_stadt",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "whk_spez_ueberleben_wald",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "whk_sprachwissenschaft",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_stimmen_imitieren",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_telegrafie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_theologie",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_toepfer",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_ueberleben",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "whk_versicherungswesen",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_viehwirtschaft",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_waffenschmied",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_weber",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_wirtschaftslehre",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "whk_zimmerei",
+            "before": null,
+            "after": 0
+          }
+        ],
+        "sections": [
+          "Erster Speicherpunkt"
+        ]
+      },
+      "snapshot": {
+        "id": "c18aa329-696d-47ee-8672-8b0583a8df4c",
+        "name": "Goblin Räuber-Schütze",
+        "spezies": "Goblins",
+        "beruf": "Räuber-Schütze",
+        "createdAt": "2026-09-06T20:18:45.781Z",
+        "updatedAt": "2026-09-06T20:18:45.781Z",
+        "charakterTyp": "NSC",
+        "values": {
+          "ep_gesamt": 0,
+          "dublonen_bank": 297.03,
+          "eig_g_intelligenz": 13,
+          "eig_g_mut": 7,
+          "eig_g_sinneschaerfe": 16,
+          "eig_g_willenskraft": 7,
+          "eig_k_athletik": 13,
+          "eig_k_ausstrahlung": 11,
+          "eig_k_geschicklichkeit": 17,
+          "eig_k_konstitution": 13,
+          "eig_k_schnelligkeit": 16,
+          "eig_k_staerke": 15,
+          "ssk_kultur_goblins": 3,
+          "ssk_sprache_goblinisch": 3,
+          "ssk_schrift_zwerge": 1,
+          "sf_ausdauer": 9,
+          "sf_ausweichen": 8,
+          "sf_gefahreninstinkt": 13,
+          "sf_selbstbeherrschung": 5,
+          "sf_tragen": 6,
+          "sf_ruestungsmanoever": 5,
+          "gr_koerperbeherrschung": 9,
+          "gr_laufen": 4,
+          "gr_klettern": 1,
+          "gr_orientierung": 9,
+          "gr_schleichen": 10,
+          "gr_verstecken": 10,
+          "gr_schwimmen": 2,
+          "gr_springen": 1,
+          "gr_menschenkenntnis": 3,
+          "gr_einschuechtern": 3,
+          "whk_ueberleben": 8,
+          "whk_spez_ueberleben_wald": 8,
+          "whk_spez_ueberleben_stadt": 3,
+          "nk_stangenwaffen": 6,
+          "nk_spez_stangenwaffen_staebe": 6,
+          "fk_feuerwaffen": 24,
+          "fk_spez_feuerwaffen_musketen": 24,
+          "sf_ladeschuetze_vorderlader": 18,
+          "gr_faehrtensuche": 6,
+          "whk_ermittlung": 10,
+          "whk_spez_ermittlung_observation": 10,
+          "whk_spez_ermittlung_spurenlesen": 7,
+          "att_vitalitaet": 1
+        },
+        "selections": {
+          "talente_fernkampfgeschick_stufe_1": 1,
+          "talente_vorderlader_ladeschuetze_stufe1": 1,
+          "talente_vorderlader_ladeschuetze_stufe2": 1,
+          "talente_gefahrensinn": 1
+        },
+        "poolAllocations": {
+          "nk_pool_stangenwaffen_staebe::911bec86-32f0-40a6-8884-d78cbcdcac19": {
+            "nat": 2,
+            "npa": 2,
+            "gat": 0,
+            "gpa": 0,
+            "mat": 1,
+            "mpa": 1
+          }
+        },
+        "equipment": [
+          {
+            "id": "49e26b42-0e51-49b9-ad3e-dd056cbdfed2",
+            "family": "feuerwaffe",
+            "baseTable": "feuerwaffen",
+            "baseId": "43",
+            "displayNameSnapshot": "Slipgarr",
+            "specializationId": "nk_spez_stangenwaffen_improvisierte_stangenwaffen",
+            "ammunitionTypeId": "feuerwaffe:vorderlader",
+            "selections": {
+              "verarbeitung": "37",
+              "anpassung": "46"
+            },
+            "quantity": 1,
+            "computedPriceSnapshot": 106.4,
+            "computedStatsSnapshot": {
+              "gewicht": 2.3499999999999996,
+              "minStaerke": 6,
+              "fixschaden": 1,
+              "rb": 14,
+              "kaliber": 16,
+              "rw": 60,
+              "nachladezeit": 28,
+              "nachladenTawTeiler": 3,
+              "patzermodifikator": 3,
+              "verfuegbarkeitRaw": 110,
+              "verfuegbarkeitStufe": 4,
+              "herstellungszeit": 3.7,
+              "materialpreis": 91.59999999999998,
+              "ini": 0,
+              "rw10m": 7,
+              "rw30m": 1,
+              "rw60m": -6,
+              "rw100m": -16,
+              "rw150m": -26,
+              "rw210m": -36
+            }
+          },
+          {
+            "id": "5e4649c2-8b61-414a-ab85-38ff571c9ff7",
+            "family": "ammo",
+            "baseTable": "feuerwaffen-munition",
+            "baseId": "papierpatrone_vl",
+            "displayNameSnapshot": "Papierpatrone",
+            "ammunitionTypeId": "feuerwaffe:vorderlader",
+            "selections": {
+              "kaliber": "16"
+            },
+            "quantity": 100,
+            "computedPriceSnapshot": 0.434145,
+            "computedStatsSnapshot": {
+              "kaliber": 16
+            }
+          },
+          {
+            "id": "911bec86-32f0-40a6-8884-d78cbcdcac19",
+            "family": "weapon",
+            "baseTable": "nk_waffen_basis",
+            "baseId": "188",
+            "displayNameSnapshot": "Stab (60cm) eisenbeschlagen",
+            "specializationId": "nk_spez_stangenwaffen_staebe",
+            "selections": {
+              "material": "2",
+              "fertigung": "4",
+              "anpassung": "2",
+              "schaftmaterial": "2"
+            },
+            "quantity": 1,
+            "computedPriceSnapshot": 30,
+            "computedStatsSnapshot": {
+              "at": -2,
+              "pa": -5,
+              "wk": 3,
+              "staerkeMalus": -3,
+              "minStaerke1H": 8,
+              "minStaerke2H": 5,
+              "klingenbrecher": 2,
+              "klingenschutz": 5,
+              "rezeptMod": 12,
+              "rb": 0
+            }
+          },
+          {
+            "id": "e9064c7a-cbd3-46a5-a7ed-15e6785488f7",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "526",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 1.76
+          },
+          {
+            "id": "120474d7-da34-4cba-9e16-98e8a4f44805",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "533",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.2
+          },
+          {
+            "id": "a0e933e2-2ecd-4cc2-897f-c1321fac1d5e",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "663",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.4
+          },
+          {
+            "id": "bbef9c17-ea21-4df1-b172-c35826bdea4e",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "684",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.027
+          },
+          {
+            "id": "0cad0d04-7256-4867-a9f5-ca3b53c69084",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "747",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.8200000000000001
+          }
+        ],
+        "ruestungSlots": {
+          "kopf:1": {
+            "basisSourceRow": 2,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 22,
+            "computedStatsSnapshot": {
+              "rs": 1,
+              "rh": 1,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            }
+          },
+          "torso:1": {
+            "basisSourceRow": 2,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 22,
+            "computedStatsSnapshot": {
+              "rs": 1,
+              "rh": 1,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            }
+          },
+          "arme:1": {
+            "basisSourceRow": 2,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 22,
+            "computedStatsSnapshot": {
+              "rs": 1,
+              "rh": 1,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            }
+          },
+          "beine:1": {
+            "basisSourceRow": 2,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 22,
+            "computedStatsSnapshot": {
+              "rs": 1,
+              "rh": 1,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            }
+          },
+          "torso:2": {
+            "basisSourceRow": 5,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 26,
+            "computedStatsSnapshot": {
+              "rs": 3,
+              "rh": 3,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            }
+          }
+        },
+        "grundfertigkeitAuswahl": {},
+        "waffenLoadouts": [
+          {
+            "id": "26cc3dd4-f06b-4d82-94b2-652c88bc8589",
+            "comboType": "muskete",
+            "primaryEquipmentId": "49e26b42-0e51-49b9-ad3e-dd056cbdfed2",
+            "secondaryEquipmentId": "49e26b42-0e51-49b9-ad3e-dd056cbdfed2",
+            "favorite": true
+          },
+          {
+            "id": "6293ab21-0a1e-47e6-960f-4d2ccf0bf92a",
+            "comboType": "nk1h",
+            "primaryEquipmentId": "911bec86-32f0-40a6-8884-d78cbcdcac19",
+            "secondaryEquipmentId": "911bec86-32f0-40a6-8884-d78cbcdcac19",
+            "favorite": true
+          }
+        ],
+        "customWhkHauptfertigkeiten": [],
+        "customWhkSpezialisierungen": {},
+        "gesinnung": {
+          "gut_boese": 0,
+          "ehrlichkeit_unehrlichkeit": 0,
+          "prinzipientreue_opportunismus": 0,
+          "gesetze_recht_des_staerkeren": 0,
+          "toleranz_rassismus": 0,
+          "pazifismus_bellizismus": 0,
+          "lebensbewahrung_toetungsbereitschaft": 0,
+          "altruismus_egoismus": 0,
+          "gleichberechtigung_sexismus": 0,
+          "hierarchie_anarchie": 0,
+          "staaten_gilden_clans_haeuser": 0,
+          "kommunismus_kapitalismus": 0,
+          "gruppenmensch_einzelgaenger": 0,
+          "vertrauen_misstrauen": 0,
+          "kompromissbereitschaft_sturheit": 0,
+          "strebsamkeit_faulheit": 0,
+          "disziplin_triebhaftigkeit": 0,
+          "introvertiert_extrovertiert": 0,
+          "humor_ernst": 0,
+          "willensfreiheit_fatalismus": 0,
+          "religiositaet_atheismus": 0,
+          "optimismus_pessimismus": 0
+        },
+        "gesinnungNotiz": "",
+        "notes": "NSC-Vorlage Stufe 0, 6400 SP. Ausruestungsbudget vorlaeufig exakt auf Anschaffungskosten aufgerundet. Gesinnung neutraler Platzhalter. Keine Vor- und Nachteile.\nRegelkorrektur 11.09.2026: Spezialisierung <= Hauptfertigkeit. Finanzierung aus Nebenwerten bei unveränderten Budgets. Details: Referenzkorrektur-2026-09-11.md."
+      }
+    }
+  ]
+}

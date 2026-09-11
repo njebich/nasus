@@ -1,22 +1,28 @@
-import { NPC_TEMPLATES } from '../data/npcTemplates';
+import { NPC_TEMPLATES, getNpcRoleArmor } from '../data/npcTemplates';
 import type { CharacterState } from '../../../state/characterStore';
 import { computeSheet } from '../../../engine/characterSheet';
 import { buildNahkampfRows } from '../../../views/kampf';
 import { ergaenzeGrundkleidung } from './grundkleidung';
 import { applyNpcArmorPackage, inspectNpcArmor, type NpcArmorOverrides } from './ruestungspakete';
 
-export function createNpcPreview(templateId: string, name: string, age: string, armorPackageId = '', kopfschutz = false, armorOverrides: NpcArmorOverrides = {}): CharacterState {
+export function createNpcPreview(templateId: string, name: string, age: string, armorPackageId = '', kopfschutz = false, armorOverrides: NpcArmorOverrides = {}, maxBe: 0 | 1 | 2 | 3 = 3): CharacterState {
   const template = NPC_TEMPLATES.find((entry) => entry.id === templateId);
   if (!template) throw new Error('Bitte eine vorhandene NPC-Vorlage wählen.');
   const character: CharacterState = JSON.parse(JSON.stringify(template.character));
   character.name = name.trim() || template.label;
   character.alter = age.trim();
   character.charakterTyp = 'NSC';
+  character.npcArmorMaxBe = maxBe;
   const clothingCost = ergaenzeGrundkleidung(character);
   if (clothingCost > 0) {
     // Die Referenzen haben ein vorläufiges Anschaffungsbudget, kein festes NSC-Geldbudget.
     character.values['dublonen_bank'] = (character.values['dublonen_bank'] ?? 0) + Math.ceil(clothingCost * 100) / 100;
     character.notes += '\nGrundkleidung ergänzt; vorläufiges Anschaffungsbudget um ihre Katalogkosten (auf Cent aufgerundet) erweitert.';
+  }
+  if (armorPackageId === 'auto') {
+    const roleArmor = getNpcRoleArmor(templateId);
+    armorPackageId = roleArmor.packageId;
+    character.notes += `\nRüstung nach Rolle: ${roleArmor.reason}`;
   }
   return armorPackageId || Object.keys(armorOverrides).length ? applyNpcArmorPackage(character, armorPackageId, kopfschutz, armorOverrides) : character;
 }
@@ -46,8 +52,8 @@ export function inspectNpc(character: CharacterState) {
   const issues = [...sheet.validationIssues.map((issue) => `${issue.source}: ${issue.message}`),
     ...combat.filter((row) => !row.poolValid).map((row) => `${row.label}: AT/PA-Pool unausgeglichen.`)];
   const armor = inspectNpcArmor(character);
-  if (!Number.isFinite(armor.rbe) || armor.rbe > 0) {
-    issues.push(`Rüstung: ${armor.be} BE statt 0. Bei dieser Ausstattung ist mindestens Rüstungsmanöver ${armor.minimumRm} nötig.`);
+  if (!Number.isFinite(armor.rbe) || armor.rbe > armor.maxBe) {
+    issues.push(`Rüstung: ${armor.be} BE statt ${armor.maxBe === 0 ? '0' : `höchstens ${armor.maxBe}`}. Bei dieser Ausstattung ist mindestens Rüstungsmanöver ${armor.minimumRm} nötig.`);
   }
   if (armor.rm > armor.maximumRm) {
     issues.push(`Rüstung: Rüstungsmanöver ${armor.rm} überschreitet das freigeschaltete Maximum ${armor.maximumRm}.`);

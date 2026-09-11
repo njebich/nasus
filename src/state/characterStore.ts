@@ -149,6 +149,8 @@ export type CharakterTyp = 'SC' | 'NSC';
 export const AUTOMATISCHER_SC_VORTEIL = 'vn_kind_der_froehlichkeit';
 
 export interface CharacterState extends CharacterHeader {
+  /** NPC-Planungsziel: Standardmäßig sind bis zu 3 körperliche BE aus Rüstung akzeptabel. */
+  npcArmorMaxBe?: 0 | 1 | 2 | 3;
   id: string;
   notes?: string;
   createdAt: string;

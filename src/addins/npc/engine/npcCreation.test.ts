@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { NPC_TEMPLATES } from '../data/npcTemplates';
-import { createNpcPreview, inspectNpc, instantiateNpc } from './npcCreation';
+import { createNpcPreview as previewWithTarget, inspectNpc, instantiateNpc } from './npcCreation';
 import { listCharacters, loadCharacter, saveCharacter } from '../../../state/characterStore';
 import { createInitialAppState } from '../../../state/appState';
 import { renderNpcWizard, wireNpcWizard } from '../views/npcCreation';
@@ -39,7 +39,7 @@ describe('NPC-Vorlagen', () => {
       }
       const { sheet, issues } = inspectNpc(character);
       expect(issues).toEqual(template.id === 'wachmann'
-        ? ['Rüstung: 1 BE statt 0. Bei dieser Ausstattung ist mindestens Rüstungsmanöver 16 nötig.']
+        ? ['Rüstung: 2 BE statt 0. Bei dieser Ausstattung ist mindestens Rüstungsmanöver 16 nötig.']
         : template.id === 'hauptmann'
           ? ['Rüstung: 1 BE statt 0. Bei dieser Ausstattung ist mindestens Rüstungsmanöver 8 nötig.'] : []);
       expect(sheet.spRemaining).toBeGreaterThanOrEqual(0);
@@ -106,7 +106,7 @@ describe('NPC-Vorlagen', () => {
 
   it('verhindert Anlegen trotz programmgesteuertem Absenden bei positiver RBE oder Budgetlücke', () => {
     const state = createInitialAppState(null);
-    state.npcWizard = { step: 3, role: 'Wache', templateId: 'wachmann', name: 'Wache', age: '' };
+    state.npcWizard = { step: 3, armorMaxBe: 0, role: 'Wache', templateId: 'wachmann', name: 'Wache', age: '' };
     const render = () => {
       document.body.innerHTML = renderNpcWizard(state.npcWizard!);
       wireNpcWizard(state, render);
@@ -115,8 +115,8 @@ describe('NPC-Vorlagen', () => {
     expect(document.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(true);
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     expect(listCharacters()).toHaveLength(0);
-    expect(state.errorMessage).toContain('1 BE statt 0');
-    state.npcWizard = { step: 3, role: 'Zivilist', templateId: 'bauer', name: 'Bauer', age: '', armorPackageId: 'handwerker' };
+    expect(state.errorMessage).toContain('2 BE statt 0');
+    state.npcWizard = { step: 3, armorMaxBe: 0, role: 'Zivilist', templateId: 'bauer', name: 'Bauer', age: '', armorPackageId: 'handwerker' };
     render();
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     expect(listCharacters()).toHaveLength(0);
@@ -125,7 +125,7 @@ describe('NPC-Vorlagen', () => {
 
   it('rechnet Anpassung je Teil neu und behält sie nach Zurück sowie beim Speichern', () => {
     const state = createInitialAppState(null);
-    state.npcWizard = { step: 3, role: 'Räuber', templateId: 'nahkaempfer', name: 'Gerüstet', age: '', armorPackageId: 'nahkaempfer-lederpanzer', automaticArmor: false };
+    state.npcWizard = { step: 3, armorMaxBe: 0, role: 'Räuber', templateId: 'nahkaempfer', name: 'Gerüstet', age: '', armorPackageId: 'nahkaempfer-lederpanzer', automaticArmor: false };
     const render = () => {
       document.body.innerHTML = state.npcWizard ? renderNpcWizard(state.npcWizard) : '';
       wireNpcWizard(state, render);
@@ -168,3 +168,7 @@ describe('NPC-Vorlagen', () => {
     expect(inspectNpc(state.currentCharacter!).issues).toEqual([]);
   });
 });
+
+function createNpcPreview(...args: Parameters<typeof previewWithTarget>) {
+  return previewWithTarget(args[0], args[1], args[2], args[3], args[4], args[5], args[3] === 'vollgeruestet' ? 1 : 0);
+}

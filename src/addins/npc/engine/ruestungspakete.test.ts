@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NPC_TEMPLATES } from '../data/npcTemplates';
-import { createNpcPreview, inspectNpc } from './npcCreation';
+import { createNpcPreview as previewWithTarget, inspectNpc } from './npcCreation';
 
 describe('Rüstungspakete und individuelle Fertigung/Anpassung', () => {
   it('liefert das vollständige Nahkämpferpaket ohne Budgetänderung oder neue Talente', () => {
@@ -12,7 +12,7 @@ describe('Rüstungspakete und individuelle Fertigung/Anpassung', () => {
     expect(result.armor).toMatchObject({ preis: 1132, rh: 22, be: 0, rbe: 0, minimumRm: 13, rm: 14 });
     expect(candidate.values.dublonen_bank).toBe(before.values.dublonen_bank);
     expect(candidate.selections).toEqual(before.selections);
-    expect(result.sheet.spRemaining).toBe(0);
+    expect(result.sheet.spRemaining).toBe(2);
     expect(result.sheet.dublonenRemaining).toBeGreaterThan(364);
     expect(Object.keys(candidate.ruestungSlots)).toHaveLength(11);
     expect(JSON.stringify(NPC_TEMPLATES)).toBe(original);
@@ -21,7 +21,7 @@ describe('Rüstungspakete und individuelle Fertigung/Anpassung', () => {
   it('zeigt die Finanzierungslücke des Handwerkers trotz mathematisch erreichter Null-RBE', () => {
     const result = inspectNpc(createNpcPreview('bauer', '', '', 'handwerker'));
     expect(result.armor).toMatchObject({ rbe: 0, rm: 4, preis: 240 });
-    expect(result.sheet.spRemaining).toBe(-9);
+    expect(result.sheet.spRemaining).toBe(-4);
     expect(result.sheet.dublonenRemaining).toBeCloseTo(-114.2018);
     expect(result.issues.some((issue) => issue.startsWith('SP-Budget'))).toBe(true);
   });
@@ -67,3 +67,50 @@ describe('Rüstungspakete und individuelle Fertigung/Anpassung', () => {
     })).toThrow('nicht belegt');
   });
 });
+
+
+describe('Vollgerüstetes Prefab', () => {
+  it('füllt alle vier Lagen überall auf Mindest-RH und erhält den integrierten Kopfpanzer', () => {
+    const candidate = createNpcPreview('ki', '', '', 'vollgeruestet');
+    const helmet = createNpcPreview('ki', '', '', 'vollgeruestet', true);
+    expect(Object.keys(candidate.ruestungSlots)).toHaveLength(16);
+    expect(helmet.ruestungSlots).toEqual(candidate.ruestungSlots);
+    const { armor } = inspectNpc(candidate);
+    expect(armor.rh).toBe(40);
+    expect(candidate.values.eig_k_staerke).toBe(NPC_TEMPLATES.find((entry) => entry.id === 'ki')!.character.values.eig_k_staerke);
+    expect(armor.rm).toBe(armor.maximumRm);
+    expect(armor.requiredAttributeContribution).toBe(40 - armor.maximumRm - 6);
+    expect(armor.requiredStrengthAtCurrentKon).toBe(Math.ceil(2 * (40 - armor.maximumRm - 6) - armor.kon / 5));
+    for (const zone of armor.zonen) {
+      expect(zone.lagen).toEqual([1, 2, 3, 4]);
+      expect(zone.rs).toBe(19);
+    }
+    for (const slot of Object.values(candidate.ruestungSlots)) expect([4, 5]).toContain(slot.anpassungSourceRow);
+  });
+
+  it('lehnt unpassende und nicht angepasste Teile ab', () => {
+    expect(() => createNpcPreview('ki', '', '', 'vollgeruestet', false, {
+      'kopf:1': { verarbeitungSourceRow: 2, anpassungSourceRow: 3 },
+    })).toThrow('angepasst');
+  });
+});
+
+
+it('erlaubt bei Vollrüstung exakt 1 BE, aber keinen Bruchteil darüber', () => {
+  const character = createNpcPreview('ki', '', '', 'vollgeruestet');
+  // RH kontrolliert an die aktuellen Eigenschaften/RM anpassen.
+  const armor = inspectNpc(character).armor;
+  character.ruestungSlots = { 'torso:4': character.ruestungSlots['torso:4'] };
+  const slot = character.ruestungSlots['torso:4'];
+  slot.computedStatsSnapshot.rh = armor.attributeContribution + armor.rm + 6;
+  expect(inspectNpc(character).armor.rbe).toBeCloseTo(1);
+  expect(inspectNpc(character).issues.some((issue) => issue.includes('BE statt'))).toBe(false);
+  slot.computedStatsSnapshot.rh += 0.001;
+  expect(inspectNpc(character).issues.some((issue) => issue.includes('BE statt höchstens 1'))).toBe(true);
+  const ordinary = createNpcPreview('ki', '', '', 'handwerker');
+  expect(ordinary.npcArmorMaxBe).toBe(0);
+});
+
+function createNpcPreview(...args: Parameters<typeof previewWithTarget>) {
+  return previewWithTarget(args[0], args[1], args[2], args[3], args[4], args[5], args[3] === 'vollgeruestet' ? 1 : 0);
+}

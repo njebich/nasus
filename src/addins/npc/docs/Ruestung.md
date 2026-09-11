@@ -1,6 +1,8 @@
+> Aktuelle Nutzerentscheidung: **0–3 KBE aus Rüstung sind allgemein akzeptabel; Rüstung verursacht keine MBE.** Diese Vorgabe ersetzt alle älteren 0-/1-BE-Ziele unten. Strengere Ziele bleiben ausdrücklich wählbar über die Planungsdaten. Die einfache Wache erhält Zeughausrüstung von der Stange (Stoff/Leder überall, Kette Arme/Torso, Eisenbrustplatte). Keine automatische Anpassung in deren Standardauswahl. Für das Ziel 3 gilt: Eigenschaftsbeitrag ≥ max(0, RH − RM − 18). Über 3 ungerundete RBE werden mindestens 4 BE und bleiben außerhalb des Rahmens.
+
 # NPC-Erstellung: Rüstung
 
-Nutzervorgaben vom 10. September 2026. Grundlage für die Rüstungsauswahl. Die ausgearbeiteten Pakete sind im Referenzassistenten manuell auswählbar; eine automatische Berufszuordnung ist noch nicht implementiert.
+Nutzervorgaben vom 10. September 2026. Grundlage für die Rüstungsauswahl. Die Pakete sind manuell auswählbar und werden für die sechs Referenzvorlagen auch automatisch nach Beruf und Kampfstil zugeordnet.
 
 ## Vier reguläre Lagen
 
@@ -72,8 +74,54 @@ Zwei ausdrücklich bezeichnete Ziele:
 - **Mehr Schutz:** Höchste Summe der RS der vier Zonengruppen innerhalb aller Grenzen; bei Gleichstand zuerst weniger zusätzliche Rüstungsmanöver, dann geringere Rüstungskosten. Keine Gewichtung nach Trefferwahrscheinlichkeit.
 - **Sparsam:** Niedrigste Rüstungskosten bei mindestens gleichem RS an jedem Teil; bei Gleichstand weniger zusätzliche Ausbildung, dann mehr Schutz.
 
-Für beide gilt: tatsächliche RBE 0, ausreichende Dublonen und SP, bestehende Talentgrenzen sowie Katalogverfügbarkeit. RS darf an keinem vorhandenen Teil sinken. Material/Basisteil und belegte Lagen/Zonen bleiben fest. Der Ausgangspunkt ist das gewählte Paket bzw. die aktuelle manuelle Ausstattung. Bereits gelernte Rüstungsmanöver bleiben erhalten, nur zusätzliche geplante Punkte können entfallen. Neue Talente werden nicht automatisch gekauft. Bei unbekannter Herkunft sind nur Kombinationen zugelassen, die in beiden Welten regulär kaufbar sind; für explizit bestehende Charaktere gilt die bisherige Ausnahme.
+Für beide gilt: tatsächliche RBE 0, ausreichende Dublonen und SP, bestehende Talentgrenzen sowie Katalogverfügbarkeit. RS darf an keinem vorhandenen Teil sinken. Belegte Lagen/Zonen bleiben fest; Material/Basisteil bleiben ohne die optionale Basisteilwahl fest. Der Ausgangspunkt ist das gewählte Paket bzw. die aktuelle manuelle Ausstattung. Bereits gelernte Rüstungsmanöver bleiben erhalten, nur zusätzliche geplante Punkte können entfallen. Neue Talente werden nicht automatisch gekauft. Bei unbekannter Herkunft sind nur Kombinationen zugelassen, die in beiden Welten regulär kaufbar sind; für explizit bestehende Charaktere gilt die bisherige Ausnahme.
 
 Die Suche kombiniert alle Fertigungen und Anpassungen, verwirft unzulässige Optionen und behält für jede Gesamt-RH/RS-Kombination den günstigsten Teilplan. Dadurch werden auch gemischte Ausstattungen gefunden, ohne alle Kombinationen einzeln vollständig aufbauen zu müssen. Die bezahlbaren Ausbildungsstufen und der fertige Kandidat werden mit dem bestehenden Charaktermodell nachgerechnet. Eine erfolglose Suche lässt die bisherige Vorschau unverändert und nennt die Grenze.
 
 Gegenprobe: Bei Konstitution 13/Stärke 15, höchstens bezahlbarem Rüstungsmanöver 7 und 204 D Rüstungsbudget findet die Automatik genau ein angepasstes Lederteil neben drei von der Stange. Ergebnis: RH 15, Rüstungsmanöver 7, RBE 0, unveränderter RS. Eine unabhängige vollständige Aufzählung aller Fertigungs-/Anpassungskombinationen an zwei Teilen prüft beide Optimierungsziele gegen das tatsächliche Optimum.
+
+
+## Erweiterung vom 11. September 2026: Basisteile und Materialien
+
+Im Schritt „Angaben und Rüstung“ kann „Auch Basisteile und Materialien automatisch auswählen“ aktiviert werden. Dann vergleicht die Automatik alle Katalog-Basisteile derselben Lage sowie deren Fertigung und Anpassung. Ohne diese Auswahl bleiben die Basisteile fest. Belegte Zonen und Lagen stammen weiterhin aus der Vorlage bzw. dem gewählten Paket; der Schutz darf an keinem Teil sinken.
+
+Beide Ziele (mehr Schutz / möglichst günstig) berücksichtigen weiterhin Verfügbarkeit, vorhandenes Geld, bezahlbare Rüstungsmanöver und Talentgrenzen. RBE muss ungerundet 0 sein. Die Vorschau zeigt die gewählten Basisteile in der Einzelteilansicht; deren IDs werden zusammen mit Fertigung und Anpassung beim Anlegen übernommen. Manuelle Änderungen der Fertigung/Anpassung erhalten das ausgewählte Basisteil. Lagenfremde Basisteile werden abgewiesen.
+
+Geprüft: vollständige unabhängige Aufzählung eines Panzerplatzes für beide Ziele, vollständiges Nahkämpferpaket, unveränderte Ausgangsfigur und Talente sowie Übernahme der Auswahl in die Rüstungsplätze. Alle 25 NPC-Tests und Produktionsbuild bestanden. Automatische Talentkäufe bleiben offen.
+
+
+## Automatische Rollenzuordnung vom 11. September 2026
+
+Neue Assistenten starten mit „Automatisch nach Beruf und Kampfstil“. Die Zuordnung folgt expliziten Ausbildungsprofilen der Vorlagen, nicht allein dem Berufslabel: Räuber können Fern- oder Nahkämpfer sein. Beim Wechsel der Vorlage wird das passende Paket erneut aufgelöst. Manuell gewählte Pakete und Vorlagenrüstung bleiben als Alternativen verfügbar.
+
+| Vorlagen | Typische Ausstattung |
+|---|---|
+| Bauer | Berufspaket: Stoff und Leder an allen vier Zonengruppen |
+| Schütze | Kampfprofession: Stoff und Leder an allen vier Zonengruppen |
+| Wachmann, Nahkämpfer, Hauptmann, KI-Spezialist | Stoff und Leder überall, Kette an Armen/Torso, Lederpanzer am Torso |
+
+Dies sind transparente Standardzuordnungen für die vorhandenen sechs Referenzen. Zusätzlicher Kopfpanzer bleibt optional. Die optionale freie Basisteilwahl kann den Lederpanzer durch andere Panzer derselben Lage ersetzen. Die automatische Fertigungs-/Anpassungssuche läuft anschließend wie bei manuell gewählten Paketen.
+
+Ein Rollenpaket ersetzt die bisherige Rüstung; sein Schutz bildet die Untergrenze für die anschließende Optimierung. Die Zuordnung verspricht keine Finanzierbarkeit: Insbesondere die voll ausgegebene Bauernreferenz kann das vollständige Berufspaket nicht bezahlen. Finanzierungslücken bleiben sichtbar und sperren das Anlegen. Kein automatischer Rückfall auf weniger Rüstung, keine Budgeterhöhung durch die Rüstungszuordnung.
+
+Prüfung: alle sechs Zuordnungen gegen die manuelle Paketberechnung, gleiche Budgets und Prüfresultate, Stoff-/Lederabdeckung und optionaler Kopfschutz, Vorschau bei Variantenwechsel sowie Anlegesperre bei Finanzierungslücken. 34 NPC-Tests und Produktionsbuild bestanden. Freie Berufsprofile außerhalb der sechs Vorlagen und automatische Talent-/Ausbildungsumschichtungen sind weiterhin offen.
+
+Nutzerkorrektur: Schützen sind Kampfprofessionen und erhalten ebenfalls Leder überall. Das vollständige Stoff-/Lederpaket wird für sie als Standard verwendet.
+
+
+## Prefab Vollgerüstet
+
+Alle vier regulären Lagen an allen vier Zonengruppen (16 Plätze); Kopfpanzer bereits enthalten. „Stärke“ meint hier die Rüstungsstärke, nicht die Charaktereigenschaft. Ausgangspunkt bei minimaler RH 40 und RS 19 pro Zonengruppe: schwere Stoffrüstung, Lederrüstung, schwerer Eisen-Kettenpanzer und Eisenpanzer, jeweils perfekt angepasst. Diese Basisteile nutzen den Anpassungsabzug für zusätzlichen Schutz bis zur jeweiligen Mindest-RH aus.
+
+Die aktivierte Automatik vergleicht beim Vollgerüstet-Prefab sämtliche Basisteile derselben Lage, einschließlich Lederpanzer bis Faltstahlpanzer in Lage 4. Sie darf dabei auch unter den RS des Ausgangspakets gehen, um alle Rüstungsstärken tatsächlich vergleichen zu können. Jedes Teil bleibt angepasst oder perfekt angepasst. Manuelle Einzelanpassung und Automatik dürfen nicht auf „von der Stange“ zurückfallen.
+
+Rüstungsmanöver wird auf das bereits freigeschaltete Maximum geplant und vollständig bepreist. Es werden keine Talente gekauft und keine Eigenschaften verändert. Bei Gesamt-RH H und RM-Maximum M benötigt der Charakter den Eigenschaftsbeitrag max(0, H−M). Vorhandener Beitrag: (KON/5+ST)/2. Bei festgehaltener KON zeigt die Vorschau zusätzlich die notwendige effektive ST: max(0, ceil(2*(H−M)−KON/5)). Beispiel H=40, M=16, KON=13: Beitrag 24, effektive ST mindestens 46. Das kann außerhalb der Charaktergrenzen liegen und wird nicht automatisch gekauft.
+
+Verfügbarkeit (insbesondere perfekte Anpassung in NW), Geld, SP und tatsächliche RBE bleiben Anlegebedingungen. Ein voll belegtes Paket ist deshalb noch kein innerhalb jeder Referenz finanzierbarer Charakter.
+
+
+### Aktualisierung: Vollrüstung darf 1 BE verursachen
+
+Nutzerentscheidung vom 11. September 2026: Beim Prefab Vollgerüstet sind bis zu 1 BE erlaubt; die übrigen Pakete behalten das Ziel 0 BE. Frühere Null-BE-Anforderungen für Vollrüstung sind damit ersetzt. Wegen Aufrundung gilt ungerundet RBE ≤ 1, nicht etwa < 2. Die erlaubte Gesamt-RH steigt dadurch um 6: Eigenschaftsbeitrag ≥ max(0, RH − RM − 6). Vorschau, Anlegeprüfung und Optimierung verwenden dieses Ziel. Das Ziel wird am erzeugten Charakter gespeichert.
+
+Beispiel ST/KON effektiv je 38, RM 16, RH 40: RBE 0,2 → 1 BE, für Vollgerüstet akzeptiert. Artefaktmaximum laut Nutzer: +7 pro Eigenschaft; +14 auf eine Eigenschaft ist keine zulässige Planungsannahme.

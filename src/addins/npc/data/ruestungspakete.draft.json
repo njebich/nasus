@@ -1,41 +1,263 @@
 {
-  "status": "Ausarbeitungsvorschlag; noch keine automatische Vergabe im Generator",
-  "zielRbe": 0,
+  "status": "Im NPC-Assistenten verfügbar; automatische Zuordnung anhand der Vorlagenrolle",
+  "zielRbe": 3,
   "pakete": [
+    {
+      "id": "stoff",
+      "name": "Grundschutz – Stoff vollständig",
+      "teile": [
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        }
+      ]
+    },
     {
       "id": "handwerker",
       "name": "Handwerker – Stoff und Leder vollständig",
       "teile": [
-        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Stoffrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" },
-        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Lederrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" }
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst"
+        }
       ]
     },
     {
       "id": "handwerker-stange",
       "name": "Handwerker – günstigere Anschaffung, mehr Ausbildung",
       "teile": [
-        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Stoffrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" },
-        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Lederrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" }
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        }
       ]
     },
     {
       "id": "nahkaempfer-lederpanzer",
       "name": "Nahkämpfer – Kette und Lederpanzer",
       "teile": [
-        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Stoffrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" },
-        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Lederrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" },
-        { "zonen": ["torso", "arme"], "basis": "Eisen-Kettenpanzer", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" },
-        { "zonen": ["torso"], "basis": "Lederpanzer", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" }
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst"
+        },
+        {
+          "zonen": [
+            "torso",
+            "arme"
+          ],
+          "basis": "Eisen-Kettenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst"
+        },
+        {
+          "zonen": [
+            "torso"
+          ],
+          "basis": "Lederpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        }
       ]
     },
     {
       "id": "nahkaempfer-eisenpanzer",
       "name": "Nahkämpfer – Kette und Eisenpanzer",
       "teile": [
-        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Stoffrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "von der Stange" },
-        { "zonen": ["kopf", "torso", "arme", "beine"], "basis": "Leichte Lederrüstung", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" },
-        { "zonen": ["torso", "arme"], "basis": "Eisen-Kettenpanzer", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" },
-        { "zonen": ["torso"], "basis": "Eisenpanzer", "verarbeitung": "Gesellenarbeit", "anpassung": "angepasst" }
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst"
+        },
+        {
+          "zonen": [
+            "torso",
+            "arme"
+          ],
+          "basis": "Eisen-Kettenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst"
+        },
+        {
+          "zonen": [
+            "torso"
+          ],
+          "basis": "Eisenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "angepasst"
+        }
+      ]
+    },
+    {
+      "id": "vollgeruestet",
+      "name": "Vollgerüstet – alle vier Lagen vollständig",
+      "teile": [
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Schwere Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "perfekt angepasst"
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "perfekt angepasst"
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Schwerer Eisen-Kettenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "perfekt angepasst"
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Eisenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "perfekt angepasst"
+        }
+      ]
+    },
+    {
+      "id": "wache-zeughaus",
+      "name": "Einfache Wache – Zeughausrüstung von der Stange",
+      "teile": [
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Stoffrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        },
+        {
+          "zonen": [
+            "kopf",
+            "torso",
+            "arme",
+            "beine"
+          ],
+          "basis": "Leichte Lederrüstung",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        },
+        {
+          "zonen": [
+            "torso",
+            "arme"
+          ],
+          "basis": "Eisen-Kettenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        },
+        {
+          "zonen": [
+            "torso"
+          ],
+          "basis": "Eisenpanzer",
+          "verarbeitung": "Gesellenarbeit",
+          "anpassung": "von der Stange"
+        }
       ]
     }
   ]

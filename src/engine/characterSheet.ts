@@ -10,7 +10,7 @@
 
 import { RULES, type RuleEntry } from '../data/rules';
 import { LOOKUP_TABLES } from '../data/lookups';
-import { evalReferenz, evalKostenFor, type CharacterValueSource } from './rules';
+import { findParentRule, evalReferenz, evalKostenFor, type CharacterValueSource } from './rules';
 import { getPoolCapBasis, computeGutMax, computeMeisterlichMax } from './poolCaps';
 import { getTalentModifikatorBonus as talentModifikatorBonus } from './talenteModifikator';
 import { getTalentFaktorBonus as talentFaktorBonus } from './talenteFaktor';
@@ -26,6 +26,10 @@ import { ruestungSlotKey, type CharacterState, type PoolAllocation, type Ruestun
 import { GESINNUNG_TRAITS, countGesinnungGesetzt } from '../data/gesinnung';
 import type { RsGruppe } from '../data/trefferzonen';
 import type { Value } from './evaluator';
+
+const SPEZIALISIERUNG_PARENTS = new Map(RULES
+  .filter((rule) => rule.art === 'Wert' && ['Nahkampf', 'Fernkampf', 'WHK'].includes(rule.kategorie))
+  .map((rule) => [rule.referenz, findParentRule(rule)]));
 
 const RUESTUNG_LAGEN = [1, 2, 3, 4, 5] as const;
 
@@ -212,6 +216,13 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
         if (currentValue < grenzen.min || currentValue > effectiveMax) {
           result.error = `'${rule.referenz}' muss für ${character.spezies} zwischen ${grenzen.min} und ${effectiveMax} liegen`;
         }
+      }
+    }
+    if (['Nahkampf', 'Fernkampf', 'WHK'].includes(rule.kategorie)) {
+      const parent = SPEZIALISIERUNG_PARENTS.get(rule.referenz);
+      if (parent && currentValue > (character.values[parent.referenz.toLowerCase()] ?? 0)) {
+        const message = `Spezialisierung ${currentValue} darf Hauptfertigkeit '${parent.beschreibung ?? parent.referenz}' (${character.values[parent.referenz.toLowerCase()] ?? 0}) nicht überschreiten`;
+        result.error = result.error ? `${result.error}; ${message}` : message;
       }
     }
     const artefaktBonusValue = values.getArtefaktBonus?.(rule.referenz) ?? 0;
@@ -439,6 +450,16 @@ export function computeSheet(character: CharacterState): ComputedSheet {
       validationIssues.push({
         source: `${row.rule.kategorie} › ${row.rule.beschreibung ?? row.rule.referenz}`,
         message: row.error,
+      });
+    }
+  }
+  for (const [parentKey, entries] of Object.entries(character.customWhkSpezialisierungen ?? {})) {
+    const customParent = character.customWhkHauptfertigkeiten?.find((entry) => entry.id === parentKey);
+    const parentValue = customParent?.wert ?? character.values[parentKey] ?? 0;
+    for (const entry of entries) {
+      if (entry.wert > parentValue) validationIssues.push({
+        source: `WHK › ${entry.name}`,
+        message: `Spezialisierung ${entry.wert} darf Hauptfertigkeit '${customParent?.name ?? parentKey}' (${parentValue}) nicht überschreiten`,
       });
     }
   }

@@ -10,9 +10,9 @@
     "ep_gesamt": 0,
     "dublonen_bank": 297.03,
     "eig_g_intelligenz": 13,
-    "eig_g_mut": 8,
+    "eig_g_mut": 7,
     "eig_g_sinneschaerfe": 16,
-    "eig_g_willenskraft": 8,
+    "eig_g_willenskraft": 7,
     "eig_k_athletik": 13,
     "eig_k_ausstrahlung": 11,
     "eig_k_geschicklichkeit": 17,
@@ -30,27 +30,27 @@
     "sf_ruestungsmanoever": 5,
     "gr_koerperbeherrschung": 9,
     "gr_laufen": 4,
-    "gr_klettern": 3,
+    "gr_klettern": 1,
     "gr_orientierung": 9,
     "gr_schleichen": 10,
     "gr_verstecken": 10,
     "gr_schwimmen": 2,
-    "gr_springen": 2,
+    "gr_springen": 1,
     "gr_menschenkenntnis": 3,
     "gr_einschuechtern": 3,
     "whk_ueberleben": 8,
     "whk_spez_ueberleben_wald": 8,
     "whk_spez_ueberleben_stadt": 3,
-    "nk_stangenwaffen": 4,
+    "nk_stangenwaffen": 6,
     "nk_spez_stangenwaffen_staebe": 6,
-    "fk_feuerwaffen": 18,
+    "fk_feuerwaffen": 24,
     "fk_spez_feuerwaffen_musketen": 24,
     "sf_ladeschuetze_vorderlader": 18,
     "gr_faehrtensuche": 6,
-    "whk_ermittlung": 7,
+    "whk_ermittlung": 10,
     "whk_spez_ermittlung_observation": 10,
     "whk_spez_ermittlung_spurenlesen": 7,
-    "att_vitalitaet": 2
+    "att_vitalitaet": 1
   },
   "selections": {
     "talente_fernkampfgeschick_stufe_1": 1,
@@ -302,5 +302,5 @@
     "optimismus_pessimismus": 0
   },
   "gesinnungNotiz": "",
-  "notes": "NSC-Vorlage Stufe 0, 6400 SP. Ausruestungsbudget vorlaeufig exakt auf Anschaffungskosten aufgerundet. Gesinnung neutraler Platzhalter. Keine Vor- und Nachteile."
+  "notes": "NSC-Vorlage Stufe 0, 6400 SP. Ausruestungsbudget vorlaeufig exakt auf Anschaffungskosten aufgerundet. Gesinnung neutraler Platzhalter. Keine Vor- und Nachteile.\nRegelkorrektur 11.09.2026: Spezialisierung <= Hauptfertigkeit. Finanzierung aus Nebenwerten bei unveränderten Budgets. Details: Referenzkorrektur-2026-09-11.md."
 }

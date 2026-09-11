@@ -16,7 +16,7 @@ Stand: 8. September 2026. Entwurf für die nächste Ausbaustufe. Die folgenden R
 | Beruf | Direkte Auswahl aus 30 festen Berufen (Draft), separate Professionsgüte; optional Zweitberuf mit eigener Güte; Aufgabe im Alltag, Schwerpunkt, typische Schwächen; siehe [Berufsstruktur](Berufsstruktur.md) |
 | Amt | Optional, unabhängig von Beruf und Rang; Bezeichnung, Institution, Zuständigkeit, Befugnisse und Pflichten; siehe [Amt](Amt.md) |
 | Erfahrung | Kreis und Position im Kreis (Kreis/Kreis+); berufliches Kompetenzziel separat vom Kampfziel |
-| Eigenschaften | Bis zu drei Schwerpunkte, den jeweiligen Gruppen zugeordnet; optional eine schlechte Eigenschaft bei knappem SP-Budget zulassen und benennen; keine Werte im Template |
+| Eigenschaften | Kategorien und Prioritäten siehe [Eigenschaften und Attribute](Eigenschaften-und-Attribute.md). Bis zu drei Schwerpunkte, den jeweiligen Gruppen zugeordnet; optional eine schlechte Eigenschaft bei knappem SP-Budget zulassen und benennen; keine Werte im Template |
 | Pflichtmerkmale | Eine der fünf Aussehensstufen ohne Allerweltsgesicht und eine der vier Schlafstufen, jeweils fest gewählt oder einmalig aus einem festzulegenden Zufallsprofil gezogen |
 | SSK | Hauptsprache, Herkunftskultur, Schriftbedarf, weitere Sprachen; Händler zusätzlich eine andere Sprache auf Stufe 2 |
 | Grundausbildung | Passender GF/SF-Stub und dessen noch festzulegender Budgetanteil |
@@ -26,7 +26,7 @@ Stand: 8. September 2026. Entwurf für die nächste Ausbaustufe. Die folgenden R
 | Magie | Keine, KI, Spruchmagie oder PSI; konkrete Funktion und passender Ausbildungsstub |
 | Spruchmagie | Drei bis fünf Schulen abhängig vom Kreis, eine Schwerpunktschule; genaue Kreis-Zuordnung der Schulanzahl ist noch festzulegen |
 | Geweihter | Ja/nein, Religion und gegebenenfalls Sekte, Grad 1–7; Vorbelegung aus Volksreligion nur bei vorhandener Zuordnung |
-| Rüstung | Vier kombinierbare Lagen: Stoff, Leder, Kette und Leder-/Metallpanzer; siehe [Rüstung](Ruestung.md). Erste Pakete im Referenzassistenten auswählbar; Fertigung und Anpassung pro Teil veränderbar. Ziel: 0 BE aus Rüstung innerhalb aller Budgets. Automatische Berufszuordnung noch offen. |
+| Rüstung | Vier kombinierbare Lagen: Stoff, Leder, Kette und Leder-/Metallpanzer; siehe [Rüstung](Ruestung.md). Erste Pakete im Referenzassistenten auswählbar; Fertigung und Anpassung pro Teil veränderbar. Ziel: 0 BE aus Rüstung innerhalb aller Budgets. Automatische Zuordnung für die sechs Referenzen vorhanden; Vollrüstung verlangt ein eigenes körperliches Profil. |
 | Kleidung | Gemeinsame vollständige [Grundkleidung](Artikelentwuerfe.md), vorhandene Teile anrechnen; berufliche und klimatische Varianten, von Rüstung getrennt |
 | Artefakte | Keine oder konkret gewünschte Wirkung/Gegenstände; Voraussetzung oder optionaler Zusatz unterscheiden |
 | Ausrüstung | [Berufsausrüstung](Berufsausruestung.md) als Draft mit vorhandenen Artikel-Spezialisierungen; Lebenswelt ergänzen, Qualität billig/gewöhnlich/gehoben/elitär und Besitz separat; benötigte Verbrauchsmittel und Transport |

@@ -8,12 +8,16 @@ Die 67 Artikel einschließlich Preisen, Gewichten, Spezialisierungen und Begrün
 
 ## Ablage
 
+- `docs/Referenzkorrektur-2026-09-11.md`: vollständige Änderungen der sechs Referenzen nach Korrektur der Spezialisierungsgrenzen; read-only Prüfung mit `node src/addins/npc/scripts/validate-references.mjs`.
+
+- `docs/Eigenschaften-und-Attribute.md`: Rollenprioritäten für Eigenschaften/Attribute und körperliches Zusatzprofil Vollgerüstet; Planungsgrundlage für neue Wertebausteine.
+
 - `docs/Template-und-Arbeitsauftraege.md`: werteloses Template, sieben Rollenprofile und Arbeitsaufträge; verbindliche Entscheidungen und Vorschläge gekennzeichnet.
 - `docs/Berufsstruktur.md`: Draft mit 30 festen Berufen, Kern- und Nebenfertigkeiten, Schwerpunkten, Professionsgüte und optionalem Zweitberuf.
 - `docs/Amt.md`: unabhängiger Vektor für Amt, Zuständigkeit, Befugnisse und Pflichten; vorgeschlagene Beispiele.
 - `docs/Ruestung.md`: vier reguläre Rüstungslagen mit bestätigten typischen Trägern und Trefferzonen; Begriffsklärung RH/RBE und offene Ausstattungsdetails.
 - `docs/Ruestungspakete-Pruefung.md`: konkrete Handwerker-/Nahkämpferpakete und Varianten mit Preisen, Schutzwerten, Null-BE-Ausbildung und Budgetgegenproben auf sechs Referenzen; optionale Kopfpanzerung separat geprüft.
-- `data/ruestungspakete.draft.json`: Rüstungspaketvorschläge aus bestehenden Katalogteilen; im Assistenten manuell auswählbar, noch keine automatische Berufszuordnung. `node src/addins/npc/scripts/ruestungspakete.mjs` erzeugt und prüft Bericht und `docs/Ruestungspakete-Pruefdaten.json`.
+- `data/ruestungspakete.draft.json`: Rüstungspaketvorschläge aus bestehenden Katalogteilen; im Assistenten manuell auswählbar und automatisch nach Beruf/Kampfstil der sechs Referenzen zugeordnet. `node src/addins/npc/scripts/ruestungspakete.mjs` erzeugt und prüft Bericht und `docs/Ruestungspakete-Pruefdaten.json`.
 - `docs/Berufsausruestung.md`: Ausrüstungsdraft für alle 30 Berufe mit bestehenden Katalog- und Spezialisierungszuordnungen, Transport, Besitz und offenen Artikeln.
 - `docs/Artikelentwuerfe.md`: 67 neue Artikel mit Preis- und Gewichtsvorschlägen, überprüften WHK-Regelreferenzen und Preisankern; gemeinsame Grundkleidung und berufliche Varianten.
 - `data/artikelentwuerfe.draft.json`: neue Artikel außerhalb der aktiven Preisliste; erzeugt und geprüft durch `scripts/artikelentwuerfe.mjs`.

@@ -1,4 +1,4 @@
-import { NPC_TEMPLATES } from '../data/npcTemplates';
+import { NPC_TEMPLATES, getNpcRoleArmor } from '../data/npcTemplates';
 import { createNpcPreview, inspectNpc, instantiateNpc } from '../engine/npcCreation';
 import { saveCharacter, setLastActiveCharacterId } from '../../../state/characterStore';
 import type { AppState } from '../../../state/appState';
@@ -12,6 +12,7 @@ import { optimizeNpcArmor, type ArmorOptimizationMode } from '../engine/armorOpt
 
 export interface NpcWizardState {
   step: number;
+  armorMaxBe?: 0 | 1 | 2 | 3;
   role: string;
   templateId: string;
   name: string;
@@ -20,6 +21,7 @@ export interface NpcWizardState {
   kopfschutz?: boolean;
   armorOverrides?: NpcArmorOverrides;
   automaticArmor?: boolean;
+  chooseArmorBaseParts?: boolean;
   armorOptimizationMode?: ArmorOptimizationMode;
   armorOptimizationMessage?: string;
 }
@@ -27,7 +29,7 @@ export interface NpcWizardState {
 const escape = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;')
   .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-function renderArmorChoices(character: CharacterState): string {
+function renderArmorChoices(character: CharacterState, fittedOnly = false): string {
   const zoneNames: Record<string, string> = { kopf: 'Kopf', torso: 'Torso', arme: 'Arme', beine: 'Beine' };
   return `<details class="npc-armor-choices"><summary>Fertigung und Anpassung je Rüstungsteil vergleichen</summary>
     <p>Die Auswahl zeigt Schutz (RS), Hinderlichkeit (RH) und den vollständigen Teilpreis. Jede Änderung berechnet Ausbildung, Behinderung und alle Budgets neu. Bereits vorhandene Rüstungsmanöver bleiben erhalten.</p>
@@ -40,7 +42,7 @@ function renderArmorChoices(character: CharacterState): string {
       return `<fieldset><legend>${escape(caption)}</legend>
         <label>Fertigung<select name="armor-verarbeitung:${key}" data-npc-armor>${RUESTUNG_VERARBEITUNG.map((row) =>
           `<option value="${row.sourceRow}" ${row.sourceRow === slot.verarbeitungSourceRow ? 'selected' : ''}>${escape(row.name)} – ${label(composeArmor(basis, row, anpassung))}</option>`).join('')}</select></label>
-        <label>Anpassung<select name="armor-anpassung:${key}" data-npc-armor>${RUESTUNG_ANPASSUNG.map((row) =>
+        <label>Anpassung<select name="armor-anpassung:${key}" data-npc-armor>${RUESTUNG_ANPASSUNG.filter((row) => !fittedOnly || ['angepasst', 'perfekt angepasst'].includes(row.name)).map((row) =>
           `<option value="${row.sourceRow}" ${row.sourceRow === slot.anpassungSourceRow ? 'selected' : ''}>${escape(row.name)} – ${label(composeArmor(basis, verarbeitung, row))}</option>`).join('')}</select></label>
       </fieldset>`;
     }).join('')}</details>`;
@@ -48,6 +50,8 @@ function renderArmorChoices(character: CharacterState): string {
 
 export function renderNpcWizard(wizard: NpcWizardState): string {
   const template = NPC_TEMPLATES.find((entry) => entry.id === wizard.templateId)!;
+  const roleArmor = getNpcRoleArmor(wizard.templateId);
+  const resolvedPackageId = wizard.armorPackageId === 'auto' ? roleArmor.packageId : wizard.armorPackageId;
   const steps = ['Rolle', 'Variante', 'Angaben und Rüstung', 'Vorschau'];
   let content = '';
   let blocked = false;
@@ -63,14 +67,17 @@ export function renderNpcWizard(wizard: NpcWizardState): string {
     content = `<p>${escape(template.description)} Spezies: ${escape(template.character.spezies)}.</p>
       <label>Name <input name="name" required maxlength="160" value="${escape(wizard.name)}" /></label>
       <label>Alter <input name="age" maxlength="80" value="${escape(wizard.age)}" /></label>
-      <label>Rüstung <select name="armorPackageId"><option value="" ${!wizard.armorPackageId ? 'selected' : ''}>Rüstungsteile der Vorlage verwenden</option>${NPC_ARMOR_PACKAGES.map((paket) =>
+      <label>Rüstung <select name="armorPackageId"><option value="auto" ${wizard.armorPackageId === 'auto' ? 'selected' : ''}>Automatisch nach Beruf und Kampfstil</option><option value="" ${!wizard.armorPackageId ? 'selected' : ''}>Rüstungsteile der Vorlage verwenden</option>${NPC_ARMOR_PACKAGES.map((paket) =>
         `<option value="${escape(paket.id)}" ${paket.id === wizard.armorPackageId ? 'selected' : ''}>${escape(paket.name)}</option>`).join('')}</select></label>
-      <label class="npc-checkbox"><input type="checkbox" name="kopfschutz" ${wizard.kopfschutz ? 'checked' : ''} ${wizard.armorPackageId ? '' : 'disabled'} />Zusätzlicher Lederpanzer am Kopf (148 D; nur mit Rüstungspaket)</label>
-      <label class="npc-checkbox"><input type="checkbox" name="automaticArmor" ${wizard.automaticArmor !== false ? 'checked' : ''} />Fertigung und Anpassung automatisch auswählen</label>
+      ${wizard.armorPackageId === 'auto' ? `<p>${escape(roleArmor.reason)} Ausgangspaket: ${escape(NPC_ARMOR_PACKAGES.find((entry) => entry.id === roleArmor.packageId)!.name)}. Die Vorschau prüft die Finanzierung; eine Lücke bleibt sichtbar.</p>` : ''}
+      ${wizard.armorPackageId === 'vollgeruestet' ? '<p>Alle vier Lagen sind überall belegt, einschließlich Kopfpanzer. Jedes Teil ist angepasst oder perfekt angepasst. Rüstungsmanöver wird bis zum freigeschalteten Maximum geplant. Die Automatik vergleicht auch Rüstungsstärken und Materialien; Eigenschaften bleiben erhalten. Die Vorschau zeigt den fehlenden Eigenschaftsbeitrag für das BE-Ziel.</p>' : ''}
+      <label class="npc-checkbox"><input type="checkbox" name="kopfschutz" ${wizard.kopfschutz ? 'checked' : ''} ${wizard.armorPackageId && wizard.armorPackageId !== 'vollgeruestet' ? '' : 'disabled'} />Zusätzlicher Lederpanzer am Kopf (148 D; nur mit Rüstungspaket)</label>
+      <label class="npc-checkbox"><input type="checkbox" name="automaticArmor" ${(wizard.automaticArmor ?? resolvedPackageId !== 'wache-zeughaus') ? 'checked' : ''} />Fertigung und Anpassung automatisch auswählen</label>
+      <label class="npc-checkbox"><input type="checkbox" name="chooseArmorBaseParts" ${wizard.chooseArmorBaseParts ? 'checked' : ''} />Auch Basisteile und Materialien automatisch auswählen (innerhalb der belegten Lagen)</label>
       <label>Schwerpunkt<select name="armorOptimizationMode"><option value="schutz" ${wizard.armorOptimizationMode !== 'sparsam' ? 'selected' : ''}>Mehr Schutz innerhalb des Budgets</option><option value="sparsam" ${wizard.armorOptimizationMode === 'sparsam' ? 'selected' : ''}>Möglichst günstig bei mindestens gleichem Schutz</option></select></label>
-      <p>Ein Paket ersetzt die gesamte Vorlagenrüstung. Stoff und Leder bedecken alle vier Zonengruppen. Die Vorschau plant nötige Rüstungsmanöver für 0 BE ein und prüft, ob Punkte, Talente und Geld reichen.</p>`;
+      <p>Ein Paket ersetzt die gesamte Vorlagenrüstung. Stoff und Leder bedecken alle vier Zonengruppen. Die Vorschau plant nötige Rüstungsmanöver für das BE-Ziel ein (höchstens 3 körperliche BE) und prüft, ob Punkte, Talente und Geld reichen.</p>`;
   } else {
-    const preview = createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides);
+    const preview = createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides, wizard.armorMaxBe);
     const { sheet, issues, armor } = inspectNpc(preview);
     blocked = issues.length > 0;
     const previousRm = template.character.values.sf_ruestungsmanoever ?? 0;
@@ -80,23 +87,25 @@ export function renderNpcWizard(wizard: NpcWizardState): string {
       <dt>Talentpunkte</dt><dd>${sheet.tapSpent} / ${sheet.tapTotal} (${sheet.tapRemaining} frei)</dd>
       <dt>Ausrüstungskosten</dt><dd>${formatDublonenNumber(sheet.dublonenSpent)} D</dd>
       <dt>Restguthaben</dt><dd>${formatDublonenNumber(sheet.dublonenRemaining)} D</dd>
-      <dt>BE aus Rüstung · Ziel 0</dt><dd>${armor.be}${armor.rbe > 0 ? ` (ungerundet ${armor.rbe.toLocaleString('de-DE', { maximumFractionDigits: 6 })})` : ''}</dd>
+      <dt>KBE aus Rüstung · Ziel höchstens ${armor.maxBe}</dt><dd>${armor.be}${armor.rbe > 0 ? ` (ungerundet ${armor.rbe.toLocaleString('de-DE', { maximumFractionDigits: 6 })})` : ''}</dd>
+      <dt>Eigenschaftsbeitrag bei maximalem Rüstungsmanöver</dt><dd>${armor.requiredAttributeContribution} nötig · ${armor.attributeContribution.toLocaleString('de-DE')} vorhanden ((KON/5 + ST)/2)</dd>
+      <dt>Nötige effektive Stärke bei KON ${armor.kon}</dt><dd>${armor.requiredStrengthAtCurrentKon} · vorhanden ${armor.staerke}</dd>
       <dt>Rüstungsmanöver</dt><dd>${armor.rm} · mindestens ${armor.minimumRm} nötig · Maximum ${armor.maximumRm}</dd>
-      <dt>Rüstungskosten</dt><dd>${formatDublonenNumber(armor.preis)} D</dd></dl>
-      ${wizard.armorPackageId ? `<p>${escape(NPC_ARMOR_PACKAGES.find((entry) => entry.id === wizard.armorPackageId)!.name)}${wizard.kopfschutz ? ' mit zusätzlichem Kopfschutz' : ''}. Rüstungsmanöver: ${previousRm} → ${armor.rm}. Die Steigerung ist in den SP-Ausgaben enthalten.</p>` : ''}
+      <dt>MBE aus Rüstung</dt><dd>0</dd><dt>Rüstungskosten</dt><dd>${formatDublonenNumber(armor.preis)} D</dd></dl>
+      ${wizard.armorPackageId ? `<p>${escape(NPC_ARMOR_PACKAGES.find((entry) => entry.id === resolvedPackageId)!.name)}${wizard.kopfschutz ? ' mit zusätzlichem Kopfschutz' : ''}. Rüstungsmanöver: ${previousRm} → ${armor.rm}. Die Steigerung ist in den SP-Ausgaben enthalten.</p>` : ''}
       <div class="npc-table-scroll"><table class="npc-armor-table"><caption>Rüstungsschutz nach Zonengruppen</caption><thead><tr><th scope="col">Zone</th><th scope="col">Lagen</th><th scope="col">RS</th></tr></thead><tbody>${armor.zonen.map((entry) =>
         `<tr><th scope="row">${({ kopf: 'Kopf', torso: 'Torso', arme: 'Arme', beine: 'Beine' })[entry.zone]}</th><td>${entry.lagen.join(', ') || 'Keine'}</td><td>${entry.rs}</td></tr>`).join('')}</tbody></table></div>
       <p>Einzelne Trefferzonen haben nach den bestehenden Regeln halben Schutz; Augen sind durch Rüstung nicht geschützt.</p>
-      <p>Die Automatik behält Teile, Zonen und mindestens den Schutz je Teil bei. Sie verteilt Fertigung und Anpassung passend zum vorhandenen Geld und zur bezahlbaren Ausbildung; neue Talente kauft sie nicht.</p>
-      <button type="button" id="npc-optimize-armor">Fertigung und Anpassung automatisch optimieren</button>
+      <p>Die Automatik behält belegte Lagen, Zonen und mindestens den Schutz je Teil bei. Auf Wunsch vergleicht sie auch andere Basisteile und Materialien derselben Lage. Sie verteilt Fertigung und Anpassung passend zum vorhandenen Geld und zur bezahlbaren Ausbildung; neue Talente kauft sie nicht.</p>
+      <button type="button" id="npc-optimize-armor">Rüstung automatisch optimieren</button>
       ${wizard.armorOptimizationMessage ? `<p role="status">${escape(wizard.armorOptimizationMessage)}</p>` : ''}
-      ${renderArmorChoices(preview)}
+      ${renderArmorChoices(preview, wizard.armorPackageId === 'vollgeruestet')}
       <details><summary>Ausrüstung (${preview.equipment.length} Einträge)</summary><ul>${preview.equipment.map((entry) =>
         `<li>${entry.quantity} × ${escape(entry.displayNameSnapshot ?? entry.rangedSnapshot?.name ?? entry.baseTable)}</li>`).join('')}</ul>
         <p>Zusätzlich ${Object.keys(preview.ruestungSlots).length} belegte Rüstungsplätze.</p></details>
       <p>Herkunft, Religion, Persönlichkeit und Geld werden aus der Vorlage übernommen. Das Guthaben ist keine allgemeine Vermögensstufe.</p>
       ${preview.bestehenderCharakter ? '<p>Diese Vorlage verwendet den Modus „bestehender Charakter“: Verfügbarkeit-Kaufsperren sind deaktiviert.</p>' : ''}
-      ${issues.length ? `<div role="alert"><strong>Diese Auswahl kann noch nicht angelegt werden.</strong><ul>${issues.map((issue) => `<li>${escape(issue)}</li>`).join('')}</ul><p>Gehe zurück und wähle eine passende Rüstung. Punkte und Geld werden nicht automatisch erhöht.</p></div>` : '<p>0 BE aus Rüstung erreicht. Die vorhandene Charakter- und AT/PA-Poolprüfung meldet keine Verstöße.</p>'}
+      ${issues.length ? `<div role="alert"><strong>Diese Auswahl kann noch nicht angelegt werden.</strong><ul>${issues.map((issue) => `<li>${escape(issue)}</li>`).join('')}</ul><p>Gehe zurück und wähle eine passende Rüstung. Punkte und Geld werden nicht automatisch erhöht.</p></div>` : '<p>BE-Ziel aus Rüstung erreicht. Die vorhandene Charakter- und AT/PA-Poolprüfung meldet keine Verstöße.</p>'}
       <p>Die Vorlage wird als eigenständiger NSC angelegt. Die vollständigen Kampfwerte stehen danach im Charakterbogen und Kampfbereich.</p>`;
   }
   return `<section class="npc-wizard" aria-labelledby="npc-title"><h2 id="npc-title">NPC erstellen</h2>
@@ -115,7 +124,7 @@ export function wireNpcWizard(state: AppState, render: () => void): void {
   });
   document.querySelector('#new-npc')?.addEventListener('click', () => {
     const template = NPC_TEMPLATES[0];
-    state.npcWizard = { step: 0, role: template.role, templateId: template.id, name: template.label, age: template.character.alter ?? '' };
+    state.npcWizard = { step: 0, role: template.role, templateId: template.id, name: template.label, age: template.character.alter ?? '', armorPackageId: 'auto' };
     state.showNewCharacterForm = state.showSaveForm = state.confirmingDelete = false;
     state.errorMessage = state.statusMessage = '';
     render();
@@ -147,16 +156,17 @@ export function wireNpcWizard(state: AppState, render: () => void): void {
       wizard.armorPackageId = data.get('armorPackageId')!.toString();
       wizard.kopfschutz = !!wizard.armorPackageId && data.has('kopfschutz');
       wizard.automaticArmor = data.has('automaticArmor');
+      wizard.chooseArmorBaseParts = data.has('chooseArmorBaseParts');
       wizard.armorOptimizationMode = data.get('armorOptimizationMode') === 'sparsam' ? 'sparsam' : 'schutz';
     }
     // Nur echte Änderungen übernehmen; bloßes Absenden der Vorlagenrüstung plant keine Steigerung.
-    const preview = wizard.step === 3 ? createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides) : null;
+    const preview = wizard.step === 3 ? createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides, wizard.armorMaxBe) : null;
     if (preview) for (const [key, slot] of Object.entries(preview.ruestungSlots)) {
       const verarbeitung = data.get(`armor-verarbeitung:${key}`);
       const anpassung = data.get(`armor-anpassung:${key}`);
       if (verarbeitung !== null && anpassung !== null && (Number(verarbeitung) !== slot.verarbeitungSourceRow || Number(anpassung) !== slot.anpassungSourceRow)) {
         wizard.armorOverrides ??= {};
-        wizard.armorOverrides[key] = { verarbeitungSourceRow: Number(verarbeitung), anpassungSourceRow: Number(anpassung) };
+        wizard.armorOverrides[key] = { basisSourceRow: slot.basisSourceRow, verarbeitungSourceRow: Number(verarbeitung), anpassungSourceRow: Number(anpassung) };
         wizard.armorOptimizationMessage = undefined;
       }
     }
@@ -164,9 +174,9 @@ export function wireNpcWizard(state: AppState, render: () => void): void {
   const optimizeArmor = () => {
     const wizard = state.npcWizard;
     if (!wizard) return;
-    const preview = createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides);
+    const preview = createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides, wizard.armorMaxBe);
     const template = NPC_TEMPLATES.find((entry) => entry.id === wizard.templateId)!;
-    const result = optimizeNpcArmor(preview, template.character.values.sf_ruestungsmanoever ?? 0, wizard.armorOptimizationMode);
+    const result = optimizeNpcArmor(preview, wizard.armorPackageId === 'vollgeruestet' ? inspectNpc(preview).armor.maximumRm : template.character.values.sf_ruestungsmanoever ?? 0, wizard.armorOptimizationMode, wizard.armorPackageId === 'vollgeruestet' || wizard.chooseArmorBaseParts, wizard.armorPackageId === 'vollgeruestet');
     wizard.armorOptimizationMessage = result.message;
     if (result.ok) wizard.armorOverrides = result.overrides;
   };
@@ -211,7 +221,7 @@ export function wireNpcWizard(state: AppState, render: () => void): void {
     }
     else {
       try {
-        const preview = createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides);
+        const preview = createNpcPreview(wizard.templateId, wizard.name, wizard.age, wizard.armorPackageId, wizard.kopfschutz, wizard.armorOverrides, wizard.armorMaxBe);
         const { issues } = inspectNpc(preview);
         if (issues.length) throw new Error(`NPC kann noch nicht angelegt werden: ${issues.join(' ')}`);
         const character = instantiateNpc(preview);

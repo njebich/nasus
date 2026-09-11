@@ -17,13 +17,13 @@ interface Plan {
   overrides: NpcArmorOverrides;
 }
 
-/** Vollständige Kombinationensuche für Fertigung/Anpassung bei festen Teilen und Zonen.
+/** Kombinationensuche für Fertigung/Anpassung und optional Basisteile derselben Lage.
  * Pro (Gesamt-RH, Gesamt-RS) genügt der günstigste Teilplan: weitere Teile sind additiv.
- * RS darf an KEINEM Teil sinken. Keine Änderungen an Budgets, Material oder Talenten.
+ * RS darf an KEINEM Teil sinken. Keine Änderungen an Budgets, belegten Lagen/Zonen oder Talenten.
  */
 export function optimizeNpcArmor(
   character: CharacterState, learnedRm = character.values.sf_ruestungsmanoever ?? 0,
-  mode: ArmorOptimizationMode = 'schutz',
+  mode: ArmorOptimizationMode = 'schutz', chooseBaseParts = false, fittedOnly = false,
 ): ArmorOptimizationResult {
   const baseline = structuredClone(character);
   baseline.values.sf_ruestungsmanoever = learnedRm;
@@ -58,41 +58,42 @@ export function optimizeNpcArmor(
   for (const [key, old] of Object.entries(baseline.ruestungSlots).sort(([a], [b]) => a.localeCompare(b))) {
     const basis = RUESTUNG_BASIS.find((row) => row.sourceRow === old.basisSourceRow);
     if (!basis) return { ok: false, message: 'Ein Rüstungsteil fehlt im aktuellen Katalog.' };
-    const options = RUESTUNG_VERARBEITUNG.flatMap((verarbeitung) => RUESTUNG_ANPASSUNG.map((anpassung) => ({
-      verarbeitungSourceRow: verarbeitung.sourceRow, anpassungSourceRow: anpassung.sourceRow,
+    const bases = chooseBaseParts ? RUESTUNG_BASIS.filter((row) => Number(row.Lage) === Number(basis.Lage)) : [basis];
+    const options = bases.flatMap((basis) => RUESTUNG_VERARBEITUNG.flatMap((verarbeitung) => RUESTUNG_ANPASSUNG.filter((row) => !fittedOnly || ['angepasst', 'perfekt angepasst'].includes(row.name)).map((anpassung) => ({
+      basisSourceRow: basis.sourceRow, verarbeitungSourceRow: verarbeitung.sourceRow, anpassungSourceRow: anpassung.sourceRow,
       stats: composeArmor(basis, verarbeitung, anpassung),
-    }))).filter(({ stats }) => stats.rs >= old.computedStatsSnapshot.rs
+    })))).filter(({ stats }) => stats.rs >= (fittedOnly && chooseBaseParts ? 0 : old.computedStatsSnapshot.rs)
       && (character.bestehenderCharakter || (welt === 'AW' ? stats.verfuegbarkeitAw : welt === 'NW'
         ? stats.verfuegbarkeitNw : Math.max(stats.verfuegbarkeitNw, stats.verfuegbarkeitAw)) < 5));
     const next = new Map<string, Plan>();
     for (const plan of plans) for (const option of options) {
       const price = plan.price + option.stats.preis;
       const rh = plan.rh + option.stats.rh;
-      if (price > money || computeRbe(rh, kon, strength, maxRm) > 0) continue;
+      if (price > money || computeRbe(rh, kon, strength, maxRm) > armor.maxBe) continue;
       const rs = plan.rs + option.stats.rs;
       const stateKey = `${rh}:${rs}`;
       if (next.has(stateKey) && next.get(stateKey)!.price <= price) continue;
       next.set(stateKey, { rh, rs, price, overrides: { ...plan.overrides, [key]: {
-        verarbeitungSourceRow: option.verarbeitungSourceRow, anpassungSourceRow: option.anpassungSourceRow,
+        basisSourceRow: option.basisSourceRow, verarbeitungSourceRow: option.verarbeitungSourceRow, anpassungSourceRow: option.anpassungSourceRow,
       } } });
     }
     plans = [...next.values()];
-    if (!plans.length) return { ok: false, message: 'Keine Kombination aus Fertigung und Anpassung erreicht 0 BE innerhalb der vorhandenen Budgets und Talentgrenzen, ohne den Schutz eines Teils zu senken.' };
+    if (!plans.length) return { ok: false, message: 'Keine Kombination aus den erlaubten Teilen, Fertigungen und Anpassungen erreicht das BE-Ziel innerhalb der vorhandenen Budgets und Talentgrenzen, ohne den Schutz eines Teils zu senken.' };
   }
-  const candidates = plans.map((plan) => ({ ...plan, rm: affordableRm.find((rm) => computeRbe(plan.rh, kon, strength, rm) === 0)! }));
+  const candidates = plans.map((plan) => ({ ...plan, rm: affordableRm.find((rm) => computeRbe(plan.rh, kon, strength, rm) <= armor.maxBe)! }));
   candidates.sort((a, b) => mode === 'sparsam'
     ? a.price - b.price || a.rm - b.rm || b.rs - a.rs
     : b.rs - a.rs || a.rm - b.rm || a.price - b.price);
   for (const best of candidates) {
     const candidate = applyNpcArmorPackage(baseline, '', false, best.overrides);
     const sheet = computeSheet(candidate);
-    if (sheet.validationIssues.length || inspectNpcArmor(candidate).rbe !== 0) continue;
+    if (sheet.validationIssues.length || inspectNpcArmor(candidate).rbe > armor.maxBe) continue;
     const changes = Object.entries(best.overrides).filter(([key, choice]) => {
       const old = character.ruestungSlots[key];
-      return old.verarbeitungSourceRow !== choice.verarbeitungSourceRow || old.anpassungSourceRow !== choice.anpassungSourceRow;
+      return old.basisSourceRow !== choice.basisSourceRow || old.verarbeitungSourceRow !== choice.verarbeitungSourceRow || old.anpassungSourceRow !== choice.anpassungSourceRow;
     }).length;
     return { ok: true, character: candidate, overrides: best.overrides, changes,
-      message: `Automatische Auswahl: ${changes} Teile geändert, 0 BE. ${mode === 'sparsam'
+      message: `Automatische Auswahl: ${changes} Teile geändert, ${inspectNpcArmor(candidate).be} BE (Ziel höchstens ${armor.maxBe}). ${fittedOnly && chooseBaseParts ? 'Alle Rüstungsstärken und Materialien innerhalb der belegten Lagen verglichen; jedes Teil mindestens angepasst.' : mode === 'sparsam'
         ? 'Günstigste passende Kombination bei mindestens gleichem Schutz je Teil.'
         : 'Höchste Summe der Schutzwerte bei mindestens gleichem Schutz je Teil; danach möglichst wenig zusätzliche Ausbildung und geringe Kosten.'}` };
   }

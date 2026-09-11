@@ -895,3 +895,38 @@ describe('Waffen-Loadout-Mutationen', () => {
     });
   });
 });
+
+describe('Verfuegbarkeits-Kaufsperre inkl. Ortsmodifikator (Nutzer-Ask 2026-09-11)', () => {
+  function findFeuerwaffe(name: string) {
+    const row = FEUERWAFFEN.find((r) => r.name === name);
+    if (!row) throw new Error(`Testfixtur '${name}' nicht gefunden`);
+    return row;
+  }
+
+  function begueterterCharakter() {
+    const character = withEpGesamt(100000);
+    character.values['dublonen_bank'] = 100000;
+    return character;
+  }
+
+  it('sperrt eine orkische Feuerwaffe (Basisstufe 6) ohne Herkunftsort wie zuvor', () => {
+    const durass = findFeuerwaffe('Durass');
+    const character = begueterterCharakter();
+    expect(() => buyFeuerwaffe(character, durass.sourceRow, feuerwaffenStandardauswahl(durass))).toThrow(/nicht verfügbar/);
+  });
+
+  it('macht dieselbe orkische Feuerwaffe fuer einen Charakter aus Straitmor (orkische Heimat-Metropole) kaufbar', () => {
+    const durass = findFeuerwaffe('Durass');
+    const character = begueterterCharakter();
+    character.herkunftOrtId = 'straitmor';
+    const gekauft = buyFeuerwaffe(character, durass.sourceRow, feuerwaffenStandardauswahl(durass));
+    expect(gekauft.equipment).toHaveLength(1);
+  });
+
+  it('bestehende Charaktere bleiben unabhaengig vom Ort von der Kaufsperre ausgenommen', () => {
+    const durass = findFeuerwaffe('Durass');
+    const character = begueterterCharakter();
+    character.bestehenderCharakter = true;
+    expect(() => buyFeuerwaffe(character, durass.sourceRow, feuerwaffenStandardauswahl(durass))).not.toThrow();
+  });
+});

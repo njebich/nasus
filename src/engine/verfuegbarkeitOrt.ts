@@ -1,0 +1,135 @@
+// Ortsmodifikatoren fuer die 1-7-Verfuegbarkeitsskala (Spec 04-Verfuegbarkeiten-und-
+// Herkunftsorte.md, Abschnitt "Einheitliche Berechnungsstruktur"). Item-class-agnostisch: nimmt
+// die bereits vorhandene, katalogeigene Basisstufe (1-7) entgegen und verrechnet Siedlungsgroesse,
+// Handelsstufe, Herstellungsort (inkl. lokaler Produktion als Override), den guenstigsten
+// anwendbaren Haendler und - falls fuer den Katalog bekannt - die Voelkerzuweisung des
+// Gegenstands gegen die Ortsbevoelkerung. Ergebnis wird auf 1..7 begrenzt.
+//
+// Datenluecke (Stand 2026-09-11): eine AUSWAHL/ALLE-Voelkerzuweisung je Gegenstand existiert in
+// keinem ausgelieferten Katalog (weder werte 0.8-claude.xlsx noch den generierten JSONs) -
+// Ruestung/Boegen/Armbrust/Munition/Alchemika/Artefakte haben aktuell KEIN Voelker-Feld. Einzige
+// Ausnahme ist Feuerwaffen: dort traegt jede Zeile ein einzelnes "Volk" (z.B. "Orkisch"), siehe
+// volkAusFeuerwaffenAdjektiv(). Fuer alle anderen Kataloge wird der Voelkermodifikator deshalb
+// bewusst als 0 (= ALLE) behandelt, bis eine echte Voelkerzuweisung gepflegt ist - siehe
+// MEMORY-Verfuegbarkeiten-Herkunftsorte.md.
+
+import type { Ort, Volk } from '../data/orte';
+
+export type WarenTarif = 'ruestungenWaffen' | 'artefakte';
+
+function spalte(tarif: WarenTarif, [ruestungenWaffen, artefakte]: readonly [number, number]): number {
+  return tarif === 'artefakte' ? artefakte : ruestungenWaffen;
+}
+
+const SIEDLUNGSGROESSE_MOD: Record<string, readonly [number, number]> = {
+  'Wildnis': [3, 5],
+  'Ansiedlung': [2, 4],
+  'Dorf': [1, 3],
+  'Großes Dorf': [0, 2],
+  'Kleinstadt': [-1, 1],
+  'Stadt': [-2, 0],
+  'Großstadt': [-3, -1],
+  'Metropole': [-4, -2],
+};
+
+const HANDELSSTUFE_MOD: Record<string, readonly [number, number]> = {
+  'Völlig abgelegen von jeglichem Handel': [2, 3],
+  'Abgelegen von jeglichem Handel': [1, 2],
+  'Handelsroute / Kleiner Handels-Hafen': [0, 1],
+  'Handelsstadt / Großer Handels-Hafen': [-1, 0],
+  'Handelszentrum': [-2, -1],
+};
+
+const HERSTELLUNGSORT_MOD: Record<string, readonly [number, number]> = {
+  'Import, wird nicht hergestellt': [2, 3],
+  'Teilweiser Import, Herstellung im Reich': [1, 2],
+  'Herstellung im Reich': [0, 1],
+  'Herstellung in der Region': [-1, 0],
+  'Herstellung direkt vor Ort': [-2, -1],
+};
+
+const HAENDLER_MOD: Record<string, readonly [number, number]> = {
+  'Kein Laden / kein Händler': [3, 5],
+  'Fahrender Trödelhändler': [2, 4],
+  'Fahrender spezialisierter Händler': [1, 2],
+  'Kleiner General Store': [1, 3],
+  'Großer General Store': [0, 2],
+  'Kleiner spezialisierter Händler': [0, 1],
+  'Spezialisierter Händler': [-1, 0],
+  'Großer spezialisierter Händler': [-2, -1],
+};
+
+/** Feuerwaffen fuehren ein einzelnes Volk-Adjektiv/-Singular je Zeile statt der im Spec
+ *  vorgesehenen AUSWAHL-Liste. Bekannte Formen auf VOELKER_NAMEN (engine/voelker.ts) abbilden;
+ *  "Alle", unbekannte/generische Werte (z.B. "Spezial/Legendaer") bleiben ALLE (undefined). */
+const VOLK_ADJEKTIV_MAP: Record<string, Volk> = {
+  'Dalkinisch': 'Dalkini', 'Daikini': 'Dalkini',
+  'Drow': 'Draw',
+  'Elfisch': 'Elfen', 'Elf': 'Elfen',
+  'Gnom': 'Gnome',
+  'Goblinisch': 'Goblins', 'Goblin': 'Goblins',
+  'Indianer': 'Indianer',
+  'Katzenmensch': 'Katzen',
+  'Orkisch': 'Orks', 'Ork': 'Orks',
+  'Troll': 'Trolle',
+  'Zentaur': 'Zentauren',
+  'Zwergisch': 'Zwerge', 'Zwerg': 'Zwerge',
+};
+
+export function volkAusAdjektiv(rohwert: string | undefined): Volk | undefined {
+  if (!rohwert) return undefined;
+  return VOLK_ADJEKTIV_MAP[rohwert];
+}
+
+function herstellungsortModifikator(ort: Ort, warengruppe: string, tarif: WarenTarif, gegenstandVolk: Volk | undefined): number {
+  const lokalerTreffer = ort.lokaleProduktion.some((produktion) => produktion.warengruppe === warengruppe
+    && (produktion.volk === null || produktion.volk === gegenstandVolk));
+  if (lokalerTreffer) return spalte(tarif, HERSTELLUNGSORT_MOD['Herstellung direkt vor Ort']);
+  if (!ort.herstellungsort) return 0;
+  return spalte(tarif, HERSTELLUNGSORT_MOD[ort.herstellungsort] ?? [0, 0]);
+}
+
+function haendlerModifikator(ort: Ort, warengruppe: string, tarif: WarenTarif): number {
+  const anwendbar = ort.haendler.filter((haendler) => haendler.warengruppe === null || haendler.warengruppe === warengruppe);
+  if (anwendbar.length === 0) return spalte(tarif, HAENDLER_MOD['Kein Laden / kein Händler']);
+  return Math.min(...anwendbar.map((haendler) => spalte(tarif, HAENDLER_MOD[haendler.typ] ?? [0, 0])));
+}
+
+/** ALLE (gegenstandVolk undefined, mangels Datengrundlage der Regelfall - siehe Dateikopf) wirkt
+ *  immer neutral. Fehlt die Ortsbevoelkerung (kein hauptspezies gepflegt, z.B. selbst angelegter
+ *  Ort ohne vollstaendige Konfiguration), bleibt der Modifikator ebenfalls neutral statt zu raten. */
+function voelkerModifikator(ort: Ort, gegenstandVolk: Volk | undefined): number {
+  if (!gegenstandVolk || !ort.hauptspezies) return 0;
+  if (ort.hauptspezies === gegenstandVolk) return 0;
+  if (ort.etablierteMinderheiten.includes(gegenstandVolk)) return 1;
+  return 3;
+}
+
+export interface OrtsModifikatorParams {
+  ort: Ort | undefined;
+  warengruppe: string;
+  tarif: WarenTarif;
+  gegenstandVolk?: Volk;
+}
+
+/** Summe aller Ortsmodifikatoren (noch NICHT auf 1..7 begrenzt - das passiert erst zusammen mit
+ *  dem Grundwert in effektiveVerfuegbarkeit). Fehlt der Ort (nicht aufloesbare herkunftOrtId,
+ *  z.B. migrierter Altcharakter), ist das Ergebnis 0 - siehe Nutzerentscheidung 2026-09-11: kein
+ *  Ort bedeutet neutral statt zusaetzlich gesperrt. */
+export function ortsModifikator({ ort, warengruppe, tarif, gegenstandVolk }: OrtsModifikatorParams): number {
+  if (!ort) return 0;
+  const siedlungsgroesse = ort.siedlungsgroesse ? spalte(tarif, SIEDLUNGSGROESSE_MOD[ort.siedlungsgroesse] ?? [0, 0]) : 0;
+  const handelsstufe = ort.handelsstufe ? spalte(tarif, HANDELSSTUFE_MOD[ort.handelsstufe] ?? [0, 0]) : 0;
+  const herstellung = herstellungsortModifikator(ort, warengruppe, tarif, gegenstandVolk);
+  const haendler = haendlerModifikator(ort, warengruppe, tarif);
+  const voelker = voelkerModifikator(ort, gegenstandVolk);
+  return siedlungsgroesse + handelsstufe + herstellung + haendler + voelker;
+}
+
+/** Grundwert (1-7) + Ortsmodifikator, auf 1..7 begrenzt. Ein fehlender Grundwert (Katalogeintrag
+ *  ohne gepflegte Basis-Verfuegbarkeit, z.B. aktuell alle Boegen/Armbrust) bleibt unveraendert
+ *  undefined - "OFFEN" darf durch einen Ortsbonus nicht stillschweigend kaufbar werden. */
+export function effektiveVerfuegbarkeit(basisStufe: number | undefined, params: OrtsModifikatorParams): number | undefined {
+  if (basisStufe === undefined) return undefined;
+  return Math.min(7, Math.max(1, basisStufe + ortsModifikator(params)));
+}

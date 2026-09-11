@@ -28,6 +28,9 @@ import {
   createRangedAmmoInventorySnapshot, createRangedWeaponInventorySnapshot,
 } from '../engine/rangedInventorySnapshot';
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
+import { effektiveVerfuegbarkeit, volkAusAdjektiv } from '../engine/verfuegbarkeitOrt';
+import { getOrtById } from './orteStore';
+import type { Volk } from '../data/orte';
 import { computeWeaponAtPaOverflow, resolveWaffenRowBasis, getKampfstilModifier } from '../engine/waffenPool';
 import { gutBudget, meisterlichBudget } from '../engine/poolCaps';
 import type { FernkampfRow } from '../data/equipment/fernkampf';
@@ -607,9 +610,17 @@ export function buyArtefakt(
   const kostenRow = ARTEFAKT_KOSTEN.find((r) => r.referenz === referenz && r.grad === grad);
   if (!kostenRow) throw new MutationError(`Artefakt '${referenz}' Grad ${grad} existiert nicht`);
 
-  const verfuegbarkeit = Number(variant === 'einmalig'
+  const rawVerfuegbarkeit = Number(variant === 'einmalig'
     ? kostenRow.verfuegbarkeitEinmalig
     : kostenRow.verfuegbarkeitPermanent);
+  // "Meister" (nicht-finite rawVerfuegbarkeit) bleibt bewusst unveraendert - kein Ortsmodifikator
+  // auf M, siehe engine/verfuegbarkeitOrt.ts-Dateikopf und Spec §"M nimmt nicht an numerischen
+  // Berechnungen teil".
+  const verfuegbarkeit = Number.isFinite(rawVerfuegbarkeit)
+    ? (effektiveVerfuegbarkeit(rawVerfuegbarkeit, {
+        ort: getOrtById(character.herkunftOrtId), warengruppe: 'Artefakte', tarif: 'artefakte',
+      }) ?? rawVerfuegbarkeit)
+    : rawVerfuegbarkeit;
   if (!character.bestehenderCharakter && Number.isFinite(verfuegbarkeit) && verfuegbarkeit >= 5) {
     throw new MutationError(`'${referenz}' Grad ${grad} (${variant}) ist nicht verfügbar (Verfügbarkeit ${verfuegbarkeit})`);
   }
@@ -679,11 +690,21 @@ const VERFUEGBARKEIT_SPERRE_AB = 5;
 /** Wie die Ruestungs-Kaufsperre oben, aber pauschal statt Region(NW/AW)-abhaengig: Boegen/
  *  Armbrust/Pfeile/Bolzen haben nur eine einzige "Direkt beim Volk"-Verfuegbarkeit-Spalte, keinen
  *  NW/AW-Split wie Ruestung - Nutzer 2026-07-19 bestaetigt "Kaufsperre" trotzdem einzubauen, mit
- *  Reminder im Entwickeln-Sheet (Zeile 36), dass der Region-Split hier noch nachgeholt werden muss. */
-function assertFernkampfVerfuegbar(stufe: number | undefined, name: string, bestehenderCharakter?: boolean): void {
-  if (bestehenderCharakter) return;
-  if (stufe !== undefined && stufe >= VERFUEGBARKEIT_SPERRE_AB) {
-    throw new MutationError(`'${name}' ist nicht verfügbar (Verfügbarkeit ${stufe})`);
+ *  Reminder im Entwickeln-Sheet (Zeile 36), dass der Region-Split hier noch nachgeholt werden muss.
+ *  Seit 2026-09-11 (Ortsmodifikator-Verdrahtung, siehe engine/verfuegbarkeitOrt.ts) wird die
+ *  Basisstufe zusaetzlich um Siedlungsgroesse/Handelsstufe/Herstellungsort/Haendler/Voelker des
+ *  Einkaufsorts (= Herkunftsort waehrend der Charaktererschaffung, Spec Abschnitt
+ *  "Charaktererschaffung") verrechnet - ein Ork kauft eine orkische Feuerwaffe in Straitmor jetzt
+ *  tatsaechlich guenstiger als "irgendwo". */
+function assertFernkampfVerfuegbar(
+  character: CharacterState, stufe: number | undefined, name: string, warengruppe: string, gegenstandVolk?: Volk,
+): void {
+  if (character.bestehenderCharakter) return;
+  const effektiv = effektiveVerfuegbarkeit(stufe, {
+    ort: getOrtById(character.herkunftOrtId), warengruppe, tarif: 'ruestungenWaffen', gegenstandVolk,
+  });
+  if (effektiv !== undefined && effektiv >= VERFUEGBARKEIT_SPERRE_AB) {
+    throw new MutationError(`'${name}' ist nicht verfügbar (Verfügbarkeit ${effektiv})`);
   }
 }
 
@@ -718,9 +739,14 @@ export function equipRuestung(
   // AW/NW kommt aus dem stabilen Herkunftssnapshot; das fruehere, irrefuehrend `region`
   // genannte Welt-Feld wurde entfernt.
   const welt = character.herkunftSnapshot?.welt;
-  const verfuegbarkeit = welt === 'NW' ? composed.verfuegbarkeitNw
+  const basisVerfuegbarkeit = welt === 'NW' ? composed.verfuegbarkeitNw
     : welt === 'AW' ? composed.verfuegbarkeitAw
     : undefined;
+  // Ortsmodifikator (Siedlungsgroesse/Handelsstufe/Herstellungsort/Haendler) kommt ZUSAETZLICH
+  // zur bestehenden AW/NW-Grundwertwahl oben hinzu - siehe engine/verfuegbarkeitOrt.ts.
+  const verfuegbarkeit = character.bestehenderCharakter ? basisVerfuegbarkeit : effektiveVerfuegbarkeit(basisVerfuegbarkeit, {
+    ort: getOrtById(character.herkunftOrtId), warengruppe: 'Rüstungen', tarif: 'ruestungenWaffen',
+  });
   if (!character.bestehenderCharakter && verfuegbarkeit !== undefined && verfuegbarkeit >= VERFUEGBARKEIT_SPERRE_AB) {
     throw new MutationError(`'${basis.name}' ist in ${welt} nicht verfügbar (Verfügbarkeit ${verfuegbarkeit})`);
   }
@@ -870,7 +896,7 @@ export function buyWeapon(
 export function buyFernkampfwaffe(character: CharacterState, typ: 'boegen' | 'armbrust', sourceRow: number): CharacterState {
   const row = (typ === 'boegen' ? BOW_BY_SOURCE_ROW : CROSSBOW_BY_SOURCE_ROW).get(String(sourceRow));
   if (!row) throw new MutationError(`${typ === 'boegen' ? 'Bogen' : 'Armbrust'} (Zeile ${sourceRow}) existiert nicht`);
-  assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name, character.bestehenderCharakter);
+  assertFernkampfVerfuegbar(character, row.verfuegbarkeitStufe, row.name, 'Fernkampfwaffen', volkAusAdjektiv(row['Volk']));
   if (row.preisDublonen === undefined) {
     throw new MutationError(`'${row.name}' ist nicht käuflich (kein Preis hinterlegt: "${row['Preis'] ?? '?'}")`);
   }
@@ -904,7 +930,7 @@ export function buyFeuerwaffe(
   } catch (error) {
     throw new MutationError(error instanceof Error ? error.message : String(error));
   }
-  assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, basis.name, character.bestehenderCharakter);
+  assertFernkampfVerfuegbar(character, composed.verfuegbarkeitStufe, basis.name, 'Feuerwaffen', volkAusAdjektiv(basis['Volk']));
 
   const candidate = clone(character);
   const entry: EquipmentEntry = {
@@ -959,7 +985,7 @@ export function buyMunition(
 
   const composed = composeMunition(basis, modifikator);
   const anzeigeName = modifikator ? `${modifikator.name} (${basis.name})` : basis.name;
-  assertFernkampfVerfuegbar(composed.verfuegbarkeitStufe, anzeigeName, character.bestehenderCharakter);
+  assertFernkampfVerfuegbar(character, composed.verfuegbarkeitStufe, anzeigeName, 'Fernkampfwaffen', volkAusAdjektiv(basis['Volk']));
   if (composed.preisDublonen === null) {
     throw new MutationError(`'${basis.name}' ist nicht käuflich (kein Preis hinterlegt: "${basis['Preis'] ?? '?'}")`);
   }
@@ -1016,7 +1042,7 @@ export function buyAlchemika(character: CharacterState, sourceRow: number, quant
   if (quantity <= 0) throw new MutationError('Anzahl muss größer als 0 sein');
   const row = ALCHEMIKA.find((r) => r.sourceRow === sourceRow);
   if (!row) throw new MutationError(`Alchemika-Eintrag (Zeile ${sourceRow}) existiert nicht`);
-  assertFernkampfVerfuegbar(row.verfuegbarkeitStufe, row.name, character.bestehenderCharakter);
+  assertFernkampfVerfuegbar(character, row.verfuegbarkeitStufe, row.name, 'Alchemistische Stoffe');
   if (!row.preisAvailable || row.preisDublonen === undefined) {
     throw new MutationError(`'${row.name}' ist nicht käuflich (kein Preis hinterlegt: "${row.preisRoh ?? '?'}")`);
   }

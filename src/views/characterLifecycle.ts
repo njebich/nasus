@@ -3,9 +3,10 @@ import {
   type CharakterTyp, type CharacterHeader, type StartbudgetPreset,
 } from '../state/characterStore';
 import {
-  VORDEFINIERTE_ORTE, WELTEN, SIEDLUNGSGROESSEN, HANDELSSTUFEN, HERSTELLUNGSORTE,
-  createOrt, formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
+  WELTEN, SIEDLUNGSGROESSEN, HANDELSSTUFEN, HERSTELLUNGSORTE,
+  formatOrtKurz, type Welt, type Siedlungsgroesse, type Handelsstufe, type Herstellungsort,
 } from '../data/orte';
+import { listOrte, createAndSaveOrt } from '../state/orteStore';
 import { getReligionen, addReligion, addSekte, formatReligionLabel, combineReligionSekte } from '../state/religionStore';
 import { VOELKER_NAMEN } from '../engine/voelker';
 import { DEFAULT_NAVIGATION } from '../navigation';
@@ -33,7 +34,7 @@ export function renderNewCharacterForm(newCharacterBestehend: boolean): string {
       <label>Herkunft *
         <select id="nc-herkunft" required>
           <option value="">-- wählen --</option>
-          ${VORDEFINIERTE_ORTE.map((ort) => `<option value="${ort.id}">${formatOrtKurz(ort)}</option>`).join('')}
+          ${listOrte().map((ort) => `<option value="${ort.id}">${formatOrtKurz(ort)}</option>`).join('')}
           <option value="__neu__">+ Neuen Ort anlegen</option>
         </select>
       </label>
@@ -180,7 +181,7 @@ export function wireCharacterLifecycleEvents(appState: AppState, render: () => v
     const herkunftAuswahl = document.querySelector<HTMLSelectElement>('#nc-herkunft')!.value;
     if (!name || !spezies || !herkunftAuswahl) return;
     const herkunftOrt = herkunftAuswahl === '__neu__'
-      ? createOrt({
+      ? createAndSaveOrt({
           name: document.querySelector<HTMLInputElement>('#nc-ort-name')!.value.trim(),
           welt: document.querySelector<HTMLSelectElement>('#nc-ort-welt')!.value as Welt || undefined,
           region: document.querySelector<HTMLInputElement>('#nc-ort-region')!.value.trim() || undefined,
@@ -192,7 +193,7 @@ export function wireCharacterLifecycleEvents(appState: AppState, render: () => v
           haendler: [],
           lokaleProduktion: [],
         })
-      : VORDEFINIERTE_ORTE.find((ort) => ort.id === herkunftAuswahl);
+      : listOrte().find((ort) => ort.id === herkunftAuswahl);
     if (!herkunftOrt) return;
     const religionAuswahl = document.querySelector<HTMLSelectElement>('#nc-religion')!.value;
     let religionName: string | undefined;

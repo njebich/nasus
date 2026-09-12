@@ -60,6 +60,21 @@ import {
 export class BudgetError extends Error {}
 export class MutationError extends Error {}
 
+const VN_SICHT_BLINDHEIT = 'vn_sicht_blindheit';
+
+// RC-064 §4.1/§4.9/§4.10 (DEC-1108, Owner-Durchgang 2026-09-12): jedes dieser Merkmale setzt eine
+// funktionierende, zumindest teilweise lichtabhaengige Sicht voraus - unvereinbar mit vollstaendiger
+// Blindheit. Astrales Auge (eigener, nicht-okularer Sinn, DEC-216) und Blinder Kampf (Sonderfertigkeit,
+// kein Sicht-Merkmal) sind bewusst NICHT enthalten - beide bleiben mit Blindheit kombinierbar.
+const VN_SICHT_BLIND_INKOMPATIBEL = new Set([
+  'vn_sicht_einaeugig',
+  'vn_sicht_leicht_kurzsichtigkeit', 'vn_sicht_mittel_kurzsichtigkeit', 'vn_sicht_schwer_kurzsichtigkeit',
+  'vn_sicht_sehr_schwer_kurzsichtigkeit', 'vn_sicht_extrem_kurzsichtigkeit',
+  'vn_sicht_leicht_weitsichtigkeit', 'vn_sicht_mittel_weitsichtigkeit', 'vn_sicht_schwer_weitsichtigkeit',
+  'vn_sicht_sehr_schwer_weitsichtigkeit', 'vn_sicht_extrem_weitsichtigkeit',
+  'vn_sicht_daemmerungssicht', 'vn_sicht_nachtsicht', 'vn_sicht_infrarotsicht',
+]);
+
 function anfaelligkeitFamilie(referenz: string): string | undefined {
   const stufenMatch = /^vn_anfaelligkeit_gegen_(.+)_(?:1|2)$/i.exec(referenz);
   if (stufenMatch) return stufenMatch[1].toLowerCase();
@@ -355,6 +370,17 @@ export function addSelection(character: CharacterState, referenz: string): Chara
         delete candidate.selections[selectedReference];
       }
     }
+  }
+  // Blindheit vs. andere Sicht-Merkmale (RC-064-Nachtrag, DEC-1108): eine neue Auswahl ersetzt
+  // jeweils die unvereinbare Gegenseite, symmetrisch zur bestehenden Exklusivgruppen-/
+  // Angst-/Anfaelligkeits-Logik oben.
+  const referenzLower = rule.referenz.toLowerCase();
+  if (referenzLower === VN_SICHT_BLINDHEIT) {
+    for (const selectedReference of Object.keys(candidate.selections)) {
+      if (VN_SICHT_BLIND_INKOMPATIBEL.has(selectedReference)) delete candidate.selections[selectedReference];
+    }
+  } else if (VN_SICHT_BLIND_INKOMPATIBEL.has(referenzLower)) {
+    delete candidate.selections[VN_SICHT_BLINDHEIT];
   }
   // Talente-Stufenketten (Nutzer 2026-07-24): "Stufe N" darf erst gewaehlt werden, wenn "Stufe
   // N-1" derselben Familie bereits gewaehlt ist - siehe engine/talenteStufenKette.ts.

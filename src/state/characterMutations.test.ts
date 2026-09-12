@@ -39,14 +39,14 @@ describe('characterMutations', () => {
     expect(removed.selections.vn_aura_verhuellen_ii).toBeUndefined();
   });
 
-  it('prüft Attribut- und Sprachvoraussetzungen', () => {
+  it('prüft Attribut- und Sprachvoraussetzungen (DEC-231/DEC-1106: kein AUS mehr, Sprache ab Gute Kenntnis)', () => {
     const character = withEpGesamt(1000);
-    expect(() => addSelection(character, 'vn_weltgewandt')).toThrow(/AUS 15/);
-    character.values.eig_k_ausstrahlung = 15;
     expect(() => addSelection(character, 'vn_weltgewandt')).toThrow(/INT 15/);
     character.values.eig_g_intelligenz = 15;
-    expect(() => addSelection(character, 'vn_weltgewandt')).toThrow(/Grundkenntnisse/);
+    expect(() => addSelection(character, 'vn_weltgewandt')).toThrow(/Gute Kenntnis/);
     character.values.ssk_sprache_zwergisch = 1;
+    expect(() => addSelection(character, 'vn_weltgewandt')).toThrow(/Gute Kenntnis/);
+    character.values.ssk_sprache_zwergisch = 2;
     expect(addSelection(character, 'vn_weltgewandt').selections.vn_weltgewandt).toBe(1);
   });
 
@@ -65,6 +65,39 @@ describe('characterMutations', () => {
     const schwer = addSelection(leicht, 'vn_sicht_schwer_kurzsichtigkeit');
     expect(schwer.selections.vn_sicht_leicht_kurzsichtigkeit).toBeUndefined();
     expect(schwer.selections.vn_sicht_schwer_kurzsichtigkeit).toBe(1);
+  });
+
+  it('schließt Kurz- und Weitsichtigkeit auch familienübergreifend gegenseitig aus (RC-064-Nachtrag, DEC-1108)', () => {
+    const character = withEpGesamt(1000);
+    const schwer = addSelection(character, 'vn_sicht_schwer_kurzsichtigkeit');
+    const weitsichtig = addSelection(schwer, 'vn_sicht_mittel_weitsichtigkeit');
+    expect(weitsichtig.selections.vn_sicht_schwer_kurzsichtigkeit).toBeUndefined();
+    expect(weitsichtig.selections.vn_sicht_mittel_weitsichtigkeit).toBe(1);
+  });
+
+  it('schließt Dämmerungssicht und Nachtsicht gegenseitig aus (DEC-227, reaktiviert unter DEC-1108)', () => {
+    const character = withEpGesamt(1000);
+    const daemmerung = addSelection(character, 'vn_sicht_daemmerungssicht');
+    const nacht = addSelection(daemmerung, 'vn_sicht_nachtsicht');
+    expect(nacht.selections.vn_sicht_daemmerungssicht).toBeUndefined();
+    expect(nacht.selections.vn_sicht_nachtsicht).toBe(1);
+  });
+
+  it('macht Blindheit mit anderen Sicht-Merkmalen unvereinbar, außer Astrales Auge (RC-064 §4.1, DEC-1108)', () => {
+    const character = withEpGesamt(2000);
+    character.values.att_aura = 1; // Voraussetzung für Astrales Auge, RC-064 §4.7
+    const withNachtsicht = addSelection(character, 'vn_sicht_nachtsicht');
+    const withBlind = addSelection(withNachtsicht, 'vn_sicht_blindheit');
+    expect(withBlind.selections.vn_sicht_nachtsicht).toBeUndefined();
+    expect(withBlind.selections.vn_sicht_blindheit).toBe(1);
+
+    const withAstral = addSelection(withBlind, 'vn_sicht_astrales_auge');
+    expect(withAstral.selections.vn_sicht_blindheit).toBe(1);
+    expect(withAstral.selections.vn_sicht_astrales_auge).toBe(1);
+
+    const backToNachtsicht = addSelection(withAstral, 'vn_sicht_nachtsicht');
+    expect(backToNachtsicht.selections.vn_sicht_blindheit).toBeUndefined();
+    expect(backToNachtsicht.selections.vn_sicht_nachtsicht).toBe(1);
   });
 
   it('bindet die GF Krankheitsresistenz an ihren Vorteil und räumt sie beim Entfernen auf', () => {

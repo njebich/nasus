@@ -47,12 +47,13 @@ export function getAuswahlSperrgrund(rule: RuleEntry, character: CharacterState)
     if (!fulfilled) return `Erfordert AUS ${ausComparison[1]} ${limit}`;
   }
 
-  if (/^AUS\s+15;\s*INT\s+15;\s*\[Sprache\]\s+1$/i.test(requirement)) {
-    if (wert(character, 'eig_k_ausstrahlung') < 15) return 'Erfordert AUS 15';
+  // DEC-231/DEC-1106 (RC-066, Owner-Durchgang 2026-09-12): AUS-15 entfaellt, Sprachschwelle von
+  // Grundkenntnis auf Gute Kenntnis angehoben (skillStufen.ts SPRACHSTUFE_NAMEN, Index 2).
+  if (/^INT\s+15;\s*\[Sprache\]\s+gute\s+Kenntnis$/i.test(requirement)) {
     if (wert(character, 'eig_g_intelligenz') < 15) return 'Erfordert INT 15';
     const hasLanguage = Object.entries(character.values)
-      .some(([reference, value]) => reference.startsWith('ssk_sprache_') && value >= 1);
-    if (!hasLanguage) return 'Erfordert Grundkenntnisse in mindestens einer Sprache (Stufe 1)';
+      .some(([reference, value]) => reference.startsWith('ssk_sprache_') && value >= 2);
+    if (!hasLanguage) return 'Erfordert mindestens eine Sprache auf Gute Kenntnis (Stufe 2)';
   }
 
   return undefined;
@@ -71,7 +72,11 @@ export function getAuswahlKosten(rule: RuleEntry, character: CharacterState, nor
 }
 
 export function getExklusivgruppe(rule: RuleEntry): string | undefined {
-  const match = rule.flag?.match(/(?:^|\|)\s*(EXKLUSIV_(?:KURZ|WEIT)SICHTIGKEIT)=([^|]+)/i);
+  // RC-064-Nachtrag (DEC-1108): ein Gruppen-Wert je Klausel, geteilt ueber mehrere Zeilen -
+  // "EXKLUSIV_SICHT=kurzsichtigkeit_weitsichtigkeit" (Kurz-/Weitsichtigkeit, 10 Zeilen) und
+  // "EXKLUSIV_SICHT=daemmerungssicht_nachtsicht" (2 Zeilen) sind zwei getrennte Cliquen, weil sie
+  // unterschiedliche Werte tragen.
+  const match = rule.flag?.match(/(?:^|\|)\s*(EXKLUSIV_SICHT)=([^|]+)/i);
   return match ? `${match[1].toUpperCase()}=${match[2].trim().toLowerCase()}` : undefined;
 }
 

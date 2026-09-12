@@ -1,10 +1,12 @@
-> Aktuelle Nutzerentscheidung: **0–3 KBE aus Rüstung sind allgemein akzeptabel; Rüstung verursacht keine MBE.** Diese Vorgabe ersetzt alle älteren 0-/1-BE-Ziele unten. Strengere Ziele bleiben ausdrücklich wählbar über die Planungsdaten. Die einfache Wache erhält Zeughausrüstung von der Stange (Stoff/Leder überall, Kette Arme/Torso, Eisenbrustplatte). Keine automatische Anpassung in deren Standardauswahl. Für das Ziel 3 gilt: Eigenschaftsbeitrag ≥ max(0, RH − RM − 18). Über 3 ungerundete RBE werden mindestens 4 BE und bleiben außerhalb des Rahmens.
+> Aktuelle Nutzerentscheidung: **0–3 KBE aus Rüstung sind allgemein akzeptabel; Rüstung verursacht keine MBE.** Diese Vorgabe ist das allgemeine Planungsziel; Null-BE-Beispiele gelten nur für ausdrücklich strengere Varianten. Strengere Ziele bleiben ausdrücklich wählbar über die Planungsdaten. Die einfache Wache erhält Zeughausrüstung von der Stange (Stoff/Leder überall, Kette Arme/Torso, Eisenbrustplatte). Keine automatische Anpassung in deren Standardauswahl. Für das Ziel 3 gilt: Eigenschaftsbeitrag ≥ max(0, RH − RM − 18). Über 3 ungerundete RBE werden mindestens 4 BE und bleiben außerhalb des Rahmens.
 
 # NPC-Kategorien: Eigenschaften und Attribute
 
 Stand: 11. September 2026. Nutzerauftrag: je NPC-Kategorie Schwerpunkte für Eigenschaften und Attribute festlegen; Vollrüstung verlangt einen körperlich geeigneten Träger. Die folgende konkrete Priorisierung ist die ausgearbeitete Planungsgrundlage, keine neue Spielregel und noch keine automatische Punktevergabe. Absolute Zielwerte werden je Volk, Kreis und Budget kalibriert.
 
 ## Kategorien und Prioritäten
+
+Nutzerentscheidung vom 12. September 2026: Jeder NPC investiert mindestens 3 % seines gesamten SP-Budgets in Attribute. Mindestbetrag = aufrunden(Gesamt-SP × 0,03); entscheidend sind die tatsächlichen Attributkosten, nicht nur eine Reservierung. Eigenschaften zählen nicht zu diesem Minimum. Bereits für die Rolle oder Voraussetzungen gekaufte Attribute zählen einmal mit. 3 % sind eine Untergrenze, keine Obergrenze. Bei 6.400 SP sind mindestens 192 SP, bei 8.000 SP mindestens 240 SP in Attribute zu investieren. Die Auswahl richtet sich nach dem Profil; „kein Pflichtschwerpunkt“ unten hebt das gemeinsame Mindestbudget nicht auf. Planungsentscheidung, noch nicht im Generator implementiert; bestehende Referenzen bleiben unverändert.
 
 Eigenschaften stehen in Prioritätsreihenfolge; höchstens drei Hauptschwerpunkte. Weitere Werte bleiben auf ihrem passenden Sockel, soweit keine Voraussetzung eine Steigerung verlangt. Attributprioritäten sind getrennt davon zu behandeln.
 
@@ -43,9 +45,9 @@ Keine pauschale ST-/KON-Zahl für alle Völker und Kreise. Hohe Priorität bedeu
 
 ## Machbarkeit vor Punktevergabe
 
-Bei Gesamt-RH H und geplantem Rüstungsmanöver M gilt für 0 RBE:
+Bei Gesamt-RH H, geplantem Rüstungsmanöver M und gewähltem KBE-Ziel B (Standard 3) gilt:
 
-`(KON / 5 + ST) / 2 >= H - M`
+`(KON / 5 + ST) / 2 >= max(0, H - M - 6 × B)`
 
 Ein Punkt ST liefert 0,5 Beitrag, ein Punkt KON 0,1. Für gleiche Rüstungsentlastung braucht es daher fünf KON-Punkte statt eines ST-Punkts. Die Auswahl darf dennoch nicht nur RBE optimieren: KON ist für Lebensenergie, Gesundheit und Ausdauer relevant.
 
@@ -58,7 +60,7 @@ Vorgehen für die spätere Werteplanung:
 5. Eigenschafts-, Attribut-, Talent- und RM-Kosten reservieren; danach berufliche Kernkompetenz und Kampfwerte gemeinsam ausarbeiten.
 6. Ist das Ziel nicht erfüllbar, die konkrete Ursache nennen: Eigenschaftsgrenze, fehlendes Talent, SP, TaP oder Geld. Kein stilles Erhöhen von Budgets und kein automatischer Wechsel auf weniger Rüstung.
 
-Beispiel: RH 40 und RM 16 brauchen einen Beitrag von 24. Selbst ST 31 und KON 31 liefern nur 18,6; nötig wäre mindestens RM 22. Hohe ST und KON allein lösen Vollrüstung also nicht. Dieses Beispiel ist reine Formelprüfung, keine Aussage, dass ST/KON 31 oder RM 22 für jede Figur freigeschaltet sind.
+Beispiel: RH 40 und RM 16 brauchen beim Standardziel 3 KBE einen Beitrag von 6. ST 31 und KON 31 liefern 18,6 und erfüllen diese Rüstungsbedingung. Nur beim ausdrücklich strengeren Ziel 0 KBE wären ein Beitrag von 24 und mindestens RM 22 nötig. Budget und Freischaltungen müssen zusätzlich passen. Dieses Beispiel ist reine Formelprüfung, keine Aussage, dass ST/KON 31 oder RM 22 für jede Figur freigeschaltet sind.
 
 ## Regelbezug und Umsetzung
 
@@ -69,8 +71,8 @@ Weisheit wird aus Kreis + 1 berechnet und nicht als frei zu kaufender Attributsc
 Diese Sitzung ergänzt die Planungsgrundlage. Im Assistenten sind weiterhin Referenzkopien mit Rüstungsauswahl aktiv; er verteilt Eigenschaften und Attribute noch nicht anhand dieser Kategorien. Nächste Kalibrierung: ein neu budgetierter schwerer Nahkämpfer mit ST/KON/Vitalität, passender RM-Talentkette und Vollrüstung, bevor dieses Profil als fertiger Wertebaustein angeboten wird.
 
 
-### Aktualisierung: Vollrüstung darf 1 BE verursachen
+### Einheitliches Rüstungsziel (12. September 2026)
 
-Nutzerentscheidung vom 11. September 2026: Beim Prefab Vollgerüstet sind bis zu 1 BE erlaubt; die übrigen Pakete behalten das Ziel 0 BE. Frühere Null-BE-Anforderungen für Vollrüstung sind damit ersetzt. Wegen Aufrundung gilt ungerundet RBE ≤ 1, nicht etwa < 2. Die erlaubte Gesamt-RH steigt dadurch um 6: Eigenschaftsbeitrag ≥ max(0, RH − RM − 6). Vorschau, Anlegeprüfung und Optimierung verwenden dieses Ziel. Das Ziel wird am erzeugten Charakter gespeichert.
+Für alle Pakete einschließlich Vollgerüstet gelten allgemein höchstens 3 KBE und keine MBE durch Rüstung. Strengere Ziele B = 0, 1 oder 2 sind ausdrücklich wählbar. Geprüft wird ungerundet RBE ≤ B; positive Bruchteile werden zur KBE aufgerundet. Benötigter Eigenschaftsbeitrag: max(0, RH − RM − 6 × B). Das gewählte Ziel wird am Charakter gespeichert.
 
-Beispiel ST/KON effektiv je 38, RM 16, RH 40: RBE 0,2 → 1 BE, für Vollgerüstet akzeptiert. Artefaktmaximum laut Nutzer: +7 pro Eigenschaft; +14 auf eine Eigenschaft ist keine zulässige Planungsannahme.
+Artefaktmaximum laut Nutzer: +7 pro Eigenschaft; +14 auf eine Eigenschaft ist keine zulässige Planungsannahme.

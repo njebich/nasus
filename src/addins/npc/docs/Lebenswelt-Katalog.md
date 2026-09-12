@@ -21,3 +21,7 @@ Pro Lebenswelt zwei unterschiedliche GF und drei unterschiedliche WHK aus den je
 ## Noch offen
 
 Auswahlgewichte und die genaue Verteilung von +1/+2 bei Spezialisierungen sind noch offen.
+
+## GF/SF-Ausarbeitung vom 12. September 2026
+
+[Berufs- und Lebensweltbeiträge mit Zusammenführungsregeln](GF-SF-Achsenbeitraege.md): 30 Berufspakete, sieben Lebenswelt-Standardpaare, additive Beiträge, getrennte Mindestziele und sichtbare Grenzkonflikte. Bestehende bestätigte Pools bleiben erhalten. Neue Paketwerte sind Planungsentwurf; noch keine Generatorumsetzung.

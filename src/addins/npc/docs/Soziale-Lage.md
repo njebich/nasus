@@ -18,9 +18,35 @@ Soziale Lage kann mit jeder Lebenswelt kombiniert werden. Geldbeutel und Ausrüs
 
 ## Rechtsstand
 
-Eigene Auswahl: Privilegiert · Frei · Leibeigen · Schuldversklavt · Versklavt.
+Eigene Auswahl: Privilegiert · Frei · Leibeigen · Schuldversklavt · Sklave.
 
-Lebenswelt, soziale Lage und Rechtsstand bilden gemeinsam den Hintergrund. Rechtsstand und soziale Lage sind unabhängig kombinierbar, beispielsweise als wohlhabender Leibeigener oder freier Bettler. Konkrete Sonderrechte für „Privilegiert“ sind noch nicht festgelegt.
+Nutzerentscheidung vom 12. September 2026: Rechtsstand ist eine reine beschreibende Auswahl. Daraus werden keine Werte, Fertigkeitsbeiträge, Budgetänderungen oder sonstigen Regelberechnungen abgeleitet. Eine weitere mechanische Ausarbeitung ist nicht erforderlich.
+
+Lebenswelt, soziale Lage und Rechtsstand bilden gemeinsam den Hintergrund. Rechtsstand und soziale Lage sind unabhängig kombinierbar, beispielsweise als wohlhabender Leibeigener oder freier Bettler.
+
+### Tooltips – festgelegt
+
+| Rechtsstand | Tooltip |
+|---|---|
+| Privilegiert | Dieser Charakter hat die vollen Rechte eines freien Bürgers seines Landes. Er hat aber Verbindungen, Reichtum oder Macht, die es ermöglichen, vor dem Gesetz gleicher als gleich zu sein. |
+| Frei | Dieser Charakter ist ein freier Bürger seines Landes. Alle Rechte und Pflichten gelten. |
+| Leibeigen | Dieser Charakter ist ein Leibeigener. Er gehört nach dem Gesetz zur Scholle seiner Heimat. Die Scholle gehört [Adligen erfassen]. |
+| Schuldversklavt | Dieser Charakter ist in Schuldknechtschaft geraten. Er ist nicht frei, er verfügt allerdings weiterhin über den Großteil seiner Bürgerrechte. Um die Schuldknechtschaft abzulegen und wieder frei zu werden, müssen noch [Betrag] Dublonen an [Gläubiger] beglichen werden. |
+| Sklave | Dieser Charakter ist ein Sklave und gehört [Besitzer]. |
+
+### Bedingte Freitextfelder – festgelegt
+
+Jeder Platzhalter in eckigen Klammern erhält ein eigenes Freitextfeld. Das Feld erscheint ausschließlich, wenn der zugehörige Rechtsstand ausgewählt ist; bei anderer Auswahl wird es ausgeblendet.
+
+| Gewählter Rechtsstand | Sichtbare Freitextfelder |
+|---|---|
+| Privilegiert | Keine |
+| Frei | Keine |
+| Leibeigen | Adligen erfassen |
+| Schuldversklavt | Betrag, Gläubiger |
+| Sklave | Besitzer |
+
+Die Eingaben füllen die entsprechenden Platzhalter im Tooltip. Auch „Betrag“ ist ausdrücklich ein Freitextfeld und eine reine Hintergrundangabe ohne automatische Verrechnung mit dem Geldbudget. Diese Festlegung beschreibt den künftigen Generator; die Felder sind noch nicht implementiert.
 
 ## GF und WHK der sozialen Lage – bestätigt
 

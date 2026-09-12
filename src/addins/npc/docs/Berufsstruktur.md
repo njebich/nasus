@@ -77,3 +77,12 @@ Ein erster [Ausrüstungsdraft für alle 30 Berufe](Berufsausruestung.md) ordnet 
 7. Budgetverträglichkeit gegen Referenzen prüfen und unerfüllbare Anforderungen sichtbar machen.
 
 Offen bleiben insbesondere die Regelabbildung des Glücksspielers, konkrete Spezialisierungen, Beiträge je Güte und Budgetkalibrierung. Noch keine automatische Punktevergabe aus diesem Draft ableiten. Die bisherigen sieben Rollenprofile bleiben Arbeitsbeispiele: Infanterist und Musketier sind Soldatenschwerpunkte, Kampfmagier eine Magierausrichtung.
+
+## GF/SF-Ausarbeitung vom 12. September 2026
+
+[Berufs- und Lebensweltbeiträge mit Zusammenführungsregeln](GF-SF-Achsenbeitraege.md): 30 Berufspakete, sieben Lebenswelt-Standardpaare, additive Beiträge, getrennte Mindestziele und sichtbare Grenzkonflikte. Bestehende bestätigte Pools bleiben erhalten. Neue Paketwerte sind Planungsentwurf; noch keine Generatorumsetzung.
+
+
+## WHK-Ausarbeitung vom 12. September 2026
+
+[WHK-Alltagsausbildung nach Beruf und Professionsgüte](WHK-Alltagsausbildung.md): konkreter Entwurf für alle 30 Berufe und sechs Güten, drei Alltagsfelder, Zusammenführung und Ergänzung bis zum tatsächlichen 5-%-Minimum. Militärische Ränge bleiben beschreibend; zusätzliche Ausbildungsprofile sind separat wählbare Vorschläge. Neue Zahlen noch nicht bestätigt, keine Generatorumsetzung. Die früher als offen bezeichneten WHK-Ziele sind damit ausgearbeitet; Bestätigung und vollständige Budgetkalibrierung bleiben offen.

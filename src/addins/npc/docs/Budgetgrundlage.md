@@ -6,9 +6,77 @@ Stand: 8. September 2026. Berechnet aus den aktuellen Client-Regeldaten. Dies is
 
 - Nach jeder Multiplikation aufrunden. Bei den Minima jede Eigenschaft einzeln skalieren und aufrunden. Bleibt der gerundete Wert unverändert, stattdessen vom ursprünglichen Minimum 2 (Kreis 0) oder 1 (Kreis 0+) abziehen. Danach die vollständigen Kosten nachschlagen und summieren. Kein Zusatzabzug, wenn die Prozentrechnung bereits senkt.
 - Kreis 0: 80 % der Volksminima, 5.120 SP. Kreis 0+: 90 %, 5.760 SP. Ab Kreis 1: volle Volksminima; hier wird für den Vergleich das Einstiegsbudget von 6.400 SP verwendet.
-- Höhere Kreise behalten den regulären Eigenschaftssockel; ihr größeres Gesamtbudget ist separat zu bestimmen.
+- Höhere Kreise behalten den regulären Eigenschaftssockel; ihr SP-Budget kommt direkt aus der
+  bereits vorhandenen EP-Stufe-Kreis-Tabelle (`src/data/lookups.json`, Tabelle `EP-Stufe-Kreis`),
+  siehe Abschnitt "SP-Budget je Kreis (NSC)" unten – keine eigene NPC-Kurve nötig.
 - Es werden zehn Eigenschaften erfasst. Attribute, weitere Eigenschaftssteigerungen und Fähigkeiten gehören nicht zu diesem Sockel.
 - Die Kostenspalte heißt in der Quelldatei „Gesamt-EP“, wird in der App aber als SP-Ausgabe verwendet.
+
+## SP-Budget je Kreis (NSC)
+
+Korrigiert (Nutzer 2026-09-11, vorherige Fassung war ein Missverständnis): SP braucht keine eigene
+NSC-Kurve. `kreis` und `SP = 6.400 + ep_gesamt` werden beide direkt aus `ep_gesamt` über dieselbe,
+bereits im Client vorhandene Tabelle abgeleitet (`EP-Stufe-Kreis` in `src/data/lookups.json`,
+ausgewertet in `src/engine/characterSheet.ts`/`eigenschaftenGrenzen.ts`). Für einen NSC eines
+bestimmten Kreis genügt es, `ep_gesamt` auf die erste Stufe dieses Kreises zu setzen – Kreis-Label
+und SP-Budget bleiben dadurch automatisch konsistent, ohne Sonderformel.
+
+"Kreis N+" (Nutzer-Korrektur 2026-09-11) bedeutet die MITTLERE Stufe des jeweiligen Kreis-
+Stufenbereichs (nicht die letzte) – jeder Kreis n umfasst genau 2n+1 Stufen (siehe
+`engine/roleGenerator.ts`-Kommentar), die Mitte ist damit immer eindeutig ein ganzzahliger
+Stufenwert.
+
+| Kreis | Erste Stufe | EP | SP (6.400 + EP) | Kreis N+ (mittlere Stufe) | EP | SP |
+|---|---:|---:|---:|---:|---:|---:|
+| 0 | 0 | 0 | 6.400 | – | – | – |
+| 1 | 1 | 20 | 6.420 | 2 | 60 | 6.460 |
+| 2 | 4 | 200 | 6.600 | 6 | 400 | 6.800 |
+| 3 | 9 | 700 | 7.100 | 12 | 1.150 | 7.550 |
+| 4 | 16 | 1.750 | 8.150 | 20 | 2.550 | 8.950 |
+| 5 | 25 | 3.550 | 9.950 | 30 | 4.800 | 11.200 |
+| 6 | 36 | 6.300 | 12.700 | 42 | 8.100 | 14.500 |
+| 7 | 49 | 10.250 | 16.650 | 56 | 12.700 | 19.100 |
+
+Kreis 0/0+ bleiben die bereits vorher notierten 80 %/90 %-Planungswerte (5.120 SP / 5.760 SP) –
+die sind unverändert offen, weil es dafür keine natürliche `ep_gesamt`-Entsprechung gibt (Stufe 0
+liefert immer volle 6.400 SP; negative EP sind laut bestehender Notiz kein Ersatz dafür).
+
+## Geldbudget je Kreis (NSC)
+
+Festgeschrieben (Nutzer 2026-09-11), auf 25 D gerundet. Basis ist das etablierte Startbudget
+`startbudget_ausruestung` = 5.000 Dublonen (`src/state/characterStore.ts`,
+`src/data/rules-jsonl/charakterwerte.jsonl`, sourceRow 136) bei Stufe 0 = Kreis 0.
+
+- **Kreis 0/0+:** 0,8× bzw. 0,9× der Kreis-1-Basis (analog zum SP-Rabatt), also 4.000 D / 4.500 D.
+- **Ab Kreis 1:** `Dublonen(Kreis) = 5.000 + 62,5 × (Kreis − 1)⁴`. Gegengerechnet gegen eine konkrete
+  Kreis-7-Ausrüstung (Faltstahl-Zweihänder Großmeisterarbeit perfekt angepasst 826 D + komplette
+  Rüstung beste Materialien/Großmeisterarbeit/perfekt angepasst auf allen 4 Lagen und 4 Zonen
+  40.508 D + zwei Eigenschafts-Artefakte Grad 5 12.564 D = 53.898 D): 86.000 D lässt bei dieser
+  Ausstattung noch reichlich Luft.
+- **Kreis N+:** arithmetisches Mittel aus Kreis N und Kreis N+1 (Kreis 7+ interpoliert gegen das
+  extrapolierte Kreis 8 = 155.075 D).
+
+| Kreis | Dublonen |
+|---|---:|
+| 0 | 4.000 |
+| 0+ | 4.500 |
+| 1 | 5.000 |
+| 1+ | 5.025 |
+| 2 | 5.075 |
+| 2+ | 5.525 |
+| 3 | 6.000 |
+| 3+ | 8.025 |
+| 4 | 10.075 |
+| 4+ | 15.525 |
+| 5 | 21.000 |
+| 5+ | 32.525 |
+| 6 | 44.075 |
+| 6+ | 65.025 |
+| 7 | 86.000 |
+| 7+ | 120.525 |
+
+Das ist ein NSC-spezifischer Aufschlag zusätzlich zur bestehenden Spielercharakter-Regel
+(5.000 D fix bzw. 6.000 D bei "gehobenem Start" auf Stufe 15) und ersetzt diese nicht.
 
 ## Kosten der Volksminima
 

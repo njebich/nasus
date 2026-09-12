@@ -197,8 +197,8 @@ function renderEditableRow(r: ComputedRule, kategorie: string, maxValue?: number
     <div class="stat-row" data-referenz="${r.rule.referenz}"${rowTooltipForKategorie(r, kategorie)}>
       <span class="stat-label">${label}${infoIcon(r.rule.info)}${errorNote(r)}</span>
       <button type="button" class="stat-dec" aria-label="verringern"${minusTooltip}>-</button>
-      <input type="number" class="stat-value ${editableValueWidthClass(kategorie)}" min="0"${maxAttr} value="${value}" aria-label="${label}" />${alteredHint}
-      <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>
+      <input type="number" class="stat-value ${editableValueWidthClass(kategorie)}" min="0"${maxAttr} value="${value}" aria-label="${label}" />
+      <button type="button" class="stat-inc" aria-label="erhöhen" ${atMax ? 'disabled' : ''}${plusTooltip}>+</button>${alteredHint}
       <span class="stat-cost stat-cost-click">${stufe ? `(${escapeHtml(stufe)}) ` : ''}${costNext}</span>
     </div>`;
 }
@@ -592,8 +592,8 @@ function klickpreisDelta(r: ComputedRule): number | undefined {
 /** Eine Zeile (bzw. Zeilengruppe) pro Hauptfertigkeit - Nutzer-Korrektur 2026-07-22: "i want all
  *  lines displayed in a single table", d.h. alle Hauptfertigkeiten EINER Tabelle (nicht mehr eine
  *  <table> pro Hauptfertigkeit); der Aufrufer (renderCategoryView) buendelt diese Zeilen unter
- *  einem gemeinsamen <thead>. Die vier Spezialisierungs-Spalten (Spezialisierung/-/TaW/+) werden
- *  bei fehlenden/gesperrten Spezialisierungen per colspan="4" durch einen Platzhalter ersetzt,
+ *  einem gemeinsamen <thead>. Die zwei Spezialisierungs-Spalten (Name und TaW-Bedienelemente) werden
+ *  bei fehlenden/gesperrten Spezialisierungen per colspan="2" durch einen Platzhalter ersetzt,
  *  damit die Spaltenzahl fuer jede Zeile gleich bleibt. */
 function renderNahkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: ComputedRule[], values: CharacterValueSource | undefined): string {
   const hauptwert = node.row.currentValue ?? 0;
@@ -601,10 +601,10 @@ function renderNahkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: Comput
   const paBasisRule = findNahkampfBasisRule(node.row.rule.referenz, 'pa_', readOnly);
   const basisCells = (rowspan: number) => `${renderWaffenBasisCell(atBasisRule, rowspan, values)}${renderWaffenBasisCell(paBasisRule, rowspan, values)}`;
   if (node.children.length === 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${basisCells(1)}<td colspan="4">–</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${basisCells(1)}<td colspan="2">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${basisCells(1)}<td colspan="4" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${basisCells(1)}<td colspan="2" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
   return node.children.map((child, i) => `
@@ -662,18 +662,18 @@ function renderFernkampfBasisCell(
 }
 
 /** Fernkampf-Pendant zu renderNahkampfHauptfertigkeitRows - eine Zeile(-ngruppe) pro Hauptfertig-
- *  keit statt einer eigenen <table>, siehe dort. Fuenf Spezialisierungs-Spalten (Spezialisierung/-/
- *  TaW/+/FKS-Basis) statt vier, weil Fernkampf zusaetzlich die FKS-Basis-Spalte hat. */
+ *  keit statt einer eigenen <table>, siehe dort. Drei Spezialisierungs-Spalten (Name/
+ *  TaW-Bedienelemente/FKS-Basis) statt zwei, da Fernkampf die FKS-Basis-Spalte hat. */
 function renderFernkampfHauptfertigkeitRows(node: HierarchyNode, readOnly: ComputedRule[]): string {
   const hauptwert = node.row.currentValue ?? 0;
   const fkBasisRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_basis_', readOnly);
   const fkGuteRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_gute_', readOnly);
   const fkMeisterlichRule = findFernkampfBasisRule(node.row.rule.referenz, 'fk_meisterlich_', readOnly);
   if (node.children.length === 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5">–</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="3">–</td></tr>`;
   }
   if (hauptwert <= 0) {
-    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="5" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
+    return `<tr>${renderWaffenLabelCell(node.row, undefined)}${renderWaffenControlCells(node.row, undefined, undefined, klickpreisDelta(node.row))}${renderFernkampfBasisCell(fkBasisRule, fkGuteRule, fkMeisterlichRule, 1)}<td colspan="3" class="waffen-spez-locked">Spezialisierungen verfügbar, sobald der TaW über 0 liegt.</td></tr>`;
   }
   const n = node.children.length;
   return node.children.map((child, i) => {
@@ -704,7 +704,7 @@ function renderEigenschaftsbonusCell(bonus: ComputedRule | undefined): string {
   if (bonus.error) {
     return `<td class="stat-eig-bonus-cell"><span class="stat-error" title="${escapeHtml(bonus.error)}">nicht definiert ⚠</span></td>`;
   }
-  return `<td class="stat-eig-bonus-cell stat-value-readonly numeric-field-output numeric-field-signed-two"${formulaTooltip(bonus.rule.formelRaw)}>${escapeHtml(formatComputedValue(bonus.computedValue ?? '–'))}</td>`;
+  return `<td class="stat-eig-bonus-cell stat-value-readonly numeric-field-output numeric-field-signed-two"${formulaTooltip(bonus.rule.formelRaw)}><span class="stat-eig-bonus-value">${escapeHtml(formatComputedValue(bonus.computedValue ?? '–'))}</span></td>`;
 }
 
 function renderEigenschaftenTable(editable: ComputedRule[], bonusRows: ComputedRule[], impactValues?: CharacterValueSource): string {
@@ -915,7 +915,7 @@ export function renderCategoryView(
 
   container.innerHTML = `
     ${whkSearchHtml}
-    <div class="stat-category">${whkEmptyHtml}${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet, kategorie)}</div>
+    <div class="stat-category${['Grundfertigkeit', 'Sonderfertigkeit'].includes(kategorie) ? ' stat-category-two-columns' : ''}${isSsk ? ' stat-category-ssk' : ''}${isEigenschaft || isNahkampf || isFernkampf ? ' stat-category-table' : ''}">${whkEmptyHtml}${editableBlock}${renderLadeschuetzeGroup(ladeschuetzeRows, sheet, kategorie)}</div>
     ${readOnlyForBerechneteWerte.length > 0 ? `
       ${showReadOnlyHeading ? '<h3 class="stat-section-heading">Berechnete Werte</h3>' : ''}
       <div class="stat-category">${readOnlyHierarchy.map((n) => renderGroup(n, renderReadOnlyRow)).join('')}</div>

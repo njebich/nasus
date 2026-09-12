@@ -4,6 +4,35 @@ import { createCharacter } from '../state/characterStore';
 import { renderCategoryRouteView, renderCategoryView } from './categoryView';
 
 describe('Charakterwerte-Routenansicht', () => {
+  it.each(['Nahkampf', 'Fernkampf'])('behält in %s mit und ohne Spezialisierungen sechs Tabellenspalten', (kategorie) => {
+    const character = createCharacter('Tabellenprüfung');
+    const container = document.createElement('div');
+    const rules = computeSheet(character).byKategorie[kategorie];
+    for (const wert of [0, 2]) {
+      for (const row of rules) {
+        if (row.rule.art === 'Wert') character.values[row.rule.referenz] = wert;
+      }
+      renderCategoryView(container, computeSheet(character), kategorie, vi.fn(), vi.fn());
+      const table = container.querySelector<HTMLTableElement>('.waffen-basis-table')!;
+      expect(table.querySelectorAll('thead th')).toHaveLength(6);
+      let remaining = Array<number>(6).fill(0);
+      for (const row of table.querySelectorAll('tbody tr')) {
+        let column = 0;
+        for (const cell of row.querySelectorAll('td')) {
+          while (remaining[column] > 0) column++;
+          for (let offset = 0; offset < Number(cell.getAttribute('colspan') ?? 1); offset++) {
+            expect(column).toBeLessThan(6);
+            expect(remaining[column]).toBe(0);
+            remaining[column++] = Number(cell.getAttribute('rowspan') ?? 1);
+          }
+        }
+        expect(remaining.every((span) => span > 0)).toBe(true);
+        remaining = remaining.map((span) => span - 1);
+      }
+      expect(remaining).toEqual([0, 0, 0, 0, 0, 0]);
+    }
+  });
+
   it('zeigt Krankheitsresistenz erst nach Wahl des freischaltenden Vorteils', () => {
     const character = createCharacter('Test');
     const container = document.createElement('div');

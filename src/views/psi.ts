@@ -161,13 +161,13 @@ function renderRow(r: Row, sheet: ComputedSheet, readOnly = false): string {
 
   return `
     <tr class="${rowClass}" data-referenz="${referenz}">
-      <td class="ki-taw-cell">
+      <td class="ki-taw-cell"><div class="magie-taw-inner">
         ${readOnly ? `
         <span class="kampf-pool-value numeric-field-output numeric-field-two">${currentValue}</span>` : `
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
-        <input type="number" class="stat-value kampf-taw-input" min="0" value="${currentValue}" ${!unlocked && currentValue <= 0 ? 'disabled' : ''} aria-label="TaW ${escapeHtml(name)}" />
+        <input type="number" class="stat-value kampf-taw-input numeric-field-two" min="0" value="${currentValue}" ${!unlocked && currentValue <= 0 ? 'disabled' : ''} aria-label="TaW ${escapeHtml(name)}" />
         <button type="button" class="stat-inc" aria-label="erhöhen" ${!unlocked ? 'disabled' : ''}${plusTitle ? ` title="${escapeHtml(plusTitle)}"` : ''}>+</button>
-        <span class="stat-cost stat-cost-click">${costLabel}</span>`}
+        <span class="stat-cost stat-cost-click">${costLabel}</span>`}</div>
       </td>
       <td${probeTooltip}>${probe}</td>
       <td class="ki-name-cell">${escapeHtml(name)}</td>

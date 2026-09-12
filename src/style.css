@@ -437,6 +437,11 @@ input.numeric-field-formatted-five {
   font-variant-numeric: tabular-nums;
 }
 
+/* Numeric formatting must preserve real table cells and their row spans. */
+td.numeric-field-output, th.numeric-field-output {
+  display: table-cell;
+}
+
 .stat-cost {
   font-size: 0.85em;
   opacity: 0.7;
@@ -1226,7 +1231,7 @@ input.numeric-field-formatted-five {
 .eigenschaften-edit-table td.stat-eig-bonus-cell {
   text-align: center;
   width: 3.5rem;
-  vertical-align: middle;
+  vertical-align: top;
 }
 
 .bogen-spez td:first-child {
@@ -1311,48 +1316,43 @@ input.numeric-field-formatted-five {
    Kennzahl je Zone. align-items:flex-start haelt die rechte Zeile an der Kopfzeile der linken
    Gruppe fest, statt beim Aufklappen mit in die Mitte des expandierten Blocks zu wandern. */
 .kampf-tz-tabelle {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  display: grid;
+  grid-template-columns: max-content repeat(3, minmax(3ch, max-content)) max-content minmax(4ch, max-content);
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .kampf-tz-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: start;
 }
 
 .kampf-tz-kopfzeile {
   font-weight: 600;
-  opacity: 0.8;
-  font-size: 0.85em;
 }
 
 .kampf-tz-details {
-  flex: 1;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / 5;
   min-width: 0;
   border: 1px solid #8884;
-  border-radius: 8px;
-  padding: 0.3rem 0.5rem;
   background: #8881;
 }
 
-/* Muss exakt dieselbe Box (flex:1, Border-Breite, Padding) wie .kampf-tz-details der Datenzeilen
-   annehmen - sonst rechnet das Grid der Kopfzeile gegen eine andere Breite als das Grid in den
-   Trefferzonen-Zeilen, und RH/RS/LE stehen nicht mehr ueber ihren Werten. */
 .kampf-tz-kopfzeile > .kampf-tz-summary {
-  flex: 1;
-  min-width: 0;
+  grid-column: 1 / 5;
   border: 1px solid transparent;
-  background: none;
-  padding: 0.3rem 0.5rem;
 }
 
 .kampf-tz-summary {
   display: grid;
-  grid-template-columns: 1fr 3rem 3rem 6.5rem;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   align-items: center;
-  cursor: pointer;
 }
 
 .kampf-tz-details .kampf-tz-summary {
@@ -1360,55 +1360,78 @@ input.numeric-field-formatted-five {
   font-weight: 600;
 }
 
-.kampf-tz-rh, .kampf-tz-rs {
-  text-align: center;
-}
-
-.kampf-tz-le {
-  text-align: right;
-}
-
-.kampf-tz-lagen {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0.3rem 0 0.1rem;
-  padding-top: 0.3rem;
-  border-top: 1px solid #8882;
-  font-size: 0.9em;
-  font-weight: 400;
-}
-
-.kampf-tz-lagen td {
-  padding: 0.15rem 0.3rem;
-}
-
-.kampf-tz-lagen td:first-child {
-  opacity: 0.7;
+.kampf-tz-summary > span {
+  padding: 0.3rem 0.5rem;
   white-space: nowrap;
 }
 
-.kampf-tz-lagen td:nth-child(3), .kampf-tz-lagen td:nth-child(4) {
-  text-align: center;
-  width: 2.5rem;
+.kampf-tz-details::details-content {
+  grid-column: 1 / -1;
+  min-width: 0;
+  contain: inline-size;
 }
 
-/* Unsichtbarer Platzhalter in der Kopfzeile - nimmt exakt so viel Breite wie .kampf-tz-rechts
-   in den Datenzeilen weg, sonst waechst die Kopfzeilen-Summary (einziges Flex-Kind ohne
-   Geschwister) auf die volle Zeilenbreite und die Spalten liegen nicht mehr uebereinander. */
-.kampf-tz-rechts-spacer {
-  flex: 0 0 11rem;
-  padding: 0.35rem 0.5rem;
+.kampf-tz-rh, .kampf-tz-rs, .kampf-tz-le {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-.kampf-tz-rechts {
-  flex: 0 0 11rem;
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
+.kampf-tz-lagen {
+  grid-column: 1 / -1;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin: 0.3rem 0 0.1rem;
   font-size: 0.9em;
 }
 
+.kampf-tz-lagen td, .kampf-tz-lagen th {
+  padding: 0.15rem 0.3rem;
+  border: 1px solid #8884;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.kampf-tz-lagen td:first-child {
+  white-space: nowrap;
+}
+
+.kampf-tz-lagen th:first-child {
+  width: 4ch;
+}
+
+.kampf-tz-lagen th {
+  white-space: nowrap;
+}
+
+.kampf-tz-lagen td:nth-child(3), .kampf-tz-lagen td:nth-child(4),
+.kampf-tz-lagen th:nth-child(3), .kampf-tz-lagen th:nth-child(4) {
+  text-align: right;
+  width: 2.5rem;
+}
+
+.kampf-tz-rechts-spacer {
+  grid-column: 5 / 7;
+}
+
+.kampf-tz-rechts {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 5 / 7;
+  align-self: stretch;
+  align-content: start;
+  border: 1px solid #8884;
+}
+
+.kampf-tz-rechts > span {
+  padding: 0.3rem 0.5rem;
+}
+
+.kampf-tz-rechts-wert {
+  text-align: right;
+  border-left: 1px solid #8884;
+  font-variant-numeric: tabular-nums;
+}
 .stat-dec, .stat-inc {
   width: 1.8rem;
   height: 1.8rem;
@@ -1642,10 +1665,8 @@ input.numeric-field-formatted-five {
 }
 
 .ki-taw-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
+  vertical-align: middle;
+  width: 1%;
   white-space: nowrap;
 }
 
@@ -1747,8 +1768,8 @@ input.numeric-field-formatted-five {
 }
 
 .spruchmagie-table td.spruchmagie-wirkung-cell {
-  min-width: 16rem;
-  max-width: 22rem;
+  min-width: 24rem;
+  max-width: 36rem;
   text-align: left;
   white-space: normal;
   word-break: normal;
@@ -1758,15 +1779,116 @@ input.numeric-field-formatted-five {
 }
 
 .spruchmagie-taw-cell {
+  width: 1%;
   vertical-align: middle;
   white-space: nowrap;
 }
 
-.spruchmagie-taw-inner {
-  display: flex;
+.spruchmagie-taw-inner, .magie-taw-inner {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
+}
+
+.spruchmagie-taw-inner .stat-cost,
+.magie-taw-inner .stat-cost {
+  grid-column: 1 / -1;
+  width: auto;
+  min-width: 0;
+  white-space: normal;
+  text-align: center;
+}
+
+.spruchmagie-table td.spruchmagie-gegenprobe-cell {
+  width: 11ch;
+  min-width: 11ch;
+  max-width: 11ch;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.eigenschaften-edit-table td {
+  vertical-align: top;
+}
+
+.stat-eig-bonus-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.8rem;
+  padding: 0.4rem 0;
+  border: 1px solid transparent;
+}
+
+.eigenschaften-edit-table .stat-row {
+  grid-template-columns: minmax(14ch, 1fr) max-content max-content max-content 5ch;
+}
+
+.eigenschaften-edit-table .stat-cost {
+  grid-column: 1 / -1;
+  width: auto;
+  min-width: 0;
+}
+
+.eigenschaften-edit-table .stat-cost:empty {
+  display: none;
+}
+
+.eigenschaften-edit-table .stat-altered {
+  grid-column: 5;
+  white-space: nowrap;
+}
+
+/* Share intrinsic description and control widths across all SSK groups. */
+.stat-category-ssk {
+  grid-template-columns: max-content repeat(3, max-content) minmax(max-content, 1fr);
+  overflow-x: auto;
+}
+
+.stat-category-table {
+  overflow-x: auto;
+}
+
+.stat-category-ssk .ssk-people-group,
+.stat-category-ssk .stat-card,
+.stat-category-ssk .stat-row {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+
+.stat-category-ssk .stat-section-heading {
+  grid-column: 1 / -1;
+}
+
+.stat-category-ssk .stat-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stat-category-ssk .stat-cost {
+  width: auto;
+  min-width: 0;
+  white-space: normal;
+}
+
+@media (min-width: 1024px) {
+  .stat-category-two-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .stat-category-two-columns .stat-row {
+    grid-template-columns: minmax(0, 1fr) repeat(4, max-content);
+  }
+
+  .stat-category-two-columns .stat-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
 .spruchmagie-row-locked {

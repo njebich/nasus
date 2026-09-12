@@ -317,7 +317,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
         ${readOnly ? `
         <span class="kampf-pool-value numeric-field-output numeric-field-two">${currentValue}</span>` : `
         <button type="button" class="stat-dec" aria-label="verringern" ${currentValue <= 0 ? 'disabled' : ''}>-</button>
-        <input type="number" class="stat-value kampf-taw-input" min="0" value="${currentValue}" ${disabled && currentValue <= 0 ? 'disabled' : ''} aria-label="TaW ${escapeHtml(name)}" />
+        <input type="number" class="stat-value kampf-taw-input numeric-field-two" min="0" value="${currentValue}" ${disabled && currentValue <= 0 ? 'disabled' : ''} aria-label="TaW ${escapeHtml(name)}" />
         <button type="button" class="stat-inc" aria-label="erhöhen" ${disabled ? 'disabled' : ''}${tooltipAttr(plusTitle)}>+</button>
         <span class="stat-cost stat-cost-click">${costLabel}</span>`}
       </div></td>
@@ -325,7 +325,7 @@ function renderRow(sheet: ComputedSheet, row: Row, opts?: { showSchule?: boolean
       <td>${escapeHtml(detail?.minInt ?? '–')}</td>
       <td>${escapeHtml(getEigBonusValue(sheet, rule.eigBonus)?.label ?? '–')}</td>
       <td class="spruchmagie-wirkung-cell"${rule.wirkung ? tooltipAttr(`Rohtext: ${rule.wirkung}`) : ''}>${escapeHtml(resolveWirkungText(rule.wirkung, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet)))}</td>
-      <td class="spruchmagie-wirkung-cell">${escapeHtml(resolveWirkungText(detail?.gegenprobe, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet)))}</td>
+      <td class="spruchmagie-gegenprobe-cell">${escapeHtml(resolveWirkungText(detail?.gegenprobe, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet)))}</td>
       <td${detail?.rw ? tooltipAttr(`Formel: ${detail.rw}`) : ''}>${escapeHtml(resolveRw(detail?.rw, getCharakterwertFormel(sheet, 'macht'), getAttMagie(sheet), getAttAura(sheet), getCharakterwertFormel(sheet, 'mana')))}</td>
       <td>${escapeHtml(detail?.ziel ?? '–')}</td>
       <td>${escapeHtml(detail?.form ?? '–')}</td>

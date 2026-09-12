@@ -82,7 +82,7 @@ function renderKampfTzGruppe(
           <span class="kampf-tz-rs">${rsSumme}</span>
           <span class="kampf-tz-le">${leText(sheet, gruppe.leReferenz)}</span>
         </summary>
-        <table class="kampf-tz-lagen">${lagenZeilen}</table>
+        <table class="kampf-tz-lagen"><thead><tr><th>Lage</th><th>Rüstung</th><th>RH</th><th>RS</th></tr></thead><tbody>${lagenZeilen}</tbody></table>
       </details>
       <div class="kampf-tz-rechts">
         <span class="kampf-tz-rechts-label">${escapeHtml(gruppe.rechtsLabel)}</span>

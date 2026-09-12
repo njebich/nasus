@@ -191,7 +191,8 @@ export function setValue(character: CharacterState, referenz: string, wert: numb
   // (siehe fertigkeitenGrenzen.ts), den "Maximum"-Talente (talenteMaximum.ts) fuer einzelne
   // Referenzen/Kategorien/Zauberschulen erhoehen koennen. Vorher gab es hierfuer KEINE
   // Obergrenze - jede Kosten-Formel (z.B. "wert*9") war unbegrenzt gueltig.
-  const fertigkeitBaseMax = getFertigkeitBaseMax(rule.kategorie);
+  const fertigkeitBaseMax = getFertigkeitBaseMax(rule.kategorie,
+    rule.kategorie === 'Attribute' ? Number(evalReferenz('kreis', makeValueSource(character))) : 0);
   if (fertigkeitBaseMax !== undefined) {
     const effectiveMax = fertigkeitBaseMax + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
     if (wert > effectiveMax) {

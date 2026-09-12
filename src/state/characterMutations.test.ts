@@ -330,7 +330,13 @@ describe('characterMutations', () => {
       expect(() => setValue(updated, 'sf_alchemieresistenz', 19)).toThrow(MutationError);
     });
 
-    it('Basis-Max fuer Nahkampf/Fernkampf/WHK/Spruchmagie ist 24, fuer Attribute 7', () => {
+    it.each([[0, 4], [20, 5], [200, 6], [700, 7]])('Attributmaximum bei %i EP ist %i', (ep, maximum) => {
+      const character = withEpGesamt(ep);
+      expect(setValue(character, 'att_glueck', maximum).values.att_glueck).toBe(maximum);
+      expect(() => setValue(character, 'att_glueck', maximum + 1)).toThrow(`Maximum von ${maximum}`);
+    });
+
+    it('Basis-Max fuer Nahkampf/Fernkampf/WHK/Spruchmagie ist 24, fuer Attribute in Kreis 3 ist es 7', () => {
       const character = withEpGesamt(1000);
       expect(() => setValue(character, 'fk_boegen', 25)).toThrow(MutationError);
       expect(setValue(character, 'fk_boegen', 24).values['fk_boegen']).toBe(24);

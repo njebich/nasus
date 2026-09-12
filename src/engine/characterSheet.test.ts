@@ -7,6 +7,14 @@ import { GESINNUNG_TRAITS } from '../data/gesinnung';
 // vitest.config.ts) ist das verfuegbar; wir nutzen nur die zurueckgegebene In-Memory-Instanz.
 
 describe('computeSheet', () => {
+  it.each([[0, 4], [20, 5], [200, 6], [700, 7]])('zeigt bei %i EP das Attributmaximum %i', (ep, maximum) => {
+    const character = createCharacter('Attributgrenze');
+    character.values.ep_gesamt = ep;
+    const attributes = computeSheet(character).byKategorie['Attribute'].filter(row => row.rule.art === 'Wert');
+    expect(attributes.length).toBeGreaterThan(0);
+    for (const row of attributes) expect(row.fertigkeitMax).toBe(maximum);
+  });
+
   it('wendet den Blindheitsrabatt nur auf Blinder Kampf I an', () => {
     const normal = createCharacter('Normal');
     const normalRow = computeSheet(normal).byKategorie['Vor- und Nachteile']

@@ -12,11 +12,12 @@ const BASE_MAX_BY_KATEGORIE: Record<string, number> = {
   Fernkampf: 24,
   WHK: 24,
   Spruchmagie: 24,
-  Attribute: 7,
   KI: 24,
   PSI: 24,
 };
 
-export function getFertigkeitBaseMax(kategorie: string): number | undefined {
+export function getFertigkeitBaseMax(kategorie: string, kreis = 0): number | undefined {
+  // Kreis 0/1/2: 4/5/6; ab Kreis 3 bleibt das Basismaximum 7.
+  if (kategorie === 'Attribute') return 4 + Math.min(3, Math.max(0, Number.isFinite(kreis) ? Math.floor(kreis) : 0));
   return BASE_MAX_BY_KATEGORIE[kategorie];
 }

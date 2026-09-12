@@ -193,7 +193,8 @@ function computeRule(rule: RuleEntry, character: CharacterState, values: Charact
     const result: ComputedRule = { rule, currentValue };
     result.steigerungGesperrtGrund = getWertSperrgrund(rule, character);
     if (currentValue > 0 && result.steigerungGesperrtGrund) result.error = result.steigerungGesperrtGrund;
-    const fertigkeitBaseMax = getFertigkeitBaseMax(rule.kategorie);
+    const fertigkeitBaseMax = getFertigkeitBaseMax(rule.kategorie,
+      rule.kategorie === 'Attribute' ? Number(evalReferenz('kreis', values)) : 0);
     if (fertigkeitBaseMax !== undefined) {
       result.fertigkeitMax = fertigkeitBaseMax + getTalentMaximumBonus(character, rule.referenz, rule.kategorie);
     }

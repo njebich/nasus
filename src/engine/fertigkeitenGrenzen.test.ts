@@ -14,8 +14,9 @@ describe('getFertigkeitBaseMax (Nutzer 2026-07-18, im Zuge der Talente-Wirkung-A
     expect(getFertigkeitBaseMax('Spruchmagie')).toBe(24);
   });
 
-  it('Attribute haben Basis-Max 7', () => {
-    expect(getFertigkeitBaseMax('Attribute')).toBe(7);
+  it('Attribute haben ein kreisabhaengiges Basis-Maximum', () => {
+    expect(getFertigkeitBaseMax('Attribute')).toBe(4);
+    expect([0, 1, 2, 3, 4].map(kreis => getFertigkeitBaseMax('Attribute', kreis))).toEqual([4, 5, 6, 7, 7]);
   });
 
   it('KI/PSI haben Basis-Max 24 (Nutzer 2026-07-18, zweite Runde der Talente-Wirkung-Analyse)', () => {

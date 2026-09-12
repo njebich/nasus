@@ -29,12 +29,20 @@ export const HAENDLERTYPEN = [
   'Spezialisierter Händler',
   'Großer spezialisierter Händler',
 ] as const;
+/** Nutzer 2026-09-12: "Wachstation -> Festung in 7 Stufen" - militaerischer Vorrat unabhaengig
+ *  von Zivilhandel/-produktion (eine Festung muss nichts herstellen oder verkaufen, um Waffen auf
+ *  Lager zu haben). Wirkt nur auf Waffen/Ruestungs-Warengruppen, siehe garnisonsModifikator() in
+ *  engine/verfuegbarkeitOrt.ts. Optional - unbesetzt = kein besonderer militaerischer Vorrat (0). */
+export const GARNISONSGRADE = [
+  'Wachstation', 'Wachturm', 'Außenposten', 'Garnison', 'Kaserne', 'Fort', 'Festung',
+] as const;
 
 export type Welt = (typeof WELTEN)[number];
 export type Siedlungsgroesse = (typeof SIEDLUNGSGROESSEN)[number];
 export type Handelsstufe = (typeof HANDELSSTUFEN)[number];
 export type Herstellungsort = (typeof HERSTELLUNGSORTE)[number];
 export type Haendlertyp = (typeof HAENDLERTYPEN)[number];
+export type Garnisonsgrad = (typeof GARNISONSGRADE)[number];
 export type Volk = (typeof VOELKER_NAMEN)[number];
 
 const NICHT_SPEZIALISIERBAR = new Set(['Miete', 'Post', 'Reisekosten', 'Tavernen-Preise', 'Zoll']);
@@ -74,8 +82,18 @@ export interface Ort {
   etablierteMinderheiten: Volk[];
   handelsstufe?: Handelsstufe;
   herstellungsort?: Herstellungsort;
+  garnisonsgrad?: Garnisonsgrad;
   haendler: HaendlerAmOrt[];
   lokaleProduktion: LokaleProduktion[];
+  /** Nutzer 2026-09-12 ("Mango ohne Schiff/Flugzeug"-Regel): explizite Bestaetigung, welche
+   *  SELTENEN Materialien (Basis-Verfuegbarkeit >=3, siehe materialBrauchtOrtsBestaetigung in
+   *  engine/verfuegbarkeitOrt.ts) an diesem Ort vorraetig sind bzw. von einem hiesigen Handwerker
+   *  verarbeitet werden koennen. Fehlt ein Material in BEIDEN Listen, ist es hier hart nicht
+   *  kaufbar - unabhaengig von jedem Ortsmodifikator (Preisliste vs. Auftrag). Materialnamen wie
+   *  in NK_MATERIAL/SCHILD_MATERIAL/NK_SCHAFTMATERIAL (.name). Alltagsmaterial (Basis <=2, z.B.
+   *  Eisen/Holz/Leder) braucht keinen Eintrag - ist ueberall vorausgesetzt verfuegbar. */
+  materialVorrat?: readonly string[];
+  materialHerstellbar?: readonly string[];
   erstelltAm: string;
   aktualisiertAm: string;
 }
@@ -92,6 +110,7 @@ export function validateOrt(ort: Ort): string[] {
   if (ort.siedlungsgroesse && !SIEDLUNGSGROESSEN.includes(ort.siedlungsgroesse)) fehler.push(`Unbekannte Siedlungsgröße: ${ort.siedlungsgroesse}`);
   if (ort.handelsstufe && !HANDELSSTUFEN.includes(ort.handelsstufe)) fehler.push(`Unbekannte Handelsstufe: ${ort.handelsstufe}`);
   if (ort.herstellungsort && !HERSTELLUNGSORTE.includes(ort.herstellungsort)) fehler.push(`Unbekannter Herstellungsort: ${ort.herstellungsort}`);
+  if (ort.garnisonsgrad && !GARNISONSGRADE.includes(ort.garnisonsgrad)) fehler.push(`Unbekannter Garnisonsgrad: ${ort.garnisonsgrad}`);
   if (ort.hauptspezies && !VOELKER_NAMEN.includes(ort.hauptspezies)) fehler.push(`Unbekannte Hauptspezies: ${ort.hauptspezies}`);
   if (new Set(ort.etablierteMinderheiten).size !== ort.etablierteMinderheiten.length) fehler.push('Etablierte Minderheiten dürfen nicht doppelt vorkommen');
   if (ort.hauptspezies && ort.etablierteMinderheiten.includes(ort.hauptspezies)) fehler.push('Hauptspezies darf nicht zugleich Minderheit sein');
@@ -146,20 +165,36 @@ const VORDEFINIERTE_ORTE_ROH: Ort[] = [
   {
     // Nutzer 2026-09-12: Katharsis, die (neue) Hauptstadt der Zwerge - "absolutes Optimum an
     // Verfuegbarkeit fuer Artefakte, zwergische Waffen und ungewoehnliche Materialien" (uebernimmt
-    // den Titel "Großkönigliche Kernprovinz" von der gefallenen Zwogón/Isch-Isch). Welt ist noch
-    // nicht vom Nutzer bestaetigt - Annahme (AW), bei Bedarf anpassen.
+    // den Titel "Großkönigliche Kernprovinz" von der gefallenen Zwogón/Isch-Isch). Welt=AW vom
+    // Nutzer bestaetigt.
     id: 'katharsis', name: 'Katharsis', welt: 'AW', region: 'Großkönigliche Kernprovinz Katharsis',
     siedlungsgroesse: 'Metropole', hauptspezies: 'Zwerge', etablierteMinderheiten: ['Elfen', 'Trolle', 'Zentauren', 'Orks'],
     handelsstufe: 'Handelszentrum', herstellungsort: 'Herstellung direkt vor Ort',
     haendler: SPEZIALISIERBARE_WARENGRUPPEN.map((gruppe) => spezialisiert(gruppe, 'Großer spezialisierter Händler')),
-    lokaleProduktion: [], erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
+    lokaleProduktion: [],
+    // Annahme, nicht vom Nutzer einzeln bestaetigt: "ungewoehnliche Materialien" (Nutzer-Zitat)
+    // wird als Mithril/Nasium gelesen - die einzigen beiden Materialien, die ohnehin exklusiv
+    // Elfen/Zwerge zugewiesen sind. Faltstahl/Adamandit/etc. NICHT automatisch mitgesetzt - bei
+    // Bedarf ergaenzen.
+    materialHerstellbar: ['Mithril', 'Nasium'],
+    erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
   },
   {
     id: 'phoenix-feste', name: 'Phoenix-Feste', welt: 'NW', region: 'Neuweltliches Protektorat Neu-Zwogón',
     siedlungsgroesse: 'Dorf', hauptspezies: 'Zwerge', etablierteMinderheiten: ['Indianer'],
     handelsstufe: 'Handelsroute / Kleiner Handels-Hafen', herstellungsort: 'Import, wird nicht hergestellt',
+    // Nutzer 2026-09-12: "eine Festung, FK Waffen galore" - der Name sagt es schon. Der neue
+    // Garnisonsgrad (siehe GARNISONSGRADE oben) modelliert den militaerischen Waffen-/Ruestungs-
+    // Vorrat unabhaengig vom zivilen Dorf-Status (Siedlungsgroesse bleibt Dorf, die Festung ist ja
+    // kein grosses Dorf im Bevoelkerungssinn).
+    garnisonsgrad: 'Festung',
     haendler: [{ typ: 'Kleiner General Store', warengruppe: null }],
-    lokaleProduktion: [{ warengruppe: 'NK-Waffen', volk: 'Zwerge' }, { warengruppe: 'Rüstungen', volk: null }],
+    // Feuerwaffen lagert die Festung generell, nicht nur zwergisch gestylte Modelle (volk:null,
+    // wie bei Ruestungen). Fremde Stile bleiben ueber den Voelker-Modifikator teurer/seltener.
+    lokaleProduktion: [
+      { warengruppe: 'NK-Waffen', volk: 'Zwerge' }, { warengruppe: 'Feuerwaffen', volk: null },
+      { warengruppe: 'Rüstungen', volk: null },
+    ],
     erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
   },
 ];

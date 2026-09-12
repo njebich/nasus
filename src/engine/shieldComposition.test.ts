@@ -23,6 +23,8 @@ describe('composeShield (Nutzer 2026-07-17: Schilde haben auch Anpassung - Mater
     expect(result).toEqual({
       rs: 17, klingenbrecher: 15, klingenschutz: 13, at: -7, pa: 9, wk: 11,
       staerkeMalus: -5, minStaerke: 19, preis: 620, // Preis-Basis 600 * 1 * 1 + Stoff-Preis 20
+      // Basis (Drachenschild, kaufbar) 1/1, Feineisen 1/1, Gesellenarbeit 1/1, Stoff 1/1 -> Max 1/1.
+      verfuegbarkeitAw: 1, verfuegbarkeitNw: 1,
     });
   });
 
@@ -57,20 +59,32 @@ describe('composeShield (Nutzer 2026-07-17: Schilde haben auch Anpassung - Mater
   });
 });
 
-describe('istSchildKomponenteVerfuegbar (Nutzer 2026-07-17: Kolhartz/Kohlharz nur fuer Zentauren)', () => {
-  it('Kolhartz (Material) ist nur fuer Zentauren waehlbar', () => {
-    expect(istSchildKomponenteVerfuegbar('Kolhartz', 'Zentauren')).toBe(true);
-    expect(istSchildKomponenteVerfuegbar('Kolhartz', 'Mensch')).toBe(false);
-    expect(istSchildKomponenteVerfuegbar('Kolhartz', '')).toBe(false);
+describe('istSchildKomponenteVerfuegbar (Spec-Punkt 30/31: Voelkerzuweisung ueber die Volk-Spalte)', () => {
+  it('Kolharz (Material, vormals "Kolhartz" geschrieben) ist nur fuer Zentauren waehlbar', () => {
+    expect(istSchildKomponenteVerfuegbar(material('Kolharz'), 'Zentauren')).toBe(true);
+    expect(istSchildKomponenteVerfuegbar(material('Kolharz'), 'Mensch')).toBe(false);
+    expect(istSchildKomponenteVerfuegbar(material('Kolharz'), '')).toBe(false);
   });
 
   it('Kohlharz (Bespannung) ist nur fuer Zentauren waehlbar', () => {
-    expect(istSchildKomponenteVerfuegbar('Kohlharz', 'Zentauren')).toBe(true);
-    expect(istSchildKomponenteVerfuegbar('Kohlharz', 'Zwerge')).toBe(false);
+    expect(istSchildKomponenteVerfuegbar(bespannung('Kohlharz'), 'Zentauren')).toBe(true);
+    expect(istSchildKomponenteVerfuegbar(bespannung('Kohlharz'), 'Zwerge')).toBe(false);
   });
 
-  it('alle anderen Materialien/Bespannungen sind unabhaengig von der Spezies waehlbar', () => {
-    expect(istSchildKomponenteVerfuegbar('Feineisen', 'Mensch')).toBe(true);
-    expect(istSchildKomponenteVerfuegbar('Stahl', '')).toBe(true);
+  it('Goblin Massenfab. (Fertigung) ist nur fuer Goblins waehlbar (Punkt 30 letzter Satz)', () => {
+    expect(istSchildKomponenteVerfuegbar(fertigung('Goblin Massenfab.'), 'Goblins')).toBe(true);
+    expect(istSchildKomponenteVerfuegbar(fertigung('Goblin Massenfab.'), 'Zwerge')).toBe(false);
+  });
+
+  it('die zehn Metallmaterialien sind fuer Katzen/Indianer/Zentauren/Gnome gesperrt (Punkt 30)', () => {
+    expect(istSchildKomponenteVerfuegbar(material('Stahl'), 'Katzen')).toBe(false);
+    expect(istSchildKomponenteVerfuegbar(material('Stahl'), 'Zwerge')).toBe(true);
+  });
+
+  it('alle anderen Materialien/Fertigungen/Bespannungen sind unabhaengig von der Spezies waehlbar', () => {
+    expect(istSchildKomponenteVerfuegbar(material('Feineisen'), 'Mensch')).toBe(false); // Feineisen ist eines der zehn Metallmaterialien
+    expect(istSchildKomponenteVerfuegbar(material('Holz'), '')).toBe(true);
+    expect(istSchildKomponenteVerfuegbar(fertigung('Meisterarbeit'), '')).toBe(true);
+    expect(istSchildKomponenteVerfuegbar(bespannung('Stoff'), '')).toBe(true);
   });
 });

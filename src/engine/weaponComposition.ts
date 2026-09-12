@@ -40,7 +40,7 @@ function numOrNull(row: GenericRow | undefined, header: string): number | null {
  *  `NICHT KAUFBAR` (natuerliche Angriffe/Kampfstile, siehe add_nk_waffen_verfuegbarkeit.py). */
 export type Verfuegbarkeitswert = number | 'M' | 'NICHT KAUFBAR';
 
-function parseVerfuegbarkeit(row: GenericRow | undefined, header: string): Verfuegbarkeitswert | undefined {
+export function parseVerfuegbarkeit(row: GenericRow | undefined, header: string): Verfuegbarkeitswert | undefined {
   if (!row) return undefined;
   const raw = row[header];
   if (raw === undefined) return undefined;
@@ -50,8 +50,9 @@ function parseVerfuegbarkeit(row: GenericRow | undefined, header: string): Verfu
 }
 
 /** Spec-Punkt 23 (zusammengesetzte Ausrüstung): numerisches Maximum (schlechtestes Ergebnis),
- *  `M` schlaegt jeden numerischen Wert, `NICHT KAUFBAR` schlaegt alles. */
-function combineVerfuegbarkeit(...values: (Verfuegbarkeitswert | undefined)[]): Verfuegbarkeitswert | undefined {
+ *  `M` schlaegt jeden numerischen Wert, `NICHT KAUFBAR` schlaegt alles. Exportiert, weil dieselbe
+ *  Kompositionsregel auch fuer Schilde gilt (siehe shieldComposition.ts). */
+export function combineVerfuegbarkeit(...values: (Verfuegbarkeitswert | undefined)[]): Verfuegbarkeitswert | undefined {
   const defined = values.filter((v): v is Verfuegbarkeitswert => v !== undefined);
   if (defined.length === 0) return undefined;
   if (defined.includes('NICHT KAUFBAR')) return 'NICHT KAUFBAR';

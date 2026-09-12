@@ -4,10 +4,24 @@
 import type { CharacterState } from '../state/characterStore';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL, type GenericRow } from '../data/equipment/weapons';
 import { MELEE_WEAPON_BY_SOURCE_ROW } from '../engine/weaponCatalog';
-import { composeWeapon, istWaffenKomponenteVerfuegbar } from '../engine/weaponComposition';
+import { composeWeapon, istWaffenKomponenteVerfuegbar, parseVerfuegbarkeit } from '../engine/weaponComposition';
+import { materialBrauchtOrtsBestaetigung, istMaterialAmOrtSourcierbar } from '../engine/verfuegbarkeitOrt';
+import { getOrtById } from '../state/orteStore';
 import { describeWeaponSelection } from './weaponDisplay';
 import { escapeHtml, kaufenLabel, gesperrtLabel, bestehenderCharakterMode, statSnapshotTooltip } from './ausruestungShared';
 import type { AusruestungCallbacks } from './ausruestung';
+
+/** Materialoptionen fuer eine Waffenauswahl: Spezies-Filter (istWaffenKomponenteVerfuegbar) UND
+ *  das "Mango ohne Schiff/Flugzeug"-Ortsgate (Nutzer 2026-09-12) - ein seltenes Material, das am
+ *  Herkunftsort weder vorraetig noch herstellbar ist, taucht im Dropdown gar nicht erst auf
+ *  ("kein Nachdenken, Nachschlagen"). Bestehende Charaktere umgehen das Ortsgate (siehe buyWeapon). */
+function materialOptionenFuer(character: CharacterState): typeof NK_MATERIAL[number][] {
+  const ort = getOrtById(character.herkunftOrtId);
+  return NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies)
+    && (character.bestehenderCharakter
+      || !materialBrauchtOrtsBestaetigung(parseVerfuegbarkeit(m, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(m, 'Verfuegbarkeit-NW'))
+      || istMaterialAmOrtSourcierbar(ort, m.name)));
+}
 
 export const WEAPONS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] !== 'Schild');
 export const WEAPON_HAUPTFERTIGKEITEN = [...new Set(WEAPONS.map((r) => r['Hauptfertigkeit']).filter((v): v is string => !!v))].sort();
@@ -34,7 +48,7 @@ export function waffeBrauchtSchaftmaterial(row: GenericRow): boolean {
 
 export function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterState): string {
   const brauchtSchaft = waffeBrauchtSchaftmaterial(row);
-  const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
+  const materialOptionen = materialOptionenFuer(character);
   const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
   const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
   const schaftmaterialOptionen = brauchtSchaft
@@ -127,7 +141,7 @@ export function wireWaffenEvents(
       const weaponRow = MELEE_WEAPON_BY_SOURCE_ROW.get(String(weaponSourceRow));
       const brauchtSchaft = !!weaponRow && waffeBrauchtSchaftmaterial(weaponRow);
       const sel = weaponPicker.get(weaponSourceRow);
-      const materialOptionen = NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies));
+      const materialOptionen = materialOptionenFuer(character);
       const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
       const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
       const schaftmaterialOptionen = brauchtSchaft

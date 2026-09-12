@@ -2,8 +2,9 @@
 // Herkunftsorte.md, Abschnitt "Einheitliche Berechnungsstruktur"). Item-class-agnostisch: nimmt
 // die bereits vorhandene, katalogeigene Basisstufe (1-7) entgegen und verrechnet Siedlungsgroesse,
 // Handelsstufe, Herstellungsort (inkl. lokaler Produktion als Override), den guenstigsten
-// anwendbaren Haendler und - falls fuer den Katalog bekannt - die Voelkerzuweisung des
-// Gegenstands gegen die Ortsbevoelkerung. Ergebnis wird auf 1..7 begrenzt.
+// anwendbaren Haendler, Garnisonsgrad (militaerischer Vorrat, nur Waffen/Ruestung) und - falls
+// fuer den Katalog bekannt - die Voelkerzuweisung des Gegenstands gegen die Ortsbevoelkerung.
+// Ergebnis wird auf 1..7 begrenzt.
 //
 // Datenluecke (Stand 2026-09-11): eine AUSWAHL/ALLE-Voelkerzuweisung je Gegenstand existiert in
 // keinem ausgelieferten Katalog (weder werte 0.8-claude.xlsx noch den generierten JSONs) -
@@ -13,9 +14,22 @@
 // bewusst als 0 (= ALLE) behandelt, bis eine echte Voelkerzuweisung gepflegt ist - siehe
 // MEMORY-Verfuegbarkeiten-Herkunftsorte.md.
 
-import type { Ort, Volk } from '../data/orte';
+import type { Ort, Volk, Garnisonsgrad } from '../data/orte';
 
 export type WarenTarif = 'ruestungenWaffen' | 'artefakte';
+
+/** Nutzer 2026-09-12: "Wachstation -> Festung in 7 Stufen" - militaerischer Waffen-/Ruestungs-
+ *  vorrat, unabhaengig von Siedlungsgroesse/Handelsstufe/Herstellungsort (eine Festung muss nichts
+ *  herstellen oder verkaufen, um Waffen auf Lager zu haben). Wirkt NUR auf Waffen-/Ruestungs-
+ *  Warengruppen (nicht Artefakte, nicht generische Preisliste) und nur im ruestungenWaffen-Tarif -
+ *  siehe garnisonsModifikator(). Werte spiegeln die Siedlungsgroesse-Groessenordnung (Festung=-6
+ *  ist staerker als Metropole=-4, da eine Festung sich per Definition auf genau diesen Warenkreis
+ *  spezialisiert). Bewusste Annahme, vom Nutzer noch nicht kalibriert-bestaetigt. */
+const GARNISONSGRAD_MOD: Record<Garnisonsgrad, number> = {
+  'Wachstation': 0, 'Wachturm': -1, 'Außenposten': -2, 'Garnison': -3,
+  'Kaserne': -4, 'Fort': -5, 'Festung': -6,
+};
+const GARNISON_WARENGRUPPEN = new Set(['NK-Waffen', 'Fernkampfwaffen', 'Feuerwaffen', 'Rüstungen', 'Schilde']);
 
 function spalte(tarif: WarenTarif, [ruestungenWaffen, artefakte]: readonly [number, number]): number {
   return tarif === 'artefakte' ? artefakte : ruestungenWaffen;
@@ -82,8 +96,14 @@ export function volkAusAdjektiv(rohwert: string | undefined): Volk | undefined {
 }
 
 function herstellungsortModifikator(ort: Ort, warengruppe: string, tarif: WarenTarif, gegenstandVolk: Volk | undefined): number {
+  // Nutzer 2026-09-12: "kein Volk angegeben = alle Völker" - ein kulturell nicht gekennzeichneter
+  // Gegenstand (z.B. eine gewoehnliche Eisen-Axt ohne Volk-Tag) hat keinen Stil, der einer
+  // volksspezifischen lokalen Produktion (z.B. "NK-Waffen, von Zwergen") widerspraeche - er zaehlt
+  // also zu "alle Voelker" und matcht jede lokale Produktion dieser Warengruppe, nicht nur die mit
+  // volk:null. Ein Gegenstand mit einem ANDEREN spezifischen Volk-Tag (z.B. "Orks") matcht
+  // weiterhin nur volk:null oder das exakt gleiche Volk - siehe verfuegbarkeitOrt.test.ts.
   const lokalerTreffer = ort.lokaleProduktion.some((produktion) => produktion.warengruppe === warengruppe
-    && (produktion.volk === null || produktion.volk === gegenstandVolk));
+    && (produktion.volk === null || gegenstandVolk === undefined || produktion.volk === gegenstandVolk));
   if (lokalerTreffer) return spalte(tarif, HERSTELLUNGSORT_MOD['Herstellung direkt vor Ort']);
   if (!ort.herstellungsort) return 0;
   return spalte(tarif, HERSTELLUNGSORT_MOD[ort.herstellungsort] ?? [0, 0]);
@@ -105,6 +125,39 @@ function voelkerModifikator(ort: Ort, gegenstandVolk: Volk | undefined): number 
   return 3;
 }
 
+/** Garnisonsgrad wirkt unabhaengig von Kultur/Zivilhandel - selbst ein voelkerfremder Gegenstand
+ *  profitiert vom militaerischen Vorrat einer Festung (Nutzer 2026-09-12: "Feuerwaffen galore").
+ *  Nur fuer den ruestungenWaffen-Tarif und nur fuer Waffen-/Ruestungs-Warengruppen - eine Festung
+ *  lagert keine Artefakte oder generische Preislistenware zusaetzlich. */
+function garnisonsModifikator(ort: Ort, warengruppe: string, tarif: WarenTarif): number {
+  if (tarif !== 'ruestungenWaffen' || !ort.garnisonsgrad || !GARNISON_WARENGRUPPEN.has(warengruppe)) return 0;
+  return GARNISONSGRAD_MOD[ort.garnisonsgrad];
+}
+
+const MATERIAL_GATE_SCHWELLE = 3;
+
+/** Nutzer 2026-09-12 ("Mango ohne Schiff/Flugzeug"-Regel): ob ein Material ueberhaupt eine
+ *  Ort-Bestaetigung (materialVorrat/materialHerstellbar) braucht, um dort kaufbar zu sein. Nur
+ *  Materialien ab eigener Basis-Verfuegbarkeit 3 ("Haeufig" und seltener, z.B. Faltstahl 3/5,
+ *  Mithril 7/7) - Alltagsmaterial (Eisen/Holz/Leder/... <=2 in beiden Welten) ist ueberall
+ *  vorausgesetzt verfuegbar, keine Ort-Pflege noetig. `M`/`NICHT KAUFBAR` zaehlen als hoechste
+ *  Raritaet (immer gate-pflichtig). */
+export function materialBrauchtOrtsBestaetigung(
+  aw: number | 'M' | 'NICHT KAUFBAR' | undefined, nw: number | 'M' | 'NICHT KAUFBAR' | undefined,
+): boolean {
+  const stufe = (v: typeof aw): number => (v === undefined ? 0 : typeof v === 'number' ? v : 99);
+  return stufe(aw) >= MATERIAL_GATE_SCHWELLE || stufe(nw) >= MATERIAL_GATE_SCHWELLE;
+}
+
+/** Das eigentliche NEIN-Gate: ein gate-pflichtiges Material ist an einem Ort nur kaufbar, wenn es
+ *  dort vorraetig ODER herstellbar ist - sonst hart nicht kaufbar, UNABHAENGIG von jedem
+ *  Ortsmodifikator/Garnisonsgrad/Meisterwerk-Floor (Preisliste vs. Auftrag, siehe Datei-Kopf-
+ *  Beispiel). Fehlender Ort bleibt neutral (bestehende Konvention), analog zu ortsModifikator. */
+export function istMaterialAmOrtSourcierbar(ort: Ort | undefined, materialName: string): boolean {
+  if (!ort) return true;
+  return (ort.materialVorrat?.includes(materialName) ?? false) || (ort.materialHerstellbar?.includes(materialName) ?? false);
+}
+
 export interface OrtsModifikatorParams {
   ort: Ort | undefined;
   warengruppe: string;
@@ -123,7 +176,8 @@ export function ortsModifikator({ ort, warengruppe, tarif, gegenstandVolk }: Ort
   const herstellung = herstellungsortModifikator(ort, warengruppe, tarif, gegenstandVolk);
   const haendler = haendlerModifikator(ort, warengruppe, tarif);
   const voelker = voelkerModifikator(ort, gegenstandVolk);
-  return siedlungsgroesse + handelsstufe + herstellung + haendler + voelker;
+  const garnison = garnisonsModifikator(ort, warengruppe, tarif);
+  return siedlungsgroesse + handelsstufe + herstellung + haendler + voelker + garnison;
 }
 
 /** Grundwert (1-7) + Ortsmodifikator, auf 1..7 begrenzt. Ein fehlender Grundwert (Katalogeintrag

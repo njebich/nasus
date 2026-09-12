@@ -4,9 +4,9 @@
 import { ruestungSlotKey, type CharacterState } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
-import { composeArmor } from '../engine/armorComposition';
+import { composeArmor, istRuestungKomponenteVerfuegbar } from '../engine/armorComposition';
 import { formatDublonen } from '../utils/format';
-import { escapeHtml, kaufenLabel } from './ausruestungShared';
+import { escapeHtml, kaufenLabel, gesperrtLabel, bestehenderCharakterMode } from './ausruestungShared';
 import type { AusruestungCallbacks, RuestungGruppenSelection } from './ausruestung';
 
 // TZ-Gruppen x Lagen (Regel Nutzer 2026-07-17: "im character state muss die ruestung erfasst
@@ -50,13 +50,22 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
       </div>`;
   }
 
-  const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
-  if (optionen.length === 0) {
+  const lageOptionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
+  if (lageOptionen.length === 0) {
     // Lage 5 (Drachenschuppen/Spinnweben) hat noch keine Daten in Ruestung-Basis - Slot ist
     // strukturell vorbereitet, aber ohne Kaufoption bis die Daten+Sonderregeln stehen.
     return `
       <div class="ruestung-slot-row ausruestung-row">
         <span class="stat-label">Lage ${lage}: (noch keine Optionen hinterlegt)</span>
+      </div>`;
+  }
+  const optionen = lageOptionen.filter((r) => istRuestungKomponenteVerfuegbar(r, character.spezies));
+  if (optionen.length === 0) {
+    // Spec-Punkt 28: manche Voelker (z.B. Katzen bei Lage 3 - alle 6 Lage-3-Basen sind
+    // Kettenruestungen) stellen fuer diese Lage schlicht nichts her, unabhaengig von Daten.
+    return `
+      <div class="ruestung-slot-row ausruestung-row">
+        <span class="stat-label">Lage ${lage}: (von '${escapeHtml(character.spezies)}' nicht hergestellt)</span>
       </div>`;
   }
 
@@ -84,6 +93,11 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
   const verarbeitung = RUESTUNG_VERARBEITUNG.find((r) => r.sourceRow === sel.verarbeitungSourceRow) ?? RUESTUNG_VERARBEITUNG[0];
   const anpassung = RUESTUNG_ANPASSUNG.find((r) => r.sourceRow === sel.anpassungSourceRow) ?? RUESTUNG_ANPASSUNG[0];
   const composed = composeArmor(basis, verarbeitung, anpassung);
+  // Nur ein grober Vor-Check (analog zu Waffen/Schilden/Alchemika/Fernkampf) - ohne
+  // Ortsmodifikator, der bleibt dem eigentlichen Kauf in characterMutations.ts vorbehalten.
+  const weltVerfuegbarkeit = character.herkunftSnapshot?.welt === 'NW' ? composed.verfuegbarkeitNw
+    : character.herkunftSnapshot?.welt === 'AW' ? composed.verfuegbarkeitAw : undefined;
+  const gesperrt = !bestehenderCharakterMode && weltVerfuegbarkeit !== undefined && weltVerfuegbarkeit >= 5;
 
   return `
     <div class="ruestung-slot-row ausruestung-row" data-slot="${key}" data-gruppe="${gruppe}" data-lage="${lage}">
@@ -96,7 +110,7 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
         ${RUESTUNG_ANPASSUNG.map((r) => `<option value="${r.sourceRow}" ${r.sourceRow === anpassung.sourceRow ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('')}
       </select>
       <span class="stat-cost">RS ${composed.rs} | RH ${composed.rh} | ${composed.preis} D</span>
-      <button type="button" class="ausruestung-buy-button ruestung-equip" data-gruppe="${gruppe}" data-lage="${lage}">${kaufenLabel(composed.preis)}</button>
+      <button type="button" class="ausruestung-buy-button ruestung-equip${gesperrt ? ' ausruestung-buy-locked' : ''}" data-gruppe="${gruppe}" data-lage="${lage}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(weltVerfuegbarkeit!) : kaufenLabel(composed.preis)}</button>
     </div>`;
 }
 
@@ -223,7 +237,7 @@ export function wireRuestungEvents(
       const gruppe = btn.dataset.gruppe as RsGruppe;
       const lage = Number(btn.dataset.lage);
       const sel = slotPicker.get(ruestungSlotKey(gruppe, lage));
-      const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
+      const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage && istRuestungKomponenteVerfuegbar(r, character.spezies));
       const basisSourceRow = sel?.basisSourceRow ?? optionen[0]?.sourceRow;
       const verarbeitungSourceRow = sel?.verarbeitungSourceRow ?? RUESTUNG_VERARBEITUNG[0]?.sourceRow;
       const anpassungSourceRow = sel?.anpassungSourceRow ?? RUESTUNG_ANPASSUNG[0]?.sourceRow;

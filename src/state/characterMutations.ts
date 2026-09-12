@@ -15,9 +15,9 @@ import { getSchlechteEigenschaftZielReferenz, getSchlechteEigenschaftMax } from 
 import { GEWEIHTER_TALENT_PREFIX, hasGeweihterTalent, isGeweihterReferenzErlaubt } from '../engine/geweihte';
 import { getVorstufeReferenz, getHoehereStufenReferenzen, getTalentStufeInfo } from '../engine/talenteStufenKette';
 import { previewPreislistePrice, previewArtefaktPrice, type ArtefaktVariant } from '../engine/equipmentPricing';
-import { composeArmor } from '../engine/armorComposition';
+import { composeArmor, istRuestungKomponenteVerfuegbar } from '../engine/armorComposition';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
-import { composeWeapon, istWaffenKomponenteVerfuegbar, type Verfuegbarkeitswert } from '../engine/weaponComposition';
+import { composeWeapon, istWaffenKomponenteVerfuegbar, parseVerfuegbarkeit, type Verfuegbarkeitswert } from '../engine/weaponComposition';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
@@ -28,7 +28,9 @@ import {
   createRangedAmmoInventorySnapshot, createRangedWeaponInventorySnapshot,
 } from '../engine/rangedInventorySnapshot';
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
-import { effektiveVerfuegbarkeit, volkAusAdjektiv } from '../engine/verfuegbarkeitOrt';
+import {
+  effektiveVerfuegbarkeit, volkAusAdjektiv, materialBrauchtOrtsBestaetigung, istMaterialAmOrtSourcierbar,
+} from '../engine/verfuegbarkeitOrt';
 import { getOrtById } from './orteStore';
 import type { Volk } from '../data/orte';
 import { VOELKER_NAMEN } from '../engine/voelker';
@@ -734,6 +736,9 @@ export function equipRuestung(
   if (Number(basis['Lage']) !== lage) {
     throw new MutationError(`'${basis.name}' hat Lage ${basis['Lage']}, passt nicht in den Lage-${lage}-Slot`);
   }
+  if (!istRuestungKomponenteVerfuegbar(basis, character.spezies)) {
+    throw new MutationError(`'${basis.name}' wird von '${character.spezies}' nicht hergestellt`);
+  }
 
   const composed = composeArmor(basis, verarbeitung, anpassung);
 
@@ -794,17 +799,21 @@ export function buyShield(
   if (!material) throw new MutationError(`Schild-Material (Zeile ${materialSourceRow}) existiert nicht`);
   if (!fertigung) throw new MutationError(`Schild-Fertigung (Zeile ${fertigungSourceRow}) existiert nicht`);
   if (!bespannung) throw new MutationError(`Schild-Bespannung (Zeile ${bespannungSourceRow}) existiert nicht`);
-  if (!istSchildKomponenteVerfuegbar(material.name, character.spezies)) {
-    throw new MutationError(`Material '${material.name}' ist nur für Zentauren verfügbar`);
+  if (!istSchildKomponenteVerfuegbar(material, character.spezies)) {
+    throw new MutationError(`Material '${material.name}' ist für '${character.spezies}' nicht verfügbar`);
   }
-  if (!istSchildKomponenteVerfuegbar(bespannung.name, character.spezies)) {
-    throw new MutationError(`Bespannung '${bespannung.name}' ist nur für Zentauren verfügbar`);
+  if (!istSchildKomponenteVerfuegbar(fertigung, character.spezies)) {
+    throw new MutationError(`Fertigung '${fertigung.name}' ist für '${character.spezies}' nicht verfügbar`);
+  }
+  if (!istSchildKomponenteVerfuegbar(bespannung, character.spezies)) {
+    throw new MutationError(`Bespannung '${bespannung.name}' ist für '${character.spezies}' nicht verfügbar`);
   }
 
   const composed = composeShield(row, material, fertigung, bespannung);
   if (composed.preis === null) {
     throw new MutationError(`Kein automatischer Preis für diese Kombination (Materialpreis liegt im Ermessen der Spielleitung)`);
   }
+  assertWeaponVerfuegbar(character, row.name, composed.verfuegbarkeitAw, composed.verfuegbarkeitNw, undefined, 'Schilde');
 
   const candidate = clone(character);
   const entry: EquipmentEntry = {
@@ -836,10 +845,13 @@ function weaponGegenstandVolk(volkRoh: string | undefined): Volk | undefined {
 /** Analog zu equipRuestung/assertFernkampfVerfuegbar: AW/NW nach Herkunfts-Welt waehlen, dann
  *  Ortsmodifikator anwenden. `M` und `NICHT KAUFBAR` sind nicht numerisch (siehe
  *  engine/verfuegbarkeitOrt.ts) und werden fuer die Charaktererschaffung direkt gesperrt - dieses
- *  Tool hat (noch) keinen Meister-Modul-Freigabepfad, ueber den `M` je zulaessig waere. */
+ *  Tool hat (noch) keinen Meister-Modul-Freigabepfad, ueber den `M` je zulaessig waere.
+ *  `warengruppe` per Default 'NK-Waffen' (urspruenglicher Zweck dieser Funktion), aber auch fuer
+ *  Schilde ('Schilde') wiederverwendet - siehe buyShield. */
 function assertWeaponVerfuegbar(
   character: CharacterState, name: string,
   aw: Verfuegbarkeitswert | undefined, nw: Verfuegbarkeitswert | undefined, gegenstandVolk: Volk | undefined,
+  warengruppe: string = 'NK-Waffen',
 ): void {
   if (character.bestehenderCharakter) return;
   const welt = character.herkunftSnapshot?.welt;
@@ -848,7 +860,7 @@ function assertWeaponVerfuegbar(
   if (roh === 'NICHT KAUFBAR') throw new MutationError(`'${name}' ist nicht käuflich`);
   if (roh === 'M') throw new MutationError(`'${name}' ist nur im Meister-Modul verfügbar (Verfügbarkeit M)`);
   const effektiv = effektiveVerfuegbarkeit(roh, {
-    ort: getOrtById(character.herkunftOrtId), warengruppe: 'NK-Waffen', tarif: 'ruestungenWaffen', gegenstandVolk,
+    ort: getOrtById(character.herkunftOrtId), warengruppe, tarif: 'ruestungenWaffen', gegenstandVolk,
   });
   if (effektiv !== undefined && effektiv >= VERFUEGBARKEIT_SPERRE_AB) {
     throw new MutationError(`'${name}' ist in ${welt} nicht verfügbar (Verfügbarkeit ${effektiv})`);
@@ -880,6 +892,15 @@ export function buyWeapon(
   if (!schaftmaterial) throw new MutationError(`Schaftmaterial (Zeile ${schaftmaterialSourceRow}) existiert nicht`);
   if (!istWaffenKomponenteVerfuegbar(material, character.spezies)) {
     throw new MutationError(`Material '${material.name}' ist für '${character.spezies}' nicht verfügbar`);
+  }
+  // Nutzer 2026-09-12 ("Mango ohne Schiff/Flugzeug"): ein seltenes Material (Faltstahl, Mithril,
+  // ...) ist an einem Ort nur kaufbar, wenn es dort vorraetig oder herstellbar ist - unabhaengig
+  // vom Ortsmodifikator/Garnisonsgrad/Meisterwerk-Floor. Bestehende Charaktere ausgenommen, analog
+  // zu allen anderen Kaufsperren.
+  if (!character.bestehenderCharakter
+    && materialBrauchtOrtsBestaetigung(parseVerfuegbarkeit(material, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(material, 'Verfuegbarkeit-NW'))
+    && !istMaterialAmOrtSourcierbar(getOrtById(character.herkunftOrtId), material.name)) {
+    throw new MutationError(`Material '${material.name}' ist an diesem Ort weder vorrätig noch herstellbar (kein Preislisten-Artikel, ggf. als Auftrag möglich)`);
   }
   if (!istWaffenKomponenteVerfuegbar(fertigung, character.spezies)) {
     throw new MutationError(`Fertigung '${fertigung.name}' ist für '${character.spezies}' nicht verfügbar`);

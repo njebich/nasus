@@ -7,8 +7,8 @@ import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../da
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 
-function withDublonen(bank: number) {
-  const character = createCharacter('Test');
+function withDublonen(bank: number, spezies = '') {
+  const character = createCharacter('Test', { spezies });
   character.values['dublonen_bank'] = bank;
   return character;
 }
@@ -79,9 +79,12 @@ describe('Verfuegbarkeit-NW/-AW Kaufsperre (Nutzer 2026-07-18: ab Stufe 5 "Fast 
   const gesellenarbeit = RUESTUNG_VERARBEITUNG.find((r) => r.name === 'Gesellenarbeit')!;
   const vonDerStange = RUESTUNG_ANPASSUNG.find((r) => r.name === 'von der Stange')!;
 
+  // Faltstahlpanzer ist eine der 6 Metallplattenruestungen (Spec-Punkt 28) - 'Zwerge' ist in jeder
+  // AUSWAHL-Liste dieses Tests enthalten, damit der neue Herstellerzuweisungs-Hardblock
+  // (istRuestungKomponenteVerfuegbar) die hier getestete Ortsmodifikator-Sperre nicht ueberdeckt.
   function withWelt(welt: 'AW' | 'NW', bank: number) {
     const character = createCharacter('Test', {
-      herkunftOrtId: 'test-ort', herkunftSnapshot: { name: 'Testort', region: 'Testregion', welt },
+      spezies: 'Zwerge', herkunftOrtId: 'test-ort', herkunftSnapshot: { name: 'Testort', region: 'Testregion', welt },
     });
     character.values['dublonen_bank'] = bank;
     return character;
@@ -112,7 +115,7 @@ describe('Verfuegbarkeit-NW/-AW Kaufsperre (Nutzer 2026-07-18: ab Stufe 5 "Fast 
   });
 
   it('keine Region gewaehlt: keine Sperre (analog zu unbekannter Spezies bei Eigenschaften)', () => {
-    const character = createCharacter('Test'); // Herkunft/Welt bleibt leer
+    const character = createCharacter('Test', { spezies: 'Zwerge' }); // Herkunft/Welt bleibt leer
     character.values['dublonen_bank'] = 100000;
     const updated = equipRuestung(
       character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
@@ -160,7 +163,9 @@ describe('buyShield (Regel Nutzer 2026-07-17: Schilde komponiert aus Basis x Mat
   const komponiertesPreis = composeShield(shieldRow, feineisen, gesellenarbeit, stoff).preis!;
 
   it('kauft ein Schild zum komponierten Preis (Basis x Material x Fertigung + Bespannung)', () => {
-    const character = withDublonen(komponiertesPreis);
+    // Feineisen ist eines der zehn Metallmaterialien (Spec-Punkt 30) - 'Zwerge' ist in der
+    // AUSWAHL-Liste enthalten.
+    const character = withDublonen(komponiertesPreis, 'Zwerge');
     const updated = buyShield(character, shieldRow.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow);
     expect(computeSheet(updated).dublonenSpent).toBe(komponiertesPreis);
     expect(updated.equipment[0].computedStatsSnapshot?.rs).toBe(Number(shieldRow['RS-Basis']));
@@ -172,18 +177,18 @@ describe('buyShield (Regel Nutzer 2026-07-17: Schilde komponiert aus Basis x Mat
     expect(() => buyShield(character, nonShield.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
   });
 
-  it('lehnt Kolhartz-Material ab, wenn der Charakter kein Zentaure ist (Nutzer 2026-07-17)', () => {
-    const kolhartz = SCHILD_MATERIAL.find((r) => r.name === 'Kolhartz')!;
+  it('lehnt Kolharz-Material ab, wenn der Charakter kein Zentaure ist (Nutzer 2026-07-17, Material vormals "Kolhartz" geschrieben)', () => {
+    const kolharz = SCHILD_MATERIAL.find((r) => r.name === 'Kolharz')!;
     const character = createCharacter('Test', { spezies: 'Mensch' });
     character.values['dublonen_bank'] = 100000;
-    expect(() => buyShield(character, shieldRow.sourceRow, kolhartz.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
+    expect(() => buyShield(character, shieldRow.sourceRow, kolharz.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
   });
 
-  it('erlaubt Kolhartz-Material fuer Zentauren-Charaktere', () => {
-    const kolhartz = SCHILD_MATERIAL.find((r) => r.name === 'Kolhartz')!;
+  it('erlaubt Kolharz-Material fuer Zentauren-Charaktere', () => {
+    const kolharz = SCHILD_MATERIAL.find((r) => r.name === 'Kolharz')!;
     const character = createCharacter('Test', { spezies: 'Zentauren' });
     character.values['dublonen_bank'] = 100000;
-    const updated = buyShield(character, shieldRow.sourceRow, kolhartz.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow);
+    const updated = buyShield(character, shieldRow.sourceRow, kolharz.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow);
     expect(updated.equipment).toHaveLength(1);
   });
 
@@ -194,7 +199,7 @@ describe('buyShield (Regel Nutzer 2026-07-17: Schilde komponiert aus Basis x Mat
   });
 
   it('removeEquipment entfernt den Schild-Kauf wieder', () => {
-    const character = withDublonen(komponiertesPreis);
+    const character = withDublonen(komponiertesPreis, 'Zwerge');
     const updated = buyShield(character, shieldRow.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow);
     const removed = removeEquipment(updated, updated.equipment[0].id);
     expect(computeSheet(removed).dublonenSpent).toBe(0);

@@ -5,32 +5,40 @@ import type { CharacterState } from '../state/characterStore';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
-import { escapeHtml, kaufenLabel, statSnapshotTooltip } from './ausruestungShared';
+import { escapeHtml, kaufenLabel, gesperrtLabel, bestehenderCharakterMode, statSnapshotTooltip } from './ausruestungShared';
 import type { AusruestungCallbacks } from './ausruestung';
 
 export const SHIELDS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] === 'Schild');
 
 /** Transiente Picker-Auswahl je Schild (Regel Nutzer 2026-07-17: "die haben auch Anpassung" -
- *  Material/Fertigung/Bespannung, analog zum Ruestungs-Slot-Picker). Kolhartz(Material)/
- *  Kohlharz(Bespannung) sind nur fuer Zentauren waehlbar, siehe istSchildKomponenteVerfuegbar. */
+ *  Material/Fertigung/Bespannung, analog zum Ruestungs-Slot-Picker). Manche Material-/Fertigungs-
+ *  Zeilen sind nur fuer bestimmte Voelker waehlbar (Spec-Punkt 30/31), siehe
+ *  istSchildKomponenteVerfuegbar. */
 const shieldPicker = new Map<number, { materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>();
 
 export function renderShieldRow(row: (typeof SHIELDS)[number], character: CharacterState): string {
-  const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m.name, character.spezies));
-  const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b.name, character.spezies));
+  const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m, character.spezies));
+  const fertigungOptionen = SCHILD_FERTIGUNG.filter((f) => istSchildKomponenteVerfuegbar(f, character.spezies));
+  const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b, character.spezies));
   const sel = shieldPicker.get(row.sourceRow) ?? {
     materialSourceRow: materialOptionen[0]?.sourceRow ?? 0,
-    fertigungSourceRow: SCHILD_FERTIGUNG[0]?.sourceRow ?? 0,
+    fertigungSourceRow: fertigungOptionen[0]?.sourceRow ?? 0,
     bespannungSourceRow: bespannungOptionen[0]?.sourceRow ?? 0,
   };
   const material = materialOptionen.find((m) => m.sourceRow === sel.materialSourceRow) ?? materialOptionen[0];
-  const fertigung = SCHILD_FERTIGUNG.find((f) => f.sourceRow === sel.fertigungSourceRow) ?? SCHILD_FERTIGUNG[0];
+  const fertigung = fertigungOptionen.find((f) => f.sourceRow === sel.fertigungSourceRow) ?? fertigungOptionen[0];
   const bespannung = bespannungOptionen.find((b) => b.sourceRow === sel.bespannungSourceRow) ?? bespannungOptionen[0];
   const composed = composeShield(row, material, fertigung, bespannung);
   const statTooltip = statSnapshotTooltip({
     rs: composed.rs, klingenbrecher: composed.klingenbrecher, klingenschutz: composed.klingenschutz,
     at: composed.at, pa: composed.pa, wk: composed.wk, staerkeMalus: composed.staerkeMalus, minStaerke: composed.minStaerke,
   });
+  // Nur ein grober Vor-Check (analog zu Waffen/Alchemika/Fernkampf) - ohne Ortsmodifikator, der
+  // bleibt dem eigentlichen Kauf in characterMutations.ts vorbehalten (siehe assertWeaponVerfuegbar).
+  const weltVerfuegbarkeit = character.herkunftSnapshot?.welt === 'NW' ? composed.verfuegbarkeitNw
+    : character.herkunftSnapshot?.welt === 'AW' ? composed.verfuegbarkeitAw : undefined;
+  const gesperrt = !bestehenderCharakterMode && weltVerfuegbarkeit !== undefined
+    && (weltVerfuegbarkeit === 'M' || weltVerfuegbarkeit === 'NICHT KAUFBAR' || weltVerfuegbarkeit >= 5);
 
   return `
     <div class="ausruestung-row" data-shield="${row.sourceRow}"${statTooltip}>
@@ -39,14 +47,14 @@ export function renderShieldRow(row: (typeof SHIELDS)[number], character: Charac
         ${materialOptionen.map((m) => `<option value="${m.sourceRow}" ${m.sourceRow === material.sourceRow ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('')}
       </select>
       <select class="schild-fertigung-select" data-shield="${row.sourceRow}">
-        ${SCHILD_FERTIGUNG.map((f) => `<option value="${f.sourceRow}" ${f.sourceRow === fertigung.sourceRow ? 'selected' : ''}>${escapeHtml(f.name)}</option>`).join('')}
+        ${fertigungOptionen.map((f) => `<option value="${f.sourceRow}" ${f.sourceRow === fertigung.sourceRow ? 'selected' : ''}>${escapeHtml(f.name)}</option>`).join('')}
       </select>
       <select class="schild-bespannung-select" data-shield="${row.sourceRow}">
         ${bespannungOptionen.map((b) => `<option value="${b.sourceRow}" ${b.sourceRow === bespannung.sourceRow ? 'selected' : ''}>${escapeHtml(b.name)}</option>`).join('')}
       </select>
       <span class="stat-cost">RS ${composed.rs}${composed.preis === null ? ' | kein Preis (Meister-Ermessen)' : ''}</span>
       ${composed.preis !== null
-    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-shield" data-shield="${row.sourceRow}">${kaufenLabel(composed.preis)}</button>`
+    ? `<button type="button" class="ausruestung-buy-button ausruestung-buy-shield${gesperrt ? ' ausruestung-buy-locked' : ''}" data-shield="${row.sourceRow}" ${gesperrt ? 'disabled' : ''}>${gesperrt ? gesperrtLabel(weltVerfuegbarkeit!) : kaufenLabel(composed.preis)}</button>`
     : '<span></span>'}
     </div>`;
 }
@@ -78,10 +86,11 @@ export function wireSchildEvents(
     btn.addEventListener('click', () => {
       const shieldSourceRow = Number(btn.dataset.shield);
       const sel = shieldPicker.get(shieldSourceRow);
-      const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m.name, character.spezies));
-      const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b.name, character.spezies));
+      const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m, character.spezies));
+      const fertigungOptionen = SCHILD_FERTIGUNG.filter((f) => istSchildKomponenteVerfuegbar(f, character.spezies));
+      const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b, character.spezies));
       const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;
-      const fertigungSourceRow = sel?.fertigungSourceRow ?? SCHILD_FERTIGUNG[0]?.sourceRow;
+      const fertigungSourceRow = sel?.fertigungSourceRow ?? fertigungOptionen[0]?.sourceRow;
       const bespannungSourceRow = sel?.bespannungSourceRow ?? bespannungOptionen[0]?.sourceRow;
       if (materialSourceRow === undefined || fertigungSourceRow === undefined || bespannungSourceRow === undefined) return;
       callbacks.onBuyShield(shieldSourceRow, materialSourceRow, fertigungSourceRow, bespannungSourceRow);

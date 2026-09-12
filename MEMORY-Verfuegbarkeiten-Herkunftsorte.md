@@ -1,5 +1,43 @@
 # Memory: Verfügbarkeiten und Herkunftsorte
 
+## Stand 2026-09-12 (aktuell) — Übergabe für neue Session
+
+Der Rest dieser Datei (ab "Stand: 2026-07-19") ist der alte, längst überholte manuelle
+Preislisten-Audit-Workflow. Seit 2026-09 ist die Verfügbarkeit tatsächlich implementiert (Code,
+nicht mehr nur Excel-Audit). Aktueller Stand hier zusammengefasst, Details in Claude-Memory
+`project_verfuegbarkeit_ortsmodifikator_status.md` (nur für Claude-Code-Sessions sichtbar, dieser
+Abschnitt hier ist die Repo-Version für jede Session/jeden Menschen).
+
+**Bereits verdrahtet:**
+- NK-Waffen komplett (`add_nk_waffen_verfuegbarkeit.py`): alle 5 Sheets haben Verfügbarkeit-AW/NW,
+  `composeWeapon` liefert `verfuegbarkeitAw/Nw`, `buyWeapon` gated über den Ortsmodifikator.
+- Ortsmodifikator (`engine/verfuegbarkeitOrt.ts`): Siedlungsgröße + Handelsstufe + Herstellungsort
+  (inkl. lokaler Produktion als Override) + Händler + Völker + **Garnisonsgrad** (neu: 7-stufige
+  Achse Wachstation→Festung, militärischer Waffen-/Rüstungsvorrat unabhängig von Zivilhandel).
+- **Floor**: Basisstufe 7 ("Einzigartig") fällt durch keinen Ortsbonus unter effektiv 5.
+- **Material-Sourcing-Gate** ("Mango ohne Schiff/Flugzeug"-Regel): Materialien ab eigener
+  Basis-Verfügbarkeit ≥3 (Faltstahl, Mithril, ...) brauchen eine explizite Bestätigung am Ort
+  (`Ort.materialVorrat`/`materialHerstellbar`) — sonst hart nicht kaufbar, unabhängig von jedem
+  Ortsmodifikator/Garnison/Floor. Alltagsmaterial (≤2, Eisen/Holz/Leder/...) ist überall
+  vorausgesetzt verfügbar, keine Ort-Pflege nötig. Bisher nur für NK-Waffen verdrahtet.
+- **Voller Material-Kanon** (19 NK-Material-Zeilen, identisch Schild-Material) einmal komplett mit
+  dem Nutzer durchgegangen und korrigiert — siehe Claude-Memory für die volle Liste. Größte Fixes:
+  Bronze (nur Katzen/Indianer, nicht die 7-Völker-Metallliste), Stein (nur Indianer, nicht ALLE),
+  Chitin (Katzen/Draw/Zwerge/Indianer, nicht ALLE), "Alchemistensilb." → "Alchemistensilber"
+  umbenannt.
+- Orte: Zwogón existiert nicht mehr (Zwerge vertrieben) → **Isch-Isch** (goblinisch). Neue
+  zwergische Hauptstadt **Katharsis** übernimmt den Titel "Großkönigliche Kernprovinz".
+
+**Noch offen:**
+- Fertigung/Anpassung/Schaftmaterial noch nicht durch den Material-Kanon-Pass gegangen.
+- Ort-Kanon (welches seltene Material ist WO vorrätig/herstellbar) nur für Katharsis gesetzt
+  (Mithril/Nasium) — Straitmor/Isch-Isch/Phoenix-Feste komplett leer.
+- Material-Gate nur NK-Waffen, nicht Rüstung/Schild.
+- Preisliste (973 Zeilen) weiterhin ganz ohne Verfügbarkeit/Völkerzuweisung — größter
+  verbleibender Batzen im Gesamtprojekt (siehe unten, "965 offen").
+
+---
+
 Stand: 2026-07-19
 
 ## Zwingende Arbeitsregeln

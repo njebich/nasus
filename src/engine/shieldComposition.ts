@@ -7,12 +7,13 @@
 // (preis=null), analog zu previewPreislistePrice.
 //
 // Regel Nutzer 2026-07-17 zu Kolharz (Material, urspruenglich "Kolhartz" geschrieben) / Kohlharz
-// (Bespannung) - beide "nur bei Zentauren auf dem Trollkontinent erhaeltlich": fuer Zentauren
-// normal nutzbar (ihr vorhandener Preis-Faktor/-Preis in der Quelle ist bereits guenstig, keine
-// Sonderrechnung noetig), fuer alle anderen Spezies nicht waehlbar. Seit der Voelkerzuweisung
-// (Spec-Punkt 30/31, 2026-09-12) ueber eine echte `Volk`-Spalte statt Namenslisten geloest, siehe
-// istSchildKomponenteVerfuegbar() - betrifft inzwischen auch die zehn Metallmaterialien und
-// "Goblin Massenfab." (Fertigung).
+// (Bespannung) - beide "nur bei Zentauren auf dem Trollkontinent erhaeltlich": seit der
+// Voelkerzuweisung (Spec-Punkt 30/31, 2026-09-12) ueber eine echte `Volk`-Spalte geloest (betrifft
+// inzwischen auch die zehn Metallmaterialien und "Goblin Massenfab." (Fertigung)). Die
+// Voelkerzuweisung ist KEINE Kaeufer-Sperre (Nutzer 2026-09-12: "Trolle stellen keine Kette her,
+// aber andere koennen Kette fuer Trolle herstellen") - sie fliesst stattdessen als
+// Ortsbevoelkerungs-Abgleich in effektiveVerfuegbarkeitKomponenten() (verfuegbarkeitOrt.ts) ein,
+// siehe characterMutations.ts buyShield.
 //
 // Regel Nutzer 2026-07-17 zu Adamandit: sein Klingenschutz-Mod steht in der Quelle als "+50%"
 // statt eines Flachwerts wie ueberall sonst in dieser Spalte - wird wortgetreu als
@@ -104,14 +105,4 @@ export function composeShield(
   );
 
   return { rs, klingenbrecher, klingenschutz, at, pa, wk, staerkeMalus, minStaerke, preis, verfuegbarkeitAw, verfuegbarkeitNw };
-}
-
-/** Manche Schild-Material/-Fertigung/-Bespannung-Zeilen sind nur von bestimmten Voelkern
- *  herstellbar (Spec-Punkt 30/31: Metallmaterialien, Kolharz, Goblin Massenfab.) - analog zu
- *  istWaffenKomponenteVerfuegbar/istRuestungKomponenteVerfuegbar. Fehlendes/`ALLE`-Volk ist fuer
- *  jede Spezies waehlbar. */
-export function istSchildKomponenteVerfuegbar(row: GenericRow, spezies: string): boolean {
-  const volk = row['Volk'];
-  if (!volk || volk === 'ALLE') return true;
-  return volk.split(',').map((v) => v.trim()).includes(spezies);
 }

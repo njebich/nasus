@@ -4,23 +4,25 @@
 import type { CharacterState } from '../state/characterStore';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL, type GenericRow } from '../data/equipment/weapons';
 import { MELEE_WEAPON_BY_SOURCE_ROW } from '../engine/weaponCatalog';
-import { composeWeapon, istWaffenKomponenteVerfuegbar, parseVerfuegbarkeit } from '../engine/weaponComposition';
+import { composeWeapon, parseVerfuegbarkeit } from '../engine/weaponComposition';
 import { materialBrauchtOrtsBestaetigung, istMaterialAmOrtSourcierbar } from '../engine/verfuegbarkeitOrt';
 import { getOrtById } from '../state/orteStore';
 import { describeWeaponSelection } from './weaponDisplay';
 import { escapeHtml, kaufenLabel, gesperrtLabel, bestehenderCharakterMode, statSnapshotTooltip } from './ausruestungShared';
 import type { AusruestungCallbacks } from './ausruestung';
 
-/** Materialoptionen fuer eine Waffenauswahl: Spezies-Filter (istWaffenKomponenteVerfuegbar) UND
- *  das "Mango ohne Schiff/Flugzeug"-Ortsgate (Nutzer 2026-09-12) - ein seltenes Material, das am
- *  Herkunftsort weder vorraetig noch herstellbar ist, taucht im Dropdown gar nicht erst auf
- *  ("kein Nachdenken, Nachschlagen"). Bestehende Charaktere umgehen das Ortsgate (siehe buyWeapon). */
+/** Materialoptionen fuer eine Waffenauswahl: das "Mango ohne Schiff/Flugzeug"-Ortsgate (Nutzer
+ *  2026-09-12) - ein seltenes Material, das am Herkunftsort weder vorraetig noch herstellbar ist,
+ *  taucht im Dropdown gar nicht erst auf ("kein Nachdenken, Nachschlagen"). Bestehende Charaktere
+ *  umgehen das Ortsgate (siehe buyWeapon). Spezies filtert NICHT mehr aus (Nutzer 2026-09-12: die
+ *  Voelkerzuweisung eines Materials ist Herstellerherkunft, keine Kaeufer-Beschraenkung - jede
+ *  Spezies kann jedes Material waehlen, die Voelkerzuweisung wirkt nur noch als Ortsmodifikator
+ *  im tatsaechlichen Kauf, siehe buyWeapon/effektiveVerfuegbarkeitKomponenten). */
 function materialOptionenFuer(character: CharacterState): typeof NK_MATERIAL[number][] {
   const ort = getOrtById(character.herkunftOrtId);
-  return NK_MATERIAL.filter((m) => istWaffenKomponenteVerfuegbar(m, character.spezies)
-    && (character.bestehenderCharakter
-      || !materialBrauchtOrtsBestaetigung(parseVerfuegbarkeit(m, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(m, 'Verfuegbarkeit-NW'))
-      || istMaterialAmOrtSourcierbar(ort, m.name)));
+  return NK_MATERIAL.filter((m) => character.bestehenderCharakter
+    || !materialBrauchtOrtsBestaetigung(parseVerfuegbarkeit(m, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(m, 'Verfuegbarkeit-NW'))
+    || istMaterialAmOrtSourcierbar(ort, m.name));
 }
 
 export const WEAPONS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] !== 'Schild');
@@ -49,11 +51,9 @@ export function waffeBrauchtSchaftmaterial(row: GenericRow): boolean {
 export function renderWeaponRow(row: (typeof WEAPONS)[number], character: CharacterState): string {
   const brauchtSchaft = waffeBrauchtSchaftmaterial(row);
   const materialOptionen = materialOptionenFuer(character);
-  const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
-  const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
-  const schaftmaterialOptionen = brauchtSchaft
-    ? NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies))
-    : [SCHAFTMATERIAL_STANDARD];
+  const fertigungOptionen = NK_FERTIGUNG;
+  const anpassungOptionen = NK_ANPASSUNG;
+  const schaftmaterialOptionen = brauchtSchaft ? NK_SCHAFTMATERIAL : [SCHAFTMATERIAL_STANDARD];
   const sel = weaponPicker.get(row.sourceRow) ?? {
     materialSourceRow: materialOptionen[0]?.sourceRow ?? 0,
     fertigungSourceRow: fertigungOptionen[0]?.sourceRow ?? 0,
@@ -142,11 +142,9 @@ export function wireWaffenEvents(
       const brauchtSchaft = !!weaponRow && waffeBrauchtSchaftmaterial(weaponRow);
       const sel = weaponPicker.get(weaponSourceRow);
       const materialOptionen = materialOptionenFuer(character);
-      const fertigungOptionen = NK_FERTIGUNG.filter((f) => istWaffenKomponenteVerfuegbar(f, character.spezies));
-      const anpassungOptionen = NK_ANPASSUNG.filter((a) => istWaffenKomponenteVerfuegbar(a, character.spezies));
-      const schaftmaterialOptionen = brauchtSchaft
-        ? NK_SCHAFTMATERIAL.filter((s) => istWaffenKomponenteVerfuegbar(s, character.spezies))
-        : [SCHAFTMATERIAL_STANDARD];
+      const fertigungOptionen = NK_FERTIGUNG;
+      const anpassungOptionen = NK_ANPASSUNG;
+      const schaftmaterialOptionen = brauchtSchaft ? NK_SCHAFTMATERIAL : [SCHAFTMATERIAL_STANDARD];
       const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;
       const fertigungSourceRow = sel?.fertigungSourceRow ?? fertigungOptionen[0]?.sourceRow;
       const anpassungSourceRow = sel?.anpassungSourceRow ?? anpassungOptionen[0]?.sourceRow;

@@ -6,15 +6,19 @@
 // fuer den Katalog bekannt - die Voelkerzuweisung des Gegenstands gegen die Ortsbevoelkerung.
 // Ergebnis wird auf 1..7 begrenzt.
 //
-// Datenluecke (Stand 2026-09-11): eine AUSWAHL/ALLE-Voelkerzuweisung je Gegenstand existiert in
-// keinem ausgelieferten Katalog (weder werte 0.8-claude.xlsx noch den generierten JSONs) -
-// Ruestung/Boegen/Armbrust/Munition/Alchemika/Artefakte haben aktuell KEIN Voelker-Feld. Einzige
-// Ausnahme ist Feuerwaffen: dort traegt jede Zeile ein einzelnes "Volk" (z.B. "Orkisch"), siehe
-// volkAusFeuerwaffenAdjektiv(). Fuer alle anderen Kataloge wird der Voelkermodifikator deshalb
-// bewusst als 0 (= ALLE) behandelt, bis eine echte Voelkerzuweisung gepflegt ist - siehe
-// MEMORY-Verfuegbarkeiten-Herkunftsorte.md.
+// Stand 2026-09-12: NK-Waffen/Ruestung/Schild tragen inzwischen echte Voelkerzuweisungen (teils
+// Einzelwert, teils AUSWAHL-Komma-Listen) - siehe parseGegenstandVoelker() und
+// effektiveVerfuegbarkeitKomponenten() weiter unten, die Spec-Punkt 23 (jede Komponente separat
+// ortsberechnet, schlechtestes Ergebnis gewinnt) fuer zusammengesetzte Ausruestung umsetzen.
+// Boegen/Armbrust/Munition/Alchemika/Artefakte haben weiterhin KEIN Voelker-Feld. Feuerwaffen
+// tragen weiterhin nur ein einzelnes "Volk" je Zeile (z.B. "Orkisch"), siehe volkAusAdjektiv().
+// Die Voelkerzuweisung ist Herstellerherkunft (Ortsbevoelkerungs-Abgleich, Spec-Punkt 20), KEINE
+// Kaeufer-Beschraenkung - siehe effektiveVerfuegbarkeitKomponenten()-Dokumentation.
 
 import type { Ort, Volk, Garnisonsgrad } from '../data/orte';
+import type { GenericRow } from '../data/equipment/armor';
+import { VOELKER_NAMEN } from './voelker';
+import { combineVerfuegbarkeit, parseVerfuegbarkeit, type Verfuegbarkeitswert } from './weaponComposition';
 
 export type WarenTarif = 'ruestungenWaffen' | 'artefakte';
 
@@ -95,15 +99,17 @@ export function volkAusAdjektiv(rohwert: string | undefined): Volk | undefined {
   return VOLK_ADJEKTIV_MAP[rohwert];
 }
 
-function herstellungsortModifikator(ort: Ort, warengruppe: string, tarif: WarenTarif, gegenstandVolk: Volk | undefined): number {
+function herstellungsortModifikator(
+  ort: Ort, warengruppe: string, tarif: WarenTarif, gegenstandVoelker: readonly Volk[] | undefined,
+): number {
   // Nutzer 2026-09-12: "kein Volk angegeben = alle Völker" - ein kulturell nicht gekennzeichneter
   // Gegenstand (z.B. eine gewoehnliche Eisen-Axt ohne Volk-Tag) hat keinen Stil, der einer
   // volksspezifischen lokalen Produktion (z.B. "NK-Waffen, von Zwergen") widerspraeche - er zaehlt
   // also zu "alle Voelker" und matcht jede lokale Produktion dieser Warengruppe, nicht nur die mit
-  // volk:null. Ein Gegenstand mit einem ANDEREN spezifischen Volk-Tag (z.B. "Orks") matcht
-  // weiterhin nur volk:null oder das exakt gleiche Volk - siehe verfuegbarkeitOrt.test.ts.
+  // volk:null. Ein Gegenstand mit spezifischen Volk-Tags (z.B. "Orks", oder eine AUSWAHL-Liste)
+  // matcht weiterhin nur volk:null oder eines der eigenen Voelker - siehe verfuegbarkeitOrt.test.ts.
   const lokalerTreffer = ort.lokaleProduktion.some((produktion) => produktion.warengruppe === warengruppe
-    && (produktion.volk === null || gegenstandVolk === undefined || produktion.volk === gegenstandVolk));
+    && (produktion.volk === null || gegenstandVoelker === undefined || gegenstandVoelker.includes(produktion.volk)));
   if (lokalerTreffer) return spalte(tarif, HERSTELLUNGSORT_MOD['Herstellung direkt vor Ort']);
   if (!ort.herstellungsort) return 0;
   return spalte(tarif, HERSTELLUNGSORT_MOD[ort.herstellungsort] ?? [0, 0]);
@@ -115,14 +121,19 @@ function haendlerModifikator(ort: Ort, warengruppe: string, tarif: WarenTarif): 
   return Math.min(...anwendbar.map((haendler) => spalte(tarif, HAENDLER_MOD[haendler.typ] ?? [0, 0])));
 }
 
-/** ALLE (gegenstandVolk undefined, mangels Datengrundlage der Regelfall - siehe Dateikopf) wirkt
- *  immer neutral. Fehlt die Ortsbevoelkerung (kein hauptspezies gepflegt, z.B. selbst angelegter
- *  Ort ohne vollstaendige Konfiguration), bleibt der Modifikator ebenfalls neutral statt zu raten. */
-function voelkerModifikator(ort: Ort, gegenstandVolk: Volk | undefined): number {
-  if (!gegenstandVolk || !ort.hauptspezies) return 0;
-  if (ort.hauptspezies === gegenstandVolk) return 0;
-  if (ort.etablierteMinderheiten.includes(gegenstandVolk)) return 1;
-  return 3;
+/** ALLE (gegenstandVoelker undefined/leer) wirkt immer neutral. Fehlt die Ortsbevoelkerung (kein
+ *  hauptspezies gepflegt, z.B. selbst angelegter Ort ohne vollstaendige Konfiguration), bleibt der
+ *  Modifikator ebenfalls neutral statt zu raten. Spec-Punkt 20: "Bei mehreren Voelkerzuweisungen
+ *  eines Gegenstands gilt die beste Uebereinstimmung" - bei AUSWAHL mit mehreren Eintraegen (z.B.
+ *  Mithril: Elfen/Zwerge) zaehlt der guenstigste (niedrigste) Modifikator ueber alle gelisteten
+ *  Voelker. */
+function voelkerModifikator(ort: Ort, gegenstandVoelker: readonly Volk[] | undefined): number {
+  if (!gegenstandVoelker || gegenstandVoelker.length === 0 || !ort.hauptspezies) return 0;
+  return Math.min(...gegenstandVoelker.map((volk) => {
+    if (ort.hauptspezies === volk) return 0;
+    if (ort.etablierteMinderheiten.includes(volk)) return 1;
+    return 3;
+  }));
 }
 
 /** Garnisonsgrad wirkt unabhaengig von Kultur/Zivilhandel - selbst ein voelkerfremder Gegenstand
@@ -162,20 +173,20 @@ export interface OrtsModifikatorParams {
   ort: Ort | undefined;
   warengruppe: string;
   tarif: WarenTarif;
-  gegenstandVolk?: Volk;
+  gegenstandVoelker?: readonly Volk[];
 }
 
 /** Summe aller Ortsmodifikatoren (noch NICHT auf 1..7 begrenzt - das passiert erst zusammen mit
  *  dem Grundwert in effektiveVerfuegbarkeit). Fehlt der Ort (nicht aufloesbare herkunftOrtId,
  *  z.B. migrierter Altcharakter), ist das Ergebnis 0 - siehe Nutzerentscheidung 2026-09-11: kein
  *  Ort bedeutet neutral statt zusaetzlich gesperrt. */
-export function ortsModifikator({ ort, warengruppe, tarif, gegenstandVolk }: OrtsModifikatorParams): number {
+export function ortsModifikator({ ort, warengruppe, tarif, gegenstandVoelker }: OrtsModifikatorParams): number {
   if (!ort) return 0;
   const siedlungsgroesse = ort.siedlungsgroesse ? spalte(tarif, SIEDLUNGSGROESSE_MOD[ort.siedlungsgroesse] ?? [0, 0]) : 0;
   const handelsstufe = ort.handelsstufe ? spalte(tarif, HANDELSSTUFE_MOD[ort.handelsstufe] ?? [0, 0]) : 0;
-  const herstellung = herstellungsortModifikator(ort, warengruppe, tarif, gegenstandVolk);
+  const herstellung = herstellungsortModifikator(ort, warengruppe, tarif, gegenstandVoelker);
   const haendler = haendlerModifikator(ort, warengruppe, tarif);
-  const voelker = voelkerModifikator(ort, gegenstandVolk);
+  const voelker = voelkerModifikator(ort, gegenstandVoelker);
   const garnison = garnisonsModifikator(ort, warengruppe, tarif);
   return siedlungsgroesse + handelsstufe + herstellung + haendler + voelker + garnison;
 }
@@ -198,4 +209,47 @@ export function effektiveVerfuegbarkeit(basisStufe: number | undefined, params: 
   if (basisStufe === undefined) return undefined;
   const floor = basisStufe >= 7 ? 5 : 1;
   return Math.min(7, Math.max(floor, basisStufe + ortsModifikator(params)));
+}
+
+const VOLK_ALIASE: Record<string, string> = { Drow: 'Draw', Goblin: 'Goblins' };
+
+/** Liest die Voelkerzuweisung einer Katalogzeile (Spalte "Volk") in eine Liste kanonischer
+ *  Voelker-IDs - `undefined`/`'ALLE'`/`'Standard'` (Nutzer 2026-09-12: "kein Volk angegeben = alle
+ *  Voelker") sowie unbekannte Freitext-Werte (z.B. "andere Voelker") ergeben `undefined` (= ALLE).
+ *  Eine Komma-Liste (AUSWAHL mit mehreren Eintraegen, z.B. "Dalkini, Draw, Elfen, ...") wird
+ *  vollstaendig geparst - Spec-Punkt 20 verlangt bei mehreren Zuweisungen die beste Uebereinstimmung
+ *  (siehe voelkerModifikator), nicht nur den ersten Eintrag. "Drow"/"Goblin" sind Falschschreibungen
+ *  einzelner Quellzeilen gegenueber der kanonischen VOELKER_NAMEN-Liste ("Draw"/"Goblins"). */
+export function parseGegenstandVoelker(volkRoh: string | undefined): Volk[] | undefined {
+  if (!volkRoh || volkRoh === 'ALLE' || volkRoh === 'Standard') return undefined;
+  const voelker = volkRoh.split(',').map((v) => v.trim()).map((v) => VOLK_ALIASE[v] ?? v)
+    .filter((v): v is Volk => (VOELKER_NAMEN as readonly string[]).includes(v));
+  return voelker.length > 0 ? voelker : undefined;
+}
+
+/** Spec-Punkt 23 (zusammengesetzte Ausruestung), woertlich statt vereinfacht umgesetzt: jede
+ *  Pflichtkomponente (Basis/Material/Fertigung/Anpassung/...) wird SEPARAT inklusive ihrer EIGENEN
+ *  Voelkerzuweisung voll ortsberechnet (effektiveVerfuegbarkeit), erst danach bestimmt das
+ *  schlechteste Komponentenergebnis den fertigen Gegenstand (combineVerfuegbarkeit: NICHT KAUFBAR >
+ *  M > numerisches Maximum). `M`/`NICHT KAUFBAR` nehmen nicht an der Ortsberechnung teil (siehe
+ *  effektiveVerfuegbarkeit-Dateikopf), sondern werden je Komponente direkt durchgereicht.
+ *
+ *  Ersetzt seit 2026-09-12 die vorherigen `istWaffenKomponenteVerfuegbar`/
+ *  `istRuestungKomponenteVerfuegbar`/`istSchildKomponenteVerfuegbar`-Hartsperren (Nutzer: "Trolle
+ *  stellen keine Kette her, aber andere koennen Kette fuer Trolle herstellen" - die Voelkerzuweisung
+ *  einer Komponente ist Herstellerherkunft, keine Kaeufer-Beschraenkung, siehe Spec-Punkt 20
+ *  "Ortsbevoelkerung-Abgleich" statt einer Spezies-Sperre). Das separate Material-Sourcing-Gate
+ *  (`istMaterialAmOrtSourcierbar`) bleibt davon unberuehrt - andere Dimension (ist das Material an
+ *  DIESEM Ort ueberhaupt zu bekommen, unabhaengig vom Kaeufer). */
+export function effektiveVerfuegbarkeitKomponenten(
+  komponenten: readonly GenericRow[], welt: 'AW' | 'NW' | undefined,
+  params: { ort: Ort | undefined; warengruppe: string; tarif: WarenTarif },
+): Verfuegbarkeitswert | undefined {
+  const ergebnisse = komponenten.map((row): Verfuegbarkeitswert | undefined => {
+    const roh = welt === 'NW' ? parseVerfuegbarkeit(row, 'Verfuegbarkeit-NW')
+      : welt === 'AW' ? parseVerfuegbarkeit(row, 'Verfuegbarkeit-AW') : undefined;
+    if (roh === undefined || roh === 'NICHT KAUFBAR' || roh === 'M') return roh;
+    return effektiveVerfuegbarkeit(roh, { ...params, gegenstandVoelker: parseGegenstandVoelker(row['Volk']) });
+  });
+  return combineVerfuegbarkeit(...ergebnisse);
 }

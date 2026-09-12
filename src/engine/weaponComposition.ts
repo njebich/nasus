@@ -126,18 +126,3 @@ export function composeWeapon(
     verfuegbarkeitAw, verfuegbarkeitNw,
   };
 }
-
-const VOLK_ALIASE: Record<string, string> = { Drow: 'Draw', Goblin: 'Goblins' };
-
-/** Material/Fertigung/Anpassung/Schaftmaterial tragen ihre Volk-Einschraenkung direkt als
- *  Spaltenwert (anders als beim Schild, wo sie ueber eine feste Namensliste kuratiert ist:
- *  siehe shieldComposition.ts). "Drow"/"Goblin" in dieser Spalte sind Falschschreibungen
- *  gegenueber der kanonischen VOELKER_NAMEN-Liste ("Draw"/"Goblins") - ohne Alias waeren diese
- *  Komponenten fuer JEDE Spezies dauerhaft gesperrt. */
-export function istWaffenKomponenteVerfuegbar(row: GenericRow, spezies: string): boolean {
-  const volk = row['Volk'];
-  if (!volk || volk === 'ALLE' || volk === 'Standard') return true;
-  // Seit der globalen Materialreferenz (Punkt 32/34/37 der Spec) tragen manche Zeilen eine
-  // Komma-Liste zulaessiger Voelker statt eines Einzelwerts (z.B. "Dalkini, Draw, Elfen, ...").
-  return volk.split(',').map((v) => v.trim()).some((v) => (VOLK_ALIASE[v] ?? v) === spezies);
-}

@@ -9,17 +9,29 @@ nicht mehr nur Excel-Audit). Aktueller Stand hier zusammengefasst, Details in Cl
 Abschnitt hier ist die Repo-Version für jede Session/jeden Menschen).
 
 **Bereits verdrahtet:**
-- NK-Waffen komplett (`add_nk_waffen_verfuegbarkeit.py`): alle 5 Sheets haben Verfügbarkeit-AW/NW,
-  `composeWeapon` liefert `verfuegbarkeitAw/Nw`, `buyWeapon` gated über den Ortsmodifikator.
+- NK-Waffen, Rüstung und Schild komplett: alle Basis-/Material-/Fertigung-/Anpassung-/
+  Schaftmaterial-/Bespannung-Sheets haben Verfügbarkeit-AW/NW, `composeWeapon`/`composeArmor`/
+  `composeShield` liefern `verfuegbarkeitAw/Nw`, `buyWeapon`/`equipRuestung`/`buyShield` gaten über
+  den Ortsmodifikator.
 - Ortsmodifikator (`engine/verfuegbarkeitOrt.ts`): Siedlungsgröße + Handelsstufe + Herstellungsort
-  (inkl. lokaler Produktion als Override) + Händler + Völker + **Garnisonsgrad** (neu: 7-stufige
-  Achse Wachstation→Festung, militärischer Waffen-/Rüstungsvorrat unabhängig von Zivilhandel).
+  (inkl. lokaler Produktion als Override) + Händler + Völker + Garnisonsgrad (7-stufige Achse
+  Wachstation→Festung, militärischer Waffen-/Rüstungsvorrat unabhängig von Zivilhandel).
+- **Völkerzuweisung ist Herstellerherkunft, keine Käufer-Sperre** (Nutzer 2026-09-12: "Trolle
+  stellen keine Kette her, aber andere können Kette für Trolle herstellen"): jede Komponente
+  (Basis/Material/Fertigung/Anpassung/...) wird laut Spec-Punkt 23 SEPARAT inkl. ihrer eigenen
+  Völkerzuweisung voll ortsberechnet (`effektiveVerfuegbarkeitKomponenten`), erst danach bestimmt
+  das schlechteste Komponentenergebnis den fertigen Gegenstand — eine Spezies-Sperre auf
+  Käuferebene (frühere `istWaffenKomponenteVerfuegbar`/`istRuestungKomponenteVerfuegbar`/
+  `istSchildKomponenteVerfuegbar`) gibt es nicht mehr. Bei AUSWAHL mit mehreren Einträgen zählt die
+  beste Übereinstimmung (Spec-Punkt 20).
 - **Floor**: Basisstufe 7 ("Einzigartig") fällt durch keinen Ortsbonus unter effektiv 5.
-- **Material-Sourcing-Gate** ("Mango ohne Schiff/Flugzeug"-Regel): Materialien ab eigener
-  Basis-Verfügbarkeit ≥3 (Faltstahl, Mithril, ...) brauchen eine explizite Bestätigung am Ort
-  (`Ort.materialVorrat`/`materialHerstellbar`) — sonst hart nicht kaufbar, unabhängig von jedem
-  Ortsmodifikator/Garnison/Floor. Alltagsmaterial (≤2, Eisen/Holz/Leder/...) ist überall
-  vorausgesetzt verfügbar, keine Ort-Pflege nötig. Bisher nur für NK-Waffen verdrahtet.
+- **Material-Sourcing-Gate** ("Mango ohne Schiff/Flugzeug"-Regel, andere Dimension als die
+  Völkerzuweisung oben — ist das Material an DIESEM Ort überhaupt zu bekommen, unabhängig vom
+  Käufer): Materialien ab eigener Basis-Verfügbarkeit ≥3 (Faltstahl, Mithril, ...) brauchen eine
+  explizite Bestätigung am Ort (`Ort.materialVorrat`/`materialHerstellbar`) — sonst hart nicht
+  kaufbar, unabhängig von jedem Ortsmodifikator/Garnison/Floor. Alltagsmaterial (≤2,
+  Eisen/Holz/Leder/...) ist überall vorausgesetzt verfügbar, keine Ort-Pflege nötig. Bisher nur für
+  NK-Waffen verdrahtet.
 - **Voller Material-Kanon** (19 NK-Material-Zeilen, identisch Schild-Material) einmal komplett mit
   dem Nutzer durchgegangen und korrigiert — siehe Claude-Memory für die volle Liste. Größte Fixes:
   Bronze (nur Katzen/Indianer, nicht die 7-Völker-Metallliste), Stein (nur Indianer, nicht ALLE),
@@ -27,12 +39,21 @@ Abschnitt hier ist die Repo-Version für jede Session/jeden Menschen).
   umbenannt.
 - Orte: Zwogón existiert nicht mehr (Zwerge vertrieben) → **Isch-Isch** (goblinisch). Neue
   zwergische Hauptstadt **Katharsis** übernimmt den Titel "Großkönigliche Kernprovinz".
+- **Körperbaugruppen-Tag** (`engine/koerperbau.ts`, Nutzer 2026-09-12: "eine Zwergenplatte passt
+  einem Troll nicht, könnte aber einem Goblin passen"): reine Datenvorbereitung, jedes ausgerüstete
+  Rüstungsteil trägt jetzt `koerperbaugruppe` (Gnome / Goblins+Zwerge /
+  Dalkini+Indianer+Elfen+Draw+Katzen / Orks / Trolle / Zentauren-Beine als eigene Gruppe, da
+  Zentauren-Oberkörper zur Dalkini-Gruppe zählt) sowie bei "angepasst"/"perfekt angepasst" ein
+  `angepasstFuerCharakterId`. **Noch OHNE jede Kompatibilitäts-/Sperrlogik** — es gibt aktuell keine
+  Ausrüstungs-Weitergabe zwischen Charakteren, dafür wird das erst gebraucht.
 
 **Noch offen:**
 - Fertigung/Anpassung/Schaftmaterial noch nicht durch den Material-Kanon-Pass gegangen.
 - Ort-Kanon (welches seltene Material ist WO vorrätig/herstellbar) nur für Katharsis gesetzt
   (Mithril/Nasium) — Straitmor/Isch-Isch/Phoenix-Feste komplett leer.
 - Material-Gate nur NK-Waffen, nicht Rüstung/Schild.
+- Körperbaugruppen-Kompatibilitätsmatrix + Konsequenz bei Fehlpassung: bewusst noch nicht
+  spezifiziert, erst wenn eine Ausrüstungs-Weitergabe zwischen Charakteren ansteht.
 - Preisliste (973 Zeilen) weiterhin ganz ohne Verfügbarkeit/Völkerzuweisung — größter
   verbleibender Batzen im Gesamtprojekt (siehe unten, "965 offen").
 

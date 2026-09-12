@@ -177,11 +177,11 @@ describe('buyShield (Regel Nutzer 2026-07-17: Schilde komponiert aus Basis x Mat
     expect(() => buyShield(character, nonShield.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
   });
 
-  it('lehnt Kolharz-Material ab, wenn der Charakter kein Zentaure ist (Nutzer 2026-07-17, Material vormals "Kolhartz" geschrieben)', () => {
+  it('erlaubt Kolharz-Material (Material vormals "Kolhartz" geschrieben) inzwischen auch fuer Nicht-Zentauren (Nutzer 2026-09-12: Voelkerzuweisung ist Herstellerherkunft, keine Kaeufer-Sperre)', () => {
     const kolharz = SCHILD_MATERIAL.find((r) => r.name === 'Kolharz')!;
     const character = createCharacter('Test', { spezies: 'Mensch' });
     character.values['dublonen_bank'] = 100000;
-    expect(() => buyShield(character, shieldRow.sourceRow, kolharz.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
+    expect(() => buyShield(character, shieldRow.sourceRow, kolharz.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).not.toThrow();
   });
 
   it('erlaubt Kolharz-Material fuer Zentauren-Charaktere', () => {

@@ -4,7 +4,7 @@
 import type { CharacterState } from '../state/characterStore';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
-import { composeShield, istSchildKomponenteVerfuegbar } from '../engine/shieldComposition';
+import { composeShield } from '../engine/shieldComposition';
 import { escapeHtml, kaufenLabel, gesperrtLabel, bestehenderCharakterMode, statSnapshotTooltip } from './ausruestungShared';
 import type { AusruestungCallbacks } from './ausruestung';
 
@@ -12,14 +12,15 @@ export const SHIELDS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] === 'S
 
 /** Transiente Picker-Auswahl je Schild (Regel Nutzer 2026-07-17: "die haben auch Anpassung" -
  *  Material/Fertigung/Bespannung, analog zum Ruestungs-Slot-Picker). Manche Material-/Fertigungs-
- *  Zeilen sind nur fuer bestimmte Voelker waehlbar (Spec-Punkt 30/31), siehe
- *  istSchildKomponenteVerfuegbar. */
+ *  Zeilen tragen eine Voelkerzuweisung (Spec-Punkt 30/31, Herstellerherkunft) - die wirkt als
+ *  Ortsmodifikator im eigentlichen Kauf (siehe characterMutations.ts buyShield), filtert aber
+ *  keine Optionen aus dem Picker heraus. */
 const shieldPicker = new Map<number, { materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>();
 
 export function renderShieldRow(row: (typeof SHIELDS)[number], character: CharacterState): string {
-  const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m, character.spezies));
-  const fertigungOptionen = SCHILD_FERTIGUNG.filter((f) => istSchildKomponenteVerfuegbar(f, character.spezies));
-  const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b, character.spezies));
+  const materialOptionen = SCHILD_MATERIAL;
+  const fertigungOptionen = SCHILD_FERTIGUNG;
+  const bespannungOptionen = SCHILD_BESPANNUNG;
   const sel = shieldPicker.get(row.sourceRow) ?? {
     materialSourceRow: materialOptionen[0]?.sourceRow ?? 0,
     fertigungSourceRow: fertigungOptionen[0]?.sourceRow ?? 0,
@@ -60,7 +61,7 @@ export function renderShieldRow(row: (typeof SHIELDS)[number], character: Charac
 }
 
 export function wireSchildEvents(
-  container: HTMLElement, character: CharacterState, callbacks: AusruestungCallbacks, rerender: () => void,
+  container: HTMLElement, _character: CharacterState, callbacks: AusruestungCallbacks, rerender: () => void,
 ): void {
   function updateShieldPicker(shieldSourceRow: number, patch: Partial<{ materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>): void {
     const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-shield="${shieldSourceRow}"]`);
@@ -86,9 +87,9 @@ export function wireSchildEvents(
     btn.addEventListener('click', () => {
       const shieldSourceRow = Number(btn.dataset.shield);
       const sel = shieldPicker.get(shieldSourceRow);
-      const materialOptionen = SCHILD_MATERIAL.filter((m) => istSchildKomponenteVerfuegbar(m, character.spezies));
-      const fertigungOptionen = SCHILD_FERTIGUNG.filter((f) => istSchildKomponenteVerfuegbar(f, character.spezies));
-      const bespannungOptionen = SCHILD_BESPANNUNG.filter((b) => istSchildKomponenteVerfuegbar(b, character.spezies));
+      const materialOptionen = SCHILD_MATERIAL;
+      const fertigungOptionen = SCHILD_FERTIGUNG;
+      const bespannungOptionen = SCHILD_BESPANNUNG;
       const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;
       const fertigungSourceRow = sel?.fertigungSourceRow ?? fertigungOptionen[0]?.sourceRow;
       const bespannungSourceRow = sel?.bespannungSourceRow ?? bespannungOptionen[0]?.sourceRow;

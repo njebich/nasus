@@ -60,18 +60,6 @@ export function composeArmor(basis: GenericRow, verarbeitung: GenericRow, anpass
   return { rs, rh, preis, verfuegbarkeitNw, verfuegbarkeitAw };
 }
 
-/** Kettenruestungen/Metallplattenruestungen sind nicht von jedem Volk herstellbar (Spec-Punkt 28:
- *  Katzen/Indianer/Zentauren/Gnome stellen keine von beidem her, Trolle zusaetzlich keine
- *  Kettenruestungen) - analog zu istWaffenKomponenteVerfuegbar (weaponComposition.ts), aber ohne
- *  Alias-Bedarf, da die Ruestung-Basis-Spalte direkt mit den kanonischen Voelkernamen befuellt
- *  wurde (siehe scripts/add_ruestung_schild_verfuegbarkeit.py). Fehlendes/`ALLE`-Volk (die
- *  uebrigen 8 Ruestungsbasen) ist fuer jede Spezies waehlbar. */
-export function istRuestungKomponenteVerfuegbar(row: GenericRow, spezies: string): boolean {
-  const volk = row['Volk'];
-  if (!volk || volk === 'ALLE') return true;
-  return volk.split(',').map((v) => v.trim()).includes(spezies);
-}
-
 /**
  * Ruestungsbehinderung (RBE), abgeleitet aus RHg (Summe aller RH-Werte ueber alle getragenen
  * Ruestungslagen und Trefferzonen) - Regelkorrektur Nutzer 2026-07-17:

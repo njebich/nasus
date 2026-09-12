@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeShield, istSchildKomponenteVerfuegbar } from './shieldComposition';
+import { composeShield } from './shieldComposition';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 
@@ -56,35 +56,5 @@ describe('composeShield (Nutzer 2026-07-17: Schilde haben auch Anpassung - Mater
     // Kohlharz hat tatsaechlich einen Preis (10), also hier zur Kontrolle ein normaler Fall:
     const result = composeShield(drachenschild, material('Feineisen'), fertigung('Gesellenarbeit'), bespannung('Kohlharz'));
     expect(result.preis).toBe(610); // 600*1*1 + 10
-  });
-});
-
-describe('istSchildKomponenteVerfuegbar (Spec-Punkt 30/31: Voelkerzuweisung ueber die Volk-Spalte)', () => {
-  it('Kolharz (Material, vormals "Kolhartz" geschrieben) ist nur fuer Zentauren waehlbar', () => {
-    expect(istSchildKomponenteVerfuegbar(material('Kolharz'), 'Zentauren')).toBe(true);
-    expect(istSchildKomponenteVerfuegbar(material('Kolharz'), 'Mensch')).toBe(false);
-    expect(istSchildKomponenteVerfuegbar(material('Kolharz'), '')).toBe(false);
-  });
-
-  it('Kohlharz (Bespannung) ist nur fuer Zentauren waehlbar', () => {
-    expect(istSchildKomponenteVerfuegbar(bespannung('Kohlharz'), 'Zentauren')).toBe(true);
-    expect(istSchildKomponenteVerfuegbar(bespannung('Kohlharz'), 'Zwerge')).toBe(false);
-  });
-
-  it('Goblin Massenfab. (Fertigung) ist nur fuer Goblins waehlbar (Punkt 30 letzter Satz)', () => {
-    expect(istSchildKomponenteVerfuegbar(fertigung('Goblin Massenfab.'), 'Goblins')).toBe(true);
-    expect(istSchildKomponenteVerfuegbar(fertigung('Goblin Massenfab.'), 'Zwerge')).toBe(false);
-  });
-
-  it('die zehn Metallmaterialien sind fuer Katzen/Indianer/Zentauren/Gnome gesperrt (Punkt 30)', () => {
-    expect(istSchildKomponenteVerfuegbar(material('Stahl'), 'Katzen')).toBe(false);
-    expect(istSchildKomponenteVerfuegbar(material('Stahl'), 'Zwerge')).toBe(true);
-  });
-
-  it('alle anderen Materialien/Fertigungen/Bespannungen sind unabhaengig von der Spezies waehlbar', () => {
-    expect(istSchildKomponenteVerfuegbar(material('Feineisen'), 'Mensch')).toBe(false); // Feineisen ist eines der zehn Metallmaterialien
-    expect(istSchildKomponenteVerfuegbar(material('Holz'), '')).toBe(true);
-    expect(istSchildKomponenteVerfuegbar(fertigung('Meisterarbeit'), '')).toBe(true);
-    expect(istSchildKomponenteVerfuegbar(bespannung('Stoff'), '')).toBe(true);
   });
 });

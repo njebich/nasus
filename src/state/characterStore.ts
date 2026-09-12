@@ -10,6 +10,7 @@ import {
   type RangedInventorySnapshot,
 } from '../engine/rangedInventorySnapshot';
 import type { AmmunitionTypeId } from '../engine/ammunitionTypes';
+import type { Koerperbaugruppe } from '../engine/koerperbau';
 
 export interface XKlingeVerzauberung {
   artefaktReferenz: string;
@@ -69,6 +70,14 @@ export interface RuestungSlotEntry {
   anpassungSourceRow: number;
   computedPriceSnapshot: number;
   computedStatsSnapshot: { rs: number; rh: number; verfuegbarkeitNw: number; verfuegbarkeitAw: number };
+  /** Koerperbaugruppe des Kaeufers zum Kaufzeitpunkt (Nutzer 2026-09-12, siehe engine/koerperbau.ts)
+   *  - reine Datenvorbereitung fuer eine kuenftige Ausruestungs-Weitergabe zwischen Charakteren,
+   *  aktuell OHNE jede Kompatibilitaets-/Sperrlogik (es gibt noch keine solche Weitergabe). */
+  koerperbaugruppe?: Koerperbaugruppe;
+  /** Nur gesetzt bei Anpassung "angepasst"/"perfekt angepasst" (Nutzer 2026-09-12: "eine
+   *  angepasste Ruestung ist nur auf den spezifischen Charakter angepasst") - die Charakter-Id, fuer
+   *  die diese konkrete Passform gefertigt wurde. Ebenfalls reine Datenvorbereitung, keine Sperre. */
+  angepasstFuerCharakterId?: string;
 }
 
 export function ruestungSlotKey(gruppe: RsGruppe, lage: number): string {

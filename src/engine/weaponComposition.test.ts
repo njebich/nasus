@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeWeapon, istWaffenKomponenteVerfuegbar } from './weaponComposition';
+import { composeWeapon } from './weaponComposition';
 import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATERIAL } from '../data/equipment/weapons';
 import type { GenericRow } from '../data/equipment/armor';
 
@@ -104,37 +104,5 @@ describe('composeWeapon Verfuegbarkeit (Spec-Punkte 32-40, add_nk_waffen_verfueg
     );
     expect(composed.verfuegbarkeitAw).toBe('NICHT KAUFBAR');
     expect(composed.verfuegbarkeitNw).toBe('NICHT KAUFBAR');
-  });
-});
-
-describe('istWaffenKomponenteVerfuegbar (Nutzer 2026-07-18: Volk-Spalte je Material/Fertigung/Anpassung/Schaftmaterial)', () => {
-  it('ALLE/Standard sind fuer jede Spezies verfuegbar', () => {
-    expect(istWaffenKomponenteVerfuegbar(find(NK_MATERIAL, 'Eisen'), 'Zwerge')).toBe(true); // Volk=Standard
-    expect(istWaffenKomponenteVerfuegbar(find(NK_MATERIAL, 'Stahl'), 'Zwerge')).toBe(true); // Volk=ALLE
-  });
-
-  it('"Drow" (Datenschreibweise) matched gegen kanonisches "Draw", nicht gegen andere Spezies', () => {
-    const diamantspat = find(NK_MATERIAL, 'Diamantspat');
-    expect(istWaffenKomponenteVerfuegbar(diamantspat, 'Draw')).toBe(true);
-    expect(istWaffenKomponenteVerfuegbar(diamantspat, 'Zwerge')).toBe(false);
-  });
-
-  it('"Goblin" (Datenschreibweise) matched gegen kanonisches "Goblins"', () => {
-    const goblinFertigung = find(NK_FERTIGUNG, 'Goblin Massenfab.');
-    expect(istWaffenKomponenteVerfuegbar(goblinFertigung, 'Goblins')).toBe(true);
-    expect(istWaffenKomponenteVerfuegbar(goblinFertigung, 'Zwerge')).toBe(false);
-  });
-
-  it('Komma-Liste (Spec-Punkt 32/34): Mithril ist nur fuer Elfen/Zwerge verfuegbar', () => {
-    const mithril = find(NK_MATERIAL, 'Mithril');
-    expect(istWaffenKomponenteVerfuegbar(mithril, 'Elfen')).toBe(true);
-    expect(istWaffenKomponenteVerfuegbar(mithril, 'Zwerge')).toBe(true);
-    expect(istWaffenKomponenteVerfuegbar(mithril, 'Orks')).toBe(false);
-  });
-
-  it('Komma-Liste: die allgemeine Metallliste (Eisen) schliesst Katzen/Indianer/Zentauren/Gnome aus', () => {
-    const eisen = find(NK_MATERIAL, 'Eisen');
-    expect(istWaffenKomponenteVerfuegbar(eisen, 'Orks')).toBe(true);
-    expect(istWaffenKomponenteVerfuegbar(eisen, 'Katzen')).toBe(false);
   });
 });

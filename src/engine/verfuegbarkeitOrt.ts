@@ -169,6 +169,18 @@ export function istMaterialAmOrtSourcierbar(ort: Ort | undefined, materialName: 
   return (ort.materialVorrat?.includes(materialName) ?? false) || (ort.materialHerstellbar?.includes(materialName) ?? false);
 }
 
+/** Ruestungsteile tragen ihr Material nur im Item-Namen (z.B. "Faltstahlpanzer") - anders als
+ *  NK-Waffen/Schilde gibt es KEINE eigene Material-Spalte (Ruestung-Basis hat nur eine
+ *  Volk-Spalte, kein Materialpicker, siehe project-verfuegbarkeit-ortsmodifikator-status memory).
+ *  Liefert den laengsten bekannten Materialnamen, der im Item-Namen als Substring vorkommt (z.B.
+ *  "Faltstahl" statt "Stahl" fuer "Faltstahlpanzer" - laengster Treffer vermeidet Fehltreffer bei
+ *  Ueberschneidungen), oder `undefined` wenn keiner passt (dann bleibt das Material-Gate fuer
+ *  dieses Item wirkungslos statt faelschlich zu sperren - kein Raten anhand eines Nicht-Treffers). */
+export function materialNameAusItemname(itemName: string, bekannteMaterialien: readonly string[]): string | undefined {
+  const treffer = bekannteMaterialien.filter((m) => itemName.includes(m));
+  return treffer.length === 0 ? undefined : treffer.reduce((a, b) => (b.length > a.length ? b : a));
+}
+
 export interface OrtsModifikatorParams {
   ort: Ort | undefined;
   warengruppe: string;

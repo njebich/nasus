@@ -4,10 +4,28 @@
 import { ruestungSlotKey, type CharacterState } from '../state/characterStore';
 import type { RsGruppe } from '../data/trefferzonen';
 import { RUESTUNG_BASIS, RUESTUNG_VERARBEITUNG, RUESTUNG_ANPASSUNG } from '../data/equipment/armor';
+import { NK_MATERIAL } from '../data/equipment/weapons';
 import { composeArmor } from '../engine/armorComposition';
+import { parseVerfuegbarkeit } from '../engine/weaponComposition';
+import { materialBrauchtOrtsBestaetigung, istMaterialAmOrtSourcierbar, materialNameAusItemname } from '../engine/verfuegbarkeitOrt';
+import { getOrtById } from '../state/orteStore';
 import { formatDublonen } from '../utils/format';
 import { escapeHtml, kaufenLabel, gesperrtLabel, bestehenderCharakterMode } from './ausruestungShared';
 import type { AusruestungCallbacks, RuestungGruppenSelection } from './ausruestung';
+
+/** "Mango"-Gate (siehe ausruestungWaffen.ts materialOptionenFuer): ein Ruestungsteil, dessen im
+ *  Namen steckendes Material (z.B. "Faltstahl" in "Faltstahlpanzer" - Ruestung hat keine eigene
+ *  Material-Spalte, siehe materialNameAusItemname) am Herkunftsort weder vorraetig noch
+ *  herstellbar ist, taucht im Basis-Dropdown gar nicht erst auf. */
+function ruestungBasisOptionenFuer(optionen: readonly (typeof RUESTUNG_BASIS)[number][], character: CharacterState): typeof RUESTUNG_BASIS[number][] {
+  if (character.bestehenderCharakter) return [...optionen];
+  const ort = getOrtById(character.herkunftOrtId);
+  return optionen.filter((r) => {
+    if (!materialBrauchtOrtsBestaetigung(parseVerfuegbarkeit(r, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(r, 'Verfuegbarkeit-NW'))) return true;
+    const materialName = materialNameAusItemname(r.name, NK_MATERIAL.map((m) => m.name));
+    return !materialName || istMaterialAmOrtSourcierbar(ort, materialName);
+  });
+}
 
 // TZ-Gruppen x Lagen (Regel Nutzer 2026-07-17: "im character state muss die ruestung erfasst
 // werden" + "feste Slots: TZ-Gruppe x Lage"). Lage 0 (Kleidung) bewusst kein Slot, siehe
@@ -50,8 +68,8 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
       </div>`;
   }
 
-  const optionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
-  if (optionen.length === 0) {
+  const alleOptionen = RUESTUNG_BASIS.filter((r) => Number(r['Lage']) === lage);
+  if (alleOptionen.length === 0) {
     // Lage 5 (Drachenschuppen/Spinnweben) hat noch keine Daten in Ruestung-Basis - Slot ist
     // strukturell vorbereitet, aber ohne Kaufoption bis die Daten+Sonderregeln stehen.
     return `
@@ -59,6 +77,7 @@ function renderRuestungSlotRow(gruppe: RsGruppe, lage: number, character: Charac
         <span class="stat-label">Lage ${lage}: (noch keine Optionen hinterlegt)</span>
       </div>`;
   }
+  const optionen = ruestungBasisOptionenFuer(alleOptionen, character);
 
   const sel = slotPicker.get(key) ?? {
     basisSourceRow: RUESTUNG_KEINE,

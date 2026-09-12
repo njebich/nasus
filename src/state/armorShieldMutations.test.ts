@@ -124,6 +124,41 @@ describe('Verfuegbarkeit-NW/-AW Kaufsperre (Nutzer 2026-07-18: ab Stufe 5 "Fast 
   });
 });
 
+describe('Material-Sourcing-Gate ("Mango"-Regel, Nutzer 2026-09-12) fuer Ruestung', () => {
+  // Faltstahlpanzer traegt sein Material nur im Namen (keine eigene Material-Spalte wie bei
+  // NK-Waffen/Schilden) - Faltstahl ist bei keinem der 4 vordefinierten Orte in
+  // materialVorrat/materialHerstellbar gelistet (siehe data/orte.ts), also ueberall hart gesperrt.
+  const faltstahlpanzer = RUESTUNG_BASIS.find((r) => r.name === 'Faltstahlpanzer')!;
+  const gesellenarbeit = RUESTUNG_VERARBEITUNG.find((r) => r.name === 'Gesellenarbeit')!;
+  const vonDerStange = RUESTUNG_ANPASSUNG.find((r) => r.name === 'von der Stange')!;
+
+  it('Faltstahlpanzer ist an einem Ort ohne Faltstahl-Sourcing (Straitmor) hart gesperrt - unabhaengig vom Ortsmodifikator', () => {
+    const character = createCharacter('Test', { spezies: 'Zwerge', herkunftOrtId: 'straitmor' });
+    character.values['dublonen_bank'] = 100000;
+    expect(() => equipRuestung(
+      character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
+    )).toThrow(MutationError);
+  });
+
+  it('bestehenderCharakter=true umgeht das Material-Gate (analog zu allen anderen Kaufsperren)', () => {
+    const character = createCharacter('Test', { spezies: 'Zwerge', herkunftOrtId: 'straitmor' });
+    character.values['dublonen_bank'] = 100000;
+    character.bestehenderCharakter = true;
+    expect(() => equipRuestung(
+      character, 'torso', 4, faltstahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
+    )).not.toThrow();
+  });
+
+  it('gewoehnliches Material (Stahlpanzer, unter der Gate-Schwelle) bleibt an jedem Ort ungehindert kaufbar', () => {
+    const stahlpanzer = RUESTUNG_BASIS.find((r) => r.name === 'Stahlpanzer')!;
+    const character = createCharacter('Test', { spezies: 'Zwerge', herkunftOrtId: 'straitmor' });
+    character.values['dublonen_bank'] = 100000;
+    expect(() => equipRuestung(
+      character, 'torso', 4, stahlpanzer.sourceRow, gesellenarbeit.sourceRow, vonDerStange.sourceRow,
+    )).not.toThrow();
+  });
+});
+
 describe('rs_kopf/rs_torso/rs_arme/rs_beine + gewichtsbelastung ueber die echten Ruestungs-Slots (Nutzer 2026-07-17: "im character state muss die ruestung erfasst werden")', () => {
   it('rs_torso liefert im vollen computeSheet-Durchlauf die echte RS-Summe, andere Gruppen bleiben 0', () => {
     const basis = RUESTUNG_BASIS.find((r) => r.name === 'Stoffrüstung')!;
@@ -203,5 +238,35 @@ describe('buyShield (Regel Nutzer 2026-07-17: Schilde komponiert aus Basis x Mat
     const updated = buyShield(character, shieldRow.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow);
     const removed = removeEquipment(updated, updated.equipment[0].id);
     expect(computeSheet(removed).dublonenSpent).toBe(0);
+  });
+});
+
+describe('Material-Sourcing-Gate ("Mango"-Regel, Nutzer 2026-09-12) fuer Schilde', () => {
+  const shieldRow = NK_WAFFEN_BASIS.find((r) => r['Spezialisierung'] === 'Schild')!;
+  const gesellenarbeit = SCHILD_FERTIGUNG.find((r) => r.name === 'Gesellenarbeit')!;
+  const stoff = SCHILD_BESPANNUNG.find((r) => r.name === 'Stoff')!;
+  // Schild-Faltstahl (AW=3/NW=5, gate-pflichtig) ist bei keinem der 4 vordefinierten Orte in
+  // materialVorrat/materialHerstellbar gelistet - anders als bei NK-Waffen-Faltstahl, aber
+  // dieselbe Materialliste/Schwelle.
+  const faltstahl = SCHILD_MATERIAL.find((r) => r.name === 'Faltstahl')!;
+
+  it('Faltstahl-Schild ist an einem Ort ohne Faltstahl-Sourcing (Straitmor) hart gesperrt', () => {
+    const character = createCharacter('Test', { spezies: 'Zwerge', herkunftOrtId: 'straitmor' });
+    character.values['dublonen_bank'] = 100000;
+    expect(() => buyShield(character, shieldRow.sourceRow, faltstahl.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).toThrow(MutationError);
+  });
+
+  it('bestehenderCharakter=true umgeht das Material-Gate', () => {
+    const character = createCharacter('Test', { spezies: 'Zwerge', herkunftOrtId: 'straitmor' });
+    character.values['dublonen_bank'] = 100000;
+    character.bestehenderCharakter = true;
+    expect(() => buyShield(character, shieldRow.sourceRow, faltstahl.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).not.toThrow();
+  });
+
+  it('Feineisen (unter der Gate-Schwelle) bleibt an jedem Ort ungehindert kaufbar', () => {
+    const feineisen = SCHILD_MATERIAL.find((r) => r.name === 'Feineisen')!;
+    const character = createCharacter('Test', { spezies: 'Zwerge', herkunftOrtId: 'straitmor' });
+    character.values['dublonen_bank'] = 100000;
+    expect(() => buyShield(character, shieldRow.sourceRow, feineisen.sourceRow, gesellenarbeit.sourceRow, stoff.sourceRow)).not.toThrow();
   });
 });

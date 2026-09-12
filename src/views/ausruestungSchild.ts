@@ -5,20 +5,33 @@ import type { CharacterState } from '../state/characterStore';
 import { NK_WAFFEN_BASIS } from '../data/equipment/weapons';
 import { SCHILD_MATERIAL, SCHILD_FERTIGUNG, SCHILD_BESPANNUNG } from '../data/equipment/shields';
 import { composeShield } from '../engine/shieldComposition';
+import { parseVerfuegbarkeit } from '../engine/weaponComposition';
+import { materialBrauchtOrtsBestaetigung, istMaterialAmOrtSourcierbar } from '../engine/verfuegbarkeitOrt';
+import { getOrtById } from '../state/orteStore';
 import { escapeHtml, kaufenLabel, gesperrtLabel, bestehenderCharakterMode, statSnapshotTooltip } from './ausruestungShared';
 import type { AusruestungCallbacks } from './ausruestung';
 
 export const SHIELDS = NK_WAFFEN_BASIS.filter((r) => r['Spezialisierung'] === 'Schild');
 
+/** "Mango"-Gate (siehe ausruestungWaffen.ts materialOptionenFuer): ein am Herkunftsort weder
+ *  vorraetiges noch herstellbares seltenes Schild-Material taucht im Dropdown gar nicht erst auf. */
+function schildMaterialOptionenFuer(character: CharacterState): typeof SCHILD_MATERIAL[number][] {
+  const ort = getOrtById(character.herkunftOrtId);
+  return SCHILD_MATERIAL.filter((m) => character.bestehenderCharakter
+    || !materialBrauchtOrtsBestaetigung(parseVerfuegbarkeit(m, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(m, 'Verfuegbarkeit-NW'))
+    || istMaterialAmOrtSourcierbar(ort, m.name));
+}
+
 /** Transiente Picker-Auswahl je Schild (Regel Nutzer 2026-07-17: "die haben auch Anpassung" -
  *  Material/Fertigung/Bespannung, analog zum Ruestungs-Slot-Picker). Manche Material-/Fertigungs-
  *  Zeilen tragen eine Voelkerzuweisung (Spec-Punkt 30/31, Herstellerherkunft) - die wirkt als
- *  Ortsmodifikator im eigentlichen Kauf (siehe characterMutations.ts buyShield), filtert aber
- *  keine Optionen aus dem Picker heraus. */
+ *  Ortsmodifikator im eigentlichen Kauf (siehe characterMutations.ts buyShield), filtert keine
+ *  Optionen aus dem Picker heraus. Das Material-Sourcing-Gate (schildMaterialOptionenFuer oben)
+ *  ist eine andere Dimension und filtert das Material-Dropdown sehr wohl. */
 const shieldPicker = new Map<number, { materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>();
 
 export function renderShieldRow(row: (typeof SHIELDS)[number], character: CharacterState): string {
-  const materialOptionen = SCHILD_MATERIAL;
+  const materialOptionen = schildMaterialOptionenFuer(character);
   const fertigungOptionen = SCHILD_FERTIGUNG;
   const bespannungOptionen = SCHILD_BESPANNUNG;
   const sel = shieldPicker.get(row.sourceRow) ?? {
@@ -61,7 +74,7 @@ export function renderShieldRow(row: (typeof SHIELDS)[number], character: Charac
 }
 
 export function wireSchildEvents(
-  container: HTMLElement, _character: CharacterState, callbacks: AusruestungCallbacks, rerender: () => void,
+  container: HTMLElement, character: CharacterState, callbacks: AusruestungCallbacks, rerender: () => void,
 ): void {
   function updateShieldPicker(shieldSourceRow: number, patch: Partial<{ materialSourceRow: number; fertigungSourceRow: number; bespannungSourceRow: number }>): void {
     const row = container.querySelector<HTMLElement>(`.ausruestung-row[data-shield="${shieldSourceRow}"]`);
@@ -87,7 +100,7 @@ export function wireSchildEvents(
     btn.addEventListener('click', () => {
       const shieldSourceRow = Number(btn.dataset.shield);
       const sel = shieldPicker.get(shieldSourceRow);
-      const materialOptionen = SCHILD_MATERIAL;
+      const materialOptionen = schildMaterialOptionenFuer(character);
       const fertigungOptionen = SCHILD_FERTIGUNG;
       const bespannungOptionen = SCHILD_BESPANNUNG;
       const materialSourceRow = sel?.materialSourceRow ?? materialOptionen[0]?.sourceRow;

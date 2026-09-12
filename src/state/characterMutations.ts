@@ -31,7 +31,7 @@ import {
 import { composeFeuerwaffe, type FeuerwaffenSelections } from '../engine/feuerwaffenComposition';
 import {
   effektiveVerfuegbarkeit, effektiveVerfuegbarkeitKomponenten, volkAusAdjektiv,
-  materialBrauchtOrtsBestaetigung, istMaterialAmOrtSourcierbar,
+  materialBrauchtOrtsBestaetigung, istMaterialAmOrtSourcierbar, materialNameAusItemname,
 } from '../engine/verfuegbarkeitOrt';
 import { getOrtById } from './orteStore';
 import type { Volk } from '../data/orte';
@@ -758,6 +758,17 @@ export function equipRuestung(
   if (Number(basis['Lage']) !== lage) {
     throw new MutationError(`'${basis.name}' hat Lage ${basis['Lage']}, passt nicht in den Lage-${lage}-Slot`);
   }
+  // Analog zum "Mango"-Gate bei NK-Waffen/Schilden (siehe buyWeapon), aber ohne eigene
+  // Material-Spalte: das Material steckt nur im Ruestungsteil-Namen (z.B. "Faltstahlpanzer"),
+  // dessen eigene Verfuegbarkeit-AW/NW-Werte bereits die Material-Raritaet spiegeln.
+  if (!character.bestehenderCharakter) {
+    const materialName = materialNameAusItemname(basis.name, NK_MATERIAL.map((m) => m.name));
+    if (materialName
+      && materialBrauchtOrtsBestaetigung(parseVerfuegbarkeit(basis, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(basis, 'Verfuegbarkeit-NW'))
+      && !istMaterialAmOrtSourcierbar(getOrtById(character.herkunftOrtId), materialName)) {
+      throw new MutationError(`Material '${materialName}' ist an diesem Ort weder vorrätig noch herstellbar (kein Preislisten-Artikel, ggf. als Auftrag möglich)`);
+    }
+  }
 
   const composed = composeArmor(basis, verarbeitung, anpassung);
 
@@ -820,6 +831,13 @@ export function buyShield(
   if (!material) throw new MutationError(`Schild-Material (Zeile ${materialSourceRow}) existiert nicht`);
   if (!fertigung) throw new MutationError(`Schild-Fertigung (Zeile ${fertigungSourceRow}) existiert nicht`);
   if (!bespannung) throw new MutationError(`Schild-Bespannung (Zeile ${bespannungSourceRow}) existiert nicht`);
+  // "Mango"-Gate (Nutzer 2026-09-12), analog zu buyWeapon: ein seltenes Material ist an einem Ort
+  // nur kaufbar, wenn es dort vorraetig oder herstellbar ist - unabhaengig vom Ortsmodifikator.
+  if (!character.bestehenderCharakter
+    && materialBrauchtOrtsBestaetigung(parseVerfuegbarkeit(material, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(material, 'Verfuegbarkeit-NW'))
+    && !istMaterialAmOrtSourcierbar(getOrtById(character.herkunftOrtId), material.name)) {
+    throw new MutationError(`Material '${material.name}' ist an diesem Ort weder vorrätig noch herstellbar (kein Preislisten-Artikel, ggf. als Auftrag möglich)`);
+  }
 
   const composed = composeShield(row, material, fertigung, bespannung);
   if (composed.preis === null) {

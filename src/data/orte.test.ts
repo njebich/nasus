@@ -13,11 +13,14 @@ describe('Ortsmodell und kontrollierte Auswahllisten', () => {
     }
   });
 
-  it('liefert die vier validen Beispielorte mit den vereinbarten Haendlern', () => {
-    expect(VORDEFINIERTE_ORTE.map((ort) => ort.name)).toEqual(['Straitmor', 'Isch-Isch', 'Katharsis', 'Phoenix-Feste']);
+  it('liefert die validen Beispielorte mit den vereinbarten Haendlern', () => {
+    expect(VORDEFINIERTE_ORTE.map((ort) => ort.name)).toEqual([
+      'Straitmor', 'Isch-Isch', 'Katharsis', 'Phoenix-Feste', 'Neu Zwoggon', 'Doxxmoxx', 'Grasungen', 'Nemzen',
+    ]);
     expect(VORDEFINIERTE_ORTE.find((ort) => ort.id === 'straitmor')?.haendler).toHaveLength(6);
-    expect(VORDEFINIERTE_ORTE.find((ort) => ort.id === 'isch-isch')?.haendler).toHaveLength(38);
-    expect(VORDEFINIERTE_ORTE.find((ort) => ort.id === 'katharsis')?.haendler).toHaveLength(38);
+    for (const id of ['isch-isch', 'katharsis', 'neu-zwoggon', 'doxxmoxx', 'grasungen']) {
+      expect(VORDEFINIERTE_ORTE.find((ort) => ort.id === id)?.haendler).toHaveLength(SPEZIALISIERBARE_WARENGRUPPEN.length);
+    }
     for (const ort of VORDEFINIERTE_ORTE) expect(validateOrt(ort)).toEqual([]);
   });
 

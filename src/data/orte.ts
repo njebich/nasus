@@ -150,6 +150,12 @@ const VORDEFINIERTE_ORTE_ROH: Ort[] = [
       { warengruppe: 'Feuerwaffen', volk: 'Orks' }, { warengruppe: 'Rüstungen', volk: null },
       { warengruppe: 'NK-Waffen', volk: null },
     ],
+    // Nutzer 2026-09-12: etwa Haelfte der Bevoelkerung versklavte Goblins, dazu versklavte
+    // Indigene und ~10% Zwerge - Sklavenstatus wird im Datenmodell nicht abgebildet (nur
+    // kulturelle Praesenz), Nutzer entschied sich bewusst GEGEN eine Indianer-Minderheiten-
+    // Ergaenzung. Material-Kanon (Orks/Goblins/Zwerge vor Ort): NIEMALS Mithril/Nasium/
+    // Adamandit vorschlagen (siehe feedback-material-kanon-nie-vorschlagen memory).
+    materialHerstellbar: ['Qualitätsstahl', 'Qualitaetsstahl', 'Faltstahl', 'Alchemistensilber', 'Chitin'],
     erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
   },
   {
@@ -160,7 +166,12 @@ const VORDEFINIERTE_ORTE_ROH: Ort[] = [
     siedlungsgroesse: 'Metropole', hauptspezies: 'Goblins', etablierteMinderheiten: ['Orks', 'Elfen', 'Gnome'],
     handelsstufe: 'Handelszentrum', herstellungsort: 'Herstellung direkt vor Ort',
     haendler: SPEZIALISIERBARE_WARENGRUPPEN.map((gruppe) => spezialisiert(gruppe, 'Großer spezialisierter Händler')),
-    lokaleProduktion: [], erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
+    lokaleProduktion: [],
+    // Nutzer 2026-09-12: "kann alles, was verfuegbar ist" - ausdruecklich inkl. Mithril/Nasium
+    // (Elfen-Minderheit) und Adamandit (Elfen/Goblins/Orks), bewusste Ausnahme von der
+    // "nie vorschlagen"-Regel, weil der Nutzer sie hier selbst explizit genannt hat.
+    materialHerstellbar: ['Qualitätsstahl', 'Qualitaetsstahl', 'Faltstahl', 'Alchemistensilber', 'Mithril', 'Nasium', 'Adamandit'],
+    erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
   },
   {
     // Nutzer 2026-09-12: Katharsis, die (neue) Hauptstadt der Zwerge - "absolutes Optimum an
@@ -195,6 +206,62 @@ const VORDEFINIERTE_ORTE_ROH: Ort[] = [
       { warengruppe: 'NK-Waffen', volk: 'Zwerge' }, { warengruppe: 'Feuerwaffen', volk: null },
       { warengruppe: 'Rüstungen', volk: null },
     ],
+    // Nutzer 2026-09-12: "die klassischen Materialien, nicht die besonderen" - klassische
+    // zwergische Metallurgie plus Chitin, aber NICHT Schwarzfels/Vulkanglas (Indianer-
+    // Spezialmaterialien, vom Nutzer nicht mit ausgewaehlt) und wie ueberall kein Mithril/
+    // Nasium/Adamandit.
+    materialHerstellbar: ['Qualitätsstahl', 'Qualitaetsstahl', 'Faltstahl', 'Alchemistensilber', 'Chitin'],
+    erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
+  },
+  {
+    // Nutzer 2026-09-12: zwergische Kolonialstadt in Nordzoran, Hauptschauplatz der aktuellen
+    // Kampagne. Kernstadt ~15.000 Einwohner.
+    id: 'neu-zwoggon', name: 'Neu Zwoggon', welt: 'NW', region: 'Zwergische Kolonie Nordzoran',
+    siedlungsgroesse: 'Stadt', hauptspezies: 'Zwerge', etablierteMinderheiten: ['Indianer'],
+    handelsstufe: 'Handelsstadt / Großer Handels-Hafen', herstellungsort: 'Herstellung direkt vor Ort',
+    garnisonsgrad: 'Fort',
+    haendler: SPEZIALISIERBARE_WARENGRUPPEN.map((gruppe) => spezialisiert(gruppe, 'Großer spezialisierter Händler')),
+    lokaleProduktion: [],
+    // Material-Kanon: NIEMALS Mithril/Nasium/Adamandit vorschlagen, siehe
+    // feedback-material-kanon-nie-vorschlagen memory (Nutzer-Korrektur an genau diesem Ort).
+    materialHerstellbar: ['Qualitätsstahl', 'Qualitaetsstahl', 'Faltstahl', 'Alchemistensilber', 'Chitin'],
+    erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
+  },
+  {
+    // Nutzer 2026-09-12: oestliche Goblin-Metropole, freie und versklavte Indigene.
+    id: 'doxxmoxx', name: 'Doxxmoxx', welt: 'NW', region: 'Freie Handelsstadt Doxxmoxx',
+    siedlungsgroesse: 'Metropole', hauptspezies: 'Goblins',
+    etablierteMinderheiten: ['Elfen', 'Dalkini', 'Indianer', 'Orks'],
+    handelsstufe: 'Handelsstadt / Großer Handels-Hafen', herstellungsort: 'Teilweiser Import, Herstellung im Reich',
+    garnisonsgrad: 'Garnison',
+    haendler: SPEZIALISIERBARE_WARENGRUPPEN.map((gruppe) => spezialisiert(gruppe, 'Großer spezialisierter Händler')),
+    lokaleProduktion: [],
+    materialHerstellbar: ['Qualitätsstahl', 'Qualitaetsstahl', 'Faltstahl', 'Alchemistensilber'],
+    erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
+  },
+  {
+    // Nutzer 2026-09-12: Marmorkueste ist die Region der alten Welt, Grasungen die Stadt darin.
+    // Versklavte Goblins als Minderheit vor Ort (Sklavenstatus nicht im Datenmodell abgebildet).
+    id: 'grasungen', name: 'Grasungen', welt: 'AW', region: 'Marmorküste',
+    siedlungsgroesse: 'Großstadt', hauptspezies: 'Zwerge',
+    etablierteMinderheiten: ['Orks', 'Goblins', 'Elfen'],
+    handelsstufe: 'Handelsstadt / Großer Handels-Hafen', herstellungsort: 'Herstellung direkt vor Ort',
+    garnisonsgrad: 'Garnison',
+    haendler: SPEZIALISIERBARE_WARENGRUPPEN.map((gruppe) => spezialisiert(gruppe, 'Großer spezialisierter Händler')),
+    lokaleProduktion: [],
+    materialHerstellbar: ['Qualitätsstahl', 'Qualitaetsstahl', 'Faltstahl', 'Alchemistensilber', 'Chitin'],
+    erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
+  },
+  {
+    // Nutzer 2026-09-12: kleines zwergisches Dorf in Nordzoran, nahe Neu Zwoggon.
+    id: 'nemzen', name: 'Nemzen', welt: 'NW', region: 'Nordzoran',
+    siedlungsgroesse: 'Dorf', hauptspezies: 'Zwerge', etablierteMinderheiten: ['Indianer'],
+    handelsstufe: 'Abgelegen von jeglichem Handel', herstellungsort: 'Import, wird nicht hergestellt',
+    garnisonsgrad: 'Wachstation',
+    haendler: [{ typ: 'Fahrender Trödelhändler', warengruppe: null }],
+    lokaleProduktion: [],
+    // Nutzer: bewusst KEINE Material-Kanon-Freigabe - abgelegenes Import-Dorf ohne eigene
+    // Produktion, alle Gate-Materialien bleiben hier gesperrt.
     erstelltAm: VORDEFINIERT_AM, aktualisiertAm: VORDEFINIERT_AM,
   },
 ];

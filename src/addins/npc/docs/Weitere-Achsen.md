@@ -90,3 +90,16 @@ Nächster vorgeschlagener Schritt: Die Achse Kampfausbildung mit konkreten Minde
 ## Kampfausbildung konkretisiert — 13. September 2026
 
 [Konkrete Fertigkeitsziele](Kampfausbildung.md): Selbstschutz H5/S5, Dienstausbildung H9/S9, Spezialist H15/S15, Ausbilder zusätzlich Pädagoge 8; passende SF-, Lade- und Schildziele sowie Kosten/Zusammenführung ausgearbeitet. H/S gemäß Nutzerkorrektur gemittelt und gleichgesetzt (Selbstschutz 4,5 auf 5 aufgerundet); SF-/Ausbilder-Zusätze bleiben Entwurf. Feuerwaffen verwenden `fk_feuerwaffen`, Armbrüste `fk_schusswaffen`; Bögen separat. Frühere offene Kampf-Zahlenziele sind damit ausgearbeitet, Bestätigung und Gesamtprüfung stehen aus. Nächster Vorschlag: magische Ausbildungsachse je KI/Spruchmagie/PSI.
+
+## Ergänzung 13.09.2026: Spruchmagie
+
+[Spruchmagieausbildung](Spruchmagieausbildung.md): Planung nach Kreis, Probenziele Stufe 1/2/3 ungefähr 20/15/10 bei Eigenschaftsbonus 0; höchster erforderlicher TaW über die vorhandenen und freigeschalteten Stufen entscheidet. Feste 14 TaP für Zaubern Stufe 2/3. Nächster Schritt: Spruchanzahl und Schulverteilung je Kreis festlegen, anschließend konkrete Kostenrechnung.
+
+
+Schulvorauswahl bestätigt: Spruchmagier mit Kampfmagierprofil erhalten mindestens eine Kampfmagieschule, Antimagie und eine weitere zufällige Schule; andere Spruchmagier drei zufällige unterschiedliche Schulen mit höchstens einer Kampfmagieschule (null oder eine). Gesamtzahl weiter 3/4/5 nach Kreis; Kampfmagier erhalten auf Kreis 3 eine weitere unterschiedliche Kampfmagieschule; ihr fünfter Platz ab Kreis 4 wird zufällig aus allen übrigen Schulen gefüllt. Für Kampfmagier dürfen die Zufallsplätze ebenfalls Kampfmagieschulen ergeben, ohne eigene Kampfmagie-Obergrenze. Andere Spruchmagier erhalten auf Kreis 3 und ab Kreis 4 jeweils eine weitere Zufallsschule, weiterhin höchstens eine Kampfmagieschule insgesamt. Kampfmagieschulen abschließend festgelegt: Magiebeschwörung, Feuerbeschwörung, Wasserbeschwörung, Erdbeschwörung und Luftbeschwörung. Antimagie zählt separat. Details in der Spruchmagieausbildung.
+
+Neueste Reihenfolge (13.09.2026): CK ist nur eine NPC-Kategorie. Zuerst passende CK-Schwerpunkteigenschaften auf noch festzulegende Zielhöhen steigern und Basisausgaben bepreisen, dann Rest-SP feststellen, erst daraus Spruchrepertoire ableiten. Beim Kampfmagier bestimmt der Eigenschaftsbonus der ersten gewählten Schule einen Schwerpunkt. Zuordnung und Budgetablauf in [Eigenschaften und Attribute](Eigenschaften-und-Attribute.md). Frühere Vorschläge, unmittelbar Spruchzahlen festzulegen, sind damit zurückgestellt.
+
+## Neueste Entscheidung: Speziesstärken steuern die Zufallsschulen
+
+Bereits hohe speziesbedingte Eigenschaften begünstigen bei der Randomisierung passende Schulen (z. B. Goblins/Schnelligkeit → Luftbeschwörung). Willenskraft und Intelligenz sind allgemeine Magierschwerpunkte. Bestehende Schulpflichten und Obergrenzen gelten weiter; keine neue Antimagiepflicht für andere Spruchmagier. Danach CK-Zielhöhen ergänzen, Basiskosten und Rest-SP bestimmen. Gewichtungsformel und Zielhöhen noch offen. Vollständiger aktueller Ablauf in [Eigenschaften und Attribute](Eigenschaften-und-Attribute.md). Nächster Vorschlag: Gewichtung für eindeutige und gemischte Schulen ausarbeiten und an mehreren Spezies vergleichen.

@@ -389,7 +389,6 @@ export function renderCharakterbogen(container: HTMLElement, sheet: ComputedShee
   container.innerHTML = `
     <div class="bogen">
       ${renderHeaderTable(character)}
-      ${renderGesinnungMirror(character)}
       ${renderCharakterwerteUndAttribute(sheet)}
       ${renderEigenschaften(sheet)}
       ${renderAuswahlListe(sheet, 'Vor- und Nachteile', 'Vor-/Nachteile')}
@@ -403,5 +402,6 @@ export function renderCharakterbogen(container: HTMLElement, sheet: ComputedShee
       ${renderKampfLeRs(sheet, character)}
       ${renderAusweichenMirror(character)}
       ${renderWaffenLoadoutMirror(sheet, character)}
+      ${renderGesinnungMirror(character)}
     </div>`;
 }

@@ -10,6 +10,7 @@ import { FEUERWAFFEN } from '../data/equipment/fernkampf';
 import { feuerwaffenStandardauswahl } from './feuerwaffenComposition';
 import { computeWeaponAtPaOverflow, getKampfstilModifier } from './waffenPool';
 import { computeSchaden, averageSchadenValue, parseDiceAverage, ceilAwayFromZero } from './waffenSchaden';
+import { computeGutMax, computeMeisterlichMax, GUT_BASIS, MEISTERLICH_BASIS } from './poolCaps';
 import { computeRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor } from './fernkampfRange';
 import {
   listEligibleNahkampf1HWaffen,
@@ -238,7 +239,7 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
     expect(result.paWk).toBe('-1');
   });
 
-  it('halbiert ohne Talent die komplette linke PA-Seite erst nach der Projektion (aufgerundet weg von Null, Punkt 8)', () => {
+  it('halbiert ohne Talent die linke PA-Seite ueber die investierten Punkte, mit neu abgeleitetem g-/m-Deckel aus dem halbierten n\' (DEC-708/DEC-1206, RC-021 §3) - kein simples Halbieren der fertig gedeckelten End-Werte', () => {
     let character = characterWithKrummdolchUndKriegsbeil();
     const [rechts, links] = character.equipment;
     const noTalent = resolveNk1hNk1h(
@@ -253,9 +254,20 @@ describe('resolveNk1hNk1h: Kampf mit zwei Waffen-Talent (Gate + Amalgamation)', 
     );
     if (!withTalent.ok || !withTalent.talentActive) throw new Error('Erwartete Talent-Ergebnis');
 
-    expect(noTalent.poolValues.npa).toBe(ceilAwayFromZero(withTalent.poolValues.npa / 2));
-    expect(noTalent.poolValues.gpa).toBe(ceilAwayFromZero(withTalent.poolValues.gpa / 2));
-    expect(noTalent.poolValues.mpa).toBe(ceilAwayFromZero(withTalent.poolValues.mpa / 2));
+    const expectedNpa = ceilAwayFromZero(withTalent.poolValues.npa / 2);
+    const expectedGCap = Math.max(GUT_BASIS, computeGutMax(expectedNpa));
+    const expectedMCap = Math.max(MEISTERLICH_BASIS, computeMeisterlichMax(expectedGCap));
+    const expectedGpa = Math.min(
+      expectedGCap, GUT_BASIS + ceilAwayFromZero((withTalent.poolValues.gpa - GUT_BASIS) / 2),
+    );
+    const expectedMpa = Math.min(
+      expectedMCap, MEISTERLICH_BASIS + ceilAwayFromZero((withTalent.poolValues.mpa - MEISTERLICH_BASIS) / 2),
+    );
+
+    expect(noTalent.poolValues.npa).toBe(expectedNpa);
+    expect(noTalent.poolValues.gpa).toBe(expectedGpa);
+    expect(noTalent.poolValues.mpa).toBe(expectedMpa);
+    expect(noTalent.poolValues.mpa).toBeGreaterThanOrEqual(MEISTERLICH_BASIS);
   });
 
   it('berechnet AT-WK = hoehere WK * 1,5, PA-WK = Summe der WK, Mindeststaerke summiert', () => {

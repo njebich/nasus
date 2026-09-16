@@ -349,17 +349,34 @@ function projectWeaponRowWithRestPp(
  * rechts gewinnt AT den Gleichstand, links PA. Ohne passendes Talent wird die linke PA-Seite
  * erst nach der Projektion halbiert.
  */
+/**
+ * Halbiert die Sekundärhand-PA-Seite fuer den Fall ohne passendes Talent (DEC-708, RC-021 §3):
+ * die investierten Pool-Punkte werden halbiert und der g-/m-Deckel wird aus dem bereits
+ * halbierten n' neu abgeleitet (gCap'=AUFRUNDEN(n'/2), mCap'=21+AUFRUNDEN((gCap'-1)/2)) - ein
+ * simples Halbieren der bereits fertig gedeckelten g-/m-Endwerte wuerde die additive
+ * MEISTERLICH_BASIS (21) faelschlich mit halbieren und den Meisterlich-Wert unter das
+ * garantierte Minimum druecken.
+ */
+function halveSecondaryTier(tier: ProjectedTierValues): ProjectedTierValues {
+  const n = ceilAwayFromZero(tier.n / 2);
+  const gCap = Math.max(GUT_BASIS, computeGutMax(n));
+  const mCap = Math.max(MEISTERLICH_BASIS, computeMeisterlichMax(gCap));
+  const g = Math.min(gCap, GUT_BASIS + ceilAwayFromZero((tier.g - GUT_BASIS) / 2));
+  const m = Math.min(mCap, MEISTERLICH_BASIS + ceilAwayFromZero((tier.m - MEISTERLICH_BASIS) / 2));
+  return { n, g, m, gCap, mCap };
+}
+
 function computeTwoHandPoolValues(
   character: CharacterState, sheet: ComputedSheet, values: CharacterValueSource,
   right: LoadoutItemInfo, left: LoadoutItemInfo, leftHalved: boolean,
 ): { poolValues: LoadoutPoolValues; rightRow: ProjectedWeaponRow; leftRow: ProjectedWeaponRow } {
   const rightRow = projectWeaponRowWithRestPp(character, sheet, values, right, 'at', 'at', left.atBonus);
   const leftRow = projectWeaponRowWithRestPp(character, sheet, values, left, 'pa', 'pa', right.paBonus);
-  const halfLeft = (value: number): number => leftHalved ? ceilAwayFromZero(value / 2) : value;
+  const leftPa = leftHalved ? halveSecondaryTier(leftRow.pa) : leftRow.pa;
   return {
     poolValues: {
       nat: rightRow.at.n, gat: rightRow.at.g, mat: rightRow.at.m,
-      npa: halfLeft(leftRow.pa.n), gpa: halfLeft(leftRow.pa.g), mpa: halfLeft(leftRow.pa.m),
+      npa: leftPa.n, gpa: leftPa.g, mpa: leftPa.m,
     },
     rightRow,
     leftRow,

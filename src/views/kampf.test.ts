@@ -13,6 +13,7 @@ import { NK_WAFFEN_BASIS, NK_MATERIAL, NK_FERTIGUNG, NK_ANPASSUNG, NK_SCHAFTMATE
 import { feuerwaffenStandardauswahl, composeFeuerwaffe } from '../engine/feuerwaffenComposition';
 import { computeSheet } from '../engine/characterSheet';
 import { TALENTE_KAMPFMODUL } from '../data/talenteKampfmodul';
+import { computeSchaden } from '../engine/waffenSchaden';
 
 function findFeuerwaffe(name: string) {
   const row = FEUERWAFFEN.find((r) => r.name === name);
@@ -415,6 +416,49 @@ describe('buildNahkampfRows: ungueltige gespeicherte Waffen', () => {
     expect(row.usable).toBe(false);
     expect(row.poolReferenz).toBeNull();
     expect(row.unusableReason).toMatch(/Spezialisierungs-ID 'nk_spez_fehlt'.*Referenz fehlt/);
+  });
+});
+
+describe('buildNahkampfRows: Min-Staerke-Unterschreitung (DEC-1208, RC-091 §3.6, LLM-018)', () => {
+  function characterWithAxt(eigKStaerke: number) {
+    let character = baseCharacter();
+    character = setValue(character, 'eig_k_staerke', eigKStaerke);
+    const axt = NK_WAFFEN_BASIS.find((row) => row.name === 'Axt')!;
+    const material = NK_MATERIAL.find((row) => row.name === 'Eisen')!;
+    const fertigung = NK_FERTIGUNG.find((row) => row.name === 'Gesellenarbeit')!;
+    const anpassung = NK_ANPASSUNG.find((row) => row.name === 'Von der Stange')!;
+    const schaftmaterial = NK_SCHAFTMATERIAL.find((row) => row.name === 'Standard')!;
+    character = buyWeapon(
+      character, axt.sourceRow, material.sourceRow, fertigung.sourceRow,
+      anpassung.sourceRow, schaftmaterial.sourceRow,
+    );
+    return character;
+  }
+
+  it('sperrt die Waffe nicht mehr komplett, sondern gibt einen gestuften Malus auf nAT/nPA/Schaden (Axt: Min-Staerke-1H 17)', () => {
+    const baseline = characterWithAxt(17); // trifft die Mindest-Staerke exakt, kein Defizit
+    const baselineAxt = baseline.equipment[0];
+    const baselineRow = buildNahkampfRows(baseline, computeSheet(baseline))
+      .find((r) => r.key === baselineAxt.id && r.grip === '1H')!;
+    expect(baselineRow.usable).toBe(true);
+
+    const defizit = 7; // eig_k_staerke=10 -> 7 Punkte unter Min-Staerke-1H (17)
+    const character = characterWithAxt(17 - defizit);
+    const axt = character.equipment[0];
+    const row = buildNahkampfRows(character, computeSheet(character))
+      .find((r) => r.key === axt.id && r.grip === '1H')!;
+
+    expect(row.usable).toBe(true);
+    expect(row.poolReferenz).not.toBeNull();
+    // nAT/nPA: -3 je fehlendem Staerkepunkt, kein Floor.
+    expect(row.nat.value).toBe(baselineRow.nat.value - 3 * defizit);
+    expect(row.npa.value).toBe(baselineRow.npa.value - 3 * defizit);
+
+    const snap = axt.computedStatsSnapshot!;
+    const expectedSchaden = computeSchaden(
+      { 'Schadenswuerfel-1': 'W20', 'Staerke-Teiler': '2' }, snap.staerkeMalus ?? 0, 17 - defizit, undefined, defizit,
+    );
+    expect(row.schaden).toBe(expectedSchaden);
   });
 });
 

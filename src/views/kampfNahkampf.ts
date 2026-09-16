@@ -162,9 +162,15 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
     // Schilde (family='shield') speichern ihre Mindeststaerke unter 'minStaerke' statt
     // 'minStaerke1H' (siehe buyShield) - Schilde haben ohnehin nur den 1H-Griff (grips oben).
     const minStaerke = grip === '1H' ? (snap.minStaerke1H ?? snap.minStaerke ?? 0) : (snap.minStaerke2H ?? 0);
-    const usable = !invalidReason && eigKStaerke >= minStaerke;
+    const usable = !invalidReason;
+    // Min-Staerke-Unterschreitung sperrt die Waffe nicht mehr komplett, sondern gibt einen
+    // gestuften Malus (DEC-1208, RC-091 §3.6): nAT/nPA -3 je fehlendem Punkt (kein Floor), Schaden
+    // -1 je fehlendem Punkt (gefloort bei 0) - die Waffe bleibt nutzbar, Pool-Zuteilung normal.
+    const staerkeDefizit = usable ? Math.max(0, minStaerke - eigKStaerke) : 0;
+    const meetsMinStaerke = staerkeDefizit === 0;
     const wk = grip === '1H' ? (snap.wk ?? 0) : Math.ceil((snap.wk ?? 0) * 1.5 * 2) / 2;
-    const zweiWaffenFaehig = zweiWaffenCap !== undefined && grip === '1H' && hauptfertigkeit !== 'Stangenwaffen' && usable
+    const zweiWaffenFaehig = zweiWaffenCap !== undefined && grip === '1H' && hauptfertigkeit !== 'Stangenwaffen'
+      && usable && meetsMinStaerke
       ? wk <= zweiWaffenCap
       : undefined;
     const poolFields = usable && poolReferenz
@@ -174,6 +180,10 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
         npa: { value: 0, allocated: 0 }, gpa: { value: 0, allocated: 0 }, mpa: { value: 0, allocated: 0 },
         pp: 0, atSpent: 0, paSpent: 0, poolValid: true,
       };
+    if (usable && staerkeDefizit > 0) {
+      poolFields.nat = { ...poolFields.nat, value: poolFields.nat.value - 3 * staerkeDefizit };
+      poolFields.npa = { ...poolFields.npa, value: poolFields.npa.value - 3 * staerkeDefizit };
+    }
     const standardRow: NahkampfRow = {
       key: e.id,
       label: weaponName,
@@ -181,8 +191,8 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
       grip,
       minStaerke,
       usable,
-      unusableReason: usable ? undefined : invalidReason ?? 'nicht tragbar (Stärke zu niedrig)',
-      schaden: usable ? computeSchaden(basis, snap.staerkeMalus ?? 0, eigKStaerke) : '–',
+      unusableReason: usable ? undefined : invalidReason,
+      schaden: usable ? computeSchaden(basis, snap.staerkeMalus ?? 0, eigKStaerke, undefined, staerkeDefizit) : '–',
       wk: usable ? String(wk) : '–',
       rb: snap.rb ?? 0,
       poolReferenz: usable ? poolReferenz : null,
@@ -201,7 +211,7 @@ function buildOwnedWeaponRows(ctx: PoolContext, e: CharacterState['equipment'][n
         activeEnchant: true,
         wirkungTooltip: xKlingeTooltip(wirkung),
         schaden: usable
-          ? computeSchaden(basis, snap.staerkeMalus ?? 0, eigKStaerke, wirkung)
+          ? computeSchaden(basis, snap.staerkeMalus ?? 0, eigKStaerke, wirkung, staerkeDefizit)
           : '–',
         rb: (snap.rb ?? 0) + (wirkung.rb ?? 0),
       },

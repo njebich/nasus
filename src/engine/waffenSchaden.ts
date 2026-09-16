@@ -73,16 +73,26 @@ export function computeStaerkeBonus(staerke: number, staerkeTeiler: number, stae
 
 /** Schaden = Wuerfelnotation + Flachbonus aus dem Stä-Mod. Nutzt den KOMPONIERTEN Stä-Malus aus dem Snapshot (Basis +
  *  Material), nicht nur die rohe Basis-Spalte - konsistent mit jeder anderen Zahl in dieser
- *  Tabelle (die kommen alle aus dem Snapshot, nicht aus der rohen Basiszeile). */
+ *  Tabelle (die kommen alle aus dem Snapshot, nicht aus der rohen Basiszeile).
+ *
+ *  `staerkeDefizit` (DEC-1208, RC-091 §3.6): fehlende Punkte gegenueber der Waffen-Mindeststärke.
+ *  Jeder fehlende Punkt zieht 1 vom Flachbonus ab, gefloort bei 0 - der Gesamtschaden (Wuerfel-
+ *  Durchschnitt + Flachbonus) darf dadurch nicht unter 0 fallen. */
 export function computeSchaden(
   basis: Record<string, string> | undefined, staerkeMalus: number, eigKStaerke: number,
   element?: { schadenswuerfel: string; schadenselement: string },
+  staerkeDefizit = 0,
 ): string {
   const staerkeTeiler = num(basis, 'Staerke-Teiler');
-  const flatBonus = computeStaerkeBonus(eigKStaerke, staerkeTeiler, staerkeMalus);
   const basisDice = formatSchadenswuerfel(basis);
   const elementDice = element ? combineDiceNotations(element.schadenswuerfel) : '';
   const dice = element ? `${basisDice}+(${elementDice} ${element.schadenselement})` : basisDice;
+  let flatBonus = computeStaerkeBonus(eigKStaerke, staerkeTeiler, staerkeMalus) - staerkeDefizit;
+  if (staerkeDefizit > 0) {
+    const diceAverage = parseDiceAverage(basis?.['Schadenswuerfel-1']) + parseDiceAverage(basis?.['Schadenswuerfel-2'])
+      + (element ? parseDiceAverage(element.schadenswuerfel) : 0);
+    flatBonus = Math.max(flatBonus, -Math.floor(diceAverage));
+  }
   return flatBonus !== 0 ? `${dice} ${formatSigned(flatBonus)}` : dice;
 }
 

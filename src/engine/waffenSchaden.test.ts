@@ -41,3 +41,17 @@ describe('Stä-Mod', () => {
     expect(computeSchaden(axt, -5, 11)).toBe('W20 +1');
   });
 });
+
+describe('Min-Staerke-Malus auf den Schaden (DEC-1208, RC-091 §3.6)', () => {
+  it('zieht 1 Schaden je fehlendem Staerkepunkt vom Flachbonus ab', () => {
+    const axt = { 'Schadenswuerfel-1': 'W20', 'Staerke-Teiler': '2' };
+    expect(computeSchaden(axt, -5, 11, undefined, 2)).toBe('W20 -1');
+  });
+
+  it('floort den Gesamtschaden (Wuerfeldurchschnitt + Flachbonus) bei 0, statt beliebig negativ zu werden', () => {
+    const dolch = { 'Schadenswuerfel-1': 'W6', 'Staerke-Teiler': '0' };
+    // Wuerfeldurchschnitt von W6 ist 3,5 (abgerundet 3) - ein Defizit von 20 wuerde den
+    // Flachbonus ohne Floor auf -20 druecken, hier muss er bei -3 (= -floor(3,5)) stehen bleiben.
+    expect(computeSchaden(dolch, 0, 10, undefined, 20)).toBe('W6 -3');
+  });
+});

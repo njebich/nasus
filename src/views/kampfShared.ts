@@ -8,7 +8,7 @@ import { evalReferenz, type CharacterValueSource } from '../engine/rules';
 import type { RangedWeaponInventorySnapshot } from '../engine/rangedInventorySnapshot';
 import type { FernkampfRow } from '../data/equipment/fernkampf';
 import { computeWeaponAtPaOverflow, getKampfstilModifier } from '../engine/waffenPool';
-import { computeSchaden } from '../engine/waffenSchaden';
+import { computeSchaden, formatSigned } from '../engine/waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues } from '../engine/fernkampfRange';
 
 export function escapeHtml(s: string): string {
@@ -59,17 +59,22 @@ export function computeFkNkWerte(
   const hauptfertigkeit = basis['Hauptfertigkeit'];
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
   const minStaerke = numOrUndefined(basis, 'Min-Staerke-1H-Basis') ?? numOrUndefined(basis, 'Min-Staerke-2H-Basis') ?? 0;
-  const usable = eigKStaerke >= minStaerke;
+  // Min-Staerke-Unterschreitung sperrt die Waffe nicht mehr komplett, sondern gibt einen
+  // gestuften Malus (DEC-1208, RC-091 §3.6): nAT/nPA -3 je fehlendem Punkt (kein Floor), Schaden
+  // -1 je fehlendem Punkt (gefloort bei 0) - die Waffe bleibt nutzbar.
+  const staerkeDefizit = Math.max(0, minStaerke - eigKStaerke);
   const overflow = computeWeaponAtPaOverflow(
     hauptfertigkeit, num(basis, 'AT-Basis'), num(basis, 'PA-Basis'), values, getKampfstilModifier(character),
   );
   return {
-    usable,
-    unusableReason: usable ? undefined : 'nicht tragbar (Stärke zu niedrig)',
-    schaden: usable ? computeSchaden(basis, num(basis, 'Staerke-Malus-Basis'), eigKStaerke) : '–',
-    wk: usable ? String(num(basis, 'WK-Basis')) : '–',
-    nat: usable ? Math.min(20, overflow.uncAtWeapon) : null,
-    npa: usable ? Math.min(20, overflow.uncPaWeapon) : null,
+    usable: true,
+    unusableReason: staerkeDefizit > 0
+      ? `Mindest-Stärke ${minStaerke} unterschritten (${formatSigned(-staerkeDefizit)}): nAT/nPA ${formatSigned(-3 * staerkeDefizit)}, Schaden ${formatSigned(-staerkeDefizit)}`
+      : undefined,
+    schaden: computeSchaden(basis, num(basis, 'Staerke-Malus-Basis'), eigKStaerke, undefined, staerkeDefizit),
+    wk: String(num(basis, 'WK-Basis')),
+    nat: Math.min(20, overflow.uncAtWeapon) - 3 * staerkeDefizit,
+    npa: Math.min(20, overflow.uncPaWeapon) - 3 * staerkeDefizit,
     kb: num(basis, 'Klingenbrecher-Basis'),
     ks: num(basis, 'Klingenschutz-Basis'),
   };
@@ -81,7 +86,8 @@ export function computeResolvedRangedNkWerte(
   if (!basis.hauptfertigkeit) return null;
   const eigKStaerke = Number(evalReferenz('eig_k_staerke', values));
   const minStaerke = basis.minStaerke1H ?? basis.minStaerke2H ?? 0;
-  const usable = eigKStaerke >= minStaerke;
+  // Siehe computeFkNkWerte: gestufter Malus statt Vollsperre (DEC-1208, RC-091 §3.6).
+  const staerkeDefizit = Math.max(0, minStaerke - eigKStaerke);
   const overflow = computeWeaponAtPaOverflow(
     basis.hauptfertigkeit, basis.atBasis, basis.paBasis, values, getKampfstilModifier(character),
   );
@@ -91,12 +97,14 @@ export function computeResolvedRangedNkWerte(
     'Staerke-Teiler': String(basis.staerkeTeiler),
   };
   return {
-    usable,
-    unusableReason: usable ? undefined : 'nicht tragbar (Stärke zu niedrig)',
-    schaden: usable ? computeSchaden(schadenBasis, basis.staerkeMalusBasis, eigKStaerke) : '–',
-    wk: usable ? String(basis.wkBasis) : '–',
-    nat: usable ? Math.min(20, overflow.uncAtWeapon) : null,
-    npa: usable ? Math.min(20, overflow.uncPaWeapon) : null,
+    usable: true,
+    unusableReason: staerkeDefizit > 0
+      ? `Mindest-Stärke ${minStaerke} unterschritten (${formatSigned(-staerkeDefizit)}): nAT/nPA ${formatSigned(-3 * staerkeDefizit)}, Schaden ${formatSigned(-staerkeDefizit)}`
+      : undefined,
+    schaden: computeSchaden(schadenBasis, basis.staerkeMalusBasis, eigKStaerke, undefined, staerkeDefizit),
+    wk: String(basis.wkBasis),
+    nat: Math.min(20, overflow.uncAtWeapon) - 3 * staerkeDefizit,
+    npa: Math.min(20, overflow.uncPaWeapon) - 3 * staerkeDefizit,
     kb: basis.klingenbrecherBasis,
     ks: basis.klingenschutzBasis,
   };

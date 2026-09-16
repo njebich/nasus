@@ -5,9 +5,9 @@ import {
 } from './orte';
 
 describe('Ortsmodell und kontrollierte Auswahllisten', () => {
-  it('enthaelt 43 Warengruppen, davon genau 38 haendlerspezialisierbar', () => {
-    expect(WARENGRUPPEN).toHaveLength(43);
-    expect(SPEZIALISIERBARE_WARENGRUPPEN).toHaveLength(38);
+  it('enthaelt 57 Warengruppen, davon genau 52 haendlerspezialisierbar', () => {
+    expect(WARENGRUPPEN).toHaveLength(57);
+    expect(SPEZIALISIERBARE_WARENGRUPPEN).toHaveLength(52);
     for (const id of ['Miete', 'Post', 'Reisekosten', 'Tavernen-Preise', 'Zoll']) {
       expect(WARENGRUPPEN.find((gruppe) => gruppe.id === id)?.haendlerSpezialisierbar).toBe(false);
     }

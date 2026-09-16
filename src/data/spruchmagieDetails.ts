@@ -2,9 +2,17 @@
 
 import spruchmagieDetailsJson from './spruchmagieDetails.json';
 
+export interface SpruchmagieVerteidigung {
+  typ: 'keine' | 'gluecksprobe' | 'distanz' | 'loeseprobe';
+  form?: 'ball' | 'bolzen';
+  eigenschaft?: 'wil' | 'int' | 'mut';
+  erschwerung?: 'macht_differenz' | 'macht_differenz_2x';
+  intervall?: 'einmalig' | 'takt' | 'umgebung';
+}
 export interface SpruchmagieDetail {
   minInt?: string;
   gegenprobe?: string;
+  verteidigung?: SpruchmagieVerteidigung;
   rw?: string;
   ziel?: string;
   form?: string;

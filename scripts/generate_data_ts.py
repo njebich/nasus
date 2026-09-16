@@ -33,6 +33,7 @@ Aendert NICHTS an der xlsx - reines Lesen. Ueberschreibt die generierten
 """
 import sys
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -976,6 +977,51 @@ def write_ki_baum_kanten_ts(wb):
     print(f"{path}: {len(rows)} KI-Baum-Kanten geschrieben.")
 
 
+GEGENPROBE_EXACT = {
+    "Keine Gegenprobe möglich.": {"typ": "keine"},
+    "Glücks-Probe, um der Wirkung zu entgehen.": {"typ": "gluecksprobe"},
+    "Bis {Magie}m: Glücks-Probe, ab {Magie}m: Ausweichen, ab {Magie}*2m: mit einem Schild Parieren, "
+    "um der Wirkung zu entgehen.": {"typ": "distanz", "form": "ball"},
+    "Bis {M}m: Glücks-Probe, bis {M}*2m: AW/2, danach AW oder mit einem Schild parieren, "
+    "um der Wirkung zu entgehen.": {"typ": "distanz", "form": "bolzen"},
+}
+
+GEGENPROBE_EIGENSCHAFT = {"Willenskraft": "wil", "Intelligenz": "int", "Mut": "mut"}
+
+# "Das Opfer"/"Jedes Opfer in RW" (singular "legt") vs. "Alle Opfer in RW" (plural "legen").
+GEGENPROBE_LOESEPROBE_RE = re.compile(
+    r"^(?:Das Opfer|Jedes Opfer in RW|Alle Opfer in RW) legt?e?n? eine "
+    r"(Willenskraft|Intelligenz|Mut) \+ \(M\)-Probe ab, erschwert um \{M\}(\*2)?(.*?)\. "
+    r"Gelingt die Probe, endet der Zauber\.$"
+)
+
+
+def classify_gegenprobe(text):
+    """SM-043 (LLM-002): normalisiert das gegenprobe-Freitextfeld (~20 Vorlagen ueber 330
+    Zauber) in ein strukturiertes verteidigung{typ,...}-Objekt, ohne den Rohtext zu ersetzen -
+    spruchmagie.ts zeigt ihn weiterhin woertlich an (Spruchmagie Wirkungstext-Variablen). Gibt
+    None zurueck, wenn der Text keinem der vom Owner freigegebenen ~20 Templates entspricht (SPOT-
+    Aenderung mit neuem, noch nicht abgebildetem Wortlaut) - dann bleibt 'verteidigung' unbesetzt
+    und eine Warnung wird ausgegeben, statt eine falsche Klassifikation zu raten."""
+    if text in GEGENPROBE_EXACT:
+        return dict(GEGENPROBE_EXACT[text])
+    match = GEGENPROBE_LOESEPROBE_RE.match(text)
+    if not match:
+        return None
+    eig_raw, doppelt, rest = match.groups()
+    erschwerung = "macht_differenz_2x" if doppelt else "macht_differenz"
+    if "Umgebungslautst" in rest:
+        intervall = "umgebung"
+    elif rest.strip():
+        intervall = "takt"
+    else:
+        intervall = "einmalig"
+    return {
+        "typ": "loeseprobe", "eigenschaft": GEGENPROBE_EIGENSCHAFT[eig_raw],
+        "erschwerung": erschwerung, "intervall": intervall,
+    }
+
+
 def read_spruchmagie_details(wb):
     """Liest Sheet "Spruchmagie-Details" (von scripts/import_spruchmagie.py erzeugt, siehe dort) -
     die Zauber-Statblock-Spalten aus NN_Spruchmagie_0.57.xlsx, die nicht ins generische
@@ -1009,6 +1055,14 @@ def read_spruchmagie_details(wb):
             val = cell_to_str(ws.cell(row=r, column=headers[header]).value)
             if val is not None:
                 entry[field] = val
+        gegenprobe = entry.get("gegenprobe")
+        if gegenprobe:
+            verteidigung = classify_gegenprobe(gegenprobe)
+            if verteidigung is not None:
+                entry["verteidigung"] = verteidigung
+            else:
+                print(f"  - Zeile {r}: Referenz '{referenz}' - gegenprobe-Text passt zu keinem "
+                      f"bekannten Verteidigung-Template, 'verteidigung' bleibt unbesetzt: {gegenprobe!r}")
         details[referenz] = entry
     return details
 
@@ -1016,9 +1070,17 @@ def read_spruchmagie_details(wb):
 def write_spruchmagie_details_ts(wb):
     details = read_spruchmagie_details(wb)
     type_lines = [
+        "export interface SpruchmagieVerteidigung {",
+        "  typ: 'keine' | 'gluecksprobe' | 'distanz' | 'loeseprobe';",
+        "  form?: 'ball' | 'bolzen';",
+        "  eigenschaft?: 'wil' | 'int' | 'mut';",
+        "  erschwerung?: 'macht_differenz' | 'macht_differenz_2x';",
+        "  intervall?: 'einmalig' | 'takt' | 'umgebung';",
+        "}",
         "export interface SpruchmagieDetail {",
         "  minInt?: string;",
         "  gegenprobe?: string;",
+        "  verteidigung?: SpruchmagieVerteidigung;",
         "  rw?: string;",
         "  ziel?: string;",
         "  form?: string;",

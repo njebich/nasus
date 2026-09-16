@@ -37,6 +37,13 @@ export interface SingleLoadoutResult {
   npa: string;
   fkSchaden: string;
   fkReichweiten: string;
+  kb?: number;
+  ks?: number;
+  iniMelee?: number;
+  rb?: number;
+  rw?: string;
+  ladedauer?: string;
+  iniFk?: number;
 }
 
 export function buildLoadoutDisplayRows(character: CharacterState, sheet: ComputedSheet): LoadoutDisplayRow[] {
@@ -77,6 +84,7 @@ function buildSingleLoadoutDisplayRow(
       result: {
         ok: true, comboType: entry.comboType, schaden: row.schaden, wk: row.wk,
         nat: String(row.nat.value), npa: String(row.npa.value), fkSchaden: '–', fkReichweiten: '–',
+        kb: row.kb, ks: row.ks, iniMelee: row.ini,
       },
       pool: { gat: row.gat.value, gpa: row.gpa.value, mat: row.mat.value, mpa: row.mpa.value, pp: row.pp },
     };
@@ -92,6 +100,7 @@ function buildSingleLoadoutDisplayRow(
       result: {
         ok: true, comboType: entry.comboType, schaden: '–', wk: '–', nat: '–', npa: '–',
         fkSchaden: row.schaden, fkReichweiten: row.ranges.join(' / '),
+        rb: row.rb, rw: String(row.rw), ladedauer: row.ladedauer, iniFk: row.ini,
       },
     };
   }
@@ -106,6 +115,7 @@ function buildSingleLoadoutDisplayRow(
     result: {
       ok: true, comboType: entry.comboType, schaden: '–', wk: '–', nat: '–', npa: '–',
       fkSchaden: row.schaden, fkReichweiten: row.ranges.join(' / '),
+      rb: row.rb, rw: String(row.rw), ladedauer: row.ladedauer, iniFk: row.ini,
     },
   };
 }
@@ -119,7 +129,19 @@ export interface LoadoutCells {
   fkSchadenL: string;
   fkReichweitenR: string;
   fkReichweitenL: string;
+  /** KB/KS/INI der Nahkampf-/Schild-Seite (Word-Datenblatt Seite 2) - '–' wenn nicht anwendbar. */
+  kb: string;
+  ks: string;
+  iniMelee: string;
+  /** RB/RW/Ladedauer/INI der Fernkampf-/Pistolen-Seite - bei Zwei-Pistolen-Combos "R / L" wie
+   *  schon bei fkSchaden/fkReichweiten ueblich. */
+  rb: string;
+  rw: string;
+  ladedauer: string;
+  iniFk: string;
 }
+
+const LEER_CELLS = { kb: '–', ks: '–', iniMelee: '–', rb: '–', rw: '–', ladedauer: '–', iniFk: '–' };
 
 export function formatLoadoutCells(result: LoadoutResult | SingleLoadoutResult): LoadoutCells | { error: string } {
   if (!result.ok) return { error: result.reason };
@@ -127,59 +149,85 @@ export function formatLoadoutCells(result: LoadoutResult | SingleLoadoutResult):
     case 'nk1h':
     case 'nk2h':
       return {
+        ...LEER_CELLS,
         schaden: result.schaden, wk: result.wk, nat: result.nat, npa: result.npa,
         fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
+        kb: String(result.kb ?? '–'), ks: String(result.ks ?? '–'), iniMelee: String(result.iniMelee ?? '–'),
       };
     case 'pistole':
     case 'muskete':
     case 'armbrust':
     case 'bogen':
       return {
+        ...LEER_CELLS,
         schaden: '–', wk: '–', nat: '–', npa: '–',
         fkSchadenR: result.fkSchaden, fkSchadenL: '',
         fkReichweitenR: result.fkReichweiten, fkReichweitenL: '',
+        rb: String(result.rb ?? '–'), rw: result.rw ?? '–', ladedauer: result.ladedauer ?? '–',
+        iniFk: String(result.iniFk ?? '–'),
       };
     case 'nk1h_nk1h':
       if (result.talentActive) {
         return {
+          ...LEER_CELLS,
           schaden: result.schaden, wk: `AT ${result.atWk} / PA ${result.paWk}`,
           nat: String(result.nat), npa: String(result.npa),
           fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
+          kb: `${result.primaryKb} / ${result.secondaryKb}`, ks: `${result.primaryKs} / ${result.secondaryKs}`,
+          iniMelee: `${result.primaryIni} / ${result.secondaryIni}`,
         };
       }
       return {
+        ...LEER_CELLS,
         schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
         wk: `${result.primary.wk} / ${result.secondary.wk}`,
         nat: String(result.nat), npa: String(result.npa),
         fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
+        kb: `${result.primary.kb} / ${result.secondary.kb}`, ks: `${result.primary.ks} / ${result.secondary.ks}`,
+        iniMelee: `${result.primary.ini} / ${result.secondary.ini}`,
       };
     case 'nk1h_pistole':
       return {
+        ...LEER_CELLS,
         schaden: result.melee.schaden, wk: result.melee.wk,
         nat: String(result.melee.nat), npa: String(result.melee.npa),
         fkSchadenR: '', fkSchadenL: result.pistole.schaden,
         fkReichweitenR: '', fkReichweitenL: result.pistole.ranges.join(' / '),
+        kb: String(result.melee.kb), ks: String(result.melee.ks), iniMelee: String(result.melee.ini),
+        rb: String(result.pistole.rb), rw: result.pistole.rw, ladedauer: result.pistole.ladedauer,
+        iniFk: String(result.pistole.ini),
       };
     case 'nk1h_schild':
       return {
+        ...LEER_CELLS,
         schaden: `${result.primary.schaden} / ${result.secondary.schaden}`,
         wk: `AT ${result.atWk} / PA ${result.paWk}`,
         nat: String(result.nat), npa: String(result.npa),
         fkSchadenR: '', fkSchadenL: '', fkReichweitenR: '', fkReichweitenL: '',
+        kb: `${result.primary.kb} / ${result.secondary.kb}`, ks: `${result.primary.ks} / ${result.secondary.ks}`,
+        iniMelee: `${result.primary.ini} / ${result.secondary.ini}`,
       };
     case 'schild_pistole':
       return {
+        ...LEER_CELLS,
         schaden: result.schild.schaden, wk: result.schild.wk,
         nat: String(result.schild.nat), npa: String(result.schild.npa),
         fkSchadenR: '', fkSchadenL: result.pistole.schaden,
         fkReichweitenR: '', fkReichweitenL: result.pistole.ranges.join(' / '),
+        kb: String(result.schild.kb), ks: String(result.schild.ks), iniMelee: String(result.schild.ini),
+        rb: String(result.pistole.rb), rw: result.pistole.rw, ladedauer: result.pistole.ladedauer,
+        iniFk: String(result.pistole.ini),
       };
     case 'pistole_pistole':
       return {
+        ...LEER_CELLS,
         schaden: '–', wk: '–', nat: '–', npa: '–',
         fkSchadenR: result.primary.schaden, fkSchadenL: result.secondary.schaden,
         fkReichweitenR: result.primary.ranges.join(' / '),
         fkReichweitenL: result.secondary.ranges.join(' / '),
+        rb: `${result.primary.rb} / ${result.secondary.rb}`, rw: `${result.primary.rw} / ${result.secondary.rw}`,
+        ladedauer: `${result.primary.ladedauer} / ${result.secondary.ladedauer}`,
+        iniFk: `${result.primary.ini} / ${result.secondary.ini}`,
       };
   }
 }

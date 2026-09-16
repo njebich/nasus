@@ -65,6 +65,7 @@ export function renderActiveView(
       onBuyMunition: handlers.handleBuyMunition,
       onBuyAlchemika: handlers.handleBuyAlchemika,
       onRemoveEquipment: handlers.handleRemoveEquipment,
+      onSetArtefaktOrt: handlers.handleSetArtefaktOrt,
     }, route.category);
   } else if (route.kind === 'verteilung') {
     renderVerteilungView(viewContainer, sheet, currentCharacter);

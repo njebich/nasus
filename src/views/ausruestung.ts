@@ -61,6 +61,7 @@ export interface AusruestungCallbacks {
   onBuyMunition: (typ: 'pfeile' | 'bolzen', basisSourceRow: number, modifikatorSourceRow: number | null, quantity: number) => void;
   onBuyAlchemika: (sourceRow: number, quantity: number) => void;
   onRemoveEquipment: (equipmentId: string) => void;
+  onSetArtefaktOrt: (equipmentId: string, ort: string) => void;
 }
 
 export type KaufKategorie = 'Rüstung' | 'Schilde' | 'Waffen' | 'Bögen' | 'Armbrüste'

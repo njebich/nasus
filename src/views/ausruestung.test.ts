@@ -10,7 +10,7 @@ function callbacks(): AusruestungCallbacks {
     onEquipRuestungAlleTz: vi.fn(), onUnequipRuestung: vi.fn(), onBuyShield: vi.fn(),
     onBuyWeapon: vi.fn(), onBuyFernkampfwaffe: vi.fn(), onBuyFeuerwaffe: vi.fn(),
     onBuyFeuerwaffenMunition: vi.fn(), onBuyMunition: vi.fn(), onBuyAlchemika: vi.fn(),
-    onRemoveEquipment: vi.fn(),
+    onRemoveEquipment: vi.fn(), onSetArtefaktOrt: vi.fn(),
   };
 }
 

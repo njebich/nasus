@@ -5,6 +5,7 @@
 import type { CharacterState } from '../state/characterStore';
 import { PREISLISTE } from '../data/equipment/preisliste';
 import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
+import { ARTEFAKT_ORTE } from '../data/artefaktOrte';
 import { ALCHEMIKA } from '../data/equipment/alchemika';
 import {
   ARROW_BY_SOURCE_ROW, BOLT_BY_SOURCE_ROW, BOW_BY_SOURCE_ROW, CROSSBOW_BY_SOURCE_ROW,
@@ -142,16 +143,42 @@ export function renderInventar(character: CharacterState, category: KaufKategori
     return `
       <div class="inventar-row${invalidReason ? ' inventar-row-invalid' : ''}" data-equipment-id="${e.id}"${invalidReason ? ` title="${escapeHtml(invalidReason)}"` : statTooltip}>
         <span class="stat-label">${labelHtml ?? escapeHtml(label)}${e.quantity > 1 ? ` ×${e.quantity}` : ''}${invalidReason ? `<span class="inventar-invalid-error">Ungültig: ${escapeHtml(invalidReason)}</span>` : ''}</span>
+        ${e.family === 'artefakt' ? renderArtefaktOrtSelect(e) : ''}
         <span class="stat-cost">${formatDublonen(total)}</span>
         <button type="button" class="inventar-remove" data-equipment-id="${e.id}">Entfernen</button>
       </div>`;
   }).join('');
 }
 
+/** Ort-Dropdown je besessenem Artefakt (Nutzer-Ask 2026-09-16) - reine Notiz ohne Wirkungs-Logik,
+ *  siehe data/artefaktOrte.ts-Dateikopf. */
+function renderArtefaktOrtSelect(entry: CharacterState['equipment'][number]): string {
+  const current = entry.selections.ort ?? '';
+  const gruppen = [...new Set(ARTEFAKT_ORTE.map((o) => o.gruppe))];
+  const options = gruppen.map((gruppe) => `
+    <optgroup label="${escapeHtml(gruppe)}">
+      ${ARTEFAKT_ORTE.filter((o) => o.gruppe === gruppe).map((o) => `
+        <option value="${escapeHtml(o.value)}"${o.value === current ? ' selected' : ''}>${escapeHtml(o.label)}</option>
+      `).join('')}
+    </optgroup>`).join('');
+  return `
+    <label class="artefakt-ort-select">Ort
+      <select data-artefakt-ort-id="${escapeHtml(entry.id)}">
+        <option value="">– kein Ort gewählt –</option>
+        ${options}
+      </select>
+    </label>`;
+}
+
 export function wireInventarEvents(container: HTMLElement, callbacks: AusruestungCallbacks): void {
   container.querySelectorAll<HTMLButtonElement>('.inventar-remove').forEach((btn) => {
     btn.addEventListener('click', () => {
       callbacks.onRemoveEquipment(btn.dataset.equipmentId!);
+    });
+  });
+  container.querySelectorAll<HTMLSelectElement>('[data-artefakt-ort-id]').forEach((select) => {
+    select.addEventListener('change', () => {
+      callbacks.onSetArtefaktOrt(select.dataset.artefaktOrtId!, select.value);
     });
   });
 }

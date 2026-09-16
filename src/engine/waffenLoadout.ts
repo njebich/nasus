@@ -18,6 +18,7 @@ import { computeWeaponAtPaOverflow, getKampfstilModifier, getZweiWaffenCap, reso
 import { computeGutMax, computeMeisterlichMax, GUT_BASIS, MEISTERLICH_BASIS } from './poolCaps';
 import { combineDiceNotations, computeSchaden, averageSchadenValue, ceilAwayFromZero, formatSigned } from './waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor, type RangeCellValues } from './fernkampfRange';
+import { gesBonWert, ladezeitKr, feuerwaffenLadeschuetzeReferenz } from './fernkampfLadezeit';
 import type { GenericRow as WeaponRow } from '../data/equipment/weapons';
 import type { FernkampfRow } from '../data/equipment/fernkampf';
 import {
@@ -43,6 +44,9 @@ export interface LoadoutItemInfo {
   minStaerke: number;
   staerkeMalus: number;
   basis: WeaponRow;
+  kb: number;
+  ks: number;
+  iniMod: number;
 }
 
 /** Alle besessenen 1H-faehigen Nahkampfwaffen (family='weapon'). Stangenwaffen sind bewusst fuer
@@ -73,6 +77,9 @@ export function listEligibleNahkampf1HWaffen(character: CharacterState): Loadout
       minStaerke: snap.minStaerke1H ?? 0,
       staerkeMalus: snap.staerkeMalus ?? 0,
       basis,
+      kb: snap.klingenbrecher ?? 0,
+      ks: snap.klingenschutz ?? 0,
+      iniMod: snap.ini ?? 0,
     });
   }
   return out;
@@ -102,6 +109,9 @@ export function listEligibleSchilde(character: CharacterState): LoadoutItemInfo[
       minStaerke: snap.minStaerke ?? 0,
       staerkeMalus: snap.staerkeMalus ?? 0,
       basis,
+      kb: snap.klingenbrecher ?? 0,
+      ks: snap.klingenschutz ?? 0,
+      iniMod: snap.ini ?? 0,
     });
   }
   return out;
@@ -396,6 +406,9 @@ export interface DualWaffenSide {
   npa: number;
   schaden: string;
   wk: string;
+  kb: number;
+  ks: number;
+  ini: number;
 }
 
 export interface DualWaffenNoTalentResult {
@@ -422,6 +435,12 @@ export interface DualWaffenTalentResult {
   paWk: string;
   minStaerke: number;
   schaden: string;
+  primaryKb: number;
+  primaryKs: number;
+  primaryIni: number;
+  secondaryKb: number;
+  secondaryKs: number;
+  secondaryIni: number;
 }
 
 export type Nk1hNk1hResult = LoadoutResolutionError | DualWaffenNoTalentResult | DualWaffenTalentResult;
@@ -447,6 +466,7 @@ export function resolveNk1hNk1h(
       ? computeSchaden(primary.basis, primary.staerkeMalus, eigKStaerke)
       : computeSchaden(secondary.basis, secondary.staerkeMalus, eigKStaerke);
     const higherWk = Math.max(primary.wk, secondary.wk);
+    const baseIni = Math.round(Number(evalReferenz('ini', values)));
     return {
       ok: true, comboType: 'nk1h_nk1h', talentActive: true,
       primaryEquipmentId, secondaryEquipmentId, nat, npa, poolValues: projected.poolValues,
@@ -454,9 +474,12 @@ export function resolveNk1hNk1h(
       paWk: String(Math.max(higherWk, primary.wk + secondary.wk)),
       minStaerke: primary.minStaerke + secondary.minStaerke,
       schaden,
+      primaryKb: primary.kb, primaryKs: primary.ks, primaryIni: baseIni + primary.iniMod,
+      secondaryKb: secondary.kb, secondaryKs: secondary.ks, secondaryIni: baseIni + secondary.iniMod,
     };
   }
 
+  const baseIni = Math.round(Number(evalReferenz('ini', values)));
   const projected = computeTwoHandPoolValues(character, sheet, values, primary, secondary, true);
   return {
     ok: true, comboType: 'nk1h_nk1h', talentActive: false,
@@ -465,11 +488,13 @@ export function resolveNk1hNk1h(
       equipmentId: primary.equipmentId, label: primary.label, isPrimary: true, halved: false,
       nat: projected.rightRow.at.n, npa: projected.rightRow.pa.n,
       schaden: computeSchaden(primary.basis, primary.staerkeMalus, eigKStaerke), wk: String(primary.wk),
+      kb: primary.kb, ks: primary.ks, ini: baseIni + primary.iniMod,
     },
     secondary: {
       equipmentId: secondary.equipmentId, label: secondary.label, isPrimary: false, halved: true,
       nat: ceilAwayFromZero(projected.leftRow.at.n / 2), npa: projected.poolValues.npa,
       schaden: computeSchaden(secondary.basis, secondary.staerkeMalus, eigKStaerke), wk: String(secondary.wk),
+      kb: secondary.kb, ks: secondary.ks, ini: baseIni + secondary.iniMod,
     },
   };
 }
@@ -488,6 +513,9 @@ export interface MeleeSideResult {
   npa: number;
   schaden: string;
   wk: string;
+  kb: number;
+  ks: number;
+  ini: number;
 }
 
 export interface PistoleSideResult {
@@ -496,11 +524,33 @@ export interface PistoleSideResult {
   halved: boolean;
   schaden: string;
   ranges: string[];
+  rb: number;
+  rw: string;
+  ladedauer: string;
+  ini: number;
 }
 
 function computeFeuerwaffenSchaden(pistole: LoadoutPistoleInfo): string {
   const fixschaden = pistole.snap.fixschaden ?? 0;
   return `${combineDiceNotations(pistole.basis['1.W'], pistole.basis['2.W'])}${fixschaden ? ` ${formatSigned(fixschaden)}` : ''}`;
+}
+
+/** RB/RW/Ladedauer/INI einer Pistole fuer eine Loadout-Zeile - dieselben Formeln wie
+ *  views/kampfFeuerwaffen.ts's buildFeuerwaffenRows, hier fuer den Charakterbogen-Waffen-Loadout-
+ *  Mirror (Nutzer-Ask "Word-Datenblatt Seite 2": Fernkampfwaffen-Tabelle mit RB/RW/Ladedauer/INI). */
+function computeFeuerwaffenNebenwerte(
+  pistole: LoadoutPistoleInfo, character: CharacterState, values: CharacterValueSource,
+): { rb: number; rw: string; ladedauer: string; ini: number } {
+  const gesBon = gesBonWert(values);
+  const ladeschuetzeReferenz = feuerwaffenLadeschuetzeReferenz(pistole.basis['Lademechanik'] ?? '');
+  const ladeschuetzeWert = character.values[ladeschuetzeReferenz] ?? 0;
+  const ladedauer = `${ladezeitKr(pistole.snap.nachladezeit ?? 0, pistole.snap.nachladenTawTeiler ?? 0, gesBon, ladeschuetzeWert)} KR`;
+  return {
+    rb: pistole.snap.rb ?? 0,
+    rw: String(pistole.snap.rw ?? 0),
+    ladedauer,
+    ini: Math.round(Number(evalReferenz('ini', values))) + (pistole.snap.ini ?? 0),
+  };
 }
 
 export interface Nk1hPistoleResult {
@@ -529,6 +579,8 @@ export function resolveNk1hPistole(
 
   const { linkshaendig, beidhaendig } = pistolenschiessenTalente(character);
   const pistoleHalved = !(linkshaendig || beidhaendig);
+  const baseIni = Math.round(Number(evalReferenz('ini', values)));
+  const pistoleNebenwerte = computeFeuerwaffenNebenwerte(pistole, character, values);
 
   return {
     ok: true, comboType: 'nk1h_pistole',
@@ -536,11 +588,13 @@ export function resolveNk1hPistole(
       equipmentId: melee.equipmentId, label: melee.label, halved: false,
       nat: meleeNat.nat, npa: meleeNat.npa,
       schaden: computeSchaden(melee.basis, melee.staerkeMalus, eigKStaerke), wk: String(melee.wk),
+      kb: melee.kb, ks: melee.ks, ini: baseIni + melee.iniMod,
     },
     pistole: {
       equipmentId: pistole.equipmentId, label: pistole.label, halved: pistoleHalved,
       schaden: computeFeuerwaffenSchaden(pistole),
       ranges: computePistoleRanges(pistole, values, pistoleHalved),
+      ...pistoleNebenwerte,
     },
   };
 }
@@ -577,6 +631,8 @@ export function resolveSchildPistole(
 
   const { linkshaendig, beidhaendig } = pistolenschiessenTalente(character);
   const pistoleHalved = !(linkshaendig || beidhaendig);
+  const baseIni = Math.round(Number(evalReferenz('ini', values)));
+  const pistoleNebenwerte = computeFeuerwaffenNebenwerte(pistole, character, values);
 
   return {
     ok: true, comboType: 'schild_pistole',
@@ -584,11 +640,13 @@ export function resolveSchildPistole(
       equipmentId: schild.equipmentId, label: schild.label, halved: false,
       nat: schildNat.nat, npa: schildNat.npa,
       schaden: computeSchaden(schild.basis, schild.staerkeMalus, eigKStaerke), wk: String(schild.wk),
+      kb: schild.kb, ks: schild.ks, ini: baseIni + schild.iniMod,
     },
     pistole: {
       equipmentId: pistole.equipmentId, label: pistole.label, halved: pistoleHalved,
       schaden: computeFeuerwaffenSchaden(pistole),
       ranges: computePistoleRanges(pistole, values, pistoleHalved),
+      ...pistoleNebenwerte,
     },
   };
 }
@@ -606,6 +664,10 @@ export interface PistolePistoleSide {
   halved: boolean;
   schaden: string;
   ranges: string[];
+  rb: number;
+  rw: string;
+  ladedauer: string;
+  ini: number;
 }
 
 export interface PistolePistoleResult {
@@ -634,11 +696,13 @@ export function resolvePistolePistole(
       equipmentId: primary.equipmentId, label: primary.label, isPrimary: true, halved: primaryHalved,
       schaden: computeFeuerwaffenSchaden(primary),
       ranges: computePistoleRanges(primary, values, primaryHalved),
+      ...computeFeuerwaffenNebenwerte(primary, character, values),
     },
     secondary: {
       equipmentId: secondary.equipmentId, label: secondary.label, isPrimary: false, halved: secondaryHalved,
       schaden: computeFeuerwaffenSchaden(secondary),
       ranges: computePistoleRanges(secondary, values, secondaryHalved),
+      ...computeFeuerwaffenNebenwerte(secondary, character, values),
     },
   };
 }
@@ -690,6 +754,7 @@ export function resolveNk1hSchild(
   // eigenes Talent (nicht dictiert), sie bleibt halbiert.
   const secondaryHalved = weaponIsPrimary ? !schildkampfOwned : true;
 
+  const baseIni = Math.round(Number(evalReferenz('ini', values)));
   const projected = computeTwoHandPoolValues(character, sheet, values, primaryItem, secondaryItem, secondaryHalved);
   return {
     ok: true, comboType: 'nk1h_schild', talentActive: false,
@@ -700,12 +765,14 @@ export function resolveNk1hSchild(
       equipmentId: primaryItem.equipmentId, label: primaryItem.label, isPrimary: true, halved: false,
       nat: projected.rightRow.at.n, npa: projected.rightRow.pa.n,
       schaden: computeSchaden(primaryItem.basis, primaryItem.staerkeMalus, eigKStaerke), wk: String(primaryItem.wk),
+      kb: primaryItem.kb, ks: primaryItem.ks, ini: baseIni + primaryItem.iniMod,
     },
     secondary: {
       equipmentId: secondaryItem.equipmentId, label: secondaryItem.label, isPrimary: false, halved: secondaryHalved,
       nat: secondaryHalved ? ceilAwayFromZero(projected.leftRow.at.n / 2) : projected.leftRow.at.n,
       npa: projected.poolValues.npa,
       schaden: computeSchaden(secondaryItem.basis, secondaryItem.staerkeMalus, eigKStaerke), wk: String(secondaryItem.wk),
+      kb: secondaryItem.kb, ks: secondaryItem.ks, ini: baseIni + secondaryItem.iniMod,
     },
   };
 }

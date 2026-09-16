@@ -15,6 +15,14 @@ import {
   buildAusweichenRow, buildLoadoutDisplayRows, formatLoadoutCells, type LoadoutDisplayRow,
 } from './kampf';
 import { GESINNUNG_TRAITS, describeGesinnungWert, isGesinnungVollstaendig } from '../data/gesinnung';
+import { PREISLISTE } from '../data/equipment/preisliste';
+import { ALCHEMIKA } from '../data/equipment/alchemika';
+import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
+import { artefaktOrtLabel } from '../data/artefaktOrte';
+import { artefaktTooltip } from '../engine/artefaktWirkung';
+import { isXKlingeReferenz, resolveXKlingeWirkung, xKlingeTooltip } from '../engine/xKlinge';
+import { resolveArtefaktZielLabel } from './ausruestungArtefakte';
+import { formatDublonen } from '../utils/format';
 
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -246,7 +254,7 @@ function renderNkLoadoutMirrorRow(row: LoadoutDisplayRow): string {
   if ('error' in cells) {
     return `
       <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
-        <td>${escapeHtml(row.displayName)}</td><td colspan="8">${escapeHtml(cells.error)}</td>
+        <td>${escapeHtml(row.displayName)}</td><td colspan="11">${escapeHtml(cells.error)}</td>
       </tr>`;
   }
   const pool = row.pool;
@@ -261,13 +269,16 @@ function renderNkLoadoutMirrorRow(row: LoadoutDisplayRow): string {
       <td>${escapeHtml(cells.npa)}</td>
       <td>${pool ? pool.gpa : '–'}</td>
       <td>${pool ? pool.mpa : '–'}</td>
+      <td>${escapeHtml(cells.kb)}</td>
+      <td>${escapeHtml(cells.ks)}</td>
+      <td>${escapeHtml(cells.iniMelee)}</td>
     </tr>`;
 }
 
 function renderFkLoadoutMirrorRow(row: LoadoutDisplayRow, showRight: boolean, showLeft: boolean): string {
   const cells = formatLoadoutCells(row.result);
   if ('error' in cells) {
-    const dataColumns = (showRight ? 2 : 0) + (showLeft ? 2 : 0);
+    const dataColumns = (showRight ? 2 : 0) + (showLeft ? 2 : 0) + 4;
     return `
       <tr class="kampf-row-unusable" title="${escapeHtml(cells.error)}">
         <td>${escapeHtml(row.displayName)}</td><td colspan="${dataColumns}">${escapeHtml(cells.error)}</td>
@@ -280,6 +291,10 @@ function renderFkLoadoutMirrorRow(row: LoadoutDisplayRow, showRight: boolean, sh
       ${showLeft ? `<td>${escapeHtml(cells.fkSchadenL)}</td>` : ''}
       ${showRight ? `<td>${escapeHtml(cells.fkReichweitenR)}</td>` : ''}
       ${showLeft ? `<td>${escapeHtml(cells.fkReichweitenL)}</td>` : ''}
+      <td>${escapeHtml(cells.rb)}</td>
+      <td>${escapeHtml(cells.rw)}</td>
+      <td>${escapeHtml(cells.ladedauer)}</td>
+      <td>${escapeHtml(cells.iniFk)}</td>
     </tr>`;
 }
 
@@ -307,6 +322,7 @@ function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterSta
         <thead><tr>
           <th>Loadout</th><th>Schaden</th><th>WK</th>
           <th>nAT</th><th>gAT</th><th>mAT</th><th>nPA</th><th>gPA</th><th>mPA</th>
+          <th>KB</th><th>KS</th><th>INI</th>
         </tr></thead>
         <tbody>${nkRows.map(renderNkLoadoutMirrorRow).join('')}</tbody>
       </table>
@@ -318,6 +334,7 @@ function renderWaffenLoadoutMirror(sheet: ComputedSheet, character: CharacterSta
         <thead><tr><th>Loadout</th>
           ${showFkRight ? '<th>Schaden R</th>' : ''}${showFkLeft ? '<th>Schaden L</th>' : ''}
           ${showFkRight ? '<th>FK-Reichweiten R</th>' : ''}${showFkLeft ? '<th>FK-Reichweiten L</th>' : ''}
+          <th>RB</th><th>RW</th><th>Ladedauer</th><th>INI</th>
         </tr></thead>
         <tbody>${fkRows.map((row) => renderFkLoadoutMirrorRow(row, showFkRight, showFkLeft)).join('')}</tbody>
       </table>
@@ -367,6 +384,87 @@ function renderAusweichenMirror(character: CharacterState): string {
     </div>`;
 }
 
+/** Geld-Spiegel (Word-Datenblatt Seite 3 "Geld"): Mitgefuehrt=Bargeld, Bank/Versteck/Tresor=
+ *  Bankguthaben - dieselben bereits berechneten Werte wie main.ts's Statusleiste. */
+function renderGeldMirror(sheet: ComputedSheet): string {
+  return `
+    <h3 class="bogen-section-heading">Geld</h3>
+    <table class="bogen-table bogen-table-geld">
+      <tr><th>Mitgeführt</th><td>${formatDublonen(sheet.dublonenBarRemaining)}</td></tr>
+      <tr><th>Bank/Versteck/Tresor</th><td>${formatDublonen(sheet.dublonenBankRemaining)}</td></tr>
+    </table>`;
+}
+
+/** Ausruestungs-Spiegel (Word-Datenblatt Seite 3 "Ausrüstung"/Behälter 1-3): Nutzer-Entscheidung
+ *  2026-09-16 - flache Liste statt Behaelter-Zuordnung (die es im Datenmodell nicht gibt). Waffen/
+ *  Ruestung/Artefakte haben bereits eigene Abschnitte, hier nur die "allgemeine" Ausruestung
+ *  (Preisliste-Gueter) und Alchemika. */
+function renderAusruestungMirror(character: CharacterState): string {
+  const items = character.equipment.filter((e) => e.family === 'preisliste' || e.family === 'alchemika');
+  if (items.length === 0) return '';
+  const rows = items.map((e) => {
+    let label = e.displayNameSnapshot ?? '–';
+    let gewichtKg: number | undefined;
+    if (e.family === 'preisliste') {
+      const row = PREISLISTE.find((r) => String(r.sourceRow) === e.baseId);
+      label = row?.name ?? label;
+      gewichtKg = row?.gewichtKg;
+    } else if (e.family === 'alchemika') {
+      const row = ALCHEMIKA.find((r) => String(r.sourceRow) === e.baseId);
+      label = row?.name ?? label;
+    }
+    const gewichtGesamt = gewichtKg !== undefined ? gewichtKg * e.quantity : undefined;
+    return `
+      <tr>
+        <td>${escapeHtml(label)}</td>
+        <td>${gewichtGesamt !== undefined ? `${formatValue(gewichtGesamt)} kg` : '–'}</td>
+        <td>${e.quantity}</td>
+      </tr>`;
+  }).join('');
+  return `
+    <h3 class="bogen-section-heading">Ausrüstung</h3>
+    <table class="bogen-table bogen-table-ausruestung">
+      <tr><th>Gegenstand</th><th>Gewicht</th><th>Anzahl</th></tr>
+      ${rows}
+    </table>`;
+}
+
+/** Artefakte-Spiegel (Word-Datenblatt Seite 4): "Ort"-Spalte bewusst weggelassen (Nutzer-
+ *  Entscheidung 2026-09-16, reines Rollenspiel-Notizfeld ohne Regelgrundlage). Label-/Beschreibung-
+ *  Aufbau exakt wie ausruestungInventar.ts's Artefakt-Zweig. */
+function renderArtefakteMirror(character: CharacterState): string {
+  const items = character.equipment.filter((e) => e.family === 'artefakt');
+  if (items.length === 0) return '';
+  const rows = items.map((e) => {
+    const kostenRow = ARTEFAKT_KOSTEN.find((r) => String(r.sourceRow) === e.baseId);
+    const zielLabel = kostenRow && e.selections.ziel
+      ? resolveArtefaktZielLabel(character, kostenRow.referenz, String(e.selections.ziel))
+      : undefined;
+    const label = kostenRow
+      ? `${kostenRow.name}${zielLabel ? ` – ${zielLabel}` : ''} Grad ${kostenRow.grad} (${e.selections.variant})`
+      : (e.displayNameSnapshot ?? '–');
+    const basis = kostenRow ? ARTEFAKT_BASIS.find((row) => row.referenz === kostenRow.referenz) : undefined;
+    const beschreibung = basis && kostenRow
+      ? (isXKlingeReferenz(basis.referenz)
+        ? xKlingeTooltip(resolveXKlingeWirkung(basis.referenz, kostenRow.grad ?? ''))
+        : artefaktTooltip(basis, kostenRow.grad ?? ''))
+      : '–';
+    const ort = artefaktOrtLabel(e.selections.ort) ?? '–';
+    return `
+      <tr>
+        <td>${escapeHtml(label)}</td>
+        <td>${escapeHtml(beschreibung).replace(/\n/g, '<br>')}</td>
+        <td>${escapeHtml(ort)}</td>
+      </tr>`;
+  }).join('');
+  return `
+    <h3 class="bogen-section-heading">Artefakte</h3>
+    <table class="bogen-table bogen-table-artefakte">
+      <tr><th>Art</th><th>Beschreibung der Magischen Eigenschaften</th><th>Ort</th></tr>
+      ${rows}
+    </table>`;
+}
+
 /** Gesinnung-Spiegel (S09 Gesinnung.docx): analog zur AT/PA-Balance-Regel (poolCaps.ts) bleibt
  *  der Abschnitt nur eine Tab-lokale Warnung (siehe views/gesinnung.ts) - hier auf dem
  *  Charakterbogen wird er stattdessen komplett ausgeblendet, solange nicht alle 22 Slider
@@ -402,6 +500,9 @@ export function renderCharakterbogen(container: HTMLElement, sheet: ComputedShee
       ${renderKampfLeRs(sheet, character)}
       ${renderAusweichenMirror(character)}
       ${renderWaffenLoadoutMirror(sheet, character)}
+      ${renderGeldMirror(sheet)}
+      ${renderAusruestungMirror(character)}
+      ${renderArtefakteMirror(character)}
       ${renderGesinnungMirror(character)}
     </div>`;
 }

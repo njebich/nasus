@@ -110,6 +110,17 @@ export function setGesinnungNotiz(character: CharacterState, notiz: string): Cha
   return candidate;
 }
 
+/** Reine Notiz, welche Koerperzone ein Artefakt getraegt wird (Nutzer-Ask 2026-09-16) - keine
+ *  Wirkungs-Logik, siehe data/artefaktOrte.ts-Dateikopf. */
+export function setArtefaktOrt(character: CharacterState, equipmentId: string, ort: string): CharacterState {
+  const candidate = clone(character);
+  const entry = candidate.equipment.find((e) => e.id === equipmentId);
+  if (!entry) return candidate;
+  if (ort) entry.selections.ort = ort;
+  else delete entry.selections.ort;
+  return candidate;
+}
+
 function clone(character: CharacterState): CharacterState {
   return {
     ...character,

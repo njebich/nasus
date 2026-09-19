@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ARTEFAKT_BASIS } from '../data/equipment/artefakte';
+import { ARTEFAKT_BASIS, ARTEFAKT_KOSTEN } from '../data/equipment/artefakte';
 import { artefaktTooltip, resolveArtefaktGradWerte } from './artefaktWirkung';
 
 function basis(referenz: string) {
@@ -35,6 +35,35 @@ describe('Artefakt-Gradwerte', () => {
       .toBe('W6 Elementarschaden / RB 2');
     expect(resolveArtefaktGradWerte(basis('artefakt_schock_pfeil'), 7).wirkungswert)
       .toBe('W20 Elementarschaden / SB 13');
+  });
+
+  it('wertet die vier neu integrierten Artefakte gradabhaengig aus', () => {
+    expect(resolveArtefaktGradWerte(basis('artefakt_grosser_funkentanz'), 1)).toMatchObject({
+      wirkungswert: '1 Erschwerung (NK/FK)', effektdauer: 'sofort', wirkungsdauer: '2,5 sec',
+    });
+    expect(resolveArtefaktGradWerte(basis('artefakt_grosser_funkentanz'), 7)).toMatchObject({
+      wirkungswert: '4 Erschwerung (NK/FK)', wirkungsdauer: '20 sec',
+    });
+    expect(resolveArtefaktGradWerte(basis('artefakt_magische_verkleidung'), 1)).toMatchObject({
+      wirkungswert: undefined, effektdauer: '30 sec', wirkungsdauer: '5 min',
+    });
+    expect(resolveArtefaktGradWerte(basis('artefakt_manaspende'), 7)).toMatchObject({
+      wirkungswert: '40 Mana', effektdauer: '5 sec', wirkungsdauer: 'permanent',
+    });
+    expect(resolveArtefaktGradWerte(basis('artefakt_durchsichtiger_gegenstand'), 1)).toMatchObject({
+      wirkungswert: '2,5 l', effektdauer: 'sofort', wirkungsdauer: '2,5 h',
+    });
+  });
+
+  it('enthaelt fuer jedes neue Artefakt genau sieben vollstaendig bepreiste Grade', () => {
+    for (const referenz of [
+      'artefakt_grosser_funkentanz', 'artefakt_magische_verkleidung',
+      'artefakt_manaspende', 'artefakt_durchsichtiger_gegenstand',
+    ]) {
+      const grade = ARTEFAKT_KOSTEN.filter((row) => row.referenz === referenz);
+      expect(grade.map((row) => Number(row.grad))).toEqual([1, 2, 3, 4, 5, 6, 7]);
+      expect(grade.every((row) => Number(row.kostenEinmalig) > 0 && Number(row.kostenPermanent) > 0)).toBe(true);
+    }
   });
 
   it('liefert fuer jedes Artefakt und jeden kaufbaren Grad Wirkung, ED und WD im Tooltip', () => {

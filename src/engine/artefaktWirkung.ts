@@ -37,6 +37,7 @@ const WD_MAGIE_PARAMETER = new Set([
   'artefakt_material_verstaerken', 'artefakt_in_pflanze_verwandeln',
   'artefakt_in_tier_verwandeln', 'artefakt_gecko', 'artefakt_unauffindbarkeit',
   'artefakt_magischer_schild', 'artefakt_korpi_ignorieren', 'artefakt_kampfmaschine',
+  'artefakt_magische_verkleidung',
 ]);
 
 export interface ArtefaktGradWerte {
@@ -73,6 +74,9 @@ function resolveWirkungswert(basis: ArtefaktBasis, grad: number, magie: number):
   if (ref === 'artefakt_licht') return `${magie} Fackeln`;
   if (ref === 'artefakt_magisches_makeover') return `${magie} %`;
   if (ref === 'artefakt_in_nahrung_verwandeln') return `${grad * 100} Gramm`;
+  if (ref === 'artefakt_grosser_funkentanz') return `${Math.ceil(magie / 10)} Erschwerung (NK/FK)`;
+  if (ref === 'artefakt_manaspende') return `${magie} Mana`;
+  if (ref === 'artefakt_durchsichtiger_gegenstand') return `${formatNumeric(magie / 2)} l`;
   // Wirkungseinheit korrigiert (Punkt 6, Nutzer-Klärung): beide erhöhen TaW, nicht TaP.
   if (ref === 'artefakt_whk_talentwert_erhoehen') return `${grad * 2} TaW`;
   if (ref === 'artefakt_grundfertigkeit_erhoehen') return `${grad * 2 - 1} TaW`;
@@ -124,6 +128,8 @@ function resolveWirkungsdauer(basis: ArtefaktBasis, grad: number, magie: number)
     wert = String(magie * 5);
   } else if (ref === 'artefakt_magische_sicht') {
     wert = String(magie * 2);
+  } else if (ref === 'artefakt_grosser_funkentanz' || ref === 'artefakt_durchsichtiger_gegenstand') {
+    wert = formatNumeric(magie / 2);
   }
 
   return formatZeit(wert, basis.wirkungsdauerEinheit);

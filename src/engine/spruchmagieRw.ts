@@ -174,7 +174,9 @@ function evaluateChain(chain: string): number {
   for (let i = 0; i < ops.length; i++) {
     if (ops[i] === '*' || ops[i] === '/') {
       const prev = reduced.pop()!;
-      reduced.push(ops[i] === '*' ? prev * nums[i + 1] : prev / nums[i + 1]);
+      // Divisionen in Wirkungstexten werden als einzelne Teilwerte aufgerundet. Das ist bei
+      // Summen relevant: 5/3+4/3 bedeutet AUFRUNDEN(5/3)+AUFRUNDEN(4/3) = 2+2 = 4.
+      reduced.push(ops[i] === '*' ? prev * nums[i + 1] : aufrunden(prev / nums[i + 1], 0));
     } else {
       reduced.push(nums[i + 1]);
       addOps.push(ops[i]);
@@ -188,7 +190,7 @@ function evaluateArithmeticChains(text: string): string {
     const slashCount = (chain.match(/\//g) ?? []).length;
     // Reine Slash-Ketten sind vermutlich alte Listen-Notation (z.B. 12/1/21). Sobald die Kette
     // aber zusaetzlich +, - oder * enthaelt, ist sie eine Rechenformel wie 5/3+4/3 und muss trotz
-    // mehrerer Divisionen ausgewertet werden.
+    // mehrerer Divisionen ausgewertet werden. evaluateChain rundet dabei jeden Quotienten einzeln.
     if (slashCount >= 2 && !/[+\-*]/.test(chain)) return chain;
     return String(aufrunden(evaluateChain(chain), 0));
   });

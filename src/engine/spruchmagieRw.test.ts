@@ -88,7 +88,7 @@ describe('resolveWirkungText (Marker-Format {M}/{Magie}/{Aura})', () => {
       12,
       5,
       4,
-    )).toBe('Der Rüstungsschutz von Rüstungsteilen in der Aura des Ziels wird um den Faktor 3 verstärkt. Magische Rüstung wird hiervon nicht beeinflusst.');
+    )).toBe('Der Rüstungsschutz von Rüstungsteilen in der Aura des Ziels wird um den Faktor 4 verstärkt. Magische Rüstung wird hiervon nicht beeinflusst.');
   });
 
   it('startet keine Zahlenkette mitten in einem Wuerfel-Term (2W6)', () => {

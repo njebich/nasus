@@ -186,7 +186,10 @@ function evaluateChain(chain: string): number {
 function evaluateArithmeticChains(text: string): string {
   return text.replace(ARITH_CHAIN, (chain) => {
     const slashCount = (chain.match(/\//g) ?? []).length;
-    if (slashCount >= 2) return chain; // vermutlich Listen-Notation, keine verschachtelte Division
+    // Reine Slash-Ketten sind vermutlich alte Listen-Notation (z.B. 12/1/21). Sobald die Kette
+    // aber zusaetzlich +, - oder * enthaelt, ist sie eine Rechenformel wie 5/3+4/3 und muss trotz
+    // mehrerer Divisionen ausgewertet werden.
+    if (slashCount >= 2 && !/[+\-*]/.test(chain)) return chain;
     return String(aufrunden(evaluateChain(chain), 0));
   });
 }

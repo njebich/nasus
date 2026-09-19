@@ -82,6 +82,15 @@ describe('resolveWirkungText (Marker-Format {M}/{Magie}/{Aura})', () => {
       .toBe('Schaden: 2W6 + 8; RB: 22');
   });
 
+  it('rechnet Summen aus mehreren Divisionen fertig (Ruestung-verstaerken-Fall)', () => {
+    expect(resolveWirkungText(
+      'Der Rüstungsschutz von Rüstungsteilen in der Aura des Ziels wird um den Faktor {Magie}/3+{Aura}/3 verstärkt. Magische Rüstung wird hiervon nicht beeinflusst.',
+      12,
+      5,
+      4,
+    )).toBe('Der Rüstungsschutz von Rüstungsteilen in der Aura des Ziels wird um den Faktor 3 verstärkt. Magische Rüstung wird hiervon nicht beeinflusst.');
+  });
+
   it('startet keine Zahlenkette mitten in einem Wuerfel-Term (2W6)', () => {
     expect(resolveWirkungText('Schaden: 2W6 + {Magie} auf jede TZ.', macht, magie, aura))
       .toBe('Schaden: 2W6 + 8 auf jede TZ.');

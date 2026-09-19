@@ -55,6 +55,30 @@ describe('Waffenanzeige auf dem Charakterbogen', () => {
   });
 });
 
+describe('Geldanzeige auf dem Charakterbogen', () => {
+  it('zeigt den Wert aller besessenen Ausrüstung bei Bar- und Bankguthaben', () => {
+    const character = createCharacter('Test');
+    character.values.dublonen_bar = 100;
+    character.values.dublonen_bank = 500;
+    character.equipment = [{
+      id: 'test-1', family: 'preisliste', baseTable: 'preisliste', baseId: '1',
+      selections: {}, quantity: 3, computedPriceSnapshot: 12.5,
+    }];
+    character.ruestungSlots['torso:1'] = {
+      basisSourceRow: 1, verarbeitungSourceRow: 1, anpassungSourceRow: 1,
+      computedPriceSnapshot: 20,
+      computedStatsSnapshot: { rs: 1, rh: 1, verfuegbarkeitNw: 1, verfuegbarkeitAw: 1 },
+    };
+    const container = document.createElement('div');
+
+    renderCharakterbogen(container, computeSheet(character), character);
+
+    const rows = [...container.querySelectorAll('.bogen-table-geld tr')];
+    const ausruestungswert = rows.find((row) => row.querySelector('th')?.textContent === 'Wert der Ausrüstung');
+    expect(ausruestungswert?.querySelector('td')?.textContent).toBe('57,5 D');
+  });
+});
+
 describe('Waffen-Loadout-Spiegelung auf dem Charakterbogen (nur favorisierte Loadouts)', () => {
   function find<T extends { name: string; sourceRow: number }>(rows: readonly T[], name: string): T {
     const row = rows.find((r) => r.name === name);

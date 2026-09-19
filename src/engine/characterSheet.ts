@@ -114,6 +114,8 @@ export interface ComputedSheet {
   tapSpent: number;
   tapRemaining: number;
   dublonenTotal: number;
+  /** Summe der Kaufpreise aller aktuell besessenen Ausruestung einschliesslich Mengen und
+   *  Ruestungsteilen; zugleich die bislang vom Startgeld abgezogene Summe. */
   dublonenSpent: number;
   dublonenRemaining: number;
   /** Aufteilung von dublonenRemaining auf die beiden Wert-Felder (Regel Nutzer 2026-07-17:

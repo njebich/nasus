@@ -385,13 +385,15 @@ function renderAusweichenMirror(character: CharacterState): string {
 }
 
 /** Geld-Spiegel (Word-Datenblatt Seite 3 "Geld"): Mitgefuehrt=Bargeld, Bank/Versteck/Tresor=
- *  Bankguthaben - dieselben bereits berechneten Werte wie main.ts's Statusleiste. */
+ *  Bankguthaben und Wert der Ausruestung=Summe aller aktuellen Kaufpreise - dieselben bereits
+ *  berechneten Werte wie main.ts's Statusleiste. */
 function renderGeldMirror(sheet: ComputedSheet): string {
   return `
     <h3 class="bogen-section-heading">Geld</h3>
     <table class="bogen-table bogen-table-geld">
       <tr><th>Mitgeführt</th><td>${formatDublonen(sheet.dublonenBarRemaining)}</td></tr>
       <tr><th>Bank/Versteck/Tresor</th><td>${formatDublonen(sheet.dublonenBankRemaining)}</td></tr>
+      <tr><th>Wert der Ausrüstung</th><td>${formatDublonen(sheet.dublonenSpent)}</td></tr>
     </table>`;
 }
 

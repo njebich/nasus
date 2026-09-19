@@ -4,6 +4,18 @@
 
 Nutzervorgaben vom 10. September 2026. Grundlage für die Rüstungsauswahl. Die Pakete sind manuell auswählbar und werden für die sechs Referenzvorlagen auch automatisch nach Beruf und Kampfstil zugeordnet.
 
+## Neueste Entscheidung: Wache mit Rüstungsmanöver 12
+
+Nutzer bindet Rüstungsmanöver fest an das Berufs-/Ausrüstungspaket Wache: Mindestziel 12 für beide Vergleichsfiguren. Für dieses Paket ersetzt dies die bisherige reine Bedarfsbelegung RM2/1. Keine pauschale Übertragung auf alle anderen Berufe. Mit sonstigen Mindestzielen per Maximum zusammenführen, vorhandene Käufe anrechnen, nicht additiv doppelt bezahlen. Die allgemeine Bedarfsprüfung bleibt als Prüfung strengerer Anforderungen bestehen.
+
+RM12 kostet 108 SP je NPC (9 SP/Punkt), reguläres SF-Maximum12 eingehalten. Mehrkosten gegenüber dem letzten Stand Indianer90/Troll99 SP. Bei unveränderter Zeughausrüstung RH30 und KON/STÄ15/17 bzw.19/19 ergibt sich RBE(30−10−12)/6=1,3333… bzw.(30−11,4−12)/6=1,1; beide gerundet2 KBE statt3. Keine MBE aus Rüstung.
+
+Berufsbasis208 plus RM108 = 316 SP = 4,9375 % der Gesamt-SP6400; damit liegt auch die Berufsbasis einschließlich Rüstungsausbildung innerhalb des Zielkorridors3–5 %. WHK-Ergänzung187 und SSK120 bleiben getrennt. Gesamt-GF/SF20 Punkte =180 SP je NPC (Beruf8 + RM12).
+
+Aktueller SP-Rest: Indianer199, Troll346. Kontrollrechnung ab letztem Rest822/969: jeweils SSK120, Berufsbasis208, zusätzliche WHK187, RM108 abziehen. Ausrüstungspreis und vorherige Hiebwaffen/Äxte16, CK-Eigenschaften, Vitalität5/Glück3 sowie PP-Verteilung bleiben erhalten. Hintergrund, Pflichtmerkmale, konkrete SSK-Auswahl und vollständige Versorgung/Lastprüfung weiterhin offen.
+
+Kosten, Maximum und RBE nachgerechnet; nur Dokumentation, keine Charakter-/Generatoränderung oder Laufzeittests. Nächster Vorschlag: gemeinsame Hintergrundauswahlen ergänzen und mit vorhandenen Käufen zusammenführen; dafür sind noch199/346 SP verfügbar. Noch kein Ausführungsauftrag für diese Auswahlen.
+
 ## Rüstungsmanöver aus geplanter Rüstung — bestätigt am 12. September 2026
 
 Rüstungsmanöver wird für jeden Beruf aus der tatsächlich geplanten Rüstung und dem gewählten KBE-Ziel abgeleitet. Es ersetzt Tragen nicht: Tragen bleibt für Gepäck, Waffen und Arbeitsmaterial zuständig. Ein Kampfberuf erhält keinen pauschalen Rüstungsmanöver-Beitrag; auch ein gerüsteter Zivilberuf erhält die benötigte Ausbildung.

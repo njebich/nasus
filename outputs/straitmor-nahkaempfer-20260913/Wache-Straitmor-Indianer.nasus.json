@@ -1,0 +1,1218 @@
+{
+  "format": "nasus-character",
+  "schemaVersion": 1,
+  "rulesetVersion": "0.8",
+  "exportedAt": "2026-09-13T19:21:53.005Z",
+  "latestRevisionId": "f5289bae-8805-4f15-b656-e6b245a083d2",
+  "foundry": {
+    "systemId": "nasus",
+    "actorType": "npc"
+  },
+  "character": {
+    "id": "427d4a84-6611-49a8-945d-3409cce45630",
+    "name": "Wache Straitmor – Indianer",
+    "spezies": "Indianer",
+    "herkunftOrtId": "straitmor",
+    "herkunftSnapshot": {
+      "name": "Straitmor",
+      "region": "Orkisches Protektorat Straitmor",
+      "welt": "NW"
+    },
+    "beruf": "Wache",
+    "createdAt": "2026-09-13T19:21:46.560Z",
+    "updatedAt": "2026-09-13T19:21:46.562Z",
+    "charakterTyp": "NSC",
+    "values": {
+      "ep_gesamt": 0,
+      "dublonen_bank": 5000,
+      "eig_g_intelligenz": 9,
+      "eig_g_mut": 13,
+      "eig_g_sinneschaerfe": 12,
+      "eig_g_willenskraft": 11,
+      "eig_k_athletik": 17,
+      "eig_k_ausstrahlung": 9,
+      "eig_k_geschicklichkeit": 10,
+      "eig_k_konstitution": 15,
+      "eig_k_schnelligkeit": 17,
+      "eig_k_staerke": 17,
+      "att_glueck": 3,
+      "att_vitalitaet": 4,
+      "nk_hiebwaffen": 16,
+      "nk_spez_hiebwaffen_aexte": 16,
+      "gr_menschenkenntnis": 6,
+      "gr_schaetzen": 4,
+      "gr_ueberzeugen": 4,
+      "gr_orientierung": 2,
+      "sf_gefahreninstinkt": 2,
+      "sf_selbstbeherrschung": 2,
+      "sf_ausweichen": 6,
+      "whk_ermittlung": 12,
+      "whk_rechtskunde": 8,
+      "whk_etikette": 8,
+      "whk_fuehrung": 8,
+      "whk_hauswirtschaft": 8,
+      "whk_ueberleben": 8,
+      "whk_koch": 6,
+      "whk_kaufmann": 2,
+      "whk_spez_ermittlung_observation": 8,
+      "whk_spez_ueberleben_wald": 8,
+      "whk_spez_ueberleben_stadt": 4,
+      "whk_spez_etikette_gemeinvolk": 3,
+      "whk_spez_kaufmann_kraemer": 2,
+      "ssk_sprache_orkisch": 3,
+      "ssk_schrift_zwerge": 2,
+      "ssk_kultur_orks": 3,
+      "sf_ruestungsmanoever": 20
+    },
+    "selections": {
+      "vn_aussehen_normal": 1,
+      "vn_schlaf_normal": 1,
+      "talente_ruestungsmanoever_stufe_1": 1,
+      "talente_ruestungsmanoever_stufe_2": 1
+    },
+    "poolAllocations": {
+      "nk_pool_hiebwaffen_aexte::800f0ad8-05cf-4903-a56c-07727d8bb8e0": {
+        "nat": 3,
+        "npa": 3,
+        "gat": 4,
+        "gpa": 4,
+        "mat": 1,
+        "mpa": 1
+      }
+    },
+    "equipment": [
+      {
+        "id": "800f0ad8-05cf-4903-a56c-07727d8bb8e0",
+        "family": "weapon",
+        "baseTable": "nk_waffen_basis",
+        "baseId": "5",
+        "displayNameSnapshot": "Axt",
+        "specializationId": "nk_spez_hiebwaffen_aexte",
+        "selections": {
+          "material": "2",
+          "fertigung": "5",
+          "anpassung": "2",
+          "schaftmaterial": "2"
+        },
+        "quantity": 1,
+        "computedPriceSnapshot": 97,
+        "computedStatsSnapshot": {
+          "at": -4,
+          "pa": -5,
+          "wk": 6,
+          "staerkeMalus": -6,
+          "minStaerke1H": 17,
+          "minStaerke2H": 10,
+          "klingenbrecher": 17,
+          "klingenschutz": 7,
+          "rezeptMod": 18,
+          "rb": 0
+        }
+      },
+      {
+        "id": "f0678010-261a-4a37-9355-bcc942b0bbf8",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "673",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 5.28
+      },
+      {
+        "id": "18023131-f121-4a50-8c32-f0a4e3afdb33",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "907",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.44
+      },
+      {
+        "id": "acfd8b4f-26e3-45f7-a5e9-ce44686fa906",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "948",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.022
+      },
+      {
+        "id": "98e8ff11-b038-49b6-bcac-8503b8401c54",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "145",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 15.4
+      },
+      {
+        "id": "f18160c8-a741-42d1-a800-973accd3e534",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "927",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 1.8
+      },
+      {
+        "id": "6883de46-1d1a-42e3-8dc8-951c41d27c13",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "974",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 60
+      },
+      {
+        "id": "f6cb16f7-1332-4fc5-b2b4-ef51c7469393",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "975",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 4
+      },
+      {
+        "id": "4fffa51d-c510-4c0d-8957-7ca079abf69a",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "896",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 1.6
+      },
+      {
+        "id": "eaf0c1b5-e759-42b4-bd7f-f300810c8331",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "891",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.075
+      },
+      {
+        "id": "4f159308-41b6-4ed4-a393-61279a7e1aad",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "796",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.2
+      },
+      {
+        "id": "0a65d929-d1ac-4af9-8cda-d6dda23e85da",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "784",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.5
+      },
+      {
+        "id": "ae6e41b0-2400-4aba-bc9b-d79c315172fa",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "553",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 1
+      },
+      {
+        "id": "5915785e-03bf-4a64-a0f8-8082416f442f",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "821",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 1.4
+      },
+      {
+        "id": "3195c54f-2799-4cbe-9af9-6a4ac9348358",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "767",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.42
+      },
+      {
+        "id": "fba8ef07-2288-4186-84c5-a9f6154a3ef4",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "54",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.98
+      },
+      {
+        "id": "52d64ca3-c3b5-4613-bdfa-9f0b6ce65438",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "523",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 1.32
+      },
+      {
+        "id": "45243c5a-6e48-4817-9fa5-a5ac7f968a9f",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "526",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 1.76
+      },
+      {
+        "id": "4fe48ede-0cbf-4be1-9698-fdd18edc6683",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "529",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.022
+      },
+      {
+        "id": "fe2af815-2e5a-4c88-a953-c99d0ced80bf",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "359",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.05
+      },
+      {
+        "id": "92022111-92d9-4a67-8c68-1e49128cf850",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "674",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 3.1
+      },
+      {
+        "id": "67011d03-15e6-4ebc-b702-9ec6af83ee21",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "663",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.4
+      },
+      {
+        "id": "b58a7a02-25fa-453c-851c-5e4e6886c9c6",
+        "family": "preisliste",
+        "baseTable": "preisliste",
+        "baseId": "684",
+        "selections": {},
+        "quantity": 1,
+        "computedPriceSnapshot": 0.027
+      }
+    ],
+    "ruestungSlots": {
+      "kopf:1": {
+        "basisSourceRow": 2,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 22,
+        "computedStatsSnapshot": {
+          "rs": 1,
+          "rh": 1,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "torso:1": {
+        "basisSourceRow": 2,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 22,
+        "computedStatsSnapshot": {
+          "rs": 1,
+          "rh": 1,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "arme:1": {
+        "basisSourceRow": 2,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 22,
+        "computedStatsSnapshot": {
+          "rs": 1,
+          "rh": 1,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "beine:1": {
+        "basisSourceRow": 2,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 22,
+        "computedStatsSnapshot": {
+          "rs": 1,
+          "rh": 1,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "kopf:2": {
+        "basisSourceRow": 5,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 26,
+        "computedStatsSnapshot": {
+          "rs": 3,
+          "rh": 3,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "torso:2": {
+        "basisSourceRow": 5,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 26,
+        "computedStatsSnapshot": {
+          "rs": 3,
+          "rh": 3,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "arme:2": {
+        "basisSourceRow": 5,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 26,
+        "computedStatsSnapshot": {
+          "rs": 3,
+          "rh": 3,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "beine:2": {
+        "basisSourceRow": 5,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 26,
+        "computedStatsSnapshot": {
+          "rs": 3,
+          "rh": 3,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "torso:3": {
+        "basisSourceRow": 8,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 360,
+        "computedStatsSnapshot": {
+          "rs": 4,
+          "rh": 4,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "arme:3": {
+        "basisSourceRow": 8,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 360,
+        "computedStatsSnapshot": {
+          "rs": 4,
+          "rh": 4,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      },
+      "torso:4": {
+        "basisSourceRow": 16,
+        "verarbeitungSourceRow": 2,
+        "anpassungSourceRow": 3,
+        "computedPriceSnapshot": 649,
+        "computedStatsSnapshot": {
+          "rs": 6,
+          "rh": 6,
+          "verfuegbarkeitNw": 1,
+          "verfuegbarkeitAw": 1
+        },
+        "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+      }
+    },
+    "grundfertigkeitAuswahl": {},
+    "waffenLoadouts": [
+      {
+        "id": "dd615f36-7c3c-495f-9e6d-8b4041e73327",
+        "comboType": "nk2h",
+        "primaryEquipmentId": "800f0ad8-05cf-4903-a56c-07727d8bb8e0",
+        "secondaryEquipmentId": "",
+        "favorite": true
+      }
+    ],
+    "customWhkHauptfertigkeiten": [],
+    "customWhkSpezialisierungen": {},
+    "gesinnung": {
+      "gut_boese": 0,
+      "ehrlichkeit_unehrlichkeit": 0,
+      "prinzipientreue_opportunismus": 0,
+      "gesetze_recht_des_staerkeren": 0,
+      "toleranz_rassismus": 0,
+      "pazifismus_bellizismus": 0,
+      "lebensbewahrung_toetungsbereitschaft": 0,
+      "altruismus_egoismus": 0,
+      "gleichberechtigung_sexismus": 0,
+      "hierarchie_anarchie": 0,
+      "staaten_gilden_clans_haeuser": 0,
+      "kommunismus_kapitalismus": 0,
+      "gruppenmensch_einzelgaenger": 0,
+      "vertrauen_misstrauen": 0,
+      "kompromissbereitschaft_sturheit": 0,
+      "strebsamkeit_faulheit": 0,
+      "disziplin_triebhaftigkeit": 0,
+      "introvertiert_extrovertiert": 0,
+      "humor_ernst": 0,
+      "willensfreiheit_fatalismus": 0,
+      "religiositaet_atheismus": 0,
+      "optimismus_pessimismus": 0
+    },
+    "gesinnungNotiz": "Neutrale Platzhalter für den regeltechnischen Vergleich; Persönlichkeit noch nicht individuell festgelegt.",
+    "notes": "CK Nahkämpfer, Stufe/Kreis 0. Städter; Gelände Stadt; soziale Lage Einfach. Wache, WHK Meister mit vertiefter Ausbildung, protokollierender Dienst. Beschreibender Platzhaltername. Ein Diensttag in Straitmor, Mahlzeit und 1 L Wasser mitgeführt, Nachfüllen/Essen auf der Wache. Feldflasche gefüllt: zusätzlich 1 kg Wasser, nicht im Kataloggewicht enthalten. Restbudget bleibt Bankvermögen; kein zusätzlicher Geldbeutel. Rüstung und Axt in passender Volksgröße, Gesellenarbeit, von der Stange. Vollständige Traglast offen: Waffen-/Rüstungsgewichte fehlen im Modell; RBE 0 ist kein vollständiger Lastnachweis.",
+    "npcArmorMaxBe": 0
+  },
+  "history": [
+    {
+      "revisionId": "f5289bae-8805-4f15-b656-e6b245a083d2",
+      "previousRevisionId": null,
+      "savedAt": "2026-09-13T19:21:53.005Z",
+      "note": "Vergleichscharakter Straitmor: bestätigte Endwerte, gleiche Zeughausausstattung, Versorgung für Stadtdienst.",
+      "changes": {
+        "experience": {
+          "before": null,
+          "after": 0,
+          "delta": null
+        },
+        "currency": {
+          "funds": {
+            "before": null,
+            "after": 5000,
+            "delta": null
+          },
+          "spent": {
+            "before": null,
+            "after": 1757.7959999999998,
+            "delta": null
+          },
+          "remaining": {
+            "before": null,
+            "after": 3242.204,
+            "delta": null
+          }
+        },
+        "values": [
+          {
+            "reference": "att_glueck",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "att_vitalitaet",
+            "before": null,
+            "after": 4
+          },
+          {
+            "reference": "dublonen_bank",
+            "before": null,
+            "after": 5000
+          },
+          {
+            "reference": "eig_g_intelligenz",
+            "before": null,
+            "after": 9
+          },
+          {
+            "reference": "eig_g_mut",
+            "before": null,
+            "after": 13
+          },
+          {
+            "reference": "eig_g_sinneschaerfe",
+            "before": null,
+            "after": 12
+          },
+          {
+            "reference": "eig_g_willenskraft",
+            "before": null,
+            "after": 11
+          },
+          {
+            "reference": "eig_k_athletik",
+            "before": null,
+            "after": 17
+          },
+          {
+            "reference": "eig_k_ausstrahlung",
+            "before": null,
+            "after": 9
+          },
+          {
+            "reference": "eig_k_geschicklichkeit",
+            "before": null,
+            "after": 10
+          },
+          {
+            "reference": "eig_k_konstitution",
+            "before": null,
+            "after": 15
+          },
+          {
+            "reference": "eig_k_schnelligkeit",
+            "before": null,
+            "after": 17
+          },
+          {
+            "reference": "eig_k_staerke",
+            "before": null,
+            "after": 17
+          },
+          {
+            "reference": "ep_gesamt",
+            "before": null,
+            "after": 0
+          },
+          {
+            "reference": "gr_menschenkenntnis",
+            "before": null,
+            "after": 6
+          },
+          {
+            "reference": "gr_orientierung",
+            "before": null,
+            "after": 2
+          },
+          {
+            "reference": "gr_schaetzen",
+            "before": null,
+            "after": 4
+          },
+          {
+            "reference": "gr_ueberzeugen",
+            "before": null,
+            "after": 4
+          },
+          {
+            "reference": "nk_hiebwaffen",
+            "before": null,
+            "after": 16
+          },
+          {
+            "reference": "nk_spez_hiebwaffen_aexte",
+            "before": null,
+            "after": 16
+          },
+          {
+            "reference": "sf_ausweichen",
+            "before": null,
+            "after": 6
+          },
+          {
+            "reference": "sf_gefahreninstinkt",
+            "before": null,
+            "after": 2
+          },
+          {
+            "reference": "sf_ruestungsmanoever",
+            "before": null,
+            "after": 20
+          },
+          {
+            "reference": "sf_selbstbeherrschung",
+            "before": null,
+            "after": 2
+          },
+          {
+            "reference": "ssk_kultur_orks",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "ssk_schrift_zwerge",
+            "before": null,
+            "after": 2
+          },
+          {
+            "reference": "ssk_sprache_orkisch",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "whk_ermittlung",
+            "before": null,
+            "after": 12
+          },
+          {
+            "reference": "whk_etikette",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "whk_fuehrung",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "whk_hauswirtschaft",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "whk_kaufmann",
+            "before": null,
+            "after": 2
+          },
+          {
+            "reference": "whk_koch",
+            "before": null,
+            "after": 6
+          },
+          {
+            "reference": "whk_rechtskunde",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "whk_spez_ermittlung_observation",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "whk_spez_etikette_gemeinvolk",
+            "before": null,
+            "after": 3
+          },
+          {
+            "reference": "whk_spez_kaufmann_kraemer",
+            "before": null,
+            "after": 2
+          },
+          {
+            "reference": "whk_spez_ueberleben_stadt",
+            "before": null,
+            "after": 4
+          },
+          {
+            "reference": "whk_spez_ueberleben_wald",
+            "before": null,
+            "after": 8
+          },
+          {
+            "reference": "whk_ueberleben",
+            "before": null,
+            "after": 8
+          }
+        ],
+        "sections": [
+          "Erster Speicherpunkt"
+        ]
+      },
+      "snapshot": {
+        "id": "427d4a84-6611-49a8-945d-3409cce45630",
+        "name": "Wache Straitmor – Indianer",
+        "spezies": "Indianer",
+        "herkunftOrtId": "straitmor",
+        "herkunftSnapshot": {
+          "name": "Straitmor",
+          "region": "Orkisches Protektorat Straitmor",
+          "welt": "NW"
+        },
+        "beruf": "Wache",
+        "createdAt": "2026-09-13T19:21:46.560Z",
+        "updatedAt": "2026-09-13T19:21:46.562Z",
+        "charakterTyp": "NSC",
+        "values": {
+          "ep_gesamt": 0,
+          "dublonen_bank": 5000,
+          "eig_g_intelligenz": 9,
+          "eig_g_mut": 13,
+          "eig_g_sinneschaerfe": 12,
+          "eig_g_willenskraft": 11,
+          "eig_k_athletik": 17,
+          "eig_k_ausstrahlung": 9,
+          "eig_k_geschicklichkeit": 10,
+          "eig_k_konstitution": 15,
+          "eig_k_schnelligkeit": 17,
+          "eig_k_staerke": 17,
+          "att_glueck": 3,
+          "att_vitalitaet": 4,
+          "nk_hiebwaffen": 16,
+          "nk_spez_hiebwaffen_aexte": 16,
+          "gr_menschenkenntnis": 6,
+          "gr_schaetzen": 4,
+          "gr_ueberzeugen": 4,
+          "gr_orientierung": 2,
+          "sf_gefahreninstinkt": 2,
+          "sf_selbstbeherrschung": 2,
+          "sf_ausweichen": 6,
+          "whk_ermittlung": 12,
+          "whk_rechtskunde": 8,
+          "whk_etikette": 8,
+          "whk_fuehrung": 8,
+          "whk_hauswirtschaft": 8,
+          "whk_ueberleben": 8,
+          "whk_koch": 6,
+          "whk_kaufmann": 2,
+          "whk_spez_ermittlung_observation": 8,
+          "whk_spez_ueberleben_wald": 8,
+          "whk_spez_ueberleben_stadt": 4,
+          "whk_spez_etikette_gemeinvolk": 3,
+          "whk_spez_kaufmann_kraemer": 2,
+          "ssk_sprache_orkisch": 3,
+          "ssk_schrift_zwerge": 2,
+          "ssk_kultur_orks": 3,
+          "sf_ruestungsmanoever": 20
+        },
+        "selections": {
+          "vn_aussehen_normal": 1,
+          "vn_schlaf_normal": 1,
+          "talente_ruestungsmanoever_stufe_1": 1,
+          "talente_ruestungsmanoever_stufe_2": 1
+        },
+        "poolAllocations": {
+          "nk_pool_hiebwaffen_aexte::800f0ad8-05cf-4903-a56c-07727d8bb8e0": {
+            "nat": 3,
+            "npa": 3,
+            "gat": 4,
+            "gpa": 4,
+            "mat": 1,
+            "mpa": 1
+          }
+        },
+        "equipment": [
+          {
+            "id": "800f0ad8-05cf-4903-a56c-07727d8bb8e0",
+            "family": "weapon",
+            "baseTable": "nk_waffen_basis",
+            "baseId": "5",
+            "displayNameSnapshot": "Axt",
+            "specializationId": "nk_spez_hiebwaffen_aexte",
+            "selections": {
+              "material": "2",
+              "fertigung": "5",
+              "anpassung": "2",
+              "schaftmaterial": "2"
+            },
+            "quantity": 1,
+            "computedPriceSnapshot": 97,
+            "computedStatsSnapshot": {
+              "at": -4,
+              "pa": -5,
+              "wk": 6,
+              "staerkeMalus": -6,
+              "minStaerke1H": 17,
+              "minStaerke2H": 10,
+              "klingenbrecher": 17,
+              "klingenschutz": 7,
+              "rezeptMod": 18,
+              "rb": 0
+            }
+          },
+          {
+            "id": "f0678010-261a-4a37-9355-bcc942b0bbf8",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "673",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 5.28
+          },
+          {
+            "id": "18023131-f121-4a50-8c32-f0a4e3afdb33",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "907",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.44
+          },
+          {
+            "id": "acfd8b4f-26e3-45f7-a5e9-ce44686fa906",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "948",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.022
+          },
+          {
+            "id": "98e8ff11-b038-49b6-bcac-8503b8401c54",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "145",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 15.4
+          },
+          {
+            "id": "f18160c8-a741-42d1-a800-973accd3e534",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "927",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 1.8
+          },
+          {
+            "id": "6883de46-1d1a-42e3-8dc8-951c41d27c13",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "974",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 60
+          },
+          {
+            "id": "f6cb16f7-1332-4fc5-b2b4-ef51c7469393",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "975",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 4
+          },
+          {
+            "id": "4fffa51d-c510-4c0d-8957-7ca079abf69a",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "896",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 1.6
+          },
+          {
+            "id": "eaf0c1b5-e759-42b4-bd7f-f300810c8331",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "891",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.075
+          },
+          {
+            "id": "4f159308-41b6-4ed4-a393-61279a7e1aad",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "796",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.2
+          },
+          {
+            "id": "0a65d929-d1ac-4af9-8cda-d6dda23e85da",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "784",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.5
+          },
+          {
+            "id": "ae6e41b0-2400-4aba-bc9b-d79c315172fa",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "553",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 1
+          },
+          {
+            "id": "5915785e-03bf-4a64-a0f8-8082416f442f",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "821",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 1.4
+          },
+          {
+            "id": "3195c54f-2799-4cbe-9af9-6a4ac9348358",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "767",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.42
+          },
+          {
+            "id": "fba8ef07-2288-4186-84c5-a9f6154a3ef4",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "54",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.98
+          },
+          {
+            "id": "52d64ca3-c3b5-4613-bdfa-9f0b6ce65438",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "523",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 1.32
+          },
+          {
+            "id": "45243c5a-6e48-4817-9fa5-a5ac7f968a9f",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "526",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 1.76
+          },
+          {
+            "id": "4fe48ede-0cbf-4be1-9698-fdd18edc6683",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "529",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.022
+          },
+          {
+            "id": "fe2af815-2e5a-4c88-a953-c99d0ced80bf",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "359",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.05
+          },
+          {
+            "id": "92022111-92d9-4a67-8c68-1e49128cf850",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "674",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 3.1
+          },
+          {
+            "id": "67011d03-15e6-4ebc-b702-9ec6af83ee21",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "663",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.4
+          },
+          {
+            "id": "b58a7a02-25fa-453c-851c-5e4e6886c9c6",
+            "family": "preisliste",
+            "baseTable": "preisliste",
+            "baseId": "684",
+            "selections": {},
+            "quantity": 1,
+            "computedPriceSnapshot": 0.027
+          }
+        ],
+        "ruestungSlots": {
+          "kopf:1": {
+            "basisSourceRow": 2,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 22,
+            "computedStatsSnapshot": {
+              "rs": 1,
+              "rh": 1,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "torso:1": {
+            "basisSourceRow": 2,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 22,
+            "computedStatsSnapshot": {
+              "rs": 1,
+              "rh": 1,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "arme:1": {
+            "basisSourceRow": 2,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 22,
+            "computedStatsSnapshot": {
+              "rs": 1,
+              "rh": 1,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "beine:1": {
+            "basisSourceRow": 2,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 22,
+            "computedStatsSnapshot": {
+              "rs": 1,
+              "rh": 1,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "kopf:2": {
+            "basisSourceRow": 5,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 26,
+            "computedStatsSnapshot": {
+              "rs": 3,
+              "rh": 3,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "torso:2": {
+            "basisSourceRow": 5,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 26,
+            "computedStatsSnapshot": {
+              "rs": 3,
+              "rh": 3,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "arme:2": {
+            "basisSourceRow": 5,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 26,
+            "computedStatsSnapshot": {
+              "rs": 3,
+              "rh": 3,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "beine:2": {
+            "basisSourceRow": 5,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 26,
+            "computedStatsSnapshot": {
+              "rs": 3,
+              "rh": 3,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "torso:3": {
+            "basisSourceRow": 8,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 360,
+            "computedStatsSnapshot": {
+              "rs": 4,
+              "rh": 4,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "arme:3": {
+            "basisSourceRow": 8,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 360,
+            "computedStatsSnapshot": {
+              "rs": 4,
+              "rh": 4,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          },
+          "torso:4": {
+            "basisSourceRow": 16,
+            "verarbeitungSourceRow": 2,
+            "anpassungSourceRow": 3,
+            "computedPriceSnapshot": 649,
+            "computedStatsSnapshot": {
+              "rs": 6,
+              "rh": 6,
+              "verfuegbarkeitNw": 1,
+              "verfuegbarkeitAw": 1
+            },
+            "koerperbaugruppe": "Dalkini/Indianer/Elfen/Draw/Katzen"
+          }
+        },
+        "grundfertigkeitAuswahl": {},
+        "waffenLoadouts": [
+          {
+            "id": "dd615f36-7c3c-495f-9e6d-8b4041e73327",
+            "comboType": "nk2h",
+            "primaryEquipmentId": "800f0ad8-05cf-4903-a56c-07727d8bb8e0",
+            "secondaryEquipmentId": "",
+            "favorite": true
+          }
+        ],
+        "customWhkHauptfertigkeiten": [],
+        "customWhkSpezialisierungen": {},
+        "gesinnung": {
+          "gut_boese": 0,
+          "ehrlichkeit_unehrlichkeit": 0,
+          "prinzipientreue_opportunismus": 0,
+          "gesetze_recht_des_staerkeren": 0,
+          "toleranz_rassismus": 0,
+          "pazifismus_bellizismus": 0,
+          "lebensbewahrung_toetungsbereitschaft": 0,
+          "altruismus_egoismus": 0,
+          "gleichberechtigung_sexismus": 0,
+          "hierarchie_anarchie": 0,
+          "staaten_gilden_clans_haeuser": 0,
+          "kommunismus_kapitalismus": 0,
+          "gruppenmensch_einzelgaenger": 0,
+          "vertrauen_misstrauen": 0,
+          "kompromissbereitschaft_sturheit": 0,
+          "strebsamkeit_faulheit": 0,
+          "disziplin_triebhaftigkeit": 0,
+          "introvertiert_extrovertiert": 0,
+          "humor_ernst": 0,
+          "willensfreiheit_fatalismus": 0,
+          "religiositaet_atheismus": 0,
+          "optimismus_pessimismus": 0
+        },
+        "gesinnungNotiz": "Neutrale Platzhalter für den regeltechnischen Vergleich; Persönlichkeit noch nicht individuell festgelegt.",
+        "notes": "CK Nahkämpfer, Stufe/Kreis 0. Städter; Gelände Stadt; soziale Lage Einfach. Wache, WHK Meister mit vertiefter Ausbildung, protokollierender Dienst. Beschreibender Platzhaltername. Ein Diensttag in Straitmor, Mahlzeit und 1 L Wasser mitgeführt, Nachfüllen/Essen auf der Wache. Feldflasche gefüllt: zusätzlich 1 kg Wasser, nicht im Kataloggewicht enthalten. Restbudget bleibt Bankvermögen; kein zusätzlicher Geldbeutel. Rüstung und Axt in passender Volksgröße, Gesellenarbeit, von der Stange. Vollständige Traglast offen: Waffen-/Rüstungsgewichte fehlen im Modell; RBE 0 ist kein vollständiger Lastnachweis.",
+        "npcArmorMaxBe": 0
+      }
+    }
+  ]
+}

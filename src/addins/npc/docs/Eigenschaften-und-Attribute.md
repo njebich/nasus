@@ -4,6 +4,48 @@
 
 Stand: 11. September 2026. Nutzerauftrag: je NPC-Kategorie Schwerpunkte für Eigenschaften und Attribute festlegen; Vollrüstung verlangt einen körperlich geeigneten Träger. Die folgende konkrete Priorisierung ist die ausgearbeitete Planungsgrundlage, keine neue Spielregel und noch keine automatische Punktevergabe. Absolute Zielwerte werden je Volk, Kreis und Budget kalibriert.
 
+## Neuester Stand: Vitalität4; AW und Talentfreischaltungen geprüft
+
+Nutzer korrigiert Vitalität für beide von5 auf4. Glück bleibt3. Vitalität kostet nun440 statt600 SP, je160 SP werden frei. Attributgesamtkosten740 SP, reguläres Kreis0-Attributmaximum4 eingehalten, keine Vitalitätsfreischaltung nötig. Aktueller Rest Indianer222/Troll369 SP; Gesamtausgaben6178/6031 SP. RM bleibt12, keine zusätzlichen Käufe oder Talente in dieser Prüfung gewählt.
+
+Aktuelle abgeleitete Werte Indianer/Troll: Ausdauer68/77, Gesundheit13/14, LE Kopf/Brust/Unterleib12/23/18 bzw.13/26/20, Trefferschwelle je9. Axtproben n15/15 g5/4 m22/22 und Schaden13,5/14,5 unverändert. CK-Eigenschaften, H/S16, Hintergrund, Wache und Ausrüstung bleiben unverändert.
+
+AW geprüft: ATH17, SCH15, Glück3, SF Ausweichen/Gutes AW/Meisterliches Ausweichen bislang0. Beide mit RM12 und gerundeter Rüstungsbelastung2: defensives nAW11, offensives nAW7, gAW2, mAW22. Formeln normales AW=(17+15+3+SF)/5+6 bzw.+2−Belastung; gAW=ceil((ATH-Bonus4+SF)/5+1), mAW=ceil((SCH-Bonus3+SF)/5+21). Rüstungsbelastung wird im aktuellen Client über gewichtsbelastung aus RBE aufgerundet; keine weitere Last-/Situationswirkung behauptet.
+
+Vergleich bei RBE0 ohne AW-Käufe: defensiv13, offensiv9, g2/m22. Bei aktueller Rüstung wären SF Ausweichen1 für9 SP → nAW12/8, SF6 für54 SP →13/9, SF11 für99 SP →14/10; g/m bleiben2/22. Nur geprüfte Varianten, keine automatische Ausbildung gekauft.
+
+Talentprüfung: Stufe0 hat20 TaP. RM Stufe1 kostet2 TaP und erhöht Maximum auf16; Stufe2 benötigt Stufe1, kostet zusätzlich14 TaP und erhöht Maximum auf20 (höchster Bonus, nicht additiv). Zusammen16 TaP,4 bleiben. Damit sind RM20 beim Indianer und19 beim Troll nach Vitalitätkorrektur finanzierbare RBE0-Varianten: zusätzliche72/63 SP, hypothetischer Rest150/306 SP. RM24 würde auch Stufe3 für16 weitere TaP benötigen: insgesamt32>20, nicht finanzierbar auf Stufe0. Die vorherige gemeinsame Vitalität5/RM-Freischaltungsblockade ist durch Vit4 gelöst.
+
+Prüfung gegen talenteStufenKette.ts, talenteMaximum.ts samt Datenzuordnung, Talentkosten/TaP-Formel, AW- und Attributformeln, fertigkeitenGrenzen.ts und RBE-Kompatibilitätsregel. Keine relevanten zusätzlichen Voraussetzungen in den geprüften Talentdatensätzen; kein vollständiger Charakter-/Importtest. Nur Dokumentation/Rechnung, keine Generator-/Charakterdatei geändert.
+
+Nächster Vorschlag: RM-Stufe1+2 und RM20/19 wählen, um beide auf RBE0 zu bringen. Danach AW-Ausbildung bei Bedarf ergänzen. Noch nicht gekauft; aktuell RM12, Rest222/369 SP und20 unvergebene TaP. Konkrete SSK-Zuordnung, Versorgung/Last und Beschaffung weiterhin offen.
+
+## Attributziele Nahkampfvergleich — 13.09.2026
+
+Nutzer setzt für beide Vergleichs-Nahkämpfer Vitalität 5 und Glück 3: 600 + 300 = 900 SP je NPC. Dies konkretisiert den höheren Vitalitätsschwerpunkt. Aktuelle Gesamtvergleichsrechnung und abgeleitete Werte in [Nahkampfvergleich](Nahkampfvergleich-Indianer-Troll.md). Rest 822/969 SP vor weiteren Grundausgaben; Attribut-Mindestquote nicht zusätzlich abziehen. Keine Generatoränderung.
+
+## CK Nahkämpfer: Zielprofil Stufe 0 — 13.09.2026
+
+Bestätigte Vorgaben: relevante Eigenschaften auf Stufe 0 im Zielbereich 13–17, unabhängig vom vorherigen Axt-Rechenbeispiel. Stärke gehört zwingend dazu und hat hohe Priorität. Höhere Volksminima erhalten. Das vorherige allgemeine Minimum 9 genügt für dieses Stufe-0-Zielprofil nicht. Attribute Vitalität und Glück sind separat; Vitalität stärker gewichten als Glück.
+
+Konkreter Profilentwurf auf Nutzerauftrag:
+
+| Eigenschaft | Ziel | Priorität und Begründung |
+|---|---:|---|
+| Stärke | 17 | Sehr hoch: ausdrücklicher Schwerpunkt, Schaden und Waffenanforderungen |
+| Athletik | 17 | Sehr hoch: bei Hiebwaffen in AT, PA und normalem AW, außerdem Bonus für gutes AW |
+| Schnelligkeit | 15 | Hoch: PA und normales AW, außerdem Bonus für meisterliches AW |
+| Konstitution | 15 | Hoch: körperliche Belastbarkeit, zusätzlicher Nutzerschwerpunkt |
+| Mut | 13 | Ergänzend: AT-Beitrag; weniger direkte Abdeckung der betrachteten AT/PA/AW-Formeln |
+
+Keine erfundenen Prozentgewichte. Dies sind konkrete Zielwerte zur Kalibrierung des Presets, keine Änderung der Spielregeln. Für andere Waffen die AT-Formel berücksichtigen. Endziel = Maximum aus Volksminimum, Profilziel und zwingender Voraussetzung, reguläre Obergrenzen und Budget prüfen. Höhere vorhandene Werte nicht senken. Keine automatische Budgeterhöhung oder stilles Kürzen bei Konflikten.
+
+Kostenvergleich am regulären Sockel: Indianer Stärke 10→17 273 SP, Athletik 12→17 210, Schnelligkeit 11→15 150, Konstitution 10→15 180, Mut 10→13 99; zusammen 912 SP. Troll Stärke/Konstitution 19 erhalten, Mut 13 erhalten, Athletik 12→17 210 und Schnelligkeit 5→15 330; zusammen 540 SP. Die zuvor bezahlten 120 SP für Troll-Schnelligkeit 9 sind in 540 enthalten, nicht zusätzlich. Seit dem letzten 9er-Vergleich fehlen ihm daher 420 SP.
+
+Mit Hiebwaffen/Äxte weiterhin je 16 (640 SP) verbleiben von 6400 SP nach Sockel und diesen Eigenschaftszielen 1722 SP beim Indianer und 1869 SP beim Troll. Weitere Grundausgaben und Attribute fehlen. Der Troll hat nun 147 SP mehr Rest statt 225 SP weniger am reinen Sockel. Höhere passende Volksminima erklären den Wechsel. Keine vollständige Rollenfinanzierung behauptet.
+
+Prüfung: Eigenschaftskosten aus lookups.json, Minima und Erstellungsmaxima aus voelkerMaxima.json; alle fünf Ziele für beide Völker legal, Differenzkosten nachgerechnet. Nur Planungsdokumentation, keine Charakter- oder Generatoränderung. Nächster Vorschlag: diese Zielwerte in den Axtvergleich übernehmen und nAT/nPA, g/m-Verteilung und Durchschnittsschaden neu bestimmen; anschließend Vitalität/Glück bepreisen. Noch kein weiterer Umsetzungsschritt beauftragt.
+
 ## Speziesabhängige Schulwahl — Entscheidung 13.09.2026
 
 Bei der Randomisierung die Auswahlrichtung umkehren: Bereits hohe, aus der Spezies abgeleitete Eigenschaften begünstigen passende Schulen. Keine gleichverteilte Schulwahl mit erst nachträglich erzwungenem Eigenschaftsprofil. Es bleibt eine gewichtete Zufallsauswahl, keine feste Schule je Spezies. Konkrete Gewichtungsformel, Stärke der Bevorzugung und Behandlung gemischter Schulen sind noch offen.

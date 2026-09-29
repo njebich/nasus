@@ -820,7 +820,7 @@ def read_feuerwaffen(feuerwaffen_values):
 FERNKAMPF_NK_COLUMNS = [
     "Hauptfertigkeit", "Spezialisierung", "WK-Basis", "Schadenswuerfel-1", "Schadenswuerfel-2",
     "Staerke-Teiler", "Staerke-Malus-Basis", "AT-Basis", "PA-Basis", "Min-Staerke-1H-Basis",
-    "Min-Staerke-2H-Basis", "Klingenbrecher-Basis", "Klingenschutz-Basis",
+    "Min-Staerke-2H-Basis", "Klingenbrecher-Basis", "Klingenschutz-Basis", "Schadensart",
 ]
 
 

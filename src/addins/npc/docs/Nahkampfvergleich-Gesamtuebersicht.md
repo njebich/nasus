@@ -81,7 +81,7 @@ Beide erhalten dasselbe Zeughauspaket, vollständig Gesellenarbeit und von der S
 - Leichte Stoffrüstung und leichte Lederrüstung an Kopf, Torso, Armen und Beinen.
 - Eisen-Kettenpanzer an Torso und Armen, Eisenpanzer am Torso.
 - RH gesamt30; RS Kopf/Torso/Arme/Beine4/14/8/4; Rüstungskosten1.561 D.
-- Axt97 D; Waffenmodifikatoren AT−4/PA−5, Mindeststärke zweihändig10.
+- Axt99 D; Waffenmodifikatoren AT−4/PA−5, Mindeststärke zweihändig10.
 - Dienstmittel: Sturm-Öllaterne, Fesselseil1m, eine Flasche Lampenöl, Tagebuch, Griffelschachtel, Handschellen mit zwei Schlüsseln, Dienstabzeichen; je eine Katalog-Verkaufseinheit.
 - Grundkleidung: gewöhnliche Unterwäsche, Wollstrümpfe, Leinenhemd, Leinenbeinkleider, Lederschuhe, Wollmantel, Filzhut.
 
@@ -110,7 +110,7 @@ Die gemeinsame Berufsbasis einschließlich RM12 kostet316 SP=4,9375 % der Gesamt
 
 Beide NSC sind im Ordner [Charakterdateien](../../../../outputs/straitmor-nahkaempfer-20260913/) als `.nasus.json` mit Speicherverlauf erstellt. Beschreibende Namen „Wache Straitmor – Indianer“ und „Wache Straitmor – Troll“. Herkunft aus dem Ortskatalog: Straitmor, Orkisches Protektorat Straitmor, NW. Persönlichkeit: alle 22 Gesinnungswerte ausdrücklich als neutrale Platzhalter gesetzt und entsprechend vermerkt; Alter und weitere freie Identitätsangaben bleiben offen.
 
-Für Stadtdienst ergänzt: Tinte, Feldflasche 1 L, Lederrucksack 15 kg, Gürteltasche, eine Portion Brot und Käse, wasserdichte Zunderdose, Zunderschwamm, Feuerstein und Stahl. Annahme: Wasser und weitere Mahlzeiten auf der Wache verfügbar; keine autarke Tages- oder Expeditionsversorgung behauptet. Ein Liter Wasser als Inhalt in den Notizen erfasst, zusätzlich 1 kg. Ergänzungen kosten 7,659 D; Gesamtausgaben je 1.757,796 D (Anzeige 1.757,80 D), Rest 3.242,204 D. Kein zusätzliches Bargeld angesetzt.
+Für Stadtdienst ergänzt: Tinte, Feldflasche 1 L, Lederrucksack 15 kg, Gürteltasche, eine Portion Brot und Käse, wasserdichte Zunderdose, Zunderschwamm, Feuerstein und Stahl. Annahme: Wasser und weitere Mahlzeiten auf der Wache verfügbar; keine autarke Tages- oder Expeditionsversorgung behauptet. Ein Liter Wasser als Inhalt in den Notizen erfasst, zusätzlich 1 kg. Ergänzungen kosten 7,659 D; Gesamtausgaben je 1.759,796 D (Anzeige 1.759,80 D), Rest 3.240,204 D (Axtpreis seit 2026-09-29 nach RC-096-Formel 99 D statt 97 D). Kein zusätzliches Bargeld angesetzt.
 
 Reguläre Kaufmutationen einschließlich ortsbezogener Beschaffbarkeit und Volksgrößen verwendet. Axt zweihändig als Favorit gespeichert. Regelprüfung und NPC-Prüfung melden für beide keine Fehler; SP 6.397/6.382, Rest 3/18, je 4 TaP frei bestätigt. Export, Parsen, Installation im isolierten Speicher und erneutes Laden geprüft; Werte, Inventar, Rüstung und PP-Verteilung erhalten. Axt nAT/nPA 15/15, Schaden W20+3/W20+5, WK9 und RBE0 bestätigt. Durch die abschließende KON/STÄ-Steigerung genügt dem Troll inzwischen RM18 für RBE0; vereinbarte RM19 bleiben gekauft.
 

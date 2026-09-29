@@ -13,9 +13,9 @@
 
 Aus dem Schwesterprojekt-Auftrag `llm-anpassungen-log.md` (LLM-020 bis 031) wurde LLM-022 umgesetzt: `composeWeapon` berechnet den Waffenpreis nach RC-096 §3.1 (Fertigung.Preis als Tageslohn mal Arbeitszeit, Holzschaft-Terme nur bei den Art-Specials „Holzschaft“/„Holzschaft, Schnell“, einmalige Aufrundung auf 3 Stellen; Commit `08b2b3e`). Entscheidung des Nutzers: gespeicherte NPC-Waffenpreise werden neu berechnet (Alpha). Das Skript `src/addins/npc/scripts/recompute-weapon-prices.mjs` (`--write`) hat `computedPriceSnapshot` in den 6 Vorlagen und 8 Export-Dateien aktualisiert. Nutzer-Entscheidung: die Budgets der betroffenen NPCs werden um die Fehlbeträge erhöht statt die Ausrüstung zu ändern: Hauptmann `dublonen_bank` 404,9 → 411,9, KI 11619,02 → 11642,04 (Templates und Export-Werte, die Ausgangsstand-Kopien in den Exportdateien blieben als Historie). Der Handwerker-Test in `ruestungspakete.test.ts` erwartet jetzt −109,2018 (Waffe 5 D günstiger). Straitmor-Wachen: Axt 97 → 99 D, damit je 2 D weniger Rest.
 
-Prüfstand: 70 Testdateien mit 718/718 Tests bestanden; `validate-references.mjs` für alle sechs Vorlagen bestanden. Commit `93bc754`. Ebenfalls umgesetzt (alle Commits im LLM-Projekt): LLM-021 Alternativmunition-Nachladezeit (`eb65cb1`), LLM-020/023/024/025–031 (Hashes im Abschlussbericht des Auftrags). Offen: keine NPC-Aufgabe aus diesem Schritt; die Straitmor-Finanzsumme in der Gesamtübersicht nennt noch 1.757,796 D statt 1.759,796 D je Wache.
+Prüfstand: 70 Testdateien mit 718/718 Tests bestanden; `validate-references.mjs` für alle sechs Vorlagen bestanden. Commit `93bc754`. Ebenfalls umgesetzt (alle Commits im LLM-Projekt): LLM-021 Alternativmunition-Nachladezeit (`eb65cb1`), LLM-020/023/024/025–031 (Hashes im Abschlussbericht des Auftrags). Die Gesamtübersicht nennt inzwischen die neuen Straitmor-Summen (Axt 99 D, Ausgaben je 1.759,796 D, Rest 3.240,204 D). Offen: keine NPC-Aufgabe aus diesem Schritt.
 
-Nächster vorgeschlagener Schritt: Gesamtübersicht der Straitmor-Wachen auf 1.759,796 D beziehungsweise 3.240,204 D Rest aktualisieren. Nur vorgeschlagen, nicht ausgeführt.
+Nächster vorgeschlagener Schritt: Straitmor-Wachen in der App importieren und mit der aktualisierten Gesamtübersicht vergleichen. Nur vorgeschlagen, nicht ausgeführt.
 
 ### Weiterhin geltender vollständiger NPC-Stand
 

@@ -648,6 +648,9 @@ def write_weapons_ts(wb):
     # (analog zu Ruestung-Basis/-Verarbeitung/-Anpassung bzw. Schild-Material/-Fertigung/
     # -Bespannung), damit engine/weaponComposition.ts damit komponieren kann.
     basis = read_generic_rows(wb, "NK-Waffen-Basis", "Waffe")
+    # LLM-024: mit "#" praefixierte Waffe-Namen sind auskommentierte Zeilen (Konvention wie bei
+    # Werte-Referenzen) - nicht in den Katalog uebernehmen, in der xlsx aber erhalten.
+    basis = [row for row in basis if not row["name"].startswith("#")]
     # Spalte 11 (Volk-Einschraenkung) hat in der Quelle keine eigene Kopfzeile - anders als bei
     # NK-Fertigung/-Anpassung/-Schaftmaterial, die dort "Volk" explizit benennen.
     material = read_generic_rows(wb, "NK-Material", "Waffe", header_overrides={11: "Volk"})

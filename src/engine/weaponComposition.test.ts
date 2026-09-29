@@ -27,7 +27,7 @@ describe('composeWeapon (Nutzer 2026-07-18: NK-Waffen inkl. Herstellungs-Modifik
     expect(composed.klingenschutz).toBe(7);
     expect(composed.rb).toBe(0);
     expect(composed.rezeptMod).toBe(18); // 8 (Basis) + 10 (Eisen)
-    expect(composed.preis).toBe(97); // 1.8*50 + 6 + 1 + 0*0.72
+    expect(composed.preis).toBe(99); // 1.8*50 + 6*(1.5+0), Standard-Schaft ohne Preis/m
   });
 
   it('rb (Ruestungsbrechend-Mod) kommt unveraendert von der Basis, keine Modifikator-Tabelle hat eine RB-Spalte', () => {
@@ -53,7 +53,7 @@ describe('composeWeapon (Nutzer 2026-07-18: NK-Waffen inkl. Herstellungs-Modifik
     expect(composed.klingenbrecher).toBe(19); // 17 + 1 + 1
     expect(composed.klingenschutz).toBe(11); // 7 + 1 + 1 + 2
     expect(composed.rezeptMod).toBe(20); // 8 + 12
-    expect(composed.preis).toBe(319); // 1.8*125 + 65 + 2 + 37.5*0.72
+    expect(composed.preis).toBe(414.5); // 1.8*125 + 65*(1.5+1) + 37.5*0.72 (Holzschaft)
   });
 
   it('Preis ist null, wenn die Basis keinen Materialpreis-Faktor hat (unbewaffnete Kampfstile)', () => {
@@ -104,5 +104,31 @@ describe('composeWeapon Verfuegbarkeit (Spec-Punkte 32-40, add_nk_waffen_verfueg
     );
     expect(composed.verfuegbarkeitAw).toBe('NICHT KAUFBAR');
     expect(composed.verfuegbarkeitNw).toBe('NICHT KAUFBAR');
+  });
+});
+
+describe('composeWeapon Preis (LLM-022, RC-096 §3.1, DEC-1263/DEC-1280)', () => {
+  const langschwert = find(NK_WAFFEN_BASIS, 'Langschwert');
+  const preis = (material: string, fertigung: string, anpassung: string) => composeWeapon(
+    langschwert, find(NK_MATERIAL, material), find(NK_FERTIGUNG, fertigung),
+    find(NK_ANPASSUNG, anpassung), find(NK_SCHAFTMATERIAL, 'Standard'),
+  ).preis;
+
+  it('reproduziert die owner-verifizierten Langschwert-Werte', () => {
+    expect(preis('Eisen', 'Gesellenarbeit', 'Von der Stange')).toBe(74);
+    expect(preis('Eisen', 'Gesellenarbeit', 'angepasst')).toBe(80);
+    expect(preis('Eisen', 'Gesellenarbeit', 'Perfekt angepasst')).toBe(86);
+    expect(preis('Stahl', 'Gesellenarbeit', 'Von der Stange')).toBe(149);
+    expect(preis('Eisen', 'Großmeisterarbeit', 'Von der Stange')).toBe(334);
+    expect(preis('Eisen', 'Großmeisterarbeit', 'angepasst')).toBe(405);
+    expect(preis('Eisen', 'Großmeisterarbeit', 'Perfekt angepasst')).toBe(476);
+  });
+
+  it('DEC-1280: Axt/Eisen/Ausschuss = 92,25 (einmalige Rundung am Ende)', () => {
+    const composed = composeWeapon(
+      find(NK_WAFFEN_BASIS, 'Axt'), find(NK_MATERIAL, 'Eisen'), find(NK_FERTIGUNG, 'Ausschuss'),
+      find(NK_ANPASSUNG, 'Von der Stange'), find(NK_SCHAFTMATERIAL, 'Standard'),
+    );
+    expect(composed.preis).toBe(92.25);
   });
 });

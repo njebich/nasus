@@ -2,10 +2,12 @@
 // Anpassung x Schaftmaterial (Regel Nutzer 2026-07-18: "fang an damit, die nk-waffen inkl.
 // herstellungs-modifikatoren zu implementieren"). Analog zu composeArmor/composeShield.
 //
-// Preis-Formel (kein Entwickeln-Beispiel wie bei Ruestung vorhanden, daher per Namenskonvention
-// hergeleitet: "-Faktor"-Spalten sind multiplikativ, blosse "Preis"-Spalten additiv - dieselbe
-// Konvention, die bei Ruestung/Schild bereits verifiziert ist): Materialpreis-Faktor(Basis) ×
-// Preis(Material) + Preis(Fertigung) + Preis(Anpassung) + Preis/m(Schaftmaterial) × Laenge-m(Basis).
+// Preis-Formel (RC-096 §3.1, DEC-1263/DEC-1280, owner-verifiziert gegen die Master-Excel):
+// Materialpreis-Faktor(Basis) × Preis(Material) + Preis(Fertigung) × (Arbeitszeit-Tag-Basis(Basis) +
+// Arbeitszeit/d(Anpassung) [+ Arbeitszeit/d(Schaftmaterial)]) [+ Preis/m(Schaftmaterial) ×
+// Laenge-m(Basis)]; die eingeklammerten Schaft-Terme gelten nur bei Art-Specials "Holzschaft"/
+// "Holzschaft, Schnell". Fertigung.Preis ist ein Tageslohn (LLM-022). Das fertige Ergebnis wird
+// einmalig auf 3 Nachkommastellen aufgerundet, keine Zwischenrundung.
 // Materialpreis-Faktor fehlt oder ist "x" bei allen unbewaffneten Kampfstilen (Ringen/Boxen/Biss-
 // Huftritt/...) und bei Ruestungsmodifikatoren (Totschlaeger etc.) - dort ist kein Material/keine
 // Fertigung kaeuflich, Preis bleibt null (analog zum Drachensch.-Preis bei Schilden).
@@ -19,6 +21,7 @@
 // korreliert kaum mit Preis, "bleibt offen bis Spielleitung entscheidet").
 
 import type { GenericRow } from '../data/equipment/armor';
+import { aufrunden } from './functions';
 
 function num(row: GenericRow | undefined, header: string): number {
   if (!row) return 0;
@@ -105,10 +108,16 @@ export function composeWeapon(
   const rezeptMod = num(basis, 'Rezept-Mod-Basis') + num(material, 'Rezept-Mod');
 
   const materialpreisFaktor = numOrNull(basis, 'Materialpreis-Faktor');
+  const holzschaft = (basis['Art-Specials'] ?? '').split(',').some((tag) => tag.trim() === 'Holzschaft');
+  const arbeitszeitTage = num(basis, 'Arbeitszeit-Tag-Basis') + num(anpassung, 'Arbeitszeit/d')
+    + (holzschaft ? num(schaftmaterial, 'Arbeitszeit/d') : 0);
   const preis = materialpreisFaktor === null
     ? null
-    : materialpreisFaktor * num(material, 'Preis') + num(fertigung, 'Preis') + num(anpassung, 'Preis')
-      + num(schaftmaterial, 'Preis/m') * num(basis, 'Laenge-m');
+    : aufrunden(
+      materialpreisFaktor * num(material, 'Preis') + num(fertigung, 'Preis') * arbeitszeitTage
+        + (holzschaft ? num(schaftmaterial, 'Preis/m') * num(basis, 'Laenge-m') : 0),
+      3,
+    );
 
   const verfuegbarkeitAw = combineVerfuegbarkeit(
     parseVerfuegbarkeit(basis, 'Verfuegbarkeit-AW'), parseVerfuegbarkeit(material, 'Verfuegbarkeit-AW'),

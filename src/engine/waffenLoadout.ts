@@ -19,6 +19,8 @@ import { computeGutMax, computeMeisterlichMax, GUT_BASIS, MEISTERLICH_BASIS } fr
 import { combineDiceNotations, computeSchaden, averageSchadenValue, ceilAwayFromZero, formatSigned } from './waffenSchaden';
 import { computeRangeCellValues, formatRangeCellValues, fkGuteDivisor, fkMeisterlichDivisor, type RangeCellValues } from './fernkampfRange';
 import { gesBonWert, ladezeitKr, feuerwaffenLadeschuetzeReferenz } from './fernkampfLadezeit';
+import { firearmAmmunitionType, firearmAmmoTypeForArt } from './ammunitionTypes';
+import { schnellsterMunitionNachladezeitMod } from '../data/equipment/feuerwaffenMunition';
 import type { GenericRow as WeaponRow } from '../data/equipment/weapons';
 import type { FernkampfRow } from '../data/equipment/fernkampf';
 import {
@@ -544,7 +546,16 @@ function computeFeuerwaffenNebenwerte(
   const gesBon = gesBonWert(values);
   const ladeschuetzeReferenz = feuerwaffenLadeschuetzeReferenz(pistole.basis['Lademechanik'] ?? '');
   const ladeschuetzeWert = character.values[ladeschuetzeReferenz] ?? 0;
-  const ladedauer = `${ladezeitKr(pistole.snap.nachladezeit ?? 0, pistole.snap.nachladenTawTeiler ?? 0, gesBon, ladeschuetzeWert)} KR`;
+  // LLM-021: ohne Munitionswahl im Loadout zaehlt die schnellste besessene passende Munition.
+  const requiredTypeId = firearmAmmunitionType(pistole.basis['Lademechanik'] ?? '', pistole.basis['Munition'] ?? '');
+  const kaliber = String(pistole.snap.kaliber ?? 0);
+  const besitzArten = character.equipment
+    .filter((ammo) => ammo.family === 'ammo' && ammo.baseTable === 'feuerwaffen-munition'
+      && ammo.selections.kaliber === kaliber
+      && (ammo.ammunitionTypeId ?? firearmAmmoTypeForArt(ammo.baseId)) === requiredTypeId)
+    .map((ammo) => ammo.baseId);
+  const munitionMod = schnellsterMunitionNachladezeitMod(pistole.basis.name, pistole.basis['Volk'] ?? '', besitzArten);
+  const ladedauer = `${ladezeitKr(pistole.snap.nachladezeit ?? 0, pistole.snap.nachladenTawTeiler ?? 0, gesBon, ladeschuetzeWert, munitionMod)} KR`;
   return {
     rb: pistole.snap.rb ?? 0,
     rw: String(pistole.snap.rw ?? 0),

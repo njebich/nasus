@@ -1,6 +1,7 @@
 // Quelle: werte 0.8-claude.xlsx, Blatt "Munition-Feuerwaffen", A2:D39.
 // Preise sind Dublonen pro Schuss.
 import { firearmAmmunitionType, firearmAmmoTypeForArt } from '../../engine/ammunitionTypes';
+import { FEUERWAFFEN_MUNITION } from './fernkampf';
 
 export type FeuerwaffenMunitionArt =
   | 'blei_pulver'
@@ -59,4 +60,47 @@ export function feuerwaffenMunitionOptionen(
   return FEUERWAFFEN_MUNITION_PREISE.filter(
     (row) => firearmAmmoTypeForArt(row.art) === requiredTypeId && row.kaliber === kaliber,
   );
+}
+
+// LLM-021 (DEC-1269): Alternativmunition-Effekte des Sheets "Feuerwaffen-Munition" als echte Mechanik.
+// Bislang einzige Effektart: "Reduziert die Nachladezeit um N Sekunden" (KR = Sekunde, Owner
+// 2026-09-29, also -N KR auf die rohe Nachladezeit). Unbekannte Effekttexte brechen laut ab, damit
+// neue Effekte nicht stillschweigend ignoriert werden.
+const ALTERNATIV_ART_BY_LABEL: Record<string, FeuerwaffenMunitionArt> = {
+  'VL. Papierpatrone': 'papierpatrone_vl',
+};
+const NACHLADEZEIT_EFFEKT_RE = /^Reduziert die Nachladezeit um (\d+) Sekunden?$/;
+
+export function parseMunitionEffekt(text: string): { nachladezeitMod: number } {
+  const match = NACHLADEZEIT_EFFEKT_RE.exec(text.trim());
+  if (!match) throw new Error(`Unbekannter Alternativ-Effekt der Feuerwaffen-Munition: '${text}'`);
+  return { nachladezeitMod: -Number(match[1]) };
+}
+
+export interface FeuerwaffenMunitionEffekt {
+  art: FeuerwaffenMunitionArt;
+  nachladezeitMod: number;
+}
+
+/** Schluessel `${Name}|${Volk}` -> Alternativmunition der Waffe samt Effekt. */
+export const FEUERWAFFEN_MUNITION_LOOKUP: ReadonlyMap<string, FeuerwaffenMunitionEffekt> = new Map(
+  FEUERWAFFEN_MUNITION
+    .filter((row) => row['Munition-Art (alternativ)'] && row['Alternativ-Effekt'])
+    .map((row) => {
+      const label = row['Munition-Art (alternativ)']!;
+      const art = ALTERNATIV_ART_BY_LABEL[label];
+      if (!art) throw new Error(`Unbekannte Alternativmunition '${label}' bei '${row['Name']}'`);
+      return [`${row['Name']}|${row['Volk']}`, { art, ...parseMunitionEffekt(row['Alternativ-Effekt']!) }] as const;
+    }),
+);
+
+/** Nachladezeit-Modifikator (KR, <= 0), den eine Munitionsart bei dieser Waffe mitbringt. */
+export function munitionNachladezeitMod(waffenName: string, volk: string, art: string): number {
+  const effekt = FEUERWAFFEN_MUNITION_LOOKUP.get(`${waffenName}|${volk}`);
+  return effekt && effekt.art === art ? effekt.nachladezeitMod : 0;
+}
+
+/** Schnellste besessene Munition (kleinster Modifikator); ohne Munition 0. */
+export function schnellsterMunitionNachladezeitMod(waffenName: string, volk: string, arten: readonly string[]): number {
+  return arten.length === 0 ? 0 : Math.min(...arten.map((art) => munitionNachladezeitMod(waffenName, volk, art)));
 }

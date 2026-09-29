@@ -8,6 +8,7 @@ import { fkGuteDivisor, fkMeisterlichDivisor } from '../engine/fernkampfRange';
 import { gesBonWert, ladezeitKr, feuerwaffenLadeschuetzeReferenz } from '../engine/fernkampfLadezeit';
 import { FIREARM_AMMO_BY_ART_AND_CALIBER, FIREARM_BY_SOURCE_ROW, weaponSpecializationForRow, WEAPON_SPECIALIZATION_BY_ID } from '../engine/weaponCatalog';
 import { firearmAmmunitionType, firearmAmmoTypeForArt } from '../engine/ammunitionTypes';
+import { munitionNachladezeitMod } from '../data/equipment/feuerwaffenMunition';
 import {
   escapeHtml, RANGE_HEADERS, formatRangeCell, computeFkNkWerte, renderFkNkCells, FK_NK_TABLE_HEAD_CELLS, type FkNkWerte,
 } from './kampfShared';
@@ -83,7 +84,6 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
 
     const ladeschuetzeReferenz = feuerwaffenLadeschuetzeReferenz(basis['Lademechanik'] ?? '');
     const ladeschuetzeWert = character.values[ladeschuetzeReferenz] ?? 0;
-    const ladedauer = `${ladezeitKr(snap.nachladezeit ?? 0, snap.nachladenTawTeiler ?? 0, gesBon, ladeschuetzeWert)} KR`;
     const requiredTypeId = e.ammunitionTypeId
       ?? firearmAmmunitionType(basis['Lademechanik'] ?? '', basis['Munition'] ?? '');
     const caliber = snap.kaliber ?? 0;
@@ -101,6 +101,8 @@ export function buildFeuerwaffenRows(character: CharacterState): FeuerwaffenRow[
           + `'${ammo.ammunitionTypeId ?? firearmAmmoTypeForArt(ammo.baseId) ?? '<fehlt>'}': Katalogeintrag fehlt`
         : ammo?.invalidReason;
       const rangedUsable = !!ammoRow && !invalidReason;
+      const munitionMod = ammo ? munitionNachladezeitMod(basis.name, basis['Volk'] ?? '', ammo.baseId) : 0;
+      const ladedauer = `${ladezeitKr(snap.nachladezeit ?? 0, snap.nachladenTawTeiler ?? 0, gesBon, ladeschuetzeWert, munitionMod)} KR`;
       rows.push({
         key: `${e.id}:${ammo?.id ?? 'keine'}`,
         label: basis.name,

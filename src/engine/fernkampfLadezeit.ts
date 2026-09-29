@@ -17,9 +17,11 @@ export function gesBonWert(values: CharacterValueSource): number {
 /** Kernformel, wiederverwendet fuer jede Waffenart/Ladetechnik: aufrunden((Ges.Bon+Ladeschuetze)/
  *  Teiler), von der Ladezeit abgezogen, Ergebnis nie unter 1 KR (Regeltext: "kann nicht unter eine
  *  Sekunde/KR fallen"). Teiler=0 (sollte in der Datenlage nicht vorkommen) -> keine Reduktion. */
-export function ladezeitKr(ladezeit: number, teiler: number, gesBon: number, ladeschuetze: number): number {
+export function ladezeitKr(
+  ladezeit: number, teiler: number, gesBon: number, ladeschuetze: number, munitionMod = 0,
+): number {
   const reduktion = teiler !== 0 ? aufrunden((gesBon + ladeschuetze) / teiler, 0) : 0;
-  return Math.max(1, ladezeit - reduktion);
+  return Math.max(1, ladezeit + munitionMod - reduktion);
 }
 
 /** Welche sf_ladeschuetze_*-Sonderfertigkeit fuer eine Feuerwaffe zaehlt, je Lademechanik:

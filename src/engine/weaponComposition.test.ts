@@ -57,9 +57,9 @@ describe('composeWeapon (Nutzer 2026-07-18: NK-Waffen inkl. Herstellungs-Modifik
   });
 
   it('Preis ist null, wenn die Basis keinen Materialpreis-Faktor hat (unbewaffnete Kampfstile)', () => {
-    const totschlaeger = find(NK_WAFFEN_BASIS, 'Totschläger');
+    const gepanzert = find(NK_WAFFEN_BASIS, 'Gepanzert');
     const composed = composeWeapon(
-      totschlaeger, find(NK_MATERIAL, 'Eisen'), find(NK_FERTIGUNG, 'Gesellenarbeit'),
+      gepanzert, find(NK_MATERIAL, 'Eisen'), find(NK_FERTIGUNG, 'Gesellenarbeit'),
       find(NK_ANPASSUNG, 'Von der Stange'), find(NK_SCHAFTMATERIAL, 'Standard'),
     );
     expect(composed.preis).toBeNull();

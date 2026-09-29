@@ -18,7 +18,7 @@
     "charakterTyp": "NSC",
     "values": {
       "ep_gesamt": 1600,
-      "dublonen_bank": 404.9,
+      "dublonen_bank": 411.9,
       "eig_g_intelligenz": 13,
       "eig_g_mut": 13,
       "eig_g_sinneschaerfe": 12,
@@ -175,7 +175,7 @@
           "schaftmaterial": "2"
         },
         "quantity": 1,
-        "computedPriceSnapshot": 45,
+        "computedPriceSnapshot": 52,
         "computedStatsSnapshot": {
           "at": -2,
           "pa": -3,

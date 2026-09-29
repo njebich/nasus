@@ -22,7 +22,7 @@ describe('Rüstungspakete und individuelle Fertigung/Anpassung', () => {
     const result = inspectNpc(createNpcPreview('bauer', '', '', 'handwerker'));
     expect(result.armor).toMatchObject({ rbe: 0, rm: 4, preis: 240 });
     expect(result.sheet.spRemaining).toBe(-4);
-    expect(result.sheet.dublonenRemaining).toBeCloseTo(-114.2018);
+    expect(result.sheet.dublonenRemaining).toBeCloseTo(-109.2018);
     expect(result.issues.some((issue) => issue.startsWith('SP-Budget'))).toBe(true);
   });
 

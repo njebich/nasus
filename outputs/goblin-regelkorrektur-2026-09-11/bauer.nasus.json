@@ -398,7 +398,7 @@
           "schaftmaterial": "2"
         },
         "quantity": 1,
-        "computedPriceSnapshot": 18,
+        "computedPriceSnapshot": 15.5,
         "computedStatsSnapshot": {
           "at": -5,
           "pa": -4,
@@ -426,7 +426,7 @@
           "schaftmaterial": "2"
         },
         "quantity": 1,
-        "computedPriceSnapshot": 28,
+        "computedPriceSnapshot": 25.5,
         "computedStatsSnapshot": {
           "at": -2,
           "pa": -2,

@@ -9,6 +9,69 @@
 - Neuere Einträge haben Vorrang. Die Historie nur bei konkretem Rückfragebedarf lesen; verlinkte Fachunterlagen nach Bedarf öffnen. Keine offenen Aufgaben ausschließlich unterhalb des neuesten Lesestopps ablegen.
 - Nach jedem abgeschlossenen Schritt den logisch nächsten konkret vorschlagen. Ein Vorschlag allein ist kein Ausführungsauftrag. Diese Regel steht auch in der [AGENTS.md](../../../../AGENTS.md).
 
+## 2026-10-11 · 053 · GELÖST — Designrunde Blockmodell Stufe 0 (Wache, Ork); nur Planung, kein Code und keine Daten geändert
+
+Ziel der Runde: Archetyp + Spezies + Kreis wählen und einen fertigen NPC erhalten, deterministisch und ohne KI (optional später eine API). Das bisherige Achsen- und Reglermodell war dem Nutzer zu komplex; stattdessen SP-Blöcke nach Verwendung. **Zunächst nur Stufe 0 / Kreis 0 (6.400 SP)**, bis die Basis stabil ist. Es gibt keine Menschen; Beispielfall ist die Ork-Wache.
+
+### Entscheidungen (alle bestätigt, soweit nicht als Auslegung markiert)
+
+1. **SP-Aufteilung Stufe 0:** Eigenschaften 60 % (einschließlich Volkssockel; Ork 3.216 SP = 50,25 %, also 624 SP zum Steigern), Attribute etwa 5 % (Mindestquote 3 % gilt für jeden Charakter, auch Nichtmagier), GF mindestens 5 %, SF mindestens 5 %, weitere 5 % Polster für GF/SF (daraus SSK 90 bzw. 120 SP und fehlende Schritte), WHK 5 % (Beruf zählt mit), NK/FK/PSI/KI/Spruchmagie in 5-%-Blöcken. Wache: NK 10 %, FK 5 %. Ein Magier darf bei den Attributen über 5 % kommen (Mehrbedarf aus Polster, sonst sichtbarer Konflikt).
+2. **Die Reserve wird am Ende ausgegeben** (Auffüllschritt nach Gewinn pro SP). Übrig bleibt nur ein Rest unterhalb des billigsten sinnvollen Schritts.
+3. **Kampfpakete:** NK = 3 Haupt + 3 Spez (Teiler 3), FK = 2 + 2 (= +1 auf die FK-Basis, Teiler 4). Haupt und Spez werden je Paket festgelegt, ein Paket ist mehrfach wählbar, Pakete sowie NK und FK sind voneinander unabhängig. Cap 24 für Haupt und Spez einzeln, Spez ≤ Haupt. Nur tatsächlich verbrauchte Punkte werden angesetzt. Kosten (aus `waffenSpezKosten.ts`): Haupt NK 25, FK 18 SP je Punkt; Spez-Satz nach Rang unter den investierten Geschwistern, absteigend nach Wert, NK 15/8/4, FK 10/5/3. Die Kosten hängen vom Endzustand ab, nicht von der Kaufreihenfolge. Erstes NK-Paket 120 SP, erstes FK-Paket 56 SP.
+4. **Effiziente Schritte:** Formeln werden aufgerundet, eine neue Stufe entsteht bei Summe ≡ 1 (mod Teiler). Zuerst bis dahin kaufen, dann in Teiler-Schritten. Eigenschaften mit Teiler 2: erst auf ungerade Werte, dann in 2er-Schritten. Eigenschaften werden vor der Haupt gekauft, weil sie den Versatz bestimmen.
+5. **Pool-Punkte:** je Waffe unabhängig; gleichmäßig auf AT und PA (Differenz höchstens 1, Ausnahme wenn eine Seite ihr Maximum n20/g10/m26 erreicht). Verteilung je Seite: n bis zum absoluten Wert 15, danach Zyklus 2/1/1 (n, n, g, m); bei erreichter Grenze Überschuss in der Reihenfolge n, g, m an Felder mit Platz; ungenutzte PP sind zulässig. Die Verteilung kostet kein Budget.
+6. **Attribute des Kämpfers:** Glück 1 und so viel Vitalität wie ins Attributbudget passt. Kosten kumulativ `10·w²+70·w` (Stufe 1 bis 5: 80/180/300/440/600). Wache: Glück 1 + Vitalität 2 = 260 SP, Rest 60 SP in die Reserve.
+7. **Eigenschaften:** Gewicht aus den Formeln gezählt, kein Handtuning. Zielwerte der NK-Wache: AT, PA, Ausweichen, Schaden, Ausdauer und LE (als ein Zielwert, Mittel der sieben Zonen), jeweils Gewicht 1, bewertet nach relativer Verbesserung pro SP mit vollem Vorausblick. Stärke und Konstitution zählen über Schaden, LE, Ausdauer und RBE mit; Stärke hat die harte Untergrenze Mindeststärke der Hauptwaffe. Eigenschaften werden **nicht** zusätzlich gekauft, um ein KBE-Ziel zu erreichen; die Rüstung passt sich an.
+8. **Unbewaffnet in jedem Profil rudimentär:** Haupt `nk_unbewaffnet` bis zum ersten effizienten Wert, ohne Spez, als erster Posten im NK-Block. Beim Ork 50 SP (H = 2). AT Unbewaffnet nutzt Mut + Schnelligkeit + H (nicht Athletik). Die Spez heißt `nk_spez_unbewaffnet_unbewaffnet` („Faust“ gibt es nicht). Schild ist ein eigenes Profil, Unbewaffnet für Schild „drittrangig“ (Auslegung als Priorität Rang 3, **unbestätigt**). Idee: Synergieliste aus Anforderungen je Profil, zusammengeführt per Maximum.
+9. **Rüstung vor GF/SF** (regiert `sf_ruestungsmanoever`). Wache: Rüstungsmanöver fest 12 (108 SP). **KBE-Kette der Wache:** Ziel 0, dann 1, danach das Teil mit der höchsten RH weglassen (bei Gleichstand zuerst das mit geringerem RS), erneut prüfen. Ein Tank akzeptiert bis 2. KBE erschwert alle Proben mit `eig_k_*`; ob einmal je Probe oder je Term, ist **offen**.
+10. **Rüstungsbudget:** Start 2.500 D, Kurve 2.500 D + 0,28 D × Stufe³, auf 25 D gerundet: Stufe 0/1: 2.500, 4: 2.525, 9: 2.700, 16: 3.650, 25: 6.875, 36: 15.575, 49: 35.450. Bedingung: ab Kreis 5 (Stufe 25) ist alles Meisterarbeit und perfekt angepasst bezahlbar (Vollkit 6.722 D).
+
+### Rechenstände Ork-Wache (Axt, Stufe 0)
+
+- **Eigenschaften:** Stärke 15→17 (93 SP), Athletik 10→13 (99), Konstitution 14→15 (42), Athletik 13→19 (279), Konstitution 15→17 (93) = 606 SP, Rest 18. Ergebnis Mut 16, Athletik 19, Schnelligkeit 7, Konstitution 17, Stärke 17. Einhändig (Mindeststärke 17) und zweihändig (10) ergeben dieselben Endwerte. AT 15→18, PA 12→15, Ausweichen 10→12, Schaden 10,5→13,5 (einhändig), Ausdauer 52→68, LE-Mittel 17,6→19,7. Angenommen: Haupt 17, Glück 1, Vitalität 2, Gewicht 1 je Zielwert, Rüstung und Gewichtsbelastung nicht eingerechnet.
+- **NK-Block (640 SP):** Axt Haupt 17 / Spez 17 kostet 680 SP (H = 17 ist effizient: AT-Summe 35 und PA-Summe 26 sind beide ≡ 2 mod 3); 40 SP aus der Reserve, dazu 50 SP Unbewaffnet. FK 5 % = 320 SP = 5 Pakete 10/10 (280 SP) plus 40 SP Rest. Für Orks gibt es laut Wache-Stub keine kaufbare orkische Feuerwaffe, FK also Bogen/Armbrust oder fremde Waffenkammer.
+- **Reserve nach diesen Posten:** 308 SP (18 Eigenschaften, 60 Attribute, 190 Polster nach SSK 90 und 40 für den NK-Zuschlag, 40 FK).
+- **Rüstung (Zeughauskit `wache-zeughaus`, 11 Teile, RH 30, Gesellenarbeit/von der Stange 1.561 D):** Mit Kon 17, Stärke 17 und RM 12 gilt RH-Grenze 22,2 (KBE 0), 28,2 (KBE 1), 34,2 (KBE 2). Verfügbarkeitsgrenze der Kaufsperre < 5 angewendet: KBE 0 unmöglich, KBE 1 mit RH 28 ab 1.585 D (bei 2.113 D RS 36, bei 3.000 D RS 39). **Korrektur:** Die Aussage „KBE 0 ist eine Eigenschaftsfrage“ war falsch; Ursache ist der Verfügbarkeitsfilter, denn jedes Teil in „perfekt angepasst“ hat Verfügbarkeit 5 in der NW und 3 in der AW. Mit Verfügbarkeit 5 zugelassen: KBE 0 mit der vollen Rüstung ab 1.657 D (RH 22). Ohne Eisenpanzer (höchste RH) geht KBE 0 ab 936 D. Vollkit-Preise: Gesellenarbeit + perfekt 1.825 D (RS 30), Meisterarbeit + perfekt 6.722 D (RS 41), Großmeisterarbeit + perfekt 7.220 D (RS 52), jeweils RH 22. Gerechnet mit einem Wegwerf-Nachbau der Suche aus `armorOptimization.ts` (RS je Teil mindestens wie vorher, nur Fertigung/Anpassung, Basisteile fest), weil der echte Optimierer keine Teile weglässt und konsistente Budgets braucht. Skripte wurden wieder gelöscht.
+
+### Abgleich mit dem Altbestand (Straitmor-Wachen, Dokumente)
+
+Straitmor Indianer, Stufe 0: Eigenschaften 4.131 SP (64,5 %), Attribute 740 (11,6 %, Vitalität 4, Glück 3), NK 640 (10 %), FK 0, WHK 352 (5,5 %), SSK 120, GF/SF 414 (6,5 %), zusammen 6.397. Konflikte mit dem neuen Modell:
+
+- GF/SF: [Grundausbildung-Stufe-0.md](Grundausbildung-Stufe-0.md) legt Basis 0, „kein Pflichtverbrauch, kein Auffüllen“ und rund 90 Punkte (810 SP) Obergrenze fest; das neue Modell hat 5 % + 5 % Minimum + 5 % Polster (960 SP) und gibt die Reserve aus. Das Altbeispiel `wachmann` liegt mit 855 SP (13,4 %) näher am neuen Modell.
+- Unbewaffnet „3 × Kreis“ steht noch in Budgetgrundlage, Grundausbildung und Weitere-Achsen, ist laut Eintrag 051 und Gesamtübersicht aber verworfen.
+- [Eigenschaften-und-Attribute.md](Eigenschaften-und-Attribute.md) legt für die einfache Wache Zeughausrüstung von der Stange ohne automatische Anpassung fest; das KBE-Ziel ist dort allgemein 0 bis 3 (Code: `npcArmorMaxBe ?? 3`), die neue Wache hat höchstens 1.
+- Straitmor erreicht RBE 0 über Rüstungsmanöver 20/19 (Talentstufen 1+2, 16 TaP), das neue Modell hält RM 12 und löst es über Geld.
+- Eigenschaftsschwerpunkte: Dokument „Wache und Schutz“ (Sinnesschärfe, Konstitution, Stärke), Straitmor-CK-Nahkämpfer (Stärke 17, Athletik 17, Schnelligkeit 15, Konstitution 15, Mut 13) und die heutige Rangfolge weichen voneinander ab.
+- Pool-Verteilung: Straitmor AT n15/g5/m22, nach der neuen Regel bei gleichem PP-Einsatz (8 PP je Seite, Basis n = 12) n18/g2/m22.
+- [Kampfausbildung.md](Kampfausbildung.md): Stufen Selbstschutz 5/5, Dienst 9/9, Spezialist 15/15 mit S = H passen nicht zu 3er-/2+2-Paketen und frei wählbarem S ≤ H.
+- Der Regler „bessere Berufsfähigkeiten“ hat im 5-%-Modell keinen eigenen Block.
+- Die Straitmor-Wachen liegen in der NW; dort ist „perfekt angepasst“ nicht regulär kaufbar.
+
+### Prüfstand
+
+Nur Planung und Rechnung. Außer dem Datenfix aus Eintrag 052 (Commit `da4d523`) wurde in dieser Runde nichts am Code, an Regeldaten oder Charakterdateien geändert. Rechnungen liefen in Wegwerf-Skripten (vitest-Scratch, wieder gelöscht). Die Testsuite wurde in dieser Runde nicht ausgeführt; letzter Stand aus 052: 722/722 Tests, `tsc` ohne Fehler.
+
+### Offene Aufgaben
+
+1. Welt der Wache (AW oder NW) klären; davon hängt ab, ob „perfekt angepasst“ verfügbar ist. Außerdem Meisterarbeit oder Großmeisterarbeit als Ziel ab Kreis 5 (Großmeisterarbeit kostet nur 498 D mehr).
+2. GF/SF der Wache festlegen: Rüstungsmanöver 12 (108 SP) zuerst, dann Ausweichen, Selbstbeherrschung, Ladeschütze und der Rest von GF 5 % / SF 5 % / Polster.
+3. Dokumentenbereinigung: GF/SF-Obergrenze 90 Punkte und „kein Auffüllen“ ersetzen, Unbewaffnet „3 × Kreis“ streichen.
+4. Entscheiden, ob die Straitmor-Dateien Vergleichsstand bleiben oder nach dem neuen Modell neu erzeugt werden; Rüstungsstandard „von der Stange“ oder KBE-Kette.
+5. KBE-Strafe: einmal je Probe oder je Term. Rang-3-Auslegung bei Schild bestätigen.
+6. Eigenschaftsrangfolge für höhere Stufen (z. B. 49) und für Rüstung/Gewichtsbelastung neu rechnen; Gewichte je Archetyp.
+7. FK-Paket für den Ork (Bogen/Armbrust oder fremde Waffenkammer), Schild-Profil, Synergieliste, PSI/KI/Spruch-Blöcke.
+8. Aus 052: prüfen, ob eine der Unbewaffnet-Rollen eine PA-Basis über 20 hat und von der Pool-Korrektur profitiert.
+
+Nächster vorgeschlagener Schritt: GF/SF der Ork-Wache festlegen (Rüstungsmanöver 12 zuerst, danach Rest der 5-%-Töpfe und Reserve) und danach das vollständige Rechenblatt der Stufe-0-Wache summieren. Nur vorgeschlagen, nicht ausgeführt.
+
+### Weiterhin geltender Stand aus den Einträgen 052 und 051
+
+Die Pool-Formel Unbewaffnet ist korrigiert (Eintrag 052, Commit `da4d523`). Waffenpreise nach RC-096 §3.1, neu berechnete NPC-Waffenpreise und Budgets (Hauptmann 411,9 D, KI 11642,04 D), Alternativmunition-Nachladezeit und die Straitmor-Zahlen (Axt 99 D, Ausgaben je 1.759,796 D, Rest 3.240,204 D) gelten weiter. Der Vergleichsstand bleibt die [Gesamtübersicht](Nahkampfvergleich-Gesamtuebersicht.md). Für Spruchmagie, Schulauswahl, CK-Zielhöhen, KI/PSI und die verlinkten Fachunterlagen gilt unverändert der Text im Eintrag 052 darunter. Überholt durch Eintrag 053: das Reglermodell (jetzt 5-%-Blöcke) und die GF/SF-Obergrenze von 90 Punkten, jeweils als Entwurf, noch nicht im Generator umgesetzt.
+
+---
+
+**LESESTOPP — Ende des neuesten GELÖST-Eintrags. Alles darunter ist optionale Historie.**
+
 ## 2026-10-11 · 052 · GELÖST — Pool-Formel „Unbewaffnet“ um fehlenden PA-Überschuss ergänzt
 
 Datenfehler in der Regeltabelle behoben (Nutzer bestätigt): `nk_pool_unbewaffnet_unbewaffnet` (Blatt `Werte`, Zeile 508, Spalte `Pool`) hatte als einzige der 30 Nahkampf-Pool-Zeilen nur den AT-Überschuss-Term. Ergänzt wurde `+MAX(0;(eig_k_athletik+eig_k_schnelligkeit+nk_unbewaffnet)/3-20)`, passend zu `pa_unbewaffnet` und allen Nachbarzeilen (z. B. `nk_pool_unbewaffnet_schild`). Änderung in `werte 0.8-claude.xlsx` per Excel-COM (nur diese Zelle), danach Neuberechnung und `python scripts/generate_data_ts.py "werte 0.8-claude.xlsx"`. Backup vorher: `werte 0.8-claude_backup_2026-10-11_2046.xlsx` (byte-identisch zum Stand davor, unversioniert im Repo-Root). Die xlsx bleibt einzige Quelle; `src/data/rules-jsonl/nahkampf.jsonl` und `src/data/rules.json` sind nur Projektionen und unterscheiden sich im Diff in genau dieser einen Referenz (Feld `poolRaw`, 1615 Regeln wie zuvor).
@@ -311,7 +374,7 @@ Offen bleiben außerdem die ausdrückliche Bestätigung neuer GF/SF-Paketwerte u
 - [Weiterarbeit](Weiterarbeit.md): ergänzende Umsetzungshinweise und historische Sitzungsstände.
 ---
 
-**LESESTOPP — Ende des neuesten GELÖST-Eintrags. Alles darunter ist optionale Historie.**
+**LESESTOPP — Ende des neuesten GELÖST-Eintrags. Alles darunter ist optionale Historie.**
 
 ## 2026-09-13 · 043 · GELÖST — Beide Straitmor-Vergleichscharaktere erstellt
 
@@ -419,7 +482,7 @@ Offen bleiben außerdem die ausdrückliche Bestätigung neuer GF/SF-Paketwerte u
 - [Weiterarbeit](Weiterarbeit.md): ergänzende Umsetzungshinweise und historische Sitzungsstände.
 ---
 
-**LESESTOPP — Ende des neuesten GELÖST-Eintrags. Alles darunter ist optionale Historie.**
+**LESESTOPP — Ende des neuesten GELÖST-Eintrags. Alles darunter ist optionale Historie.**
 
 ## 2026-09-13 · 042 · GELÖST — Straitmor, Orkisch, zwergische Schrift und orkische Kultur
 

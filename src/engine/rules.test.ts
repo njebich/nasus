@@ -43,6 +43,39 @@ describe('rules.ts gegen echte Werte-Daten (werte 0.7-claude.xlsx)', () => {
     expect(result).toBe(0);
   });
 
+  it('nk_pool_unbewaffnet_unbewaffnet: PA-Ueberschuss ueber 20 fliesst ins Pool-Budget (AT-Seite unter 20)', () => {
+    // eig_g_mut=0 -> AT-Basis (0+20+24)/3 = 14,67 -> 15, unter 20, kein AT-Ueberschuss.
+    // PA-Basis (20+20+24)/3 = 21,33 -> aufgerundet 22 -> Ueberschuss 2 (vor dem Fix: 0).
+    const result = evalReferenz('nk_pool_unbewaffnet_unbewaffnet', values({
+      eig_g_mut: 0, eig_k_athletik: 20, eig_k_schnelligkeit: 20, nk_unbewaffnet: 24,
+    }));
+    expect(result).toBe(2);
+  });
+
+  it('nk_pool_unbewaffnet_unbewaffnet: summiert AT- und PA-Ueberlauf wie nk_pool_hiebwaffen', () => {
+    const result = evalReferenz('nk_pool_unbewaffnet_unbewaffnet', values({
+      eig_g_mut: 30, eig_k_athletik: 30, eig_k_schnelligkeit: 30, nk_unbewaffnet: 30,
+    }));
+    expect(result).toBe(20); // AT: MAX(0; 90/3-20) = 10, PA: 10
+  });
+
+  it('nk_pool_unbewaffnet_unbewaffnet: kein Pool-Budget wenn AT/PA unter 20 bleiben', () => {
+    const result = evalReferenz('nk_pool_unbewaffnet_unbewaffnet', values({
+      eig_g_mut: 5, eig_k_athletik: 5, eig_k_schnelligkeit: 5, nk_unbewaffnet: 5,
+    }));
+    expect(result).toBe(0);
+  });
+
+  it('alle nk_pool_unbewaffnet_*-Zeilen haben AT- UND PA-Ueberschuss-Term (Datenkonsistenz)', () => {
+    const at = 'MAX(0;(eig_g_mut+eig_k_schnelligkeit+nk_unbewaffnet)/3-20)';
+    const pa = 'MAX(0;(eig_k_athletik+eig_k_schnelligkeit+nk_unbewaffnet)/3-20)';
+    for (const ref of ['nk_pool_unbewaffnet_unbewaffnet', 'nk_pool_unbewaffnet_schild', 'nk_pool_unbewaffnet_boxen', 'nk_pool_unbewaffnet_ringen']) {
+      const raw = getRule(ref)?.poolRaw ?? '';
+      expect(raw, ref).toContain(at);
+      expect(raw, ref).toContain(pa);
+    }
+  });
+
   it('eig_g_mut Kosten: SVERWEIS gegen die generierte Eigenschaften-Kosten-Tabelle', () => {
     // Laut Flag-Spalte: 30 EP/Punkt bis Wert 11 -> Wert 5 kostet insgesamt 150 EP.
     const result = evalKostenFor('eig_g_mut', 5, values({}));
